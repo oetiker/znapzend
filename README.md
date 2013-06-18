@@ -1,10 +1,11 @@
 # About
 This is a Github pages theme based on Twitter Bootstrap for your Github projects
+# Demo:
+http://robertcedwards.github.io/gh-pages-theme/
+
 # License
 
-A Twitter Bootstrap Theme for your GitHub projects
- 
-Demo:http://robertcedwards.github.io/gh-pages-theme/
+
 
 
 Copyright (C) 2011 We Creative
