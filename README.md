@@ -4,12 +4,6 @@ This is a Github pages theme based on Twitter Bootstrap for your Github projects
 http://robertcedwards.github.io/gh-pages-theme/
 
 # License
-
-
-
-
-Copyright (C) 2011 We Creative
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
