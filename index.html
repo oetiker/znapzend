@@ -3,64 +3,86 @@
 	<head>
 		<title>My GitHub project</title>
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 		<!--[if lt IE 9]><script type='text/javascript' src='assets/javascript/html5.js'></script><![endif]-->
 		<script type='text/javascript' src='assets/javascript/prettify.js'></script>
+    <script type='text/javascript' src='assets/js/jquery-2.1.0.min.js'></script>
+    <script type='text/javascript' src='assets/js/bootstrap.js'></script>
 
 		<link rel='stylesheet' type='text/css' href='assets/css/style.css' />
 		<link rel='stylesheet' type='text/css' href='assets/css/bootstrap.css' />
 		<link rel='stylesheet' type='text/css' href='assets/css/prettify.css' />
 	</head>
-	<body onload='prettyPrint()'>
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-      <div class="container">
-        <a class="brand" href="#">Your Project!</a>
-        <div class="nav-collapse">
-          <ul class="nav">
-            <li class="active"><a href="#">Home</a></li>
-            
-          </ul>
-        </div><!-- /.nav-collapse -->
+<body onload='prettyPrint()'>
+  <nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Brand</a>
       </div>
-    </div><!-- /navbar-inner -->
-</div>
-		
-  <div class='row-fluid'>
-  		<div class='hero-unit'>
-			<header>
-				<h1 class=''>Your Project Title</h1>
-			</header>
-			<p>This is a Hero unit with a button!
-          <a href='https://github.com/USER/REPOSITORY/zipball/master' class='btn btn-large'>
-            Download
-            <span>Latest version from GitHub</span>
-          </a>			</p>
-			<h2>Explaination:</h2>
-			<p>Here's some room to explain your awesome project!</p>
-        <hr class="soften">
-			
-      <span class="label label-important">How about a code example:</span>
-      <pre class='prettyprint'>
-        &lt;script&gt;
-        function display_awesomeness();
-        {
-          alert("Awesomeness!");
-        }
-        &lt;/script&gt;
-      &lt;form&gt;
-        &lt;input type="button" value="Click me!" onclick="display_awesomeness()" /&gt;
-      &lt;/form&gt;
-			</pre>
-		</div>	
-<footer class="span12">
-<div class="alert">
-  Made by You!
-</div>
-</footer>
-			</div>
-
-		
-		<a href='https://github.com/USER/REPOSITORY' class='github-ribbon'><img src='assets/images/github-ribbons/red.png' /></a>
-	</div>	
-	</body>
+  
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Link</a></li>
+          <li><a href="#">Link</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Action</a></li>
+              <li><a href="#">Another action</a></li>
+              <li><a href="#">Something else here</a></li>
+              <li class="divider"></li>
+              <li><a href="#">Separated link</a></li>
+              <li class="divider"></li>
+              <li><a href="#">One more separated link</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <section class="panel jumbotron">
+    <h1>Your Project Title</h1>
+    
+    <a class="btn btn-primary btn-lg" role="button">Learn more</a>
+    <a class='btn btn-primary btn-lg' href='https://github.com/USER/REPOSITORY/zipball/master'>Download</a>
+    
+    <h2>Check out my awesome project:</h2>
+  			
+        <pre class='prettyprint'>
+          &lt;script&gt;
+          function display_awesomeness();
+          {
+            alert("Awesomeness!");
+          }
+          &lt;/script&gt;
+        &lt;form&gt;
+          &lt;input type="button" value="Click me!" onclick="display_awesomeness()" /&gt;
+        &lt;/form&gt;
+  			</pre>
+  </section>      	
+  
+  <footer>
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Footer</a>
+        </div>
+        <div class="navbar">
+          <ul class="nav navbar-nav">
+            <li class=""><a href="#">Link</a></li>
+            <li><a href="#">Link</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+  </footer>
+</body>
 </html>
