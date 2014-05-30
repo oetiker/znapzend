@@ -88,7 +88,7 @@ if test "$enable_pkgonly" != yes; then
    You can install local copies of the missing modules 
    by running
 
-     ./setup/build-perl-modules.sh ${actual_prefix}/thirdparty
+     ./setup/build-thirdparty.sh ${actual_prefix}/thirdparty
 
 NOTES
       exit 1
