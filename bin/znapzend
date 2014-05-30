@@ -11,10 +11,13 @@ use Sys::Syslog;
 use File::Basename;
 
 use Mojo::Base -strict;
+use Mojo::Util qw(slurp);
+use POSIX qw(setsid);
+
 use ZnapZend;
 
 my $opts = {};
-GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy syslog=s)) or exit(1);
+GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemon pidfile=s syslog=s)) or exit(1);
 
 if($opts->{help}) { pod2usage(1) };
 if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
@@ -26,16 +29,48 @@ openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
 my $znapzend = ZnapZend->new($opts);
 
+daemonize() if $opts->{daemon};
+                                                                                                                                                                                                                                                                                  
 eval {
     #catch die event and log to syslog
     local $SIG{__DIE__};
     $znapzend->start();
 };
+
 if ($@){
-    syslog('info', $@);
+    syslog('err', $@);
     print STDERR "$@\n";
 }
 
+sub daemonize {
+   my $pidFile = $opts->{pidfile};
+   if (defined $pidFile and -f $pidFile ) {
+        chomp(my $pid = slurp $pidFile);
+        if (kill 0,$pid){
+            die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
+        }
+    }
+    defined (my $pid = fork) or die "Can't fork: $!";
+    if ($pid) {
+        exit;
+    } else {
+        print STDERR "znapzend ($$) is running in the background now.\n";
+        if ($pidFile){
+            if( open my $fh, '>', $pidFile ){
+                print $fh "$$\n";
+            } else {
+                warn "creating pid file $pidFile: $!\n";
+            }
+        }
+        setsid or die "Can't start a new session: $!";
+        open STDOUT,'>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
+        open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
+        open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
+        # send warnings and die messages to log
+        $SIG{__WARN__} = sub { syslog('warning', shift) };
+        $SIG{__DIE__} = sub { return if $^S; syslog('err',shift); exit 1 };
+    }
+}
 1;
 
 __END__
@@ -48,12 +83,14 @@ znapzend.pl - znapzend daemon
 
 B<znapzend.pl> [I<options>...]
 
-    --man show man-page and exit
-    -h,--help display this help and exit 
-    -d,--debug print debug messages to STDERR
-    -n,--noaction run in simulation mode. does no changes to the filesystem
-    --nodestroy does all changes on the filesystem except destroy
-    --syslog='syslog facility'
+ --man         show man-page and exit
+ -h,--help     display this help and exit 
+ -d,--debug    print debug messages to STDERR
+ -n,--noaction run in simulation mode. does no changes to the filesystem
+ --nodestroy   does all changes on the filesystem except destroy
+ --syslog=x    select the syslog facility 
+ --pidfile=x   write a pid file when running in daemon mode
+ --daemon      fork into the background
 
 =head1 DESCRIPTION
 
