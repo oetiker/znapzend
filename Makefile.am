@@ -16,11 +16,16 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+SUFFIXES = .1 .man .pm
+
 BIN = bin/@PACKAGE@ bin/znapzendzetup
 
 PM :=  $(shell find lib/ -name "*.pm")
 
-EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM)
+MAN = bin/znapzend.1 bin/znapzendzetup.1
+
+GENERATED_EXTRADIST = $(MAN)
+EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -31,13 +36,23 @@ nobase_data_DATA = $(PM) $(POD)
 
 dist_bin_SCRIPTS = $(BIN)
 
+imandir = $(mandir)/man1
+iman_DATA = $(MAN)
+
+bin/znapzend.1: bin/znapzend
+	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+
+bin/znapzendzetup.1: bin/znapzendzetup
+	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+
+
 install-exec-hook:
-	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
 
 dist-hook:
-	cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
+	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
+	$(AM_V_GEN)$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
 
 
 #END

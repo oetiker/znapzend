@@ -90,7 +90,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(datadir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" \
+	"$(DESTDIR)$(datadir)"
 SCRIPTS = $(dist_bin_SCRIPTS)
 depcomp =
 am__depfiles_maybe =
@@ -102,7 +103,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 SOURCES =
 DIST_SOURCES =
-DATA = $(nobase_data_DATA)
+DATA = $(iman_DATA) $(nobase_data_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -161,6 +162,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PERL5LIB = @PERL5LIB@
+POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -207,16 +209,22 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
+SUFFIXES = .1 .man .pm
 BIN = bin/@PACKAGE@ bin/znapzendzetup
 PM := $(shell find lib/ -name "*.pm")
-EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM)
+MAN = bin/znapzend.1 bin/znapzendzetup.1
+GENERATED_EXTRADIST = $(MAN)
+EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 nobase_data_DATA = $(PM) $(POD)
 dist_bin_SCRIPTS = $(BIN)
+imandir = $(mandir)/man1
+iman_DATA = $(MAN)
 all: all-am
 
 .SUFFIXES:
+.SUFFIXES: .1 .man .pm
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -283,6 +291,24 @@ uninstall-dist_binSCRIPTS:
 	files=`for p in $$list; do echo "$$p"; done | \
 	       sed -e 's,.*/,,;$(transform)'`; \
 	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
+install-imanDATA: $(iman_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(imandir)" || $(MKDIR_P) "$(DESTDIR)$(imandir)"
+	@list='$(iman_DATA)'; test -n "$(imandir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(imandir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(imandir)" || exit $$?; \
+	done
+
+uninstall-imanDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(iman_DATA)'; test -n "$(imandir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(imandir)'; $(am__uninstall_files_from_dir)
 install-nobase_dataDATA: $(nobase_data_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(datadir)" || $(MKDIR_P) "$(DESTDIR)$(datadir)"
@@ -480,7 +506,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(SCRIPTS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(datadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(datadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -534,7 +560,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-nobase_dataDATA
+install-data-am: install-imanDATA install-nobase_dataDATA
 
 install-dvi: install-dvi-am
 
@@ -581,7 +607,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-dist_binSCRIPTS uninstall-nobase_dataDATA
+uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
+	uninstall-nobase_dataDATA
 
 .MAKE: install-am install-exec-am install-strip
 
@@ -592,22 +619,29 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-nobase_dataDATA
 	dvi dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dist_binSCRIPTS \
 	install-dvi install-dvi-am install-exec install-exec-am \
-	install-exec-hook install-html install-html-am install-info \
-	install-info-am install-man install-nobase_dataDATA \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-dist_binSCRIPTS uninstall-nobase_dataDATA
+	install-exec-hook install-html install-html-am \
+	install-imanDATA install-info install-info-am install-man \
+	install-nobase_dataDATA install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am uninstall \
+	uninstall-am uninstall-dist_binSCRIPTS uninstall-imanDATA \
+	uninstall-nobase_dataDATA
 
+
+bin/znapzend.1: bin/znapzend
+	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+
+bin/znapzendzetup.1: bin/znapzendzetup
+	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
 install-exec-hook:
-	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
 
 dist-hook:
-	cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
-	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
+	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
+	$(AM_V_GEN)$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
 
 #END
 
