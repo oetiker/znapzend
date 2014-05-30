@@ -212,7 +212,7 @@ AUTOMAKE_OPTIONS = foreign
 SUFFIXES = .1 .man .pm
 BIN = bin/@PACKAGE@ bin/znapzendzetup
 PM := $(shell find lib/ -name "*.pm")
-MAN = bin/znapzend.1 bin/znapzendzetup.1
+MAN = man/znapzend.1 man/znapzendzetup.1
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
 YEAR := $(shell date +%Y)
@@ -629,11 +629,11 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	uninstall-nobase_dataDATA
 
 
-bin/znapzend.1: bin/znapzend
-	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+man/znapzend.1: bin/znapzend
+	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
-bin/znapzendzetup.1: bin/znapzendzetup
-	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+man/znapzendzetup.1: bin/znapzendzetup
+	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
 install-exec-hook:
 	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true

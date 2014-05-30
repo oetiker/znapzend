@@ -22,7 +22,7 @@ BIN = bin/@PACKAGE@ bin/znapzendzetup
 
 PM :=  $(shell find lib/ -name "*.pm")
 
-MAN = bin/znapzend.1 bin/znapzendzetup.1
+MAN = man/znapzend.1 man/znapzendzetup.1
 
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
@@ -39,11 +39,11 @@ dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
 
-bin/znapzend.1: bin/znapzend
-	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+man/znapzend.1: bin/znapzend
+	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
-bin/znapzendzetup.1: bin/znapzendzetup
-	$(AM_V_GEN)@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+man/znapzendzetup.1: bin/znapzendzetup
+	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
 
 install-exec-hook:
