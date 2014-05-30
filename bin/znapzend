@@ -17,7 +17,7 @@ use POSIX qw(setsid);
 use ZnapZend;
 
 my $opts = {};
-GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemon pidfile=s syslog=s)) or exit(1);
+GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
 
 if($opts->{help}) { pod2usage(1) };
 if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
@@ -29,7 +29,7 @@ openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
 my $znapzend = ZnapZend->new($opts);
 
-daemonize() if $opts->{daemon};
+daemonize() if $opts->{daemonize};
                                                                                                                                                                                                                                                                                   
 eval {
     #catch die event and log to syslog
@@ -90,7 +90,7 @@ B<znapzend.pl> [I<options>...]
  --nodestroy   does all changes on the filesystem except destroy
  --syslog=x    select the syslog facility 
  --pidfile=x   write a pid file when running in daemon mode
- --daemon      fork into the background
+ --daemonize   fork into the background
 
 =head1 DESCRIPTION
 
