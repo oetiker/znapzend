@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/../thirdparty/lib/perl5";
+
+use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
+use Pod::Usage 1.14;
+
+use Mojo::Base -strict;
+use ZnapZend::Config;
+
+sub main{
+    my $mainOpt = shift;
+    my $zConfig = ZnapZend::Config->new();
+    my $opts = {};
+
+    pod2usage(1) if not defined $mainOpt;
+
+    for ($mainOpt){
+
+    /^create$/ && do {
+        GetOptions($opts, qw(r mbuffer=s src-plan=s dst-plan=s)) or exit(1);
+
+        my @mandatory = qw(src-plan dst-plan);
+        for my $opt (@mandatory){
+            pod2usage(1) if not defined $opts->{$opt}; 
+        }
+        $zConfig->cfg->{enabled}    = 'on';
+        $zConfig->cfg->{recursive}  = $opts->{r} ? 'on' : 'off';
+        $zConfig->cfg->{mbuffer}    = $opts->{mbuffer} || 'off';
+        $zConfig->cfg->{src_plan}   = $opts->{'src-plan'};
+        $zConfig->cfg->{dst_plan}   = $opts->{'dst-plan'};
+        $zConfig->cfg->{dst}        = pop @ARGV;
+        $opts->{src}                = pop @ARGV;
+
+        $zConfig->setBackupSet($opts->{src}) or die "ERROR: cannot create backup config for $opts->{src}\n";
+
+        last;
+    };
+    /^delete$/ && do {
+        $opts->{src} = pop @ARGV;
+        pod2usage(1) if not defined $opts->{src};
+        $zConfig->deleteBackupSet($opts->{src}) or die "ERROR: cannot delete backup config for $opts->{src}\n";
+
+        last;
+    };
+    /^enable$/ && do {
+        $opts->{src} = pop @ARGV;
+        pod2usage(1) if not defined $opts->{src};
+        $zConfig->enableBackupSet($opts->{src}) or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
+
+        last;
+    };
+    /^disable$/ && do {
+        $opts->{src} = pop @ARGV;
+        pod2usage(1) if not defined $opts->{src};
+        $zConfig->disableBackupSet($opts->{src}) or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
+
+        last;
+    };
+    /^list$/ && do {
+        my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
+
+        for my $backupSet (@{$backupSets}){
+            print "*** backup plan: $backupSet->{src} ***\n";
+            for my $opt (sort keys %{$backupSet}){ 
+                #singular plural check on backup plans. if value is 1, remove trailing 's'
+                if ($opt =~ /plan$/){
+                    $backupSet->{$opt} =~ s/(1[a-z]+)s(=|,|$)/$1$2/g;
+                }
+                print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
+            }
+            print "\n";
+        }
+        last;
+    };
+    /^man$/ && do {
+        pod2usage(-exitstatus => 0, -verbose => 2);
+
+        last;
+    };
+        pod2usage(1);
+    }
+}
+
+main(shift);
+
+1;
+
+__END__
+
+=head1 NAME
+
+znapzendzetup.pl - znapzend setup utility
+
+=head1 SYNOPSIS
+
+B<znapzendzetup.pl> command [I<options...>]
+where 'command' is one of the following:
+
+    create [-r] [--mbuffer=path] <--src-plan=hash> <--dst-plan=hash> <src_filesystem> <dst_filesystem>
+    delete <src_filesystem>
+    enable <src_filesystem>
+    disable <src_filesystem>
+    list [src_filesystem]
+    help
+    man
+
+e.g. znapzendzetup.pl create -r --src-plan="1w=>1h,1month=>1w" \
+--dst-plan="1d=>1h,1w=>4h,1m=>1d,1y=3m" tank/my-valuable-data \ 
+root@backuphost:backup-tank/backup/my-valuable-data
+
+=head1 DESCRIPTION
+
+znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on a destination filesystem
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Dominik Hassler>
+
+=head1 HISTORY
+
+2014-05-30 had Initial Version
+
+=cut
+

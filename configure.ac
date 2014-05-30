@@ -1,6 +1,6 @@
 # ZnapZend configure script
 
-AC_INIT([znapzend],[0.1],[tobi@oetiker.ch])
+AC_INIT([znapzend],m4_esyscmd([tr -d '\n' < VERSION]),[support@oetiker.ch])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(conftools)
 
@@ -59,7 +59,43 @@ AC_SUBST(enable_pkgonly)
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
 
+# Check the necessary Perl modules
 
+mod_ok=1
+if test "$enable_pkgonly" != yes; then
+   for module in \
+     Mojolicious
+   do 
+     AC_MSG_CHECKING([checking for perl module '$module'])
+     if ${PERL} -e 'use lib qw('$actual_prefix/thirdparty/lib/perl5'); use '$module 2>/dev/null ; then
+         AC_MSG_RESULT([Ok])
+     else
+         AC_MSG_RESULT([Failed])
+         mod_ok=0
+     fi
+   done
+   if test x$mod_ok = x0; then
+        cat <<NOTES
+
+** Aborting Configure ******************************
+   
+   If you know where perl can find the missing modules, set
+   the PERL5LIB environment variable accordingly.
+
+   FIRST though, make sure that 'perl' starts the perl
+   binary you want to use.
+
+   You can install local copies of the missing modules 
+   by running
+
+     ./setup/build-perl-modules.sh ${actual_prefix}/thirdparty
+
+NOTES
+      exit 1
+ fi
+
+fi
+                                                                                                                        
 AC_CONFIG_FILES([
 	Makefile
 ])

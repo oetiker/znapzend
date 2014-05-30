@@ -1,4 +1,4 @@
-# Copyright (C) 2013 Tobias Oetiker
+# Copyright (C) 2014 Tobias Oetiker
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,36 +16,29 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = backend
-
-EXTRA_DIST = INSTALL COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc
-
-YEAR := $(shell date +%Y)
-DATE := $(shell date +%Y-%m-%d)
-
-ETC = etc/znapzend.cfg.dist
-BIN = bin/@PACKAGE@
+BIN = bin/@PACKAGE@ bin/znapzendzetup
 
 PM :=  $(shell find lib/ -name "*.pm")
 
 POD :=  $(shell find lib/ -name "*.pod")
 
-EXTRA_DIST = wildcard t/*.t) $(ETC) $(BIN) $(PM) $(POD)
+EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(POD)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
 datadir = $(prefix)
-nobase_data_DATA = $(PM) $(POD) $(ETC)
+
+nobase_data_DATA = $(PM) $(POD)
 
 dist_bin_SCRIPTS = $(BIN)
 
 install-exec-hook:
-	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' *.pl || true
-	cd "$(DESTDIR)$(bindir)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' *.pl
+	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	cd "$(DESTDIR)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN) || true
 
 dist-hook:
-	$(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(distdir)/bin/znapzend
+	cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
 	$(PERL) -i -p -e 's/#VERSION#/$(PACKAGE_VERSION)/g;s/#YEAR#/$(YEAR)/g;s/#DATE#/$(DATE)/g;'  $(distdir)/README $(distdir)/COPYRIGHT
 
 

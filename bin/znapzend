@@ -1,773 +1,91 @@
 #!/usr/bin/perl
 
-use strict;
-use warnings;
-
 use FindBin;
+#PERL5LIB
 use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
 use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
 use Pod::Usage 1.14;
-use Config::Grammar;
-use POSIX qw(strftime mktime);
-use Data::Dumper;
+use Sys::Syslog;
 use File::Basename;
-use Fcntl qw(:DEFAULT :flock);
-use Text::ParseWords;
-use Sys::Syslog qw(:DEFAULT setlogsock);
-setlogsock('unix')
-   if grep /^ $^O $/xo, ("linux", "openbsd", "freebsd", "netbsd");
 
-$ENV{PATH} = "/bin:/sbin:/usr/bin:/usr/sbin";
-my %opt = ();
-my $hostname = `hostname`; chomp $hostname;
+use Mojo::Base -strict;
+use ZnapZend::Worker;
 
-'$Revision: 7238 $ ' =~ /Revision: (\S*)/;
-my $Revision = $1;
+my $opts = {};
+GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy syslog=s)) or exit(1);
 
-sub get_cfg();       # read the config file
-sub pick_dst($$);    # select a destination dir
-sub get_latest($$$); # find the latest backup for linking
-sub run_cmd ($@);    # run a command unless noaction
-sub build_index($$); # gather all existing backups
-sub get_slot($$$);   # figure a time slot from definitions in the keep config
-sub mk_timestamp($); # create a time stamp string
-sub clean_dst ($$$); # remove backups which are not covered by keep
-sub rsync_err ($);   # turn rsync return code into error message
+if($opts->{help}) { pod2usage(1) };
+if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
 
-# main loop
-sub main() {
-    # parse options
-    GetOptions(\%opt, 'help|h', 'man', 'version', 'noaction|no-action|n','dryrsync',
-           'warp=i','makepod',
-           'verbose|v','config=s') or exit(1);
-    my $now = time;
-    if ($opt{help})     { pod2usage(1) }
-    if ($opt{man})      { pod2usage(-exitstatus => 0, -verbose => 2) }
-    if ($opt{version})  { print "znapzend $Revision\n"; exit(0) }
+# need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
+$opts->{nodestroy} = 0 if not defined $opts->{nodestroy};
 
-    my $cfg = get_cfg;
+openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
-    openlog(basename($0), 'cons,pid', $cfg->{GLOBAL}{syslogfacilty} || 'local6');
+my $znapzend = ZnapZend::Worker->new($opts);
 
-    for my $task (sort {$cfg->{$a}{_order} <=> $cfg->{$b}{_order}}
-        grep {ref $cfg->{$_} eq 'HASH' and defined $cfg->{$_}{_order}} keys %$cfg) {
-        next unless $task =~ /^[a-z0-9][a-z0-9_]+$/;
-        
-        for my $dst (@{$cfg->{$task}{dst}}){ 
-            my $hist = build_index $task,$cfg->{$task}{dst};
-            if (not defined $hist){
-               warn "Warning: Skipping backup task '$task' since build_index failed\n";
-               next;
-            }
-            my $hour = (localtime time)[2]; 
-            my $cleanup_age =  -M $cleanup_lock;
-            if ( $hour >= 1 and $hour <= 7 and ( $cleanup_age || 1 ) > 0.25 ) {
-                my $cleaning_ok = 1; 
-                if ( not $opt{noaction} ) {
-                    sysopen (L,$cleanup_lock, O_RDWR|O_CREAT) || die "ERROR: $cleanup_lock: $!\n";
-                    if ( flock(L,LOCK_EX|LOCK_NB) ){
-                        seek L,0,0;
-                        truncate(L,0);
-                        print L $$,"\n";
-                    } else {
-                        warn "WARNING: Someone else is cleaning ${task} already\n";
-                        close L;
-                        $cleaning_ok = 0;
-                    };
-                };
-                clean_dst $cfg->{$task},$hist,$cfg if $cleaning_ok;
-                if ( not $opt{noaction} ){
-                     close L;
-                }
-            }
-        my $latest = (sort {$b <=> $a} keys %$hist)[0] || 0;
-        my ($slot,$prev,$oldest) = get_slot ( $latest,
-                          $cfg->{$task}{keep}{_table}[0][0],
-                          $cfg->{$task}{keep}{_table}[0][1] );
-        if ($now < $slot) {
-        warn "Warning: Skipping backup task '$task'. Next due at ".localtime($slot).".\n"
-            if $opt{verbose};
-        next;
-        }
-        warn "### running *** $task ***\n" if $opt{verbose};
-        my $lockfile = "$cfg->{GLOBAL}{lockdir}/znapzend_$task.lock";
-        if (not $opt{noaction}) {
-            sysopen (L,$lockfile, O_RDWR|O_CREAT)
-                or die "ERROR: $lockfile: $!\n";
-            if (not flock(L,LOCK_EX|LOCK_NB)){
-                my $age = int((time-(stat(L))[9]) / 3600 + 0.5);
-                warn "WARNING: Process $$ is skipping task $task as it has been locked by another instance of znapzend for ${age}h.\n"
-                    if not defined $cfg->{GLOBAL}{warn_delay} or ( $age > $cfg->{GLOBAL}{warn_delay} );
-                close L;
-                next;
-            };
-            seek L,0,0;
-            truncate(L,0);
-            print L $$,"\n";
-        }
-        my $dst_hash = pick_dst $cfg->{$task}{dst},$hist;
-        my $remote = $dst_hash->{remote};
-        my $rate = $dst_hash->{rate};
-        my $dst = $dst_hash->{dst};
-        my $last = get_latest $hist,$remote,$dst;
-        my $trg = mk_timestamp($now);
-        my $src = $cfg->{$task}{src}."/";
-        $src =~ s|//+|/|g;
-        my ($ret,$sig) =  run_cmd $remote,"test","-d","$dst/$task/work_in_progress";
-        if ($ret == 0) {
-        warn "WARNING: $dst/$task/work_in_progress exists. Moving to $dst/$task/orphan-$trg\n";
-        run_cmd $remote,"mv","$dst/$task/work_in_progress","$dst/$task/orphan-$trg";
-            }
-        run_cmd $remote,"mkdir","-p","$dst/$task/work_in_progress";    
-        my @rsync_args = (
-              ($opt{dryrsync} ? "--dry-run":()),
-              '--archive',
-              '--hard-links',
-              '--stats',
-              '--numeric-ids',
-              "--rsync-path=$cfg->{GLOBAL}{rsync_binary}",
-              ($rate ? "--bwlimit=$rate":()),
-              ($last ? "--link-dest=$last/":()),
-              ($cfg->{GLOBAL}{rsync_options} ? shellwords($cfg->{GLOBAL}{rsync_options}) : ()),
-              ($cfg->{$task}{filter}
-               ?
-               map {($_->[0] eq 'E' ? "--exclude" : "--include")."=$_->[1]"}
-               @{$cfg->{$task}{filter}{_table}}
-               :
-               ()),
-              $src,
-              ($remote ? "${remote}:" : "")."$dst/$task/work_in_progress" );
-        warn "### rsync ".(join " ",@rsync_args)."\n" if $opt{verbose} or $opt{noaction} or $opt{norsync};
-        if (not $opt{noaction} and not $opt{norsync} ) {
-        my $pid = open (R,"-|");
-        unless (defined $pid) {
-            die "WARNING: cannot fork: $!\n" 
-        }
-        if ($pid==0) {
-            open STDERR, '>&STDOUT';
-            exec "$cfg->{GLOBAL}{rsync_binary}",@rsync_args;
-            die "ERROR: could not exec $cfg->{GLOBAL}{rsync_binary} for task $task";
-        }
-        my %stat;
-        while (<R>) {
-            chomp;
-            /^\s*$/ && next;
-            /^total size/ && next;
-            /(.+):\s*(\d+)/i && do {$stat{lc($1)}=$2;next};
-            m|(\d+\.\d+)\s+bytes/sec|i && do{$stat{"transfer rate"} = $1; next};
-                    /rsync warning: some files vanished before they could be transferred/ && next;
-                    /file has vanished:/ && next;
-            warn "ERROR: $_";
-        }
-        waitpid $pid,0;
-        my ($ret,$sig) = ($? >> 8,$? & 127);
-        close R;
-        # 24 is for vanished files and thus irrelevant.
-        if (($ret == 0 or $ret==24 ) and not $sig){
-            run_cmd $remote,"mv","$dst/$task/work_in_progress","$dst/$task/$trg";
-            syslog('info',"$task $src -> ".($remote ? "${remote}:" : "")."$dst - $stat{'number of files transferred'} Files;  $stat{'total transferred file size'} Bytes; $stat{'transfer rate'} bytes/second");
-        } else {
-            warn "WARNING: unsuccessful backup: $dst/$task/return-${ret}_$trg\n";
-            warn "WARNING: rsync error: ".rsync_err($ret)." and Signal $sig\n";
-            run_cmd $remote,"mv","$dst/$task/work_in_progress","$dst/$task/return-${ret}_$trg";
-            syslog('err',"$task $src -> ".($remote ? "${remote}:" : "")."$dst - ".rsync_err($ret));
-        }
-        }
-        unless ($opt{noaction}){
-        unlink $lockfile;
-        flock(L,LOCK_UN);
-        close L;
-        }
-        my $linktree = $cfg->{GLOBAL}{linktreedir};
-        if ($linktree) {
-        $hist->{time} = {dst=>$dst,path=>"$dst/$task/$trg"}
-            if not $remote and -d "$dst/$task/$trg";
-        my %paths;
-        map {$paths{$hist->{$_}{path}}=1} grep {not defined $hist->{remote}} keys %$hist;
-        run_cmd undef,"mkdir","$linktree/$task" unless -d "$linktree/$task";
-        for (<$linktree/$task/????-??-??_??-??>) {
-            unless ( -l $_ ) {
-                        warn "WARNING: $_ is no symlink, skipping\n";
-                        next;
-                    }
-            my $target = readlink $_;
-            run_cmd undef, "rm", $_ unless $opt{noaction} or $paths{$target};
-            delete $paths{$target};
-        }
-        map {m|/([^/]+)$| && run_cmd undef, "ln","-s", $_,"$linktree/$task/$1"} keys %paths;
-        run_cmd undef, "rm", "-f","$linktree/$task/latest";
-        run_cmd undef, "ln","-s", "$dst/$task/$trg", "$linktree/$task/latest";
-        }
-    }
-    }
-    closelog();
+eval {
+    #catch die event and log to syslog
+    local $SIG{__DIE__};
+    $znapzend->start();
+};
+if ($@){
+    syslog('info', $@);
+    print STDERR "$@\n";
 }
 
-sub run_cmd ($@) {
-    my $remote = shift;
-    my @args = @_;
-    my @ssh = $remote ? ( "ssh","-o","batchmode=yes",$remote ): ();
-    my $exe = join " ", @ssh,@args;
-    warn "### EXEC ",strftime("%H:%M:%S",localtime(time)),": $exe\n" if $opt{verbose};
-    return (0,0) if $opt{noaction};
-    system @ssh,@args;
-    my ($ret,$sig) = ($? >> 8,$? & 127);
-    warn "WARNING: return code was $ret\n" if $ret and $opt{verbose};
-    warn "ERROR: process '$exe' died from sig $sig\n" if $sig;
-    return ($ret,$sig);
-}
-
-sub build_index($$){
-    my $task = shift;
-    my $dsts = shift;
-    # find backups
-    my %hist;
-    for my $dst_hash (@$dsts) {
-        my $remote = $dst_hash->{remote};
-        my $dst = $dst_hash->{dst};
-        # local or remote dst ?
-        my @ssh;
-        if ($remote) {
-            @ssh = (qw(ssh -o batchmode=yes),$remote);
-        }
-        open (my $R,"-|");
-        unless (defined $pid) {
-            die "WARNING: cannot fork: $!\n" 
-        }
-        if ($pid==0) {
-            open STDERR, '>&STDOUT';
-            exec @ssh,qw(zfs list -t snapshot -o name -s name -r -d 1),"$dst/$task";
-                warn "ERROR: could not exec ssh to $remote";
-                return undef;
-            }
-            while (<$R>) {
-                chomp;
-                m|^ssh:\s*(.+)| && do {
-                    warn "ERROR: ssh problem with $remote: $1\n";
-                    return undef;
-                };
-                /(\d{4})-(\d{2})-(\d{2})-(\d{6})$/ or do {
-                    warn "ERROR: the remote repository $remote contains invalid entry '$_' - skipping\n";
-                    next;
-                };
-                my $time = mktime(0,$5,$4,$3,$2-1,$1-1900,0,0,-1);
-                $hist{$time} = {
-                    path => $_,
-                    dst => $dst,
-                    remote => $remote,
-                rate => $rate
-                   }
-        }
-        close R;
-    } else {
-        for (<$dst/$task/????-??-??_??-??>) {
-        /(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})$/ or 
-            do { warn "WARN: the repository '$dst/$task' contains invalid entry '$_' - skipping\n"; next; };
-        my $time = mktime(0,$5,$4,$3,$2-1,$1-1900,0,0,-1);
-        $hist{$time} = {
-                path => $_,
-                dst => $dst,
-                   }
-        }
-    }
-    }
-    return \%hist;
-}
-
-# get_slot(t, step, max) -> slot, prev, oldest
-#
-#                      step
-#                  t  /----\
-#                  |
-# |----|----|----|----|----|----|
-# ^              ^    ^
-# oldest      prev    slot
-# \-----------------------------/
-#               max
-#
-sub get_slot($$$){
-    my $time = shift;
-    my $step = shift;
-    my $max = shift;
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($time);
-    my $slot;
-    my $prev;
-    for ($step) {
-    /^(\d+)h$/ && do{
-        my $off = $hour % $1; 
-        # -1 is to let the os figure the summertime and friends for itself
-        $slot = mktime(0,0,$hour-$off+$1,$mday,$mon,$year,0,0,-1);
-        $prev = mktime(0,0,$hour-$off,$mday,$mon,$year,0,0,-1);
-        last};
-    /^(\d+)d$/ && do{
-        my $off = $yday % $1;
-        $slot = mktime(0,0,0,$mday-$off+$1,$mon,$year,0,0,-1);
-        $prev = mktime(0,0,0,$mday-$off,   $mon,$year,0,0,-1);
-        last};
-    /^(\d+)w$/ && do{
-        my $off = ( int($time / (3600*24)) + (localtime(0))[6] ) % ($1*7);
-#       my $off = $yday % (7*$1);
-        $slot = mktime(0,0,0,$mday-$off+(7*$1),$mon,$year,0,0,-1);
-        $prev = mktime(0,0,0,$mday-$off,       $mon,$year,0,0,-1);
-        last};
-    /^(\d+)m$/ && do{
-        my $off = $mon % $1;
-        $slot = mktime(0,0,0,1,$mon-$off+$1,$year,0,0,-1);
-        $prev = mktime(0,0,0,1,$mon-$off,   $year,0,0,-1);
-        last};
-    /^(\d+)y$/ && do{
-        my $off = $year % $1;
-        $slot = mktime(0,0,0,1,0,$year-$off+$1,0,0,-1);
-        $prev = mktime(0,0,0,1,0,$year-$off,0,0,-1);
-        last};
-    }
-    my $oldest;
-    for ($max) {
-    /^(\d+)h$/ && do{ $oldest = $slot - $1*3600; last};
-    /^(\d+)d$/ && do{ $oldest = $slot - $1*3600*24; last};
-    /^(\d+)w$/ && do{ $oldest = $slot - $1*3600*24*7; last};
-    /^(\d+)m$/ && do{ $oldest = $slot - $1*3600*24*31; last};
-    /^(\d+)y$/ && do{ $oldest = $slot - $1*3600*24*366; last};
-    }
-#     warn "### time: ".mk_timestamp($time).
-#     "  step: $step  max: $max".
-#         " slot: ".mk_timestamp($slot).
-#             " prev:  ".mk_timestamp($prev).
-#                 " oldest: ".mk_timestamp($oldest)."\n" if $opt{verbose};
-    return $slot,$prev,$oldest;
-}
-
-sub clean_dst ($$$){
-    my $cfg = shift;
-    my $hist = shift;
-    my $full_cfg = shift;
-    foreach my $keep (@{$cfg->{keep}{_table}}){
-    my %cnt;
-    my %pick;
-        my $newesttime = (sort {$b <=> $a} keys %$hist)[0];
-        last unless $newesttime;
-        my $oldest = (get_slot $newesttime ,$keep->[0],$keep->[1])[2];
-    foreach my $time (sort {$a <=> $b} keys %$hist) {
-        # make sure we do not mix paths if some are remote and some are local
-        # we thus add the remote part in here
-        my $dst = ($hist->{$time}{remote} ? "$hist->{$time}{remote}:" : "").$hist->{$time}{dst};
-        my($slot,$prev,$old) = get_slot $time,$keep->[0],$keep->[1];
-        next if $time < $oldest;
-        # lets make sure that each keep line results in an equal amount
-        # of keeps in each dst as far as possible
-        if (not $pick{$slot} or $cnt{$pick{$slot}{dst}} > ($cnt{$dst}||0)){
-        if ($pick{$slot}) {
-            # remove the previous pick
-            my $pt = $pick{$slot}{time};
-            $hist->{$pt}{keep}--;
-            $cnt{$hist->{$pt}{dst}}--;
-        };
-        $cnt{$dst} = ($cnt{$dst}||0) + 1;
-        $pick{$slot}{dst} =  $dst;
-        $pick{$slot}{time} = $time;
-        $hist->{$time}{keep} = ($hist->{$time}{keep}||0)+1;
-        }
-    }
-    }
-    foreach my $time (sort { $a <=> $b } keys %$hist) {
-    next if $hist->{$time}{keep} and $hist->{$time}{keep} > 0;
-        my $origpath = $hist->{$time}{path};
-    $origpath =~ s/'/'"'"'/g; # Escape single quotes in filenames
-        my $newpath=$hist->{$time}{path};
-
-    # support for nicerm instead of rm -rf
-    my $rm      = $full_cfg->{GLOBAL}{bulk_rm_binary}  ? $full_cfg->{GLOBAL}{bulk_rm_binary}  : 'rm';
-    my $rm_opts = $full_cfg->{GLOBAL}{bulk_rm_options} ? $full_cfg->{GLOBAL}{bulk_rm_options} : undef;
-    if ((not $rm_opts) and ($rm =~ m{^(rm|/bin/rm)$})) {
-         $rm_opts = '-rf';
-    } elsif (not $rm_opts) {
-         $rm_opts = '';
-    }
-
-    # action  
-    if ($newpath =~ s{/([^/]+)$}{/removing_$1}) {
-	    run_cmd $hist->{$time}{remote},"test -d '$hist->{$time}{path}' && mv '$hist->{$time}{path}' '$newpath' && $rm $rm_opts '$newpath'";
-                 delete $hist->{$time};
-            }
-        else {
-            warn "Failed trying to figure removal name for $newpath\n";
-    }
-    }
-}
-
-sub mk_timestamp($){
-    my $time = shift;
-    return strftime("%Y-%m-%d_%H-%M",localtime($time));
-}
-
-sub get_latest($$$){
-    my $hist = shift;
-    my $remote = shift;
-    my $dst = shift;
-    for (sort {$b <=> $a} keys %$hist){
-    next if $hist->{$_}{dst} ne $dst;
-    next if $hist->{$_}{remote} and $hist->{$_}{remote} ne $remote;
-    return $hist->{$_}{path};
-    };
-    return undef;
-}
-
-sub pick_dst($$){
-    my $dsts = shift;
-    my $hist = shift;
-    my @dsts = @$dsts;
-    my %list;
-    foreach my $entry (sort {$b <=> $a} keys %$hist){
-    last if $#dsts == 0;
-    @dsts = grep {
-        ($_->{remote}|| "").$_->{dst} ne ($hist->{$entry}{remote} ||"").$hist->{$entry}{dst}
-    } @dsts;
-    }
-    return $dsts[0];
-}
-
-sub get_cfg(){
-    my $parser =  Config::Grammar->new({
-       _sections => ['GLOBAL', '/[a-z0-9][a-z0-9_]*/'],
-       _mandatory => ['GLOBAL'],
-       'GLOBAL' => {
-           _doc => 'Global Settings',
-           _vars => [ qw(lockdir syslogfacility warn_delay) ],
-           _mandatory => [ qw(lockdir) ],
-           lockdir => {
-               _doc => 'znapzend will only run one backup process at a time on the same task, where to keep this info',
-               _sub => sub { (-d $_[0] && -w $_[0]) ? () : "Lock directory not writable" },
-           },
-           warn_delay => {
-              _doc => 'only send warnings if znapzend is blocked by another instance for more than x hours.',
-              _default => 1,
-           },
-           syslogfacility => {
-              _re => '\w+',
-              _re_error => "syslogfacility must be alphanumeric",
-              _default => 'local6',
-              _doc => <<DOC,
-The syslog facility to use, eg. local0...local7.
-Note: syslog logging is only used if you specify this. Try man syslog for inspiration. Default is local6.
-DOC
-           },
-      },
-      '/[a-z0-9][a-z0-9_]*/' => {
-          _order => 1,
-          _doc => "znapzend can do multiple backup tasks. Pick a unique name for each one",
-          _vars => [ qw(src dst)],
-          _mandatory =>  [ qw(src dst src_keep dst_keep recursive)],
-          _sections => [ qw(src_keep dst_keep) ],
-          src => {
-              _doc=> <<DOC,
-The name of a local or remote data-set. Use the user@host:data-set syntax
-for remote datasets.  For remote operation, note that user must have the
-right to run zfs snapshot, destroy, list and send.
-
-znapzend will test all source data-sets for validity on startup. It will
-complain about not being able to access them and then remove the respektive
-tasks.
-DOC
-              _re => '(?:(?:[^@\s]+@)?[^:\s]+:)?[^/\s,][^\s,]*',
-              _re_error => 'use [[user@]host:]data-set'        
-          },
-          dst => {
-              _doc=> <<DOC,
-A list of comma separated destination data-sets.
-Use the user@host:data-set syntax for remote datasets.
-For remote operation, note that user must have the
-right to run zfs destroy, list and receive.
-
-Make sure the destination data-set does exist. Znapzend will refuse to send any snapshots
-to non existing data-sets.
-
-The destination data-set string will be used to construct the name of the
-actual destination dataset by appending the last element of the source
-data-set to the destination data-set string.  If the source is 'tank/data'
-and the destionation is 'backup/tank' then the actual backups will end up in
-'backup/tank/data'
-
-znapzend will test all destinations for validity on startup. It will
-complain about not being able to access them and then remove them from the
-list of destinations. 
-
-DOC
-              _re=>'(?:(?:[^@\s]+@)?[^:\s]+:)?[^/\s,][^\s,]*(,(?:(?:[^@\s]+@)?[^:\s]+:)?[^/\s,][^\s,]*)*',
-              _re=>'use [[user@]host:]data-set[,...]',
-          },
-          dst_keep => {
-              _doc => <<DOC_END,
-A table with two columns, describing how long snapshots should be kept in
-the destionation data-sets.  All snapshots which fall outside the scope of this
-description will be automatically removed.
-DOC_END
-              _table => {
-                  _doc => <<DOC,
-All entries in the table are numbers followed by a letter indicating the time
-periode described by the number: B<h>ourse, B<d>ays, B<w>eeks, B<m>onths, B<y>ears.
-DOC
-                 _columns => 2,
-                 0 => { _doc => 'Step size', _re => '\d+[hdwmy]', _re_error => 'Not a valid Step'},
-                 1 => { _doc => 'Maximum Age', _re => '\d+[hdwmy]', _re_error => 'Not a vaid MaxAge'},
-              }
-          }
-          src_keep => {
-              _doc => <<DOC_END,
-A table with two columns, describing how long snapshots should be kept in
-the source data-set.  All snapshots which fall outside the scope of this
-description will be automatically removed.
-DOC_END
-              _table => {
-                  _doc => <<DOC,
-All entries in the table are numbers followed by a letter indicating the time
-periode described by the number: B<h>ourse, B<d>ays, B<w>eeks, B<m>onths, B<y>ears.
-DOC
-                 _columns => 2,
-                 0 => { _doc => 'Step size', _re => '\d+[hdwmy]', _re_error => 'Not a valid Step'},
-                 1 => { _doc => 'Maximum Age', _re => '\d+[hdwmy]', _re_error => 'Not a vaid MaxAge'},
-              }
-          }
-      }
-    });
-
-    if ($opt{makepod}) {
-        my $e='=';
-        print <<OUT;
-${e}head1 NAME
-
-znapzend.conf - configuration file documentation
-
-${e}head1 SYNOPSIS
-
-znapzend uses L<Config::Grammar> to read its configuration file.
-
-${e}head1 DESCRIPTION
-
-Configuration file syntax for znapzend $Revision:
-
-OUT
-
-         print $parser->makepod;
-         print <<OUT;
-
-${e}head1 COPYRIGHT
-
-Copyright (c) 2013 by OETIKER+PARTNER AG. All rights reserved.
-
-${e}head1 LICENSE
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-${e}head1 AUTHOR
-
-S<Tobias Oetiker E<lt>tobi\@oetiker.chE<gt>>
-
-
-OUT
-    exit 0;
-    }
-
-    # make @include work
-    chdir "$FindBin::Bin/../etc";
-    my $cfg = $parser->parse($opt{config} || 'znapzend.conf')
-        or die "ERROR: $parser->{err}\n";
-    # split the dest key;
-    # print Dumper $cfg;
-    for my $task (keys %$cfg) {
-        next unless $task =~ /^[a-z0-9][a-z0-9_]+$/;
-        my $src = checkDataSet($cfg->{$task}{src});
-        if (not $src){
-            warn "WARNING: source $cfg->{$task}{src} not accessible. Removing task *** $task ***\n";
-            delete $cfg->{$task};
-            next;
-        }
-        $cfg->{$task}{dst} = [ split /\s*,\s*/, $cfg->{$task}{dst} ];
-        for my $dst (@{$cfg->{$task}{dst}}){
-            my @ssh;
-            $dst = checkDataSet($dst) or do {
-                warn "WARNING: destination $dst not accessible. Removing from task *** $task ***\n";                
-            }
-        }
-        @{$cfg->{$task}{dst}} = grep { ref $_ eq 'HASH' } @{$cfg->{$task}{dst}};
-        if ( scalar @{$cfg->{$task}{dst}} == 0 ){
-             warn "WARNING: Removing task *** $task *** as it has no destinations left\n";
-             delete $cfg->{$task};
-        }
-    }   
-    return $cfg;
-}
-
-sub checkDataSet {
-    my $dataSet = shift;
-    my @ssh;
-    my $remote;
-    if ( ($remote,$dataSet) = $dst =~ m/^(.+?):(.+)/ ) {
-        @ssh = (qw(ssh -o bachmode=yes),$remote);
-    }
-    if (open my $test,'-|',@ssh,qw(zfs list -H -o name),$dataSet){
-        my $dataSetFound = <$test>;
-        chomp($dataSetFound);
-        if ($dataSetFound and $dataSet eq $dataSetFound){                
-            return {
-                remote => $remote,
-                dataSet => $dataSet 
-            }
-        }
-    }
-    return undef;
-}   
-
-main;
-
-1
+1;
 
 __END__
 
 =head1 NAME
 
-znapzend - hardlink backup tool
+znapzend.pl - znapzend daemon
 
 =head1 SYNOPSIS
 
-B<znapzend> [I<options>...]
+B<znapzend.pl> [I<options>...]
 
-     --man           show man-page and exit
- -h, --help          display this help and exit
-     --version       output version information and exit
-     --verbose       talk while working      
-     --noaction      don't work 
-     --dryrsync      run rsync in dry-run mode
-     --norsync       do not run rsync at all
-     --warp=i        run for i times in a row going 1h ahead for each run
-     --config=s      use the config file spefified
+    --man show man-page and exit
+    -h,--help display this help and exit 
+    -d,--debug print debug messages to STDERR
+    -n,--noaction run in simulation mode. does no changes to the filesystem
+    --nodestroy does all changes on the filesystem except destroy
+    --syslog='syslog facility'
 
 =head1 DESCRIPTION
 
-Today disk is so cheap, that it has become an alternative backup media. Due
-to its fast access patterns it allows new ways of backing up. znapzend is
-a backup tool, based on the hardlink snapshots scheme described by Mike
-Rubel L<http://www.mikerubel.org/computers/rsync_snapshots>. It uses rsync
-which makes the actual backup process a breeze. This script is about
-managing the backups. A config file lets you define what has the be backed
-up and also how long each backup should be kept. znapzend can keep backups
-on two disks. It will automatically make sure that they are evenly
-distributed. Evenly not by amount of space used, but by distribution in
-time. This is to make sure that when you loose a backup disk, that the
-otherone still has half the data.
-
-znapzends operation is governd by a configuration file, which it expects to find in
-F<INSTALLDIR/etc/znapzend.conf>.
-
-znapzend removes old copies as defined by the MaxAge column in the config
-file for performance reasons old data only gets removed at night from 2am to
-6am (local time). So make sure you schedule at least one run during that
-timeslot.
-
-=head2 Example Config
-
-See L<znapzend.conf> for full configuration file syntax.
-
- *** home ***
- # name of the directory to backup
- src = home
- # where to store the backup. The directories are used in a round
- # robin fashion.
- dst = backup/local,usr@remote:backup/from_a
- recursive = yes
- 
- # For how long should backups be kept and at what interval should they be performed.
- + src_keep
- # Step   MaxAge
- 1h       4h
- 6h       2d
- 1w       12w
- + dst_keep
- # Step   MaxAge
- 1h       4h
- 6h       2d
- 1w       12w
- 2m       1y
-
- *** data ***
- src = tank/data
- dst = backup/tank
-
- + src_keep
- # Step   MaxAge
- 1h       12h
- 1d       5d
- 1w       2m
- + dst_keep
- # Step   MaxAge
- 1h       12h
- 1d       5d
- 1w       2m
- 3m       3y
-
-
-=head2 Errors
-
-If all is well, znapzend will work quietly. If something falls apart it
-will talk. This is ideal for running znapzend from cron.
-
-=head2 Testing
-
-To quickly see how your config works, try
-
- znapzend --config=test.conf --noaction --verbose
+znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on a destination filesystem
 
 =head1 COPYRIGHT
 
-Copyright (c) 2013 by OETIKER+PARTNER AG. All rights reserved.
+Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
 
 =head1 LICENSE
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
 
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Dominik Hassler>
 
 =head1 HISTORY
 
- 2004-01-17 to Initial Version (hardliback)
- 2013-09-23 to Rewrite for zfs send/receive backups
- 
-=cut
+2014-05-30 had Initial Version
 
-# Emacs Configuration
-#
-# Local Variables:
-# mode: cperl
-# eval: (cperl-set-style "PerlStyle")
-# mode: flyspell
-# mode: flyspell-prog
-# End:
-#
-# vi: sw=4 et
+=cut
 
