@@ -34,8 +34,8 @@ nobase_data_DATA = $(PM) $(POD)
 dist_bin_SCRIPTS = $(BIN)
 
 install-exec-hook:
-	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
-	cd "$(DESTDIR)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN) || true
+	[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
 
 dist-hook:
 	cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
