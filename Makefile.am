@@ -20,9 +20,7 @@ BIN = bin/@PACKAGE@ bin/znapzendzetup
 
 PM :=  $(shell find lib/ -name "*.pm")
 
-POD :=  $(shell find lib/ -name "*.pod")
-
-EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(POD)
+EXTRA_DIST = COPYRIGHT LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
