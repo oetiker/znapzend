@@ -11,7 +11,7 @@ use Sys::Syslog;
 use File::Basename;
 
 use Mojo::Base -strict;
-use ZnapZend::Worker;
+use ZnapZend;
 
 my $opts = {};
 GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy syslog=s)) or exit(1);
@@ -24,7 +24,7 @@ $opts->{nodestroy} = 0 if not defined $opts->{nodestroy};
 
 openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
-my $znapzend = ZnapZend::Worker->new($opts);
+my $znapzend = ZnapZend->new($opts);
 
 eval {
     #catch die event and log to syslog
