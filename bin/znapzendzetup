@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use FindBin;
+# PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
