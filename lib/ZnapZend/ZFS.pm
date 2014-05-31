@@ -132,6 +132,28 @@ sub listSnapshots {
     return \@snapshots;
 }
 
+sub listSubDataSets {
+    my $self = shift;
+    my $dataSet = shift;
+    my $remote;
+    my @dataSets;
+
+    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+    my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -r -o name), $dataSet]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $dataSets, '-|', @ssh) or die "ERROR: cannot get sub datasets on $dataSet\n";
+
+    while (<$dataSets>){
+        chomp;
+        next if not /^\Q$dataSet\E/;
+        push @dataSets, $_;
+    }
+
+    @dataSets = map { ($remote ? "$remote:" : '') . $_ } @dataSets;
+    return \@dataSets;
+}
+
 sub createSnapshot {
     my $self = shift;
     my $dataSet = shift;
@@ -298,7 +320,7 @@ this object makes zfs snapshot functionality easier to use
 
 =head2 debug
 
-print debug information to STDOUT
+print debug information to STDERR
 
 =head2 noaction
 
@@ -320,7 +342,11 @@ lists datasets on (remote-)host
 
 =head2 listSnapshots
 
-return a list of all snapshots of the dataset
+returns a list of all snapshots of the dataset
+
+=head2 listSubDataSets
+
+returns a list of all subdataset including the dataset itself
 
 =head2 createSnapshot
 

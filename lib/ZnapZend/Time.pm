@@ -194,7 +194,7 @@ znapzend time management class
 
 =head2 debug
 
-print debug information to STDOUT
+print debug information to STDERR
 
 =head2 noaction
 
