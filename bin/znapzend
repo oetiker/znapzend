@@ -17,29 +17,25 @@ use POSIX qw(setsid);
 use ZnapZend;
 
 my $opts = {};
-GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
 
-if($opts->{help}) { pod2usage(1) };
-if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
+main();
 
-# need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-$opts->{nodestroy} = 0 if not defined $opts->{nodestroy};
+sub main {
+   GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
 
-openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
+   if($opts->{help}) { pod2usage(1) };
+   if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
 
-my $znapzend = ZnapZend->new($opts);
+   # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
+   $opts->{nodestroy} = 0 if not defined $opts->{nodestroy};
 
-daemonize() if $opts->{daemonize};
+   openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
+
+   my $znapzend = ZnapZend->new($opts);
+
+   daemonize() if $opts->{daemonize};
                                                                                                                                                                                                                                                                                   
-eval {
-    #catch die event and log to syslog
-    local $SIG{__DIE__};
-    $znapzend->start();
-};
-
-if ($@){
-    syslog('err', $@);
-    print STDERR "$@\n";
+   $znapzend->start();
 }
 
 sub daemonize {
