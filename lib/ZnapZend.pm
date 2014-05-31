@@ -106,7 +106,7 @@ my $checkSendRecvCleanup = sub {
             }
             #clean up source
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
-            push @{$toDestroy} = @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp)};
+            push @{$toDestroy}, @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp)};
             syslog('info', 'cleaning up snapshots on ' . $backupSet->{src} . ' and ' . $backupSet->{dst});
             $self->zZfs->destroySnapshots($toDestroy);
 
