@@ -198,7 +198,7 @@ reads and writes znapzend backup configuration
 
 =head2 debug
 
-print debug information to STDOUT
+print debug information to STDERR
 
 =head2 noaction
 

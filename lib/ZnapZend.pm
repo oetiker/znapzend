@@ -89,16 +89,27 @@ my $checkSendRecvCleanup = sub {
             #close STDOUT and STDERR on child
             close(STDOUT) if not $self->debug;
             close(STDERR) if not $self->debug;
-            #$self->zZfs->sendRecvSnapshotsExec($backupSet->{src}, $backupSet->{dst}, $backupSet->{mbuffer});
             syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{dst});
-            $self->zZfs->sendRecvSnapshots($backupSet->{src}, $backupSet->{dst}, $backupSet->{mbuffer});
-            # cleanup according to backup schedule
-            my @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
-            my $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp);
-            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{dst})};
-            push @{$toDestroy}, @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{dstPlanHash}, $timeStamp)};
+            #get all sub datasets of source filesystem; need to send them all individually if recursive
+            my @snapshots;
+            my $toDestroy = [];
+            my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+            for my $srcDataSet (@{$srcSubDataSets}){
+                my $dstDataSet = $srcDataSet;
+                $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{dst}/;
+
+                $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer});
+            
+                # cleanup according to backup schedule
+                @snapshots = @{$self->zZfs->listSnapshots($dstDataSet)};
+                push @{$toDestroy}, @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{dstPlanHash}, $timeStamp)};
+            }
+            #clean up source
+            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
+            push @{$toDestroy} = @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp)};
             syslog('info', 'cleaning up snapshots on ' . $backupSet->{src} . ' and ' . $backupSet->{dst});
             $self->zZfs->destroySnapshots($toDestroy);
+
             #exit the forked worker
             exit(0);
         }
