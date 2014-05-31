@@ -92,7 +92,7 @@ my $checkSendRecvCleanup = sub {
             syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{dst});
             #get all sub datasets of source filesystem; need to send them all individually if recursive
             my @snapshots;
-            my $toDestroy = [];
+            my $toDestroy;
             my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
             for my $srcDataSet (@{$srcSubDataSets}){
                 my $dstDataSet = $srcDataSet;
@@ -102,12 +102,14 @@ my $checkSendRecvCleanup = sub {
             
                 # cleanup according to backup schedule
                 @snapshots = @{$self->zZfs->listSnapshots($dstDataSet)};
-                push @{$toDestroy}, @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{dstPlanHash}, $timeStamp)};
+                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{dstPlanHash}, $timeStamp);
+                syslog('info', 'cleaning up snapshots on ' . $dstDataSet);
+                $self->zZfs->destroySnapshots($toDestroy);
             }
             #clean up source
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
-            push @{$toDestroy}, @{$self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp)};
-            syslog('info', 'cleaning up snapshots on ' . $backupSet->{src} . ' and ' . $backupSet->{dst});
+            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp);
+            syslog('info', 'cleaning up snapshots on ' . $backupSet->{src});
             $self->zZfs->destroySnapshots($toDestroy);
 
             #exit the forked worker
