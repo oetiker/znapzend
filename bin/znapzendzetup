@@ -68,7 +68,7 @@ sub main{
             for my $opt (sort keys %{$backupSet}){ 
                 #singular plural check on backup plans. if value is 1, remove trailing 's'
                 if ($opt =~ /plan$/){
-                    $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 == 1 ? "$1$2" : "$1$2s"/eg;
+                    $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
                 }
                 print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
             }
