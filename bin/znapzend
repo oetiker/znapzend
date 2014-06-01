@@ -18,8 +18,6 @@ use ZnapZend;
 
 my $opts = {};
 
-main();
-
 sub main {
    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
 
@@ -34,7 +32,7 @@ sub main {
    my $znapzend = ZnapZend->new($opts);
 
    daemonize() if $opts->{daemonize};
-                                                                                                                                                                                                                                                                                  
+
    $znapzend->start();
 }
 
@@ -67,6 +65,9 @@ sub daemonize {
         $SIG{__DIE__} = sub { return if $^S; syslog('err',shift); exit 1 };
     }
 }
+
+main();
+
 1;
 
 __END__
