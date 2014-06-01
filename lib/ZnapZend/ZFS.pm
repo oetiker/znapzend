@@ -169,6 +169,7 @@ sub createSnapshot {
     return 1;
 }
 
+# known limitation: snapshots from subdatasets have to be destroyed individually
 sub destroySnapshots {
     my $self = shift;
     my @toDestroy = ref($_[0]) eq "ARRAY" ? @{$_[0]} : ($_[0]);
@@ -285,6 +286,21 @@ sub deleteDataSetProperties {
     return 1;
 }
 
+sub deleteBackupDestination {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dst = $self->propertyPrefix . ':' . $_[0];
+
+    return 0 if not $self->dataSetExists($dataSet);
+    
+    my @cmd = (qw(zfs inherit), $dst, $dataSet);
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    (system(@cmd) and die "ERROR: could not reset property on $dataSet\n") if not $self->noaction;
+    @cmd = (qw(zfs inherit), $dst . '_plan', $dataSet);
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    (system(@cmd) and die "ERROR: could not reset property on $dataSet\n") if not $self->noaction;
+};
+
 sub fileExistsAndExec {
     my $self = shift;
     my $filePath = shift;
@@ -380,6 +396,10 @@ sets dataset properties
 
 deletes dataset properties
 
+=head2 deleteBackupDestination
+
+remove a backup destination from a backup plan
+
 =head2 fileExistsAndExec
 
 checks if a file exists and has the executable flag set on localhost or a remote host
@@ -410,6 +430,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
 =cut

@@ -40,9 +40,12 @@ my $refreshLastSnapshot = sub {
     my $self = shift;
     my $backupSet = shift;
 
-    my ($lastSnap, $lastCommonSnap) = $self->zZfs->lastAndCommonSnapshots($backupSet->{src}, $backupSet->{dst});
-    $backupSet->{lastSnap} = $lastSnap // '';
-    $backupSet->{lastCommonSnap} = $lastCommonSnap // '';
+    #get common snapshots for all destinations
+    for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
+        my ($lastSnap, $lastCommonSnap) = $self->zZfs->lastAndCommonSnapshots($backupSet->{src}, $backupSet->{$dst});
+        $backupSet->{lastSnap} = $lastSnap // '';
+        $backupSet->{"lastCommon$dst"} = $lastCommonSnap // '';
+    }
 };
                           
 my $refreshBackupPlans = sub {
@@ -53,9 +56,13 @@ my $refreshBackupPlans = sub {
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
-        $backupSet->{dstPlanHash} = $self->zTime->backupPlanToHash($backupSet->{dst_plan});
+        #create backup hashes for all destinations
+        for (keys %{$backupSet}){
+            my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
+            $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
+        }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
-        $self->$refreshLastSnapshot($backupSet);
+#       $self->$refreshLastSnapshot($backupSet);
     }
 };
 
@@ -85,25 +92,27 @@ my $checkSendRecvCleanup = sub {
         my $pid = fork();
         die "ERROR: could not fork child process\n" if not defined $pid;
         if(!$pid){
-            #close STDOUT and STDERR on child
-            close(STDOUT) if not $self->debug;
-            close(STDERR) if not $self->debug;
-            syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{dst});
-            #get all sub datasets of source filesystem; need to send them all individually if recursive
+
             my @snapshots;
             my $toDestroy;
-            my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
-            for my $srcDataSet (@{$srcSubDataSets}){
-                my $dstDataSet = $srcDataSet;
-                $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{dst}/;
+            #loop through all destinations
+            for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
+                my ($key) = $dst =~ /dst_([^_]+)$/;
+                syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{$dst});
+                #get all sub datasets of source filesystem; need to send them all individually if recursive
+                my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+                for my $srcDataSet (@{$srcSubDataSets}){
+                    my $dstDataSet = $srcDataSet;
+                    $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
-                $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer});
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer});
             
-                # cleanup according to backup schedule
-                @snapshots = @{$self->zZfs->listSnapshots($dstDataSet)};
-                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{dstPlanHash}, $timeStamp);
-                syslog('info', 'cleaning up snapshots on ' . $dstDataSet);
-                $self->zZfs->destroySnapshots($toDestroy);
+                    # cleanup according to backup schedule
+                    @snapshots = @{$self->zZfs->listSnapshots($dstDataSet)};
+                    $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{"dst$key" . 'PlanHash'}, $timeStamp);
+                    syslog('info', 'cleaning up snapshots on ' . $dstDataSet);
+                    $self->zZfs->destroySnapshots($toDestroy);
+                }
             }
             #clean up source
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
@@ -220,6 +229,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
 =cut

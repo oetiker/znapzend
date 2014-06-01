@@ -40,7 +40,7 @@ sub daemonize {
    my $pidFile = $opts->{pidfile};
    if (defined $pidFile and -f $pidFile ) {
         chomp(my $pid = slurp $pidFile);
-        if (kill 0,$pid){
+        if (kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
         }
     }
@@ -62,7 +62,7 @@ sub daemonize {
         open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
         # send warnings and die messages to log
         $SIG{__WARN__} = sub { syslog('warning', shift) };
-        $SIG{__DIE__} = sub { return if $^S; syslog('err',shift); exit 1 };
+        $SIG{__DIE__} = sub { return if $^S; syslog('err', shift); exit 1 };
     }
 }
 
@@ -119,6 +119,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
 =cut
