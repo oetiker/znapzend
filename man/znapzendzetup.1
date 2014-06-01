@@ -137,9 +137,9 @@ znapzendzetup.pl \- znapzend setup utility
 where 'command' is one of the following:
 .PP
 .Vb 8
-\&    create [\-r] [\-\-mbuffer=path] <\-\-src\-plan=hash> <\-\-dst\-plan=hash> <src\-filesystem> <dst\-filesystem>
-\&    delete <src_filesystem>
-\&    edit [\-\-recursive=on|off] [\-\-mbuffer=path|off] [\-\-src\-plan=hash] [\-\-dst\-plan=hash] [\-\-dst=dst\-filesystem] <src\-filesystem>
+\&    create [\-r] [\-\-mbuffer=<path>] SRC plan filesystem [ DST[:key] plan [ [user@]host:]filesystem ]
+\&    delete [\-\-dst=key] <src_filesystem>
+\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] SRC [plan] filesystem [ DST:key [plan] [filesystem] ]
 \&    enable <src_filesystem>
 \&    disable <src_filesystem>
 \&    list [src_filesystem]
@@ -152,17 +152,16 @@ Znapzend is a snapshot based zfs backup daemon creating snapshots on a
 scheduled basis on the source filesystem and on a destination filesystem
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
-.Vb 6
-\&  znapzendzetup.pl create \e
-\&     \-\-recursive=on \e
-\&     \-\-src\-plan="1week=>1hour,1month=>1week" \e
-\&     \-\-dst\-plan="1day=>1hour,1week=>4hours,1month=>1day,1year=>3months" \e
-\&     tank/my\-valuable\-data \e
-\&     root@backuphost:backup\-tank/backup/my\-valuable\-data
+.Vb 4
+\&    znapzendzetup create \e
+\&    [\-r] [\-\-mbuffer=<path>] \e
+\&    SRC plan filesystem  \e
+\&    [ DST[:key] plan [[user@]host:]filesystem ] [DST[:key] ...]
 \&
-\&  znapzendzetup.pl edit \e
-\&     \-\-recursive=off \e
-\&     tank/my\-valuable\-data
+\&    znapzendzetup edit \e
+\&    [\-\-mbuffer=<path>|off] [\-\-recursive=on|off] \e
+\&    SRC [plan] filesystem \e
+\&    [ DST:key [plan] [filesystem] ]
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
@@ -187,4 +186,5 @@ Tobias\ Oetiker\ <tobi@oetiker.ch>
 Dominik\ Hassler
 .SH "HISTORY"
 .IX Header "HISTORY"
+2014\-06\-01 had Multi destination backup
 2014\-05\-30 had Initial Version
