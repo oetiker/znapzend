@@ -8,15 +8,13 @@ use ZnapZend::Time;
 has debug => sub { 0 };
 has noaction => sub { 0 };
 
-has properties => sub {
+#mandatory properties
+has mandProperties => sub {
     {
-        enabled => 'on|off',
-        recursive => 'on|off',
-        mbuffer => '###executable###',
-        src => '###dataset###',
-        dst => '###dataset###',
-        src_plan => '###backupplan###',
-        dst_plan => '###backupplan###',
+        enabled     => 'on|off',
+        recursive   => 'on|off',
+        src         => '###dataset###',
+        src_plan    => '###backupplan###',
     }
 };
 
@@ -57,10 +55,11 @@ my $checkBackupSets = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
-        for my $prop (keys $self->properties){
+        for my $prop (keys $self->mandProperties){
             die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n" if not exists $backupSet->{$prop};
 
-            for ($self->properties->{$prop}){
+            for ($self->mandProperties->{$prop}){
+                #check mandatory properties
                 /^###backupplan###$/ && do {
                     $backupSet->{$prop} = $self->$checkBackupPlan($backupSet->{$prop});
                     last;
@@ -69,18 +68,22 @@ my $checkBackupSets = sub {
                     $self->zfs->dataSetExists($backupSet->{$prop}) or die 'ERROR: filesystem ' . $backupSet->{$prop} . " does not exist\n";
                     last;
                 };
-                /^###executable###$/ && do {
-                    # property not set. that's ok
-                    $backupSet->{$prop} eq 'off' and last;
-                    # property set. check if executable is available on remote host
-                    my ($remote, $dataset) = $splitHostDataSet->($backupSet->{dst});
-                    my $file = ($remote ? "$remote:" : '') . $backupSet->{$prop};
-                    $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $backupSet->{$prop} . "' does not exist on $remote\n";
-                    last;
-                };
-                my @values = split /\|/, $self->properties->{$prop}, 2;
+                #check if properties are valid
+                my @values = split /\|/, $self->mandProperties->{$prop}, 2;
                 my $value = $backupSet->{$prop};
                 die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n" if not ( grep { /^$value$/ } @values);
+            }
+        }
+        #check destination plans and datasets
+        for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
+            $self->zfs->dataSetExists($backupSet->{$dst}) or die 'ERROR: filesystem ' . $backupSet->{$dst} . " does not exist\n";
+            $backupSet->{$dst . '_plan'} = $self->$checkBackupPlan($backupSet->{$dst . '_plan'});
+
+            # mbuffer property set? check if executable is available on remote host
+            if ($backupSet->{mbuffer} ne 'off'){
+                my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
+                my $file = ($remote ? "$remote:" : '') . $backupSet->{mbuffer};
+                $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $backupSet->{mbuffer} . "' does not exist on $remote\n";
             }
         }
     }
@@ -117,16 +120,21 @@ sub setBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
+    #check if source dataset exists and if source backup plan is valid
     $self->zfs->dataSetExists($dataSet) or die "ERROR: filesystem $dataSet does not exist\n";
-    $self->zfs->dataSetExists($self->cfg->{dst}) or die 'ERROR: filesystem ' . $self->cfg->{dst} . " does not exist\n";
     $self->cfg->{src_plan} = $self->$checkBackupPlan($self->cfg->{src_plan}) or die "ERROR: src backup plan not valid\n";
-    $self->cfg->{dst_plan} = $self->$checkBackupPlan($self->cfg->{dst_plan}) or die "ERROR: dst backup plan not valid\n";
 
-    if ($self->cfg->{mbuffer} ne 'off'){
-        # property set. check if executable is available on remote host
-        my ($remote, $dataset) = $splitHostDataSet->($self->cfg->{dst});
-        my $file = ($remote ? "$remote:" : '') . $self->cfg->{mbuffer};
-        $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
+    #check if destination datasets exist anf if destination backup plans are valid
+    for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
+        $self->zfs->dataSetExists($self->cfg->{$dst}) or die 'ERROR: filesystem ' . $self->cfg->{$dst} . " does not exist\n";
+        $self->cfg->{$dst. '_plan'} = $self->$checkBackupPlan($self->cfg->{$dst . '_plan'}) or die "ERROR: dst backup plan not valid\n";
+
+        if ($self->cfg->{mbuffer} ne 'off'){
+            # property set. check if executable is available on remote host
+            my ($remote, $dataset) = $splitHostDataSet->($self->cfg->{$dst});
+            my $file = ($remote ? "$remote:" : '') . $self->cfg->{mbuffer};
+            $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
+        }
     }
 
     $self->zfs->setDataSetProperties($dataSet, $self->cfg);
@@ -138,6 +146,15 @@ sub deleteBackupSet {
     my $dataSet = shift;
 
     $self->zfs->deleteDataSetProperties($dataSet);
+    return 1;
+}
+
+sub deleteBackupDestination {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dst = shift;
+
+    $self->zfs->deleteBackupDestination($dataSet, $dst);
     return 1;
 }
 
@@ -226,6 +243,10 @@ stores the backup settings (in attribute cfg) to the dataset
 
 deletes a backup set (does NOT remove snapshots)
 
+=head2 deleteBackupDestination
+
+removes a destination from a backup set
+
 =head2 enableBackupSet
 
 enables a backup set
@@ -260,6 +281,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
 =cut

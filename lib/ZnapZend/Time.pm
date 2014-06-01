@@ -152,6 +152,8 @@ sub getSnapshotsToDestroy {
                 last;
             }
         }
+        #maxAge should never be 0 or less, still do a check for safety
+        die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n" if not $maxAge > 0;
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
             push @toDestroy, $snapshot;
@@ -252,6 +254,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
 =cut
