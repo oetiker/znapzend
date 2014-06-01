@@ -230,7 +230,7 @@ sub getDataSetProperties {
     my @propertyList;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets;
+    my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
     
     for my $listElem (@{$list}){
         my %properties;

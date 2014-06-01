@@ -36,7 +36,6 @@ my $killThemAll  = sub {
     exit(0);
 };
 
-
 my $refreshLastSnapshot = sub {
     my $self = shift;
     my $backupSet = shift;
@@ -121,7 +120,7 @@ my $checkSendRecvCleanup = sub {
     }
 };
 
-### main ###
+### start znapzend main loop ###
 sub start {
     my $self = shift;
     
