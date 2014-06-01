@@ -36,18 +36,6 @@ my $killThemAll  = sub {
     exit(0);
 };
 
-my $refreshLastSnapshot = sub {
-    my $self = shift;
-    my $backupSet = shift;
-
-    #get common snapshots for all destinations
-    for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
-        my ($lastSnap, $lastCommonSnap) = $self->zZfs->lastAndCommonSnapshots($backupSet->{src}, $backupSet->{$dst});
-        $backupSet->{lastSnap} = $lastSnap // '';
-        $backupSet->{"lastCommon$dst"} = $lastCommonSnap // '';
-    }
-};
-                          
 my $refreshBackupPlans = sub {
     my $self = shift;
     $self->backupSets($self->zConfig->getBackupSetEnabled());
@@ -62,7 +50,6 @@ my $refreshBackupPlans = sub {
             $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
-#       $self->$refreshLastSnapshot($backupSet);
     }
 };
 
