@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-05-31" "0.1.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-06-01" "0.2.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -136,22 +136,34 @@ znapzendzetup.pl \- znapzend setup utility
 \&\fBznapzendzetup.pl\fR command [\fIoptions...\fR]
 where 'command' is one of the following:
 .PP
-.Vb 7
-\&    create [\-r] [\-\-mbuffer=path] <\-\-src\-plan=hash> <\-\-dst\-plan=hash> <src_filesystem> <dst_filesystem>
+.Vb 8
+\&    create [\-r] [\-\-mbuffer=path] <\-\-src\-plan=hash> <\-\-dst\-plan=hash> <src\-filesystem> <dst\-filesystem>
 \&    delete <src_filesystem>
+\&    edit [\-\-recursive=on|off] [\-\-mbuffer=path|off] [\-\-src\-plan=hash] [\-\-dst\-plan=hash] [\-\-dst=dst\-filesystem] <src\-filesystem>
 \&    enable <src_filesystem>
 \&    disable <src_filesystem>
 \&    list [src_filesystem]
 \&    help
 \&    man
 .Ve
-.PP
-e.g. znapzendzetup.pl create \-r \-\-src\-plan=\*(L"1w=>1h,1month=>1w\*(R" \e
-\&\-\-dst\-plan=\*(L"1d=>1h,1w=>4h,1m=>1d,1y=3m\*(R" tank/my\-valuable\-data \e 
-root@backuphost:backup\-tank/backup/my\-valuable\-data
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on a destination filesystem
+Znapzend is a snapshot based zfs backup daemon creating snapshots on a
+scheduled basis on the source filesystem and on a destination filesystem
+.SH "EXAMPLE"
+.IX Header "EXAMPLE"
+.Vb 6
+\&  znapzendzetup.pl create \e
+\&     \-\-recursive=on \e
+\&     \-\-src\-plan="1week=>1hour,1month=>1week" \e
+\&     \-\-dst\-plan="1day=>1hour,1week=>4hours,1month=>1day,1year=>3months" \e
+\&     tank/my\-valuable\-data \e
+\&     root@backuphost:backup\-tank/backup/my\-valuable\-data
+\&
+\&  znapzendzetup.pl edit \e
+\&     \-\-recursive=off \e
+\&     tank/my\-valuable\-data
+.Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2014 by \s-1OETIKER+PARTNER\s0 \s-1AG\s0. All rights reserved.
