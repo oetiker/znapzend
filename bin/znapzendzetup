@@ -169,15 +169,27 @@ znapzendzetup.pl - znapzend setup utility
 =head1 SYNOPSIS
 
 B<znapzendzetup.pl> command [I<options...>]
+
 where 'command' is one of the following:
 
-    create [-r] [--mbuffer=<path>] SRC plan filesystem [ DST[:key] plan [ [user@]host:]filesystem ]
-    delete [--dst=key] <src_filesystem>
-    edit [--recursive=on|off] [--mbuffer=<path>|off] SRC [plan] filesystem [ DST:key [plan] [filesystem] ]
+    create [-r] [--mbuffer=<path>] \
+           SRC plan dataset \
+           [ DST[:key] plan [[user@]host:]dataset ]
+
+    delete [--dst=key] <src_dataset>
+
+    edit [--recursive=on|off] [--mbuffer=<path>|off] \
+           SRC [plan] dataset \
+           [ DST:key [plan] [dataset] ]
+
     enable <src_filesystem>
+
     disable <src_filesystem>
+
     list [src_filesystem]
+
     help
+
     man
 
 =head1 DESCRIPTION
@@ -185,17 +197,43 @@ where 'command' is one of the following:
 Znapzend is a snapshot based zfs backup daemon creating snapshots on a
 scheduled basis on the source filesystem and on a destination filesystem
 
+=head2 Create Command
+
+The heart of the znapzend backup is the plan. The plan specifies how often
+to backup and for how long to keep the backups.  A plan is required both for
+the source and the destination datasets.
+
+The plan consists of a series on retension periodes to interval
+associations:
+
+  retA=>intA,retB=>intB,...
+
+Both intervals and retension periods are expressed in standard units of time
+or multiples of them. You can use both the full name or a shortcut according
+to the following table:
+
+ sec|s
+ minute|min|M
+ hour|h
+ day|d
+ week|w
+ mon|month|m
+ year|y
+
+To keep one copy every 30 minutes for one week, specify:
+ 
+ 1week=>30min
+
+To keep one copy every two days for 10 years:
+
+ 2day=>10year
+
 =head1 EXAMPLE
 
-    znapzendzetup create \
-    [-r] [--mbuffer=<path>] \
-    SRC plan filesystem  \
-    [ DST[:key] plan [[user@]host:]filesystem ] [DST[:key] ...]
-
-    znapzendzetup edit \
-    [--mbuffer=<path>|off] [--recursive=on|off] \
-    SRC [plan] filesystem \
-    [ DST:key [plan] [filesystem] ]
+    znapzendzetup create --mbuffer=/opt/omni/bin/mbuffer \
+       SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
+       DST:a 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
+       DST:b 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
 
 =head1 COPYRIGHT
 
