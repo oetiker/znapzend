@@ -40,7 +40,7 @@ my $refreshBackupPlans = sub {
     my $self = shift;
     $self->backupSets($self->zConfig->getBackupSetEnabled());
 
-    die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup.pl' to setup znapzend\n" if not @{$self->backupSets};
+    die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n" if not @{$self->backupSets};
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
