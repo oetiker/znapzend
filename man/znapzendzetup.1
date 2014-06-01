@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-06-01" "0.2.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-06-01" "0.3.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -134,34 +134,79 @@ znapzendzetup.pl \- znapzend setup utility
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 \&\fBznapzendzetup.pl\fR command [\fIoptions...\fR]
+.PP
 where 'command' is one of the following:
 .PP
-.Vb 8
-\&    create [\-r] [\-\-mbuffer=<path>] SRC plan filesystem [ DST[:key] plan [ [user@]host:]filesystem ]
-\&    delete [\-\-dst=key] <src_filesystem>
-\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] SRC [plan] filesystem [ DST:key [plan] [filesystem] ]
+.Vb 3
+\&    create [\-r] [\-\-mbuffer=<path>] \e
+\&           SRC plan dataset \e
+\&           [ DST[:key] plan [[user@]host:]dataset ]
+\&
+\&    delete [\-\-dst=key] <src_dataset>
+\&
+\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] \e
+\&           SRC [plan] dataset \e
+\&           [ DST:key [plan] [dataset] ]
+\&
 \&    enable <src_filesystem>
+\&
 \&    disable <src_filesystem>
+\&
 \&    list [src_filesystem]
+\&
 \&    help
+\&
 \&    man
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 Znapzend is a snapshot based zfs backup daemon creating snapshots on a
 scheduled basis on the source filesystem and on a destination filesystem
+.SS "Create Command"
+.IX Subsection "Create Command"
+The heart of the znapzend backup is the plan. The plan specifies how often
+to backup and for how long to keep the backups.  A plan is required both for
+the source and the destination datasets.
+.PP
+The plan consists of a series on retension periodes to interval
+associations:
+.PP
+.Vb 1
+\&  retA=>intA,retB=>intB,...
+.Ve
+.PP
+Both intervals and retension periods are expressed in standard units of time
+or multiples of them. You can use both the full name or a shortcut according
+to the following table:
+.PP
+.Vb 7
+\& sec|s
+\& minute|min|M
+\& hour|h
+\& day|d
+\& week|w
+\& mon|month|m
+\& year|y
+.Ve
+.PP
+To keep one copy every 30 minutes for one week, specify:
+.PP
+.Vb 1
+\& 1week=>30min
+.Ve
+.PP
+To keep one copy every two days for 10 years:
+.PP
+.Vb 1
+\& 2day=>10year
+.Ve
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 .Vb 4
-\&    znapzendzetup create \e
-\&    [\-r] [\-\-mbuffer=<path>] \e
-\&    SRC plan filesystem  \e
-\&    [ DST[:key] plan [[user@]host:]filesystem ] [DST[:key] ...]
-\&
-\&    znapzendzetup edit \e
-\&    [\-\-mbuffer=<path>|off] [\-\-recursive=on|off] \e
-\&    SRC [plan] filesystem \e
-\&    [ DST:key [plan] [filesystem] ]
+\&    znapzendzetup create \-\-mbuffer=/opt/omni/bin/mbuffer \e
+\&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
+\&       DST:a 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
+\&       DST:b 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
