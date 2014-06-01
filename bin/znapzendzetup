@@ -52,7 +52,7 @@ sub main{
         $opts->{src} = pop @ARGV;
         pod2usage(1) if not defined $opts->{src};
 
-        my $backupSets = $zConfig->getBackupSet($opts->{src}) or die "ERROR: cannot list backup config\n";
+        my $backupSets = $zConfig->getBackupSet($opts->{src}) or die "ERROR: cannot get backup config\n";
 
         if (@{$backupSets}){
             #get active backup config
@@ -67,7 +67,7 @@ sub main{
             $zConfig->setBackupSet($opts->{src}) or die "ERROR: cannot edit backup config for $opts->{src}\n";
         }
         else{
-            die "ERROR: backup on $opts->{src} is not set up, yet. use 'znapzend create'\n";
+            die "ERROR: backup on $opts->{src} is not set up, yet. use 'znapzendzetup create'\n";
         }
 
         last;
