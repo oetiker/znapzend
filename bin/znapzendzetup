@@ -128,20 +128,30 @@ where 'command' is one of the following:
 
     create [-r] [--mbuffer=path] <--src-plan=hash> <--dst-plan=hash> <src-filesystem> <dst-filesystem>
     delete <src_filesystem>
-    edit [--recursive=on|off] [--mbuffer=path|off] [--src-plan=hash] [--dst-plan=hash] [dst=dst-filesystem] <src-filesystem>
+    edit [--recursive=on|off] [--mbuffer=path|off] [--src-plan=hash] [--dst-plan=hash] [--dst=dst-filesystem] <src-filesystem>
     enable <src_filesystem>
     disable <src_filesystem>
     list [src_filesystem]
     help
     man
 
-e.g. znapzendzetup.pl create -r --src-plan="1w=>1h,1month=>1w" \
---dst-plan="1d=>1h,1w=>4h,1m=>1d,1y=3m" tank/my-valuable-data \ 
-root@backuphost:backup-tank/backup/my-valuable-data
-
 =head1 DESCRIPTION
 
-znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on a destination filesystem
+Znapzend is a snapshot based zfs backup daemon creating snapshots on a
+scheduled basis on the source filesystem and on a destination filesystem
+
+=head1 EXAMPLE
+
+  znapzendzetup.pl create \
+     --recursive=on \
+     --src-plan="1week=>1hour,1month=>1week" \
+     --dst-plan="1day=>1hour,1week=>4hours,1month=>1day,1year=>3months" \
+     tank/my-valuable-data \
+     root@backuphost:backup-tank/backup/my-valuable-data
+
+  znapzendzetup.pl edit \
+     --recursive=off \
+     tank/my-valuable-data
 
 =head1 COPYRIGHT
 
