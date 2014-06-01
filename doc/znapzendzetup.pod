@@ -1,6 +1,6 @@
 =head1 NAME
 
-znapzendzetup.pl - znapzend setup utility
+znapzendzetup - znapzend setup utility
 
 =head1 SYNOPSIS
 

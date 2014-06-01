@@ -1,6 +1,6 @@
 =head1 NAME
 
-znapzend.pl - znapzend daemon
+znapzend - znapzend daemon
 
 =head1 SYNOPSIS
 
