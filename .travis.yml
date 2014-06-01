@@ -1,0 +1,18 @@
+language: perl
+
+perl:
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+
+before_script:
+  - sudo ./setup/build-thirdparty.sh /opt/znapzend/thirdparty
+
+script:
+  - ./configure --prefix=/opt/znapzend
+  - sudo make install
+  - /opt/znapzend/bin/znapzend --help || test $? == 1 
+  - /opt/znapzend/bin/znapzendzetup --help || test $? == 1 
+
+
