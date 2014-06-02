@@ -246,7 +246,7 @@ as getBackupSet but returns only backup sets which are enabled
 
 =head2 checkBackupSet
 
-chechks a backup set validity.
+checks a backup set validity.
 
 =head2 setBackupSet
 
