@@ -10,7 +10,7 @@ before_install:
 
 before_script:
   - sudo ./setup/build-thirdparty.sh /opt/znapzend/thirdparty
-  - sudo ./setup/build-cover.sh /opt/znapzend/thirdparty
+  - sudo ./setup/build-devel.sh /opt/znapzend/thirdparty
 
 script:
   - ./configure --prefix=/opt/znapzend
