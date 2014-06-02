@@ -11,7 +11,23 @@ use Pod::Usage 1.14;
 use Mojo::Base -strict;
 use ZnapZend::Config;
 
-sub main{
+sub dumpProperties {
+    my $props = shift;
+
+    for my $backupSet (@{$props}){
+        print "*** backup plan: $backupSet->{src} ***\n";
+        for my $opt (sort keys %{$backupSet}){ 
+            #singular plural check on backup plans. if value is 1, remove trailing 's'
+            if ($opt =~ /plan$/){
+                $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
+            }
+            print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
+        }
+        print "\n";
+    }
+}
+
+sub main {
     my $mainOpt = shift;
     my $zConfig = ZnapZend::Config->new();
     my $opts = {};
@@ -53,8 +69,16 @@ sub main{
             $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
-
+        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        
+        dumpProperties([$zConfig->cfg]);
+        #ask user if backup plan shall be stored
+        print "Do you want to save this backup set (y/N)? ";
+        my $check = <STDIN>;
+        chomp ($check);
+        if ($check =~ /^y(es)?$/i){
+            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        }
         last;
     };
     /^delete$/ && do {
@@ -112,8 +136,18 @@ sub main{
         for (keys %backupSet){
             $zConfig->cfg->{$_} = $backupSet{$_};
         }
-        #write new config
-        $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        #check new backup set
+        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        
+        dumpProperties([$zConfig->cfg]);
+        #ask user if backup plan shall be stored
+        print "Do you want to save this modified backup set (y/N)? ";
+        my $check = <STDIN>;
+        chomp ($check);
+        if ($check =~ /^y(es)?$/i){
+            #write new backup set
+            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        }
 
         last;
     };
@@ -134,17 +168,7 @@ sub main{
     /^list$/ && do {
         my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
 
-        for my $backupSet (@{$backupSets}){
-            print "*** backup plan: $backupSet->{src} ***\n";
-            for my $opt (sort keys %{$backupSet}){ 
-                #singular plural check on backup plans. if value is 1, remove trailing 's'
-                if ($opt =~ /plan$/){
-                    $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
-                }
-                print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
-            }
-            print "\n";
-        }
+        dumpProperties($backupSets);
         last;
     };
     /^man$/ && do {
