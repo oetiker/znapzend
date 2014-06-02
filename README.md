@@ -14,21 +14,21 @@ itself.
 To zetup znapzend follow these zimple instructions
 
 ```sh
-# wget https://github.com/oetiker/znapzend/releases/download/v0.3.0/znapzend-0.3.0.tar.gz
-# tar zxvf znapzend-0.3.0.tar.gz
-# cd znapzend-0.3.0
-# ./configure --prefix=/opt/znapzend-0.3.0
+wget https://github.com/oetiker/znapzend/releases/download/v0.3.0/znapzend-0.3.0.tar.gz
+tar zxvf znapzend-0.3.0.tar.gz
+cd znapzend-0.3.0
+./configure --prefix=/opt/znapzend-0.3.0
 ```
 if configure complains about missing perl modules, run
 
 ```sh
-# ./setup/build-thirdparty.sh /opt/znapzend-0.3.0/thirdparty
+./setup/build-thirdparty.sh /opt/znapzend-0.3.0/thirdparty
 ```
 
 now you can run configure again and then
 
 ```sh
-# make install
+make install
 ```
 
 now you can configure the thing with the znapzendzetup program
