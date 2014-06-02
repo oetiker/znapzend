@@ -138,7 +138,7 @@ znapzendzetup \- znapzend setup utility
 where 'command' is one of the following:
 .PP
 .Vb 3
-\&    create [\-r] [\-\-mbuffer=<path>] \e
+\&    create [\-\-recursive] [\-\-mbuffer=<path>] \e
 \&           SRC plan dataset \e
 \&           [ DST[:key] plan [[user@]host:]dataset ]
 \&
@@ -165,22 +165,22 @@ scheduled basis on the source filesystem and on a destination filesystem
 .SS "Create Command"
 .IX Subsection "Create Command"
 The heart of the znapzend backup is the plan. The plan specifies how often
-to backup and for how long to keep the backups.  A plan is required both for
+to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
 .PP
-The plan consists of a series on retension periodes to interval
+The plan consists of a series of retention periodes to interval
 associations:
 .PP
 .Vb 1
 \&  retA=>intA,retB=>intB,...
 .Ve
 .PP
-Both intervals and retension periods are expressed in standard units of time
+Both intervals and retention periods are expressed in standard units of time
 or multiples of them. You can use both the full name or a shortcut according
 to the following table:
 .PP
 .Vb 7
-\& sec|s
+\& second|sec|s
 \& minute|min|M
 \& hour|h
 \& day|d
@@ -198,15 +198,15 @@ To keep one copy every 30 minutes for one week, specify:
 To keep one copy every two days for 10 years:
 .PP
 .Vb 1
-\& 2day=>10year
+\& 10year=>2day
 .Ve
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 .Vb 4
 \&    znapzendzetup create \-\-mbuffer=/opt/omni/bin/mbuffer \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
-\&       DST:a 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
-\&       DST:b 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
+\&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
+\&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
 .Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
