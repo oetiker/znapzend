@@ -79,15 +79,18 @@ my $checkSendRecvCleanup = sub {
         my $pid = fork();
         die "ERROR: could not fork child process\n" if not defined $pid;
         if(!$pid){
-
             my @snapshots;
             my $toDestroy;
+
+            #get all sub datasets of source filesystem; need to send them all individually if recursive
+            my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+
             #loop through all destinations
             for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
                 my ($key) = $dst =~ /dst_([^_]+)$/;
                 syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{$dst});
-                #get all sub datasets of source filesystem; need to send them all individually if recursive
-                my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+
+                #loop through all subdatasets
                 for my $srcDataSet (@{$srcSubDataSets}){
                     my $dstDataSet = $srcDataSet;
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
@@ -101,16 +104,21 @@ my $checkSendRecvCleanup = sub {
                     $self->zZfs->destroySnapshots($toDestroy);
                 }
             }
-            #clean up source
-            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src})};
-            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp);
-            syslog('info', 'cleaning up snapshots on ' . $backupSet->{src});
-            $self->zZfs->destroySnapshots($toDestroy);
+
+            #cleanup source
+            for my $srcDataSet (@{$srcSubDataSets}){
+                # cleanup according to backup schedule
+                @snapshots = @{$self->zZfs->listSnapshots($srcDataSet)};
+                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp);
+                syslog('info', 'cleaning up snapshots on ' . $srcDataSet);
+                $self->zZfs->destroySnapshots($toDestroy);
+            }
 
             #exit the forked worker
             exit(0);
         }
         else {
+            #parent process, save child pid
             $backupSet->{childPid} = $pid;
         }
     }
