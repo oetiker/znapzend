@@ -7,15 +7,16 @@ perl:
   - "5.14"
 
 before_install:
-  cpanm -n Devel::Cover::Report::Coveralls
 
 before_script:
   - sudo ./setup/build-thirdparty.sh /opt/znapzend/thirdparty
+  - sudo ./setup/build-cover.sh /opt/znapzend/thirdparty
 
 script:
   - ./configure --prefix=/opt/znapzend
   - sudo make install
+  - EXPORT PERL5LIB=/opt/znapzend/thirdparty/lib/perl5
   - perl -MDevel::Cover /opt/znapzend/bin/znapzend --help || test $? == 1 
   - perl -MDevel::Cover /opt/znapzend/bin/znapzendzetup --help || test $? == 1 
-  - cover -test -report coveralls
+  - /opt/znapzend/thirdparty/bin/cover -test -report coveralls
 
