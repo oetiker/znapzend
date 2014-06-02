@@ -21,10 +21,10 @@ sub main{
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, qw(r mbuffer=s)) or exit(1);
+        GetOptions($opts, qw(recursive|r mbuffer=s)) or exit(1);
 
         $zConfig->cfg->{enabled}    = 'on';
-        $zConfig->cfg->{recursive}  = $opts->{r} ? 'on' : 'off';
+        $zConfig->cfg->{recursive}  = $opts->{recursive} ? 'on' : 'off';
         $zConfig->cfg->{mbuffer}    = $opts->{mbuffer} || 'off';
 
         my $key = 0;
@@ -172,7 +172,7 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [-r] [--mbuffer=<path>] \
+    create [--recursive] [--mbuffer=<path>] \
            SRC plan dataset \
            [ DST[:key] plan [[user@]host:]dataset ]
 
