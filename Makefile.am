@@ -25,7 +25,7 @@ PM :=  $(shell find lib/ -name "*.pm")
 MAN = man/znapzend.1 man/znapzendzetup.1
 
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = COPYRIGHT README LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
+EXTRA_DIST = COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -49,7 +49,7 @@ man/znapzendzetup.1: bin/znapzendzetup
 	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 	grep -A100000 '=head1 NAME' $< > doc/znapzendzetup.pod
 
-README COPYRIGHT: VERSION
+README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
 
 install-exec-hook:
