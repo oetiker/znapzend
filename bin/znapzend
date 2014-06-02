@@ -78,7 +78,7 @@ znapzend - znapzend daemon
 
 =head1 SYNOPSIS
 
-B<znapzend.pl> [I<options>...]
+B<znapzend> [I<options>...]
 
  --man         show man-page and exit
  -h,--help     display this help and exit 

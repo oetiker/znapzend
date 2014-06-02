@@ -168,7 +168,7 @@ znapzendzetup - znapzend setup utility
 
 =head1 SYNOPSIS
 
-B<znapzendzetup.pl> command [I<options...>]
+B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
