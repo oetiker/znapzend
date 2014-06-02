@@ -13,6 +13,7 @@ has sshCmdArray => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cip
 #has sshCmdStr => sub { join ' ', @{shift->sshCmdArray} }; 
 has snapshotFilter => sub { qr/\d{4}-\d{2}-\d{2}-\d{6}/ };
 has mbufferParam => sub { [qw(-s 128k -m 1G -q)] };
+has scrubInProgress => sub { qr/scrub in progress/ };
 
 ### private functions ###
 my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
@@ -79,6 +80,20 @@ my $sendRecvSnapshots = sub {
         $exec ? exec($cmd) : system($cmd);
         die "ERROR: cannot send snapshot to $remote ($?)\n" if $?;
     }
+    return 1;
+};
+
+my $scrubZpool = sub {
+    my $self = shift;
+    my $startstop = shift;
+    my $zpool = shift;
+    
+    my ($remote, $pool) = $splitHostDataSet->($zpool);
+    my @cmd = $startstop ? qw(zpool scrub) : qw(zpool scrub -s);
+
+    my @ssh = $self->$buildRemote($remote, [@cmd, $pool]);
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    (system(@ssh) and die 'ERROR: could not ' . ($startstop ? 'start' : 'stop') .  " scrub on $pool") if not $self->noaction;
     return 1;
 };
 
@@ -161,7 +176,7 @@ sub createSnapshot {
     my $recursive = $_[0] ? '-r' : '';
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote,[qw(zfs snapshot), $recursive, $dataSet]);
+    my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), $recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
     (system(@ssh) and die "ERROR: cannot create snapshot $dataSet\n") if not $self->noaction;
@@ -299,7 +314,8 @@ sub deleteBackupDestination {
     @cmd = (qw(zfs inherit), $dst . '_plan', $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     (system(@cmd) and die "ERROR: could not reset property on $dataSet\n") if not $self->noaction;
-};
+    return 1;
+}
 
 sub fileExistsAndExec {
     my $self = shift;
@@ -307,10 +323,64 @@ sub fileExistsAndExec {
 
     my ($remote, $file) = $splitHostDataSet->($filePath);
     
-    my @ssh =  $self->$buildRemote($remote,[qw(test -x), $file]);
+    my @ssh = $self->$buildRemote($remote, [qw(test -x), $file]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     return not system(@ssh);
+}
+
+sub listPools {
+    my $self = shift;
+    my $remote = shift;
+
+    my @ssh = $self->$buildRemote($remote, [qw(zpool list -H -o name)]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $zPools, '-|', @ssh) or die 'ERROR: cannot get zpools' . ($remote ? " on $remote\n" : "\n");
+    my @zPools = <$zPools>;
+    chomp(@zPools);
+
+    return \@zPools;
+}
+
+sub startScrub {
+    my $self = shift;
+    #zpool is second argument
+
+    return $self->$scrubZpool(1, @_);
+}
+
+sub stopScrub {
+    my $self = shift;
+    #zpool is second argument
+
+    return $self->$scrubZpool(0, @_);
+}
+
+sub zpoolStatus {
+    my $self = shift;
+    my $zpool = shift;
+
+    my ($remote, $pool) = $splitHostDataSet->($zpool);
+
+    my @ssh = $self->$buildRemote($remote, [qw(zpool status -v), $pool]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $pool\n";
+
+    my @status = <$zpoolStatus>;
+    chomp(@status);
+
+    return \@status;
+}
+
+sub scrubActive {
+    my $self = shift;
+    #zpool is second argument
+     
+    my $scrubProgress = $self->scrubInProgress;
+
+    return grep { /$scrubProgress/ } @{$self->zpoolStatus(@_)};
 }
 
 1;
@@ -404,6 +474,26 @@ remove a backup destination from a backup plan
 
 checks if a file exists and has the executable flag set on localhost or a remote host
 
+=head2 listPools
+
+lists zpools on localhost or a remote host
+
+=head2 startScrub
+
+stats scrub on a zpool
+
+=head2 stopScrub
+
+stops scrub on a zpool
+
+=head2 zpoolStatus
+
+returns status info of a zpool
+
+=head2 scrubActive
+
+returns whether scrub is active on zpool or not
+
 =head1 COPYRIGHT
 
 Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
@@ -430,6 +520,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-02 had zpool functionality added
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
