@@ -11,7 +11,23 @@ use Pod::Usage 1.14;
 use Mojo::Base -strict;
 use ZnapZend::Config;
 
-sub main{
+sub dumpProperties {
+    my $props = shift;
+
+    for my $backupSet (@{$props}){
+        print "*** backup plan: $backupSet->{src} ***\n";
+        for my $opt (sort keys %{$backupSet}){ 
+            #singular plural check on backup plans. if value is 1, remove trailing 's'
+            if ($opt =~ /plan$/){
+                $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
+            }
+            print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
+        }
+        print "\n";
+    }
+}
+
+sub main {
     my $mainOpt = shift;
     my $zConfig = ZnapZend::Config->new();
     my $opts = {};
@@ -53,8 +69,16 @@ sub main{
             $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
-
+        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        
+        dumpProperties([$zConfig->cfg]);
+        #ask user if backup plan shall be stored
+        print "Do you want to save this backup set (y/N)? ";
+        my $check = <STDIN>;
+        chomp ($check);
+        if ($check =~ /^y(es)?$/i){
+            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        }
         last;
     };
     /^delete$/ && do {
@@ -112,8 +136,18 @@ sub main{
         for (keys %backupSet){
             $zConfig->cfg->{$_} = $backupSet{$_};
         }
-        #write new config
-        $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        #check new backup set
+        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        
+        dumpProperties([$zConfig->cfg]);
+        #ask user if backup plan shall be stored
+        print "Do you want to save this modified backup set (y/N)? ";
+        my $check = <STDIN>;
+        chomp ($check);
+        if ($check =~ /^y(es)?$/i){
+            #write new backup set
+            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+        }
 
         last;
     };
@@ -134,17 +168,7 @@ sub main{
     /^list$/ && do {
         my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
 
-        for my $backupSet (@{$backupSets}){
-            print "*** backup plan: $backupSet->{src} ***\n";
-            for my $opt (sort keys %{$backupSet}){ 
-                #singular plural check on backup plans. if value is 1, remove trailing 's'
-                if ($opt =~ /plan$/){
-                    $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
-                }
-                print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
-            }
-            print "\n";
-        }
+        dumpProperties($backupSets);
         last;
     };
     /^man$/ && do {
@@ -200,19 +224,19 @@ scheduled basis on the source filesystem and on a destination filesystem
 =head2 Create Command
 
 The heart of the znapzend backup is the plan. The plan specifies how often
-to backup and for how long to keep the backups. A plan is required both for
+to backup and for how long to keep the backups.  A plan is required both for
 the source and the destination datasets.
 
-The plan consists of a series of retention periodes to interval
+The plan consists of a series on retension periodes to interval
 associations:
 
   retA=>intA,retB=>intB,...
 
-Both intervals and retention periods are expressed in standard units of time
+Both intervals and retension periods are expressed in standard units of time
 or multiples of them. You can use both the full name or a shortcut according
 to the following table:
 
- second|sec|s
+ sec|s
  minute|min|M
  hour|h
  day|d
@@ -226,14 +250,14 @@ To keep one copy every 30 minutes for one week, specify:
 
 To keep one copy every two days for 10 years:
 
- 10year=>2day
+ 2day=>10year
 
 =head1 EXAMPLE
 
     znapzendzetup create --mbuffer=/opt/omni/bin/mbuffer \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
-       DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
-       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+       DST:a 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
+       DST:b 7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
 
 =head1 COPYRIGHT
 

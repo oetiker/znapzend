@@ -116,7 +116,7 @@ sub getBackupSetEnabled {
     return $self->$getBackupSet(1, @_);
 }
 
-sub setBackupSet {
+sub checkBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
@@ -136,6 +136,15 @@ sub setBackupSet {
             $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
         }
     }
+    return $self->cfg;
+}
+
+sub setBackupSet {
+    my $self = shift;
+    my $dataSet = shift;
+    
+    #main program should check backup set prior to set it. anyway, check again just to be sure
+    $self->checkBackupSet($dataSet);
 
     $self->zfs->setDataSetProperties($dataSet, $self->cfg);
     return 1;
@@ -234,6 +243,10 @@ returns the backup settings for a dataset or all datasets if dataset is omitted
 =head2 getBackupSetEnabled
 
 as getBackupSet but returns only backup sets which are enabled
+
+=head2 checkBackupSet
+
+chechks a backup set validity.
 
 =head2 setBackupSet
 
