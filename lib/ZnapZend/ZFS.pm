@@ -520,6 +520,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-02 had zpool functionality added
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
