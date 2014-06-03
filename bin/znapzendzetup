@@ -73,10 +73,10 @@ sub main {
         
         dumpProperties([$zConfig->cfg]);
         #ask user if backup plan shall be stored
-        print "Do you want to save this backup set (y/N)? ";
+        print "Do you want to save this backup set [y/N]? ";
         my $check = <STDIN>;
         chomp ($check);
-        if ($check =~ /^y(es)?$/i){
+        if ($check =~ /^y(?:es)?$/i){
             $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }
         last;
@@ -141,10 +141,10 @@ sub main {
         
         dumpProperties([$zConfig->cfg]);
         #ask user if backup plan shall be stored
-        print "Do you want to save this modified backup set (y/N)? ";
+        print "Do you want to save this modified backup set [y/N]? ";
         my $check = <STDIN>;
         chomp ($check);
-        if ($check =~ /^y(es)?$/i){
+        if ($check =~ /^y(?:es)?$/i){
             #write new backup set
             $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }

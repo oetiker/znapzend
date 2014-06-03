@@ -50,6 +50,7 @@ my $refreshBackupPlans = sub {
             $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
+        syslog('info', "found a valid backup plan for $backupSet->{src}...");
     }
 };
 
@@ -88,13 +89,13 @@ my $checkSendRecvCleanup = sub {
             #loop through all destinations
             for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
                 my ($key) = $dst =~ /dst_([^_]+)$/;
-                syslog('info', 'sending snapshots from ' . $backupSet->{src} . ' to ' . $backupSet->{$dst});
 
                 #loop through all subdatasets
                 for my $srcDataSet (@{$srcSubDataSets}){
                     my $dstDataSet = $srcDataSet;
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
+                    syslog('info', 'sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer});
             
                     # cleanup according to backup schedule
@@ -149,7 +150,7 @@ sub start {
         # check if we need to snapshot, since we start polling if child is active and might be early
         if (time() >= $timeStamp){
             for my $backupSet (@{$actionList}){
-                syslog('info', 'creating snapshot on ' . $backupSet->{src});
+                syslog('info', 'creating ' . ($backupSet->{recursive} ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
                 my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp);
                 $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive});
         
