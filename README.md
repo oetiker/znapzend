@@ -1,4 +1,4 @@
-ZnapZend 0.4.0
+ZnapZend 0.4.1
 --------------
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -14,15 +14,15 @@ itself.
 To zetup znapzend follow these zimple inztructionz
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.4.0/znapzend-0.4.0.tar.gz
-tar zxvf znapzend-0.4.0.tar.gz
-cd znapzend-0.4.0
-./configure --prefix=/opt/znapzend-0.4.0
+wget https://github.com/oetiker/znapzend/releases/download/v0.4.1/znapzend-0.4.1.tar.gz
+tar zxvf znapzend-0.4.1.tar.gz
+cd znapzend-0.4.1
+./configure --prefix=/opt/znapzend-0.4.1
 ```
 if configure complains about missing perl modules, run
 
 ```sh
-./setup/build-thirdparty.sh /opt/znapzend-0.4.0/thirdparty
+./setup/build-thirdparty.sh /opt/znapzend-0.4.1/thirdparty
 ```
 
 now you can run configure again and then
