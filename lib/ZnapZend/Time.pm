@@ -29,7 +29,6 @@ has configUnits => sub {
     }
 };
 
-
 has unitFactors => sub {
     {
         years   => 3600 * 24 * 366,
@@ -42,8 +41,27 @@ has unitFactors => sub {
     }
 };
 
+has monthTable => sub {
+    {
+        Jan     => 0,
+        Feb     => 1,
+        Mar     => 2,
+        Apr     => 3,
+        May     => 4,
+        Jun     => 5,
+        Jul     => 6,
+        Aug     => 7,
+        Sep     => 8,
+        Oct     => 9,
+        Nov     => 10,
+        Dec     => 11,
+    }
+};
+
 has snapshotTimeFormat => sub { '%Y-%m-%d-%H%M%S' };
 has snapshotFilter => sub { qr/(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})/ };
+has scrubFilter => sub { qr/scrub repaired/ };
+has scrubTimeFormat => sub { qr/([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/ };
 
 my $intervalToTimestamp = sub {
     my $time = shift;
@@ -177,6 +195,22 @@ sub getSnapshotsToDestroy {
     return \@toDestroy;
 }
 
+sub getLastScrubTimestamp {
+    my $self = shift;
+    my $zpoolStatus = shift;
+    my $scrubFilter = $self->scrubFilter;
+    my $scrubTimeFormat = $self->scrubTimeFormat;
+
+    for (@{$zpoolStatus}){
+        next if not /$scrubFilter/;
+        say $_;
+        if (my ($month, $day, $hour, $min, $sec, $year) = /$scrubTimeFormat/){
+            return timelocal($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
+        }
+    }
+    return 0;
+}
+
 1;
 
 __END__
@@ -231,6 +265,10 @@ returns a timestamp when the next action (i.e. snapshot creation) has to be done
 =head2 snapshotsToDestroy
 
 returns a list of snapshots which have to be destroyed according to the backup plan
+
+=head2 getLastScrubTimestamp
+
+extracts the time scrub ran (and finished) last on a pool
 
 =head1 COPYRIGHT
 
