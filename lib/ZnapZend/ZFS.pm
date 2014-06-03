@@ -2,7 +2,7 @@ package ZnapZend::ZFS;
 
 use Mojo::Base -base;
 
-local $ENV{PATH} = "/usr/sbin:/usr/bin";
+$ENV{PATH} = "$ENV{PATH}:/usr/sbin:/usr/bin";
 
 ### attributes ###
 has debug => sub { 0 };
@@ -250,12 +250,12 @@ sub getDataSetProperties {
     
     for my $listElem (@{$list}){
         my %properties;
-        my @cmd = (qw(zfs get -H -o), 'property,value,source', 'all', $listElem);
+        my @cmd = (qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open (my $props, '-|', @cmd) or die "ERROR: could not get zfs properties\n";
         while (<$props>){
             chomp;
-            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\t(.+)\tlocal$/ or next;
+            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\t(.+)$/ or next;
             $properties{$key} = $value;
         }
         if (%properties){
@@ -520,7 +520,6 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
-2014-06-02 had zpool functionality added
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
