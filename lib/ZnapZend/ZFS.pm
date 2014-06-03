@@ -250,12 +250,12 @@ sub getDataSetProperties {
     
     for my $listElem (@{$list}){
         my %properties;
-        my @cmd = (qw(zfs get -H -o), 'property,value,source', 'all', $listElem);
+        my @cmd = (qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open (my $props, '-|', @cmd) or die "ERROR: could not get zfs properties\n";
         while (<$props>){
             chomp;
-            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\t(.+)\tlocal$/ or next;
+            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\t(.+)$/ or next;
             $properties{$key} = $value;
         }
         if (%properties){
