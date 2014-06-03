@@ -152,7 +152,6 @@ sub start {
             syslog('info', "nothing to do for me. am so bored... off for a coffee break. will be back in $timeToWait seconds to serve you, my master");
             sleep($timeToWait);
         }
-        sleep($cleanUp ? ($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait) : $timeToWait);
 
         # check if we need to snapshot, since we start polling if child is active and might be early
         if (time() >= $timeStamp){
