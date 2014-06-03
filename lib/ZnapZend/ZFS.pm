@@ -363,7 +363,7 @@ sub zpoolStatus {
 
     my ($remote, $pool) = $splitHostDataSet->($zpool);
 
-    my @ssh = $self->$buildRemote($remote, [qw(zpool status -v), $pool]);
+    my @ssh = $self->$buildRemote($remote, [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $pool]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $pool\n";
