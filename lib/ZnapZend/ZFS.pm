@@ -255,7 +255,7 @@ sub getDataSetProperties {
         open (my $props, '-|', @cmd) or die "ERROR: could not get zfs properties\n";
         while (<$props>){
             chomp;
-            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\t(.+)$/ or next;
+            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
             $properties{$key} = $value;
         }
         if (%properties){
