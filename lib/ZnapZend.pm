@@ -145,7 +145,13 @@ sub start {
         my ($timeStamp, $actionList) =  $self->zTime->getActionList($self->backupSets);    
 
         my $timeToWait = $timeStamp - time();
-        sleep($cleanUp ? ($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait) : $timeToWait);
+        if ($cleanUp){
+            sleep($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait);
+        }
+        else{
+            syslog('info', "nothing to do for me. am so bored... off for a coffee break. will be back in $timeToWait seconds to serve you, my master");
+            sleep($timeToWait);
+        }
 
         # check if we need to snapshot, since we start polling if child is active and might be early
         if (time() >= $timeStamp){
