@@ -97,25 +97,6 @@ my $scrubZpool = sub {
     return 1;
 };
 
-my $zpoolStatus = sub {
-    my $self = shift;
-    my $english = shift;
-    my $zpool = shift;
-
-    my ($remote, $pool) = $splitHostDataSet->($zpool);
-
-    my @cmd = $english ? qw(env LC_MESSAGES=C LC_DATE=C zpool status -v) : qw(zpool status -v);
-    my @ssh = $self->$buildRemote($remote, [@cmd, $pool]);
-
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $pool\n";
-
-    my @status = <$zpoolStatus>;
-    chomp(@status);
-
-    return \@status;
-};
-
 ### public methods ###
 sub dataSetExists {
     my $self = shift;
@@ -378,16 +359,19 @@ sub stopScrub {
 
 sub zpoolStatus {
     my $self = shift;
-    #zpool is second argument
+    my $zpool = shift;
 
-    return $self->$zpoolStatus(0, @_);
-}
+    my ($remote, $pool) = $splitHostDataSet->($zpool);
 
-sub zpoolStatusEN {
-    my $self = shift;
-    #zpool is second argument
+    my @ssh = $self->$buildRemote($remote, [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $pool]);
 
-    return $self->$zpoolStatus(1, @_);
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $pool\n";
+
+    my @status = <$zpoolStatus>;
+    chomp(@status);
+
+    return \@status;
 }
 
 sub scrubActive {
@@ -396,7 +380,7 @@ sub scrubActive {
      
     my $scrubProgress = $self->scrubInProgress;
 
-    return grep { /$scrubProgress/ } @{$self->$zpoolStatus(1, @_)};
+    return grep { /$scrubProgress/ } @{$self->zpoolStatus(@_)};
 }
 
 1;
@@ -505,10 +489,6 @@ stops scrub on a zpool
 =head2 zpoolStatus
 
 returns status info of a zpool
-
-=head2 zpoolStatusEN
-
-regurns status info of a zpool in englisch
 
 =head2 scrubActive
 
