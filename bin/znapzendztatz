@@ -32,7 +32,7 @@ sub dumpStats {
 }
 
 sub progress {
-    print $progress[$progressIndex = ++$progressIndex % $#progress];
+    print $progress[$progressIndex++ % $#progress];
 }
 
 sub collectData {
