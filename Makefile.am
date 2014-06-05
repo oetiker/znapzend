@@ -22,7 +22,7 @@ BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 
 PM :=  $(shell find lib/ -name "*.pm")
 
-MAN = man/znapzend.1 man/znapzendzetup.1
+MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST)
@@ -48,6 +48,11 @@ man/znapzend.1: bin/znapzend
 man/znapzendzetup.1: bin/znapzendzetup
 	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 	grep -A100000 '=head1 NAME' $< > doc/znapzendzetup.pod
+
+
+man/znapzendztatz.1: bin/znapzendztatz
+	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+	grep -A100000 '=head1 NAME' $< > doc/znapzendztatz.pod
 
 README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
