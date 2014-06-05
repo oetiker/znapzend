@@ -383,6 +383,27 @@ sub scrubActive {
     return grep { /$scrubProgress/ } @{$self->zpoolStatus(@_)};
 }
 
+sub snapshotReclaim {
+    my $self = shift;
+    my $snapshotInterval = shift;
+    my $reclaim;
+    
+    return 0 if not $snapshotInterval;
+    
+    my ($remote, $snapInterval) = $splitHostDataSet->($snapshotInterval);
+
+    my @ssh = $self->$buildRemote($remote, [qw(zfs destroy -nv), $snapInterval]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $snapReclaim, '-|', @ssh) or die "ERROR: cannot get snapshot data usage on $snapInterval\n";
+
+    while (<$snapReclaim>){
+        chomp;
+        last if ($reclaim) = /^would reclaim\s+([\w.]+)$/;
+    }
+    return $reclaim;
+}
+
 1;
 
 __END__
@@ -493,6 +514,10 @@ returns status info of a zpool
 =head2 scrubActive
 
 returns whether scrub is active on zpool or not
+
+=head2 snapshotReclaim
+
+returns the amount of space to be reclaimed if an 'interval' of snapshots would be destroyed
 
 =head1 COPYRIGHT
 
