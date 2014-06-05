@@ -17,7 +17,8 @@ $| = 1;
 
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
-my $progress = 0;
+my $progressIndex = 0;
+my @progress = ("\b-", "\b\\", "\b|", "\b/");
 
 sub dumpStats {
     my $stats = shift;
@@ -31,12 +32,7 @@ sub dumpStats {
 }
 
 sub progress {
-    $progress++;
-
-    $progress % 4 == 0 && do { print "\b-"; return; };
-    $progress % 4 == 1 && do { print "\b\\"; return; };
-    $progress % 4 == 2 && do { print "\b|"; return; };
-    $progress % 4 == 3 && do { print "\b/"; return; };
+    print $progress[$progressIndex = ++$progressIndex % $#progress];
 }
 
 sub collectData {
@@ -97,18 +93,18 @@ __END__
 
 =head1 NAME
 
-znapzendztats - znapzend statistics utility
+znapzendztatz - znapzend statistics utility
 
 =head1 SYNOPSIS
 
-B<znapzendztats> [src_dataset]
+B<znapzendztatz> [src_dataset]
 
     --help
     --man
 
 =head1 DESCRIPTION
 
-znapzendztats shows statistics of snapshots created and storage space usage
+znapzendztatz shows statistics of snapshots createt and storage space usage
 
 =head1 COPYRIGHT
 
