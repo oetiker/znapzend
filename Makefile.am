@@ -18,7 +18,7 @@ AUTOMAKE_OPTIONS = foreign
 
 SUFFIXES = .1 .man .pm
 
-BIN = bin/@PACKAGE@ bin/znapzendzetup
+BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 
 PM :=  $(shell find lib/ -name "*.pm")
 
