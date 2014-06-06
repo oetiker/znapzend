@@ -1,0 +1,138 @@
+#!/usr/bin/env perl
+
+use FindBin;
+# PERL5LIB
+use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/../thirdparty/lib/perl5";
+
+use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
+use Pod::Usage 1.14;
+
+use Mojo::Base -strict;
+use ZnapZend::Config;
+use ZnapZend::ZFS;
+
+#flush output immediately
+$| = 1;
+
+my $zConfig = ZnapZend::Config->new();
+my $zZfs    = ZnapZend::ZFS->new();
+my $progressIndex = 0;
+my @progress = ("\b-", "\b\\", "\b|", "\b/");
+
+sub dumpStats {
+    my $stats = shift;
+
+    print "count   space usage   dataset\n";
+    for my $stat (@{$stats}){
+        print ' ' x (5- length($stat->{count})) . $stat->{count};
+        print ' ' x (14 - length($stat->{usage})) . $stat->{usage};
+        print "   $stat->{dataset}\n";
+    }
+}
+
+sub progress {
+    print $progress[$progressIndex++ % ($#progress + 1)];
+}
+
+sub collectData {
+    my $dataset = shift;
+    my %data;
+    my $snapshots = $zZfs->listSnapshots($dataset);
+    $data{count} = $#{$snapshots};
+    ${$snapshots}[-1] =~ /^.*\@(\d{4}-\d{2}-\d{2}-\d{6})$/;
+    my $snapshotInterval = ${$snapshots}[0] . '%' . $1;
+    $data{usage} = $zZfs->snapshotReclaim($snapshotInterval);
+    $data{dataset} = $dataset;
+
+    return \%data;
+}
+
+sub main {
+    my $opts = {};
+    my @output;
+
+    GetOptions($opts, qw(help man)) or exit(1);
+
+    $opts->{help} && pod2usage(1);
+    $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
+
+    my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
+    die "ERROR: no valid znapzend setup found on source\n" if not @{$backupSets};
+
+    print "collecting the latest data just for you. hang on. be patient. don't kill me...  ";
+    progress();
+
+    for my $backupSet (@{$backupSets}){
+        my $datasets = $backupSet->{recursive} ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+
+        for my $dataset (@{$datasets}){
+            progress();
+            push @output, collectData($dataset);
+
+            for (keys %{$backupSet}){
+                my ($key) = /^(dst_[^_]+)$/ or next;
+                progress();
+                my $dstDataSet = $dataset;
+                $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
+                push @output, collectData($dstDataSet);
+            }
+              
+
+        }
+    }
+    print "\bdone.\n\n";
+    dumpStats(\@output);
+}
+
+main();
+
+1;
+
+__END__
+
+=head1 NAME
+
+znapzendztatz - znapzend statistics utility
+
+=head1 SYNOPSIS
+
+B<znapzendztatz> [src_dataset]
+
+    --help
+    --man
+
+=head1 DESCRIPTION
+
+znapzendztatz shows statistics of snapshots created and storage space usage
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
+
+=head1 AUTHOR
+
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Dominik Hassler>
+
+=head1 HISTORY
+
+2014-06-05 had Initial Version
+
+=cut
+
