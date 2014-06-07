@@ -10,14 +10,14 @@ B<znapzend> [I<options>...]
  -h,--help     display this help and exit 
  -d,--debug    print debug messages to STDERR
  -n,--noaction run in simulation mode. does no changes to the filesystem
- --nodestroy   does all changes on the filesystem except destroy
+ --nodestroy   does all changes to the filesystem except destroy
  --syslog=x    select the syslog facility 
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
 
 =head1 DESCRIPTION
 
-znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on a destination filesystem
+znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on destination filesystems
 
 =head1 COPYRIGHT
 
