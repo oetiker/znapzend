@@ -17,22 +17,13 @@ $| = 1;
 
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
-my $progressIndex = 0;
-my @progress = ("\b-", "\b\\", "\b|", "\b/");
 
 sub dumpStats {
     my $stats = shift;
 
-    print "count   space usage   dataset\n";
-    for my $stat (@{$stats}){
-        print ' ' x (5- length($stat->{count})) . $stat->{count};
-        print ' ' x (14 - length($stat->{usage})) . $stat->{usage};
-        print "   $stat->{dataset}\n";
-    }
-}
-
-sub progress {
-    print $progress[$progressIndex++ % ($#progress + 1)];
+    print ' ' x (5- length($stats->{count})) . $stats->{count};
+    print ' ' x (14 - length($stats->{usage})) . $stats->{usage};
+    print "   $stats->{dataset}\n";
 }
 
 sub collectData {
@@ -50,7 +41,6 @@ sub collectData {
 
 sub main {
     my $opts = {};
-    my @output;
 
     GetOptions($opts, qw(help man)) or exit(1);
 
@@ -60,29 +50,26 @@ sub main {
     my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
     die "ERROR: no valid znapzend setup found on source\n" if not @{$backupSets};
 
-    print "collecting the latest data just for you. hang on. be patient. don't kill me...  ";
-    progress();
+    #print header
+    print "snapshot\ncount   space usage   dataset\n";
 
     for my $backupSet (@{$backupSets}){
         my $datasets = $backupSet->{recursive} ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
 
+        #source dataset
         for my $dataset (@{$datasets}){
-            progress();
-            push @output, collectData($dataset);
+            dumpStats(collectData($dataset));
 
+            #destination datasets
             for (keys %{$backupSet}){
                 my ($key) = /^(dst_[^_]+)$/ or next;
-                progress();
                 my $dstDataSet = $dataset;
                 $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                push @output, collectData($dstDataSet);
+                dumpStats(collectData($dstDataSet));
             }
               
-
         }
     }
-    print "\bdone.\n\n";
-    dumpStats(\@output);
 }
 
 main();
