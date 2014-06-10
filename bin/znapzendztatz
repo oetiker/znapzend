@@ -54,7 +54,7 @@ sub main {
     print "snapshot\ncount   space usage   dataset\n";
 
     for my $backupSet (@{$backupSets}){
-        my $datasets = $backupSet->{recursive} ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+        my $datasets = $backupSet->{recursive} eq 'on' ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
 
         #source dataset
         for my $dataset (@{$datasets}){
