@@ -1,7 +1,7 @@
 package ZnapZend::Time;
 
 use Mojo::Base -base;
-use Time::Local qw(timelocal);
+use Time::Local qw(timegm timelocal);
 use POSIX qw(strftime);
 
 ### attributes ###
@@ -82,7 +82,7 @@ my $getSnapshotTimestamp = sub {
     my $self = shift;
     my $snapshotFilter = $self->snapshotFilter;
     if (my ($year, $month, $day, $hour, $min, $sec) = $_[0] =~ /^.*\@$snapshotFilter$/){
-        return timelocal($sec, $min, $hour, $day, $month - 1, $year);
+        return timegm($sec, $min, $hour, $day, $month - 1, $year);
     }
     return 0;
 };
@@ -130,7 +130,7 @@ sub getInterval {
 sub createSnapshotTime {
     my $self = shift;
     my $timeStamp = shift;
-    return strftime($self->snapshotTimeFormat, localtime($timeStamp));
+    return strftime($self->snapshotTimeFormat, gmtime($timeStamp));
 }
 
 sub getActionList {
@@ -138,7 +138,7 @@ sub getActionList {
     my $backupSets = shift;
     my $timeStamp = undef;
     my @backupSets;
-    my $time = time();
+    my $time = $self->getLocalTimestamp();
 
     for my $backupSet (@{$backupSets}){
         my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
@@ -156,7 +156,7 @@ sub getSnapshotsToDestroy {
     my $self = shift;
     my $snapshots = shift;
     my $timePlan = shift;
-    my $time = $_[0] || time();
+    my $time = $_[0] || $self->getLocalTimestamp();
     my %timeslots;
     my @toDestroy;
 
@@ -205,10 +205,17 @@ sub getLastScrubTimestamp {
         next if not /$scrubFilter/;
         say $_;
         if (my ($month, $day, $hour, $min, $sec, $year) = /$scrubTimeFormat/){
-            return timelocal($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
+            return timegm($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
         }
     }
     return 0;
+}
+
+sub getLocalTimestamp {
+    my $self = shift;
+    my @t = localtime(time());
+
+    return time() + (timegm(@t) - timelocal(@t));
 }
 
 1;
@@ -270,6 +277,10 @@ returns a list of snapshots which have to be destroyed according to the backup p
 
 extracts the time scrub ran (and finished) last on a pool
 
+=head2 getLocalTimestamp
+
+returns a timezone compensated 'unix timestamp'
+
 =head1 COPYRIGHT
 
 Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
@@ -296,6 +307,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 

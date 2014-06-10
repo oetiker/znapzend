@@ -106,8 +106,32 @@ sub dataSetExists {
     #just in case if someone aks to check '';
     return 0 if not $dataSet;
 
-    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    return grep { $dataSet eq $_ } @{$self->listDataSets($remote)};
+    my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name), $dataSet]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $dataSets, '-|', @ssh) or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
+    my @dataSets = <$dataSets>;
+    chomp(@dataSets);
+
+    return grep { $dataSet eq $_ } @dataSets;
+}
+
+sub snapshotExists {
+    my $self = shift;
+    my $snapshot = shift;
+    my $remote;
+
+    #just in case if someone aks to check '';
+    return 0 if not $snapshot;
+
+    my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name -t snapshot -r -d 1), $snapshot]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open (my $snapshots, '-|', @ssh) or die 'ERROR: cannot get snapshots' . ($remote ? " on $remote\n" : "\n");
+    my @snapshots = <$snapshots>;
+    chomp(@snapshots);
+
+    return grep { $snapshot eq $_ } @snapshots;
 }
 
 sub listDataSets {
@@ -174,6 +198,9 @@ sub createSnapshot {
     my $dataSet = shift;
     my $remote;
     my $recursive = $_[0] ? '-r' : '';
+
+    #check if snapshot already exists, if so, exit.
+    return 0 if $self->snapshotExists($dataSet);
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), $recursive, $dataSet]);
@@ -443,6 +470,10 @@ runs does all changes to the filesystem *except* destroy
 
 checks if the dataset exists on localhost or a remote host
 
+=head2 snapshotExists
+
+checks if the snapshot exists on localhost or a remote host
+
 =head2 listDataSets
 
 lists datasets on (remote-)host
@@ -545,6 +576,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-10 had localtime implementation
 2014-06-02 had zpool functionality added
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
