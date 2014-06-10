@@ -144,7 +144,7 @@ sub start {
         # get time to wait for next snapshot creation and list of backup sets which requires action
         my ($timeStamp, $actionList) =  $self->zTime->getActionList($self->backupSets);    
 
-        my $timeToWait = $timeStamp - time();
+        my $timeToWait = $timeStamp - $self->zTime->getLocalTimestamp();
         if ($cleanUp){
             sleep($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait);
         }
@@ -154,7 +154,7 @@ sub start {
         }
 
         # check if we need to snapshot, since we start polling if child is active and might be early
-        if (time() >= $timeStamp){
+        if ($self->zTime->getLocalTimestamp() >= $timeStamp){
             for my $backupSet (@{$actionList}){
                 syslog('info', 'creating ' . ($backupSet->{recursive} ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
                 my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp);
@@ -231,6 +231,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 
