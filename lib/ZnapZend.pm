@@ -158,7 +158,7 @@ sub start {
             for my $backupSet (@{$actionList}){
                 syslog('info', 'creating ' . ($backupSet->{recursive} ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
                 my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp);
-                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive});
+                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive}) or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
         
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
