@@ -84,7 +84,7 @@ my $checkSendRecvCleanup = sub {
             my $toDestroy;
 
             #get all sub datasets of source filesystem; need to send them all individually if recursive
-            my $srcSubDataSets = $backupSet->{recursive} ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+            my $srcSubDataSets = $backupSet->{recursive} eq 'on' ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
 
             #loop through all destinations
             for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
@@ -156,9 +156,9 @@ sub start {
         # check if we need to snapshot, since we start polling if child is active and might be early
         if ($self->zTime->getLocalTimestamp() >= $timeStamp){
             for my $backupSet (@{$actionList}){
-                syslog('info', 'creating ' . ($backupSet->{recursive} ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
+                syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
                 my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp);
-                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive}) or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
+                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on') or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
         
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
