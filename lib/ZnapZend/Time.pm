@@ -213,9 +213,10 @@ sub getLastScrubTimestamp {
 
 sub getLocalTimestamp {
     my $self = shift;
-    my @t = localtime(time());
+    my $time = time();
+    my @t = localtime($time);
 
-    return time() + (timegm(@t) - timelocal(@t));
+    return $time + (timegm(@t) - timelocal(@t));
 }
 
 1;
