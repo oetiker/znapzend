@@ -197,13 +197,13 @@ sub createSnapshot {
     my $self = shift;
     my $dataSet = shift;
     my $remote;
-    my $recursive = $_[0] ? '-r' : '';
+    my @recursive = $_[0] ? ('-r') : ();
 
     #check if snapshot already exists, if so, exit.
     return 0 if $self->snapshotExists($dataSet);
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), $recursive, $dataSet]);
+    my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), @recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
     (system(@ssh) and die "ERROR: cannot create snapshot $dataSet\n") if not $self->noaction;
