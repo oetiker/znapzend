@@ -84,7 +84,7 @@ my $checkSendRecvCleanup = sub {
             my $toDestroy;
 
             #get all sub datasets of source filesystem; need to send them all individually if recursive
-            my $srcSubDataSets = $backupSet->{recursive} eq 'on' ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $self->backupSet->{src} ];
+            my $srcSubDataSets = $backupSet->{recursive} eq 'on' ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
             #loop through all destinations
             for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
