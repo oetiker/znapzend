@@ -39,6 +39,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-05 had Initial Version
 
 =cut

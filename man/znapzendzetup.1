@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-06-03" "0.4.1" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-06-29" "0.5.5" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -138,13 +138,13 @@ znapzendzetup \- znapzend setup utility
 where 'command' is one of the following:
 .PP
 .Vb 3
-\&    create [\-\-recursive] [\-\-mbuffer=<path>] \e
+\&    create [\-\-recursive] [\-\-mbuffer=<path>] [\-\-tsformat=<format>] \e
 \&           SRC plan dataset \e
 \&           [ DST[:key] plan [[user@]host:]dataset ]
 \&
 \&    delete [\-\-dst=key] <src_dataset>
 \&
-\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] \e
+\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-tsformat=<format>] \e
 \&           SRC [plan] dataset \e
 \&           [ DST:key [plan] [dataset] ]
 \&
@@ -200,10 +200,28 @@ To keep one copy every two days for 10 years:
 .Vb 1
 \& 10year=>2day
 .Ve
+.PP
+The 'tsformat' option specifies the format of the snapshots being created.
+The syntax is 'strftime like'. The string must consist of the mandatory
+.PP
+.Vb 1
+\& (%Y, %m, %d, %H, %M, %S)
+.Ve
+.PP
+and optional
+.PP
+.Vb 1
+\& (\-, _, ., :)
+.Ve
+.PP
+characters.
+.PP
+If not specified, tsformat defaults to '%Y\-%m\-%d\-%H%M%S'.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
-.Vb 4
+.Vb 5
 \&    znapzendzetup create \-\-mbuffer=/opt/omni/bin/mbuffer \e
+\&       \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
 \&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
@@ -231,5 +249,6 @@ Tobias\ Oetiker\ <tobi@oetiker.ch>
 Dominik\ Hassler
 .SH "HISTORY"
 .IX Header "HISTORY"
+2014\-06\-29 had Flexible snapshot time format
 2014\-06\-01 had Multi destination backup
 2014\-05\-30 had Initial Version
