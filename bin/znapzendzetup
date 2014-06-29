@@ -45,7 +45,7 @@ sub main {
         $zConfig->cfg->{tsformat}   = $opts->{tsformat} || '%Y-%m-%d-%H%M%S';
 
         my $key = 0;
-        my $state;
+        my $state = '';
         for (@ARGV){
             #keyword SRC detected. start setting up source filesystem and plan
             /^SRC$/ && do {
@@ -66,8 +66,8 @@ sub main {
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $zConfig->cfg->{src} = $_ and next if $state && $state eq 'src';
-            $zConfig->cfg->{"dst_$key"} = $_ and next if $state && $state eq 'dst';
+            $zConfig->cfg->{src} = $_ and next if $state eq 'src';
+            $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $zConfig->checkBackupSet($zConfig->cfg->{src});
@@ -100,7 +100,7 @@ sub main {
         GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit(1);
 
         my $key = 0;
-        my $state;
+        my $state = '';
         my %backupSet;
         for (@ARGV){
             #keyword SRC detected. start setting up source filesystem and plan
@@ -122,8 +122,8 @@ sub main {
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $backupSet{src} = $_ and next if $state && $state eq 'src';
-            $backupSet{"dst_$key"} = $_ and next if $state && $state eq 'dst';
+            $backupSet{src} = $_ and next if $state eq 'src';
+            $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} and $opts->{recursive} =~ /^on|off$/;
