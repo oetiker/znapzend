@@ -266,7 +266,7 @@ and optional
 
 characters.
 
-If not specified, tsoption defaults to '%Y-%m-%d-%H%M%S'.
+If not specified, tsformat defaults to '%Y-%m-%d-%H%M%S'.
 
 =head1 EXAMPLE
 
