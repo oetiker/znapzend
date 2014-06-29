@@ -80,7 +80,9 @@ my $getSnapshotTimestamp = sub {
     my $snapshot = shift;
     my $timeFormat = shift;
 
-    if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@([^\@]+)$/){
+    my $snapFilter = $self->getSnapshotFilter($timeFormat);
+
+    if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
         my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat) or die "ERROR: cannot extract time of '$snapshot'\n";
         return $snapshotTime->epoch();
     }
