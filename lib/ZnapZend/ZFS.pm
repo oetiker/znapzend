@@ -51,7 +51,7 @@ my $sendRecvSnapshots = sub {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $mbuffer = shift;
-    my $snapFilter = shift;
+    my $snapFilter = $_[0] || qr/.*/;
     my $remote;
     my ($lastSnapshot, $lastCommon) = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
@@ -154,7 +154,7 @@ sub listDataSets {
 sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
-    my $snapshotFilter = shift;
+    my $snapshotFilter = $_[0] || qr/.*/;
     my $remote;
     my @snapshots;
 
@@ -244,7 +244,7 @@ sub lastAndCommonSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $snapshotFilter = shift;
+    my $snapshotFilter = $_[0] || qr/.*/;
 
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
