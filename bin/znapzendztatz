@@ -17,6 +17,7 @@ $| = 1;
 
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
+my $zTime   = ZnapZend::Time->new();
 
 sub dumpStats {
     my $stats = shift;
@@ -28,10 +29,11 @@ sub dumpStats {
 
 sub collectData {
     my $dataset = shift;
+    my $snapFilter = shift;
     my %data;
-    my $snapshots = $zZfs->listSnapshots($dataset);
+    my $snapshots = $zZfs->listSnapshots($dataset, $snapFilter);
     $data{count} = $#{$snapshots};
-    ${$snapshots}[-1] =~ /^.*\@(\d{4}-\d{2}-\d{2}-\d{6})$/;
+    ${$snapshots}[-1] =~ /^.*\@($snapFilter)$/;
     my $snapshotInterval = ${$snapshots}[0] . '%' . $1;
     $data{usage} = $zZfs->snapshotReclaim($snapshotInterval);
     $data{dataset} = $dataset;
@@ -55,17 +57,18 @@ sub main {
 
     for my $backupSet (@{$backupSets}){
         my $datasets = $backupSet->{recursive} eq 'on' ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+        my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset
         for my $dataset (@{$datasets}){
-            dumpStats(collectData($dataset));
+            dumpStats(collectData($dataset, $snapFilter));
 
             #destination datasets
             for (keys %{$backupSet}){
                 my ($key) = /^(dst_[^_]+)$/ or next;
                 my $dstDataSet = $dataset;
                 $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                dumpStats(collectData($dstDataSet));
+                dumpStats(collectData($dstDataSet, $snapFilter));
             }
               
         }
@@ -119,6 +122,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-05 had Initial Version
 
 =cut

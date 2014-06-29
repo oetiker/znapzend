@@ -2,7 +2,7 @@ package ZnapZend::Time;
 
 use Mojo::Base -base;
 use Time::Local qw(timegm timelocal);
-use POSIX qw(strftime);
+use Time::Piece;
 
 ### attributes ###
 has configUnits => sub {
@@ -58,8 +58,6 @@ has monthTable => sub {
     }
 };
 
-has snapshotTimeFormat => sub { '%Y-%m-%d-%H%M%S' };
-has snapshotFilter => sub { qr/(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})/ };
 has scrubFilter => sub { qr/scrub repaired/ };
 has scrubTimeFormat => sub { qr/([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/ };
 
@@ -68,7 +66,6 @@ my $intervalToTimestamp = sub {
     my $interval = shift;
 
     return $interval * (int($time / $interval) + 1);
-    
 };
 
 my $timeToTimestamp = sub {
@@ -80,9 +77,14 @@ my $timeToTimestamp = sub {
 
 my $getSnapshotTimestamp = sub {
     my $self = shift;
-    my $snapshotFilter = $self->snapshotFilter;
-    if (my ($year, $month, $day, $hour, $min, $sec) = $_[0] =~ /^.*\@$snapshotFilter$/){
-        return timegm($sec, $min, $hour, $day, $month - 1, $year);
+    my $snapshot = shift;
+    my $timeFormat = shift;
+
+    my $snapFilter = $self->getSnapshotFilter($timeFormat);
+
+    if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
+        my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat) or die "ERROR: cannot extract time of '$snapshot'\n";
+        return $snapshotTime->epoch();
     }
     return 0;
 };
@@ -130,7 +132,10 @@ sub getInterval {
 sub createSnapshotTime {
     my $self = shift;
     my $timeStamp = shift;
-    return strftime($self->snapshotTimeFormat, gmtime($timeStamp));
+    my $timeFormat = shift;
+
+    my $time = gmtime($timeStamp);
+    return $time->strftime($timeFormat);
 }
 
 sub getActionList {
@@ -156,6 +161,7 @@ sub getSnapshotsToDestroy {
     my $self = shift;
     my $snapshots = shift;
     my $timePlan = shift;
+    my $timeFormat = shift;
     my $time = $_[0] || $self->getLocalTimestamp();
     my %timeslots;
     my @toDestroy;
@@ -165,7 +171,7 @@ sub getSnapshotsToDestroy {
 
     for my $snapshot (@{$snapshots}){
         #get snapshot age
-        my $snapshotTimestamp = $self->$getSnapshotTimestamp($snapshot);
+        my $snapshotTimestamp = $self->$getSnapshotTimestamp($snapshot, $timeFormat);
         my $snapshotAge = $time - $snapshotTimestamp;
         #get valid snapshot schedule for this dataset
         for my $key (sort { $a<=>$b } keys %{$timePlan}){
@@ -219,6 +225,31 @@ sub getLocalTimestamp {
     return $time + (timegm(@t) - timelocal(@t));
 }
 
+sub checkTimeFormat {
+    my $self = shift;
+    my $timeFormat = shift;
+
+    $timeFormat =~ /^(?:%[YmdHMS]|[-_.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
+
+    #just a made-up time to check if strftime and strptime work
+    my $timeToCheck = gmtime(1014416542);
+
+    my $formattedTime = $timeToCheck->strftime($timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
+    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
+
+    return $timeToCheck == $resultingTime; #times schould be equal
+}
+
+sub getSnapshotFilter {
+    my $self = shift;
+    my $timeFormat = shift;
+
+    $timeFormat =~ s/%[mdHMS]/\\d{2}/g;
+    $timeFormat =~ s/%Y/\\d{4}/g;
+
+    return $timeFormat;
+}
+
 1;
 
 __END__
@@ -264,7 +295,7 @@ returns the smallest time interval within a backup plan -> this will be the snap
 
 =head2 createSnapshotTime
 
-returns a formatted string (according to snapshotTimeFormat attribute) from a timestamp
+returns a formatted string from a timestamp and a timestamp format
 
 =head2 getActionList
 
@@ -281,6 +312,14 @@ extracts the time scrub ran (and finished) last on a pool
 =head2 getLocalTimestamp
 
 returns a timezone compensated 'unix timestamp'
+
+=head2 checkTimeFormat
+
+checks if a given timestamp format is valid
+
+=head2 getSnapshotFilter
+
+returns a regex pattern to match the snapshot time format
 
 =head1 COPYRIGHT
 
@@ -308,6 +347,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
