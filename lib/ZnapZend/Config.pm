@@ -15,6 +15,7 @@ has mandProperties => sub {
         recursive   => 'on|off',
         src         => '###dataset###',
         src_plan    => '###backupplan###',
+        tsformat    => '###tsformat###',
     }
 };
 
@@ -66,6 +67,10 @@ my $checkBackupSets = sub {
                 };
                 /^###dataset###$/ && do {
                     $self->zfs->dataSetExists($backupSet->{$prop}) or die 'ERROR: filesystem ' . $backupSet->{$prop} . " does not exist\n";
+                    last;
+                };
+                /^###tsformat###$/ && do {
+                    $self->time->checkTimeFormat($backupSet->{$prop}) or die "ERROR: timestamp format not valid. check your syntax\n";
                     last;
                 };
                 #check if properties are valid
@@ -123,6 +128,7 @@ sub checkBackupSet {
     #check if source dataset exists and if source backup plan is valid
     $self->zfs->dataSetExists($dataSet) or die "ERROR: filesystem $dataSet does not exist\n";
     $self->cfg->{src_plan} = $self->$checkBackupPlan($self->cfg->{src_plan}) or die "ERROR: src backup plan not valid\n";
+    $self->time->checkTimeFormat($self->cfg->{tsformat}) or die "ERROR:  timestamp format not valid. check your syntax\n"; 
 
     #check if destination datasets exist anf if destination backup plans are valid
     for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
@@ -294,6 +300,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 

@@ -37,11 +37,12 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, qw(recursive|r mbuffer=s)) or exit(1);
+        GetOptions($opts, qw(recursive|r mbuffer=s tsformat=s)) or exit(1);
 
         $zConfig->cfg->{enabled}    = 'on';
         $zConfig->cfg->{recursive}  = $opts->{recursive} ? 'on' : 'off';
         $zConfig->cfg->{mbuffer}    = $opts->{mbuffer} || 'off';
+        $zConfig->cfg->{tsformat}   = $opts->{tsformat} || '%Y-%m-%d-%H%M%S';
 
         my $key = 0;
         my $state;
@@ -65,8 +66,8 @@ sub main {
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $zConfig->cfg->{src} = $_ and next if $state eq 'src';
-            $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
+            $zConfig->cfg->{src} = $_ and next if $state && $state eq 'src';
+            $zConfig->cfg->{"dst_$key"} = $_ and next if $state && $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $zConfig->checkBackupSet($zConfig->cfg->{src});
@@ -96,7 +97,7 @@ sub main {
         last;
     };
     /^edit$/ && do {
-        GetOptions($opts, qw(recursive=s mbuffer=s)) or exit(1);
+        GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit(1);
 
         my $key = 0;
         my $state;
@@ -121,12 +122,13 @@ sub main {
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $backupSet{src} = $_ and next if $state eq 'src';
-            $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
+            $backupSet{src} = $_ and next if $state && $state eq 'src';
+            $backupSet{"dst_$key"} = $_ and next if $state && $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $backupSet{recursive} = $opts->{recursive} if $opts->{recursive} and $opts->{recursive} =~ /^on|off$/;
-        $zConfig->cfg->{mbuffer}    = $opts->{mbuffer} if $opts->{mbuffer};
+        $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} and $opts->{recursive} =~ /^on|off$/;
+        $backupSet{mbuffer}    = $opts->{mbuffer} if $opts->{mbuffer};
+        $backupSet{tsformat}   = $opts->{tsformat} if $opts->{tsformat};
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet{src}) or die "ERROR: cannot get backup config\n";
@@ -196,13 +198,13 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [--recursive] [--mbuffer=<path>] \
+    create [--recursive] [--mbuffer=<path>] [--tsformat=<format>] \
            SRC plan dataset \
            [ DST[:key] plan [[user@]host:]dataset ]
 
     delete [--dst=key] <src_dataset>
 
-    edit [--recursive=on|off] [--mbuffer=<path>|off] \
+    edit [--recursive=on|off] [--mbuffer=<path>|off] [--tsformat=<format>] \
            SRC [plan] dataset \
            [ DST:key [plan] [dataset] ]
 
@@ -252,9 +254,24 @@ To keep one copy every two days for 10 years:
 
  10year=>2day
 
+
+The 'tsformat' option specifies the format of the snapshots being created.
+The syntax is 'strftime like'. The string must consist of the mandatory
+
+ (%Y, %m, %d, %H,%m, %s)
+
+and optional
+
+ (-, _, ., :)
+
+characters.
+
+If not specified, tsoption defaults to '%Y-%m-%d-%H%M%S'.
+
 =head1 EXAMPLE
 
     znapzendzetup create --mbuffer=/opt/omni/bin/mbuffer \
+       --tsformat='%Y-%m-%d-%H%M%S' \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
        DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
@@ -285,6 +302,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
 

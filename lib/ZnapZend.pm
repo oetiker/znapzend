@@ -50,6 +50,7 @@ my $refreshBackupPlans = sub {
             $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
+        $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
         syslog('info', "found a valid backup plan for $backupSet->{src}...");
     }
 };
@@ -96,11 +97,12 @@ my $checkSendRecvCleanup = sub {
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
                     syslog('info', 'sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer});
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer}, $backupSet->{snapFilter});
             
                     # cleanup according to backup schedule
-                    @snapshots = @{$self->zZfs->listSnapshots($dstDataSet)};
-                    $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{"dst$key" . 'PlanHash'}, $timeStamp);
+                    @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
+                    $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                                 $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
                     syslog('info', 'cleaning up snapshots on ' . $dstDataSet);
                     $self->zZfs->destroySnapshots($toDestroy);
                 }
@@ -109,8 +111,9 @@ my $checkSendRecvCleanup = sub {
             #cleanup source
             for my $srcDataSet (@{$srcSubDataSets}){
                 # cleanup according to backup schedule
-                @snapshots = @{$self->zZfs->listSnapshots($srcDataSet)};
-                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots, $backupSet->{srcPlanHash}, $timeStamp);
+                @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
+                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                             $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
                 syslog('info', 'cleaning up snapshots on ' . $srcDataSet);
                 $self->zZfs->destroySnapshots($toDestroy);
             }
@@ -157,7 +160,7 @@ sub start {
         if ($self->zTime->getLocalTimestamp() >= $timeStamp){
             for my $backupSet (@{$actionList}){
                 syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
-                my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp);
+                my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
                 $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on') or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
         
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
@@ -231,6 +234,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup
 2014-05-30 had Initial Version
