@@ -258,7 +258,7 @@ To keep one copy every two days for 10 years:
 The 'tsformat' option specifies the format of the snapshots being created.
 The syntax is 'strftime like'. The string must consist of the mandatory
 
- (%Y, %m, %d, %H,%m, %s)
+ (%Y, %m, %d, %H, %m, %s)
 
 and optional
 
