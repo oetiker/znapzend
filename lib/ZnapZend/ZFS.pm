@@ -100,7 +100,7 @@ my $scrubZpool = sub {
 
     my @ssh = $self->$buildRemote($remote, [@cmd, $zpool]);
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    (system(@ssh) && die 'ERROR: could not ' . ($startstop ? 'start' : 'stop') . " scrub on $zpool") if !$self->noaction;
+    system(@ssh) && die 'ERROR: could not ' . ($startstop ? 'start' : 'stop') . " scrub on $zpool" if !$self->noaction;
 
     return 1;
 };
@@ -217,7 +217,7 @@ sub createSnapshot {
     my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), @recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
-    (system(@ssh) && die "ERROR: cannot create snapshot $dataSet\n") if !$self->noaction;
+    system(@ssh) && die "ERROR: cannot create snapshot $dataSet\n" if !$self->noaction;
 
     return 1;
 }
@@ -243,7 +243,7 @@ sub destroySnapshots {
         my @ssh = $self->$buildRemote($remote ne 'local' ? $remote : undef, [qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
 
         print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-        (system(@ssh) && die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n") if !($self->noaction || $self->nodestroy);
+        system(@ssh) && die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n" if !($self->noaction || $self->nodestroy);
     }
     return 1;
 }
@@ -320,7 +320,7 @@ sub setDataSetProperties {
     for my $prop (keys %{$properties}){
         my @cmd = (qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        (system(@cmd) && die "ERROR: could not set property $prop on $dataSet\n") if !$self->noaction;
+        system(@cmd) && die "ERROR: could not set property $prop on $dataSet\n" if !$self->noaction;
     }
 
     return 1;
@@ -339,7 +339,7 @@ sub deleteDataSetProperties {
     for my $prop (keys @{$properties}[0]){
         my @cmd = (qw(zfs inherit), "$propertyPrefix:$prop", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        (system(@cmd) && die "ERROR: could not reset property $prop on $dataSet\n") if !$self->noaction;
+        system(@cmd) && die "ERROR: could not reset property $prop on $dataSet\n" if !$self->noaction;
     }
 
     return 1;
@@ -354,10 +354,10 @@ sub deleteBackupDestination {
     
     my @cmd = (qw(zfs inherit), $dst, $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-    (system(@cmd) && die "ERROR: could not reset property on $dataSet\n") if !$self->noaction;
+    system(@cmd) && die "ERROR: could not reset property on $dataSet\n" if !$self->noaction;
     @cmd = (qw(zfs inherit), $dst . '_plan', $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-    (system(@cmd) && die "ERROR: could not reset property on $dataSet\n") if !$self->noaction;
+    system(@cmd) && die "ERROR: could not reset property on $dataSet\n" if !$self->noaction;
 
     return 1;
 }

@@ -53,7 +53,7 @@ sub daemonize {
     else {
         print STDERR "znapzend ($$) is running in the background now.\n";
         if ($pidFile){
-            if (open my $fh, '>', $pidFile ){
+            if (open my $fh, '>', $pidFile){
                 print $fh "$$\n";
             }
             else {
