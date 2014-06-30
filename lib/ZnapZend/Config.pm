@@ -101,15 +101,20 @@ my $getBackupSet = sub {
     my $enabledOnly = shift;
     my $dataSet = shift;
     
+    #get all backup sets and check if valid
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
-    if ($enabledOnly){
-        #use c-type for since we need the index to remove the element
-        for (my $i = $#{$self->backupSets}; $i >= 0; $i--){
-            splice @{$self->backupSets}, $i, 1 if ${$self->backupSets}[$i]->{enabled} ne 'on';
-        }
-    }
     $self->$checkBackupSets();
 
+    if ($enabledOnly){
+        my @backupSets;
+
+        for my $backupSet (@{$self->backupSets}){
+            push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
+        }
+        #return enabled only list
+        return \@backupSets;
+    }
+    #return all available backup sets
     return $self->backupSets;
 };
 
