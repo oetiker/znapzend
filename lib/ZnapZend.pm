@@ -46,7 +46,7 @@ my $refreshBackupPlans = sub {
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #create backup hashes for all destinations
         for (keys %{$backupSet}){
-            (my ($key) = /^dst_([^_]+)_[^_]+$/) || next;
+            my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
             $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});

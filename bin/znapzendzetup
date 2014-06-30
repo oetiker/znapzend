@@ -61,13 +61,13 @@ sub main {
             };
             #option contains '=>' so it must be a backup plan
             /=>/ && do {
-                ($zConfig->cfg->{src_plan} = $_) && next if $state eq 'src';
-                ($zConfig->cfg->{'dst_' . $key . '_plan'} = $_) && next if $state eq 'dst';
+                $zConfig->cfg->{src_plan} = $_ and next if $state eq 'src';
+                $zConfig->cfg->{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            ($zConfig->cfg->{src} = $_) && next if $state eq 'src';
-            ($zConfig->cfg->{"dst_$key"} = $_) && next if $state eq 'dst';
+            $zConfig->cfg->{src} = $_ and next if $state eq 'src';
+            $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $zConfig->checkBackupSet($zConfig->cfg->{src});
@@ -117,13 +117,13 @@ sub main {
             };
             #option contains '=>' so it must be a backup plan
             /=>/ && do {
-                ($backupSet{src_plan} = $_) && next if $state eq 'src';
-                ($backupSet{'dst_' . $key . '_plan'} = $_) && next if $state eq 'dst';
+                $backupSet{src_plan} = $_ and next if $state eq 'src';
+                $backupSet{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            ($backupSet{src} = $_) && next if $state eq 'src';
-            ($backupSet{"dst_$key"} = $_) && next if $state eq 'dst';
+            $backupSet{src} = $_ and next if $state eq 'src';
+            $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;

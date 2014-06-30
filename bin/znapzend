@@ -21,8 +21,8 @@ my $opts = {};
 sub main {
    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
 
-   if ($opts->{help}) { pod2usage(1) };
-   if ($opts->{man})  { pod2usage(-exitstatus => 0, -verbose => 2) };
+   $opts->{help} && pod2usage(1);
+   $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
    $opts->{nodestroy} = 0 if !defined $opts->{nodestroy};
