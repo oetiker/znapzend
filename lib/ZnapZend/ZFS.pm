@@ -120,8 +120,8 @@ sub dataSetExists {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die 'ERROR: cannot get datasets'
-        . ($remote ? " on $remote\n" : "\n");
+    open (my $dataSets, '-|', @ssh)
+        or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
 
     my @dataSets = <$dataSets>;
     chomp(@dataSets);
@@ -142,8 +142,8 @@ sub snapshotExists {
         [qw(zfs list -H -o name -t snapshot -r -d 1), $snapshot]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapshots, '-|', @ssh) or die 'ERROR: cannot get snapshots'
-        . ($remote ? " on $remote\n" : "\n");
+    open (my $snapshots, '-|', @ssh)
+        or die 'ERROR: cannot get snapshots' . ($remote ? " on $remote\n" : "\n");
 
     my @snapshots = <$snapshots>;
     chomp(@snapshots);
@@ -158,8 +158,8 @@ sub listDataSets {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die 'ERROR: cannot get datasets'
-        . ($remote ? " on $remote\n" : "\n");
+    open (my $dataSets, '-|', @ssh)
+        or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
 
     my @dataSets = <$dataSets>;
     chomp(@dataSets);
