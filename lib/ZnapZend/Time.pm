@@ -83,7 +83,8 @@ my $getSnapshotTimestamp = sub {
     my $snapFilter = $self->getSnapshotFilter($timeFormat);
 
     if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
-        my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat) or die "ERROR: cannot extract time of '$snapshot'\n";
+        my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat)
+            or die "ERROR: cannot extract time of '$snapshot'\n";
 
         return $snapshotTime->epoch();
     }
@@ -114,10 +115,14 @@ sub backupPlanToHash {
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
         my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan is not valid\n" if !defined $value && exists $self->unitFactors->{$unit};
+        die "ERROR: backup plan $backupPlan is not valid\n"
+            if !defined $value && exists $self->unitFactors->{$unit};
+
         my $key = $self->$timeToTimestamp($value, $unit);
         ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan ist not valid\n" if !defined $value && exists $self->unitFactors->{$unit};
+        die "ERROR: backup plan $backupPlan ist not valid\n"
+            if !defined $value && exists $self->unitFactors->{$unit};
+
         $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
     }
 
@@ -236,8 +241,11 @@ sub checkTimeFormat {
     #just a made-up time to check if strftime and strptime work
     my $timeToCheck = gmtime(1014416542);
 
-    my $formattedTime = $timeToCheck->strftime($timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
-    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
+    my $formattedTime = $timeToCheck->strftime($timeFormat)
+        or die "ERROR: timestamp format not valid. check your syntax\n";
+
+    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat)
+        or die "ERROR: timestamp format not valid. check your syntax\n";
 
     return $timeToCheck == $resultingTime; #times schould be equal
 }

@@ -22,7 +22,8 @@ has zConfig => sub {
 
 has zZfs => sub {
     my $self = shift;
-    ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction, nodestroy => $self->nodestroy);
+    ZnapZend::ZFS->new(debug => $self->debug,
+        noaction => $self->noaction, nodestroy => $self->nodestroy);
 };
 
 has zTime => sub { ZnapZend::Time->new() };
@@ -47,7 +48,8 @@ my $refreshBackupPlans = sub {
         #create backup hashes for all destinations
         for (keys %{$backupSet}){
             my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
-            $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
+            $backupSet->{"dst$key" . 'PlanHash'}
+                = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
         $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
@@ -86,7 +88,8 @@ my $checkSendRecvCleanup = sub {
             my $toDestroy;
 
             #get all sub datasets of source filesystem; need to send them all individually if recursive
-            my $srcSubDataSets = $backupSet->{recursive} eq 'on' ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
+            my $srcSubDataSets = $backupSet->{recursive} eq 'on'
+                ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
             #loop through all destinations
             for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
@@ -98,12 +101,14 @@ my $checkSendRecvCleanup = sub {
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
                     syslog('info', 'sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $backupSet->{mbuffer}, $backupSet->{snapFilter});
+                    $self->zZfs->sendRecvSnapshots($srcDataSet,
+                        $dstDataSet, $backupSet->{mbuffer}, $backupSet->{snapFilter});
             
                     # cleanup according to backup schedule
                     @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
                     $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                                  $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
+
                     syslog('info', 'cleaning up snapshots on ' . $dstDataSet);
                     $self->zZfs->destroySnapshots($toDestroy);
                 }
@@ -115,6 +120,7 @@ my $checkSendRecvCleanup = sub {
                 @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
                 $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                              $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
                 syslog('info', 'cleaning up snapshots on ' . $srcDataSet);
                 $self->zZfs->destroySnapshots($toDestroy);
             }
@@ -161,8 +167,11 @@ sub start {
         if ($self->zTime->getLocalTimestamp() >= $timeStamp){
             for my $backupSet (@{$actionList}){
                 syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
-                my $snapshotName = $backupSet->{src} . '@' . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
-                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on') or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
+                my $snapshotName = $backupSet->{src} . '@'
+                    . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
+                    or syslog('info', "snapshot '$snapshotName' does already exist. skipping one round...");
         
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }

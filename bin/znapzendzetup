@@ -78,7 +78,8 @@ sub main {
         my $check = <STDIN>;
         chomp ($check);
         if ($check =~ /^y(?:es)?$/i){
-            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet($zConfig->cfg->{src})
+                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }
         last;
     };
@@ -91,7 +92,8 @@ sub main {
             $zConfig->deleteBackupDestination($opts->{src}, 'dst_' . $opts->{dst});
         }
         else {
-            $zConfig->deleteBackupSet($opts->{src}) or die "ERROR: cannot delete backup config for $opts->{src}\n";
+            $zConfig->deleteBackupSet($opts->{src})
+                or die "ERROR: cannot delete backup config for $opts->{src}\n";
         }
 
         last;
@@ -148,7 +150,8 @@ sub main {
         chomp ($check);
         if ($check =~ /^y(?:es)?$/i){
             #write new backup set
-            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet($zConfig->cfg->{src})
+                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }
 
         last;
@@ -156,19 +159,22 @@ sub main {
     /^enable$/ && do {
         $opts->{src} = pop @ARGV;
         pod2usage(1) if !defined $opts->{src};
-        $zConfig->enableBackupSet($opts->{src}) or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
+        $zConfig->enableBackupSet($opts->{src})
+            or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
 
         last;
     };
     /^disable$/ && do {
         $opts->{src} = pop @ARGV;
         pod2usage(1) if !defined $opts->{src};
-        $zConfig->disableBackupSet($opts->{src}) or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
+        $zConfig->disableBackupSet($opts->{src})
+            or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
 
         last;
     };
     /^list$/ && do {
-        my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
+        my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+            or die "ERROR: cannot list backup config\n";
 
         dumpProperties($backupSets);
         last;

@@ -50,14 +50,18 @@ sub main {
     $opts->{help} && pod2usage(1);
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
-    my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
+    my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+        or die "ERROR: cannot list backup config\n";
+
     die "ERROR: no valid znapzend setup found on source\n" if !@{$backupSets};
 
     #print header
     print "snapshot\ncount   space usage   dataset\n";
 
     for my $backupSet (@{$backupSets}){
-        my $datasets = $backupSet->{recursive} eq 'on' ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+        my $datasets = $backupSet->{recursive} eq 'on'
+            ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+
         my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset
