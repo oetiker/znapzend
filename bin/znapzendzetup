@@ -61,13 +61,13 @@ sub main {
             };
             #option contains '=>' so it must be a backup plan
             /=>/ && do {
-                $zConfig->cfg->{src_plan} = $_ and next if $state eq 'src';
-                $zConfig->cfg->{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
+                ($zConfig->cfg->{src_plan} = $_) && next if $state eq 'src';
+                ($zConfig->cfg->{'dst_' . $key . '_plan'} = $_) && next if $state eq 'dst';
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $zConfig->cfg->{src} = $_ and next if $state eq 'src';
-            $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
+            ($zConfig->cfg->{src} = $_) && next if $state eq 'src';
+            ($zConfig->cfg->{"dst_$key"} = $_) && next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $zConfig->checkBackupSet($zConfig->cfg->{src});
@@ -86,7 +86,7 @@ sub main {
         GetOptions($opts, qw(dst=s)) or exit(1);
 
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
+        pod2usage(1) if !defined $opts->{src};
         if ($opts->{dst}){
             $zConfig->deleteBackupDestination($opts->{src}, 'dst_' . $opts->{dst});
         }
@@ -117,16 +117,16 @@ sub main {
             };
             #option contains '=>' so it must be a backup plan
             /=>/ && do {
-                $backupSet{src_plan} = $_ and next if $state eq 'src';
-                $backupSet{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
+                ($backupSet{src_plan} = $_) && next if $state eq 'src';
+                ($backupSet{'dst_' . $key . '_plan'} = $_) && next if $state eq 'dst';
                 die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $backupSet{src} = $_ and next if $state eq 'src';
-            $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
+            ($backupSet{src} = $_) && next if $state eq 'src';
+            ($backupSet{"dst_$key"} = $_) && next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} and $opts->{recursive} =~ /^on|off$/;
+        $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
         $backupSet{mbuffer}    = $opts->{mbuffer} if $opts->{mbuffer};
         $backupSet{tsformat}   = $opts->{tsformat} if $opts->{tsformat};
 
@@ -155,14 +155,14 @@ sub main {
     };
     /^enable$/ && do {
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
+        pod2usage(1) if !defined $opts->{src};
         $zConfig->enableBackupSet($opts->{src}) or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
 
         last;
     };
     /^disable$/ && do {
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
+        pod2usage(1) if !defined $opts->{src};
         $zConfig->disableBackupSet($opts->{src}) or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
 
         last;

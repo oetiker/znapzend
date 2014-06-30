@@ -40,13 +40,13 @@ my $refreshBackupPlans = sub {
     my $self = shift;
     $self->backupSets($self->zConfig->getBackupSetEnabled());
 
-    die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n" if not @{$self->backupSets};
+    die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n" if !@{$self->backupSets};
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #create backup hashes for all destinations
         for (keys %{$backupSet}){
-            my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
+            (my ($key) = /^dst_([^_]+)_[^_]+$/) || next;
             $backupSet->{"dst$key" . 'PlanHash'} = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
@@ -61,7 +61,7 @@ my $cleanupChildren = sub {
 
     for my $backupSet (@{$self->backupSets}){
         if ($backupSet->{childPid}){
-            if(not waitpid($backupSet->{childPid}, WNOHANG)){
+            if (!waitpid($backupSet->{childPid}, WNOHANG)){
                 $aliveChildren++;
             }
             else{
@@ -77,9 +77,10 @@ my $checkSendRecvCleanup = sub {
     my $backupSet = shift;
     my $timeStamp = shift;
 
-    if (not $backupSet->{childPid}){
+    if (!$backupSet->{childPid}){
         my $pid = fork();
-        die "ERROR: could not fork child process\n" if not defined $pid;
+        die "ERROR: could not fork child process\n" if !defined $pid;
+
         if(!$pid){
             my @snapshots;
             my $toDestroy;
@@ -134,20 +135,20 @@ sub start {
     
     syslog('info', 'starting znapzend...');
     # set signal handlers
-    local $SIG{INT} = sub { $self->$killThemAll; };
+    local $SIG{INT}  = sub { $self->$killThemAll; };
     local $SIG{TERM} = sub { $self->$killThemAll; };
 
     syslog('info', 'refreshing backup plans...');
     $self->$refreshBackupPlans();
 
     ### main loop ###
-    while(1){
+    while (1){
         # clean up child processes
         my $cleanUp = $self->$cleanupChildren();
         # get time to wait for next snapshot creation and list of backup sets which requires action
         my ($timeStamp, $actionList) =  $self->zTime->getActionList($self->backupSets);    
-
         my $timeToWait = $timeStamp - $self->zTime->getLocalTimestamp();
+
         if ($cleanUp){
             sleep($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait);
         }

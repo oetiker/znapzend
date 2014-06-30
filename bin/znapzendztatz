@@ -13,7 +13,7 @@ use ZnapZend::Config;
 use ZnapZend::ZFS;
 
 #flush output immediately
-$| = 1;
+local $| = 1;
 
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
@@ -32,6 +32,7 @@ sub collectData {
     my $snapFilter = shift;
     my %data;
     my $snapshots = $zZfs->listSnapshots($dataset, $snapFilter);
+
     $data{count} = $#{$snapshots};
     ${$snapshots}[-1] =~ /^.*\@($snapFilter)$/;
     my $snapshotInterval = ${$snapshots}[0] . '%' . $1;
@@ -50,7 +51,7 @@ sub main {
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
-    die "ERROR: no valid znapzend setup found on source\n" if not @{$backupSets};
+    die "ERROR: no valid znapzend setup found on source\n" if !@{$backupSets};
 
     #print header
     print "snapshot\ncount   space usage   dataset\n";
@@ -65,7 +66,7 @@ sub main {
 
             #destination datasets
             for (keys %{$backupSet}){
-                my ($key) = /^(dst_[^_]+)$/ or next;
+                (my ($key) = /^(dst_[^_]+)$/) || next;
                 my $dstDataSet = $dataset;
                 $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
                 dumpStats(collectData($dstDataSet, $snapFilter));

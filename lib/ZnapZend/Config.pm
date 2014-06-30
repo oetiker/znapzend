@@ -19,7 +19,7 @@ has mandProperties => sub {
     }
 };
 
-has zfs => sub { ZnapZend::ZFS->new(); };
+has zfs  => sub { ZnapZend::ZFS->new(); };
 has time => sub { ZnapZend::Time->new(); };
 
 has backupSets => sub { [] };
@@ -49,6 +49,7 @@ my $checkBackupPlan = sub {
     }
     # remove trailing comma
     $returnBackupPlan =~ s/,$//;
+
     return $returnBackupPlan;
 };
 
@@ -57,7 +58,7 @@ my $checkBackupSets = sub {
 
     for my $backupSet (@{$self->backupSets}){
         for my $prop (keys $self->mandProperties){
-            die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n" if not exists $backupSet->{$prop};
+            die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n" if !exists $backupSet->{$prop};
 
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
@@ -76,7 +77,7 @@ my $checkBackupSets = sub {
                 #check if properties are valid
                 my @values = split /\|/, $self->mandProperties->{$prop}, 2;
                 my $value = $backupSet->{$prop};
-                die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n" if not ( grep { /^$value$/ } @values);
+                die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n" if !(grep { /^$value$/ } @values);
             }
         }
         #check destination plans and datasets
@@ -95,7 +96,6 @@ my $checkBackupSets = sub {
     return 1;
 };
 
-
 my $getBackupSet = sub {
     my $self = shift;
     my $enabledOnly = shift;
@@ -103,21 +103,25 @@ my $getBackupSet = sub {
     
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
     if ($enabledOnly){
+        #use c-type for since we need the index to remove the element
         for (my $i = $#{$self->backupSets}; $i >= 0; $i--){
             splice @{$self->backupSets}, $i, 1 if ${$self->backupSets}[$i]->{enabled} ne 'on';
         }
     }
     $self->$checkBackupSets();
+
     return $self->backupSets;
 };
 
 sub getBackupSet {
     my $self = shift;
+
     return $self->$getBackupSet(0, @_);
 }
 
 sub getBackupSetEnabled {
     my $self = shift;
+
     return $self->$getBackupSet(1, @_);
 }
 
@@ -142,6 +146,7 @@ sub checkBackupSet {
             $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
         }
     }
+
     return $self->cfg;
 }
 
@@ -153,6 +158,7 @@ sub setBackupSet {
     $self->checkBackupSet($dataSet);
 
     $self->zfs->setDataSetProperties($dataSet, $self->cfg);
+
     return 1;
 }
 
@@ -161,6 +167,7 @@ sub deleteBackupSet {
     my $dataSet = shift;
 
     $self->zfs->deleteDataSetProperties($dataSet);
+
     return 1;
 }
 
@@ -170,6 +177,7 @@ sub deleteBackupDestination {
     my $dst = shift;
 
     $self->zfs->deleteBackupDestination($dataSet, $dst);
+
     return 1;
 }
 
@@ -185,8 +193,10 @@ sub enableBackupSet {
         $self->cfg(${$self->backupSets}[0]);
         $self->cfg->{enabled} = 'on';
         $self->setBackupSet($dataSet);
+
         return 1;
     }
+
     return 0;
 }
 
@@ -202,8 +212,10 @@ sub disableBackupSet {
         $self->cfg(${$self->backupSets}[0]);
         $self->cfg->{enabled} = 'off';
         $self->setBackupSet($dataSet);
+
         return 1;
     }
+
     return 0;
 }
 

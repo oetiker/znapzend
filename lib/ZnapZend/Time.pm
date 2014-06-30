@@ -84,8 +84,10 @@ my $getSnapshotTimestamp = sub {
 
     if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
         my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat) or die "ERROR: cannot extract time of '$snapshot'\n";
+
         return $snapshotTime->epoch();
     }
+
     return 0;
 };
 
@@ -112,10 +114,10 @@ sub backupPlanToHash {
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
         my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan is not valid\n" if not defined $value and exists $self->unitFactors->{$unit};
+        die "ERROR: backup plan $backupPlan is not valid\n" if !defined $value && exists $self->unitFactors->{$unit};
         my $key = $self->$timeToTimestamp($value, $unit);
         ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan ist not valid\n" if not defined $value and exists $self->unitFactors->{$unit};
+        die "ERROR: backup plan $backupPlan ist not valid\n" if !defined $value && exists $self->unitFactors->{$unit};
         $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
     }
 
@@ -148,7 +150,7 @@ sub getActionList {
     for my $backupSet (@{$backupSets}){
         my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
         
-        if (not defined $timeStamp or $tmpTime < $timeStamp){
+        if (!defined $timeStamp || $tmpTime < $timeStamp){
             $timeStamp = $tmpTime;
             @backupSets = ();
         }
@@ -167,7 +169,7 @@ sub getSnapshotsToDestroy {
     my @toDestroy;
 
     #initialise with maximum time to keep backups since we run from old to new backups
-    my $maxAge = (sort { $b<=>$a } keys %{$timePlan})[0];
+    my $maxAge = (sort { $a<=>$b } keys %{$timePlan})[-1];
 
     for my $snapshot (@{$snapshots}){
         #get snapshot age
@@ -181,7 +183,7 @@ sub getSnapshotsToDestroy {
             }
         }
         #maxAge should never be 0 or less, still do a check for safety
-        die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n" if not $maxAge > 0;
+        die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n" if !($maxAge > 0);
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
             push @toDestroy, $snapshot;
@@ -208,12 +210,12 @@ sub getLastScrubTimestamp {
     my $scrubTimeFormat = $self->scrubTimeFormat;
 
     for (@{$zpoolStatus}){
-        next if not /$scrubFilter/;
-        say $_;
+        next if !/$scrubFilter/;
         if (my ($month, $day, $hour, $min, $sec, $year) = /$scrubTimeFormat/){
             return timegm($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
         }
     }
+
     return 0;
 }
 
