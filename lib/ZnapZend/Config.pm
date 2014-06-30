@@ -41,11 +41,11 @@ my $checkBackupPlan = sub {
     for my $planItem (@planItems){
         my @planValues = split /=>/, $planItem, 2;
 
-        (my $time = $self->time->checkTimeUnit($planValues[0]))
+        my $time = $self->time->checkTimeUnit($planValues[0])
             or die "ERROR: backup plan $backupPlan is not valid\n";
 
         $returnBackupPlan .= "$time=>";
-        ($time = $self->time->checkTimeUnit($planValues[1]))
+        $time = $self->time->checkTimeUnit($planValues[1])
             or die "ERROR: backup plan $backupPlan is not valid\n";
 
         $returnBackupPlan .= "$time,";
@@ -61,9 +61,9 @@ my $checkBackupSets = sub {
 
     for my $backupSet (@{$self->backupSets}){
         for my $prop (keys $self->mandProperties){
-            die "ERROR: property $prop not set on backup for "
-                . $backupSet->{src} . "\n" if !exists $backupSet->{$prop};
-
+            exists $backupSet->{$prop}
+                or die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n";
+                
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
                 /^###backupplan###$/ && do {
@@ -83,8 +83,8 @@ my $checkBackupSets = sub {
                 #check if properties are valid
                 my @values = split /\|/, $self->mandProperties->{$prop}, 2;
                 my $value = $backupSet->{$prop};
-                die "ERROR: property $prop is not valid on dataset "
-                    . $backupSet->{src} . "\n" if !(grep { /^$value$/ } @values);
+                grep { /^$value$/ } @values
+                    or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
             }
         }
         #check destination plans and datasets
@@ -207,7 +207,7 @@ sub enableBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
-    die "ERROR: dataset $dataSet does not exist\n" if !$self->zfs->dataSetExists($dataSet);
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 
@@ -226,7 +226,7 @@ sub disableBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
-    die "ERROR: dataset $dataSet does not exist\n" if !$self->zfs->dataSetExists($dataSet);
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 

@@ -82,7 +82,7 @@ my $sendRecvSnapshots = sub {
     my $cmd = $shellQuote->(@cmd);
     print STDERR "# $cmd\n" if $self->debug; 
 
-    if (not $self->noaction){
+    if (!$self->noaction){
         $exec ? exec($cmd) : system($cmd);
         die "ERROR: cannot send snapshot to $remote ($?)\n" if $?;
     }
@@ -183,7 +183,7 @@ sub listSnapshots {
 
     while (<$snapshots>){
         chomp;
-        next if not /^\Q$dataSet\E\@$snapshotFilter$/;
+        next if !/^\Q$dataSet\E\@$snapshotFilter$/;
         push @snapshots, $_;
     }
 
@@ -244,7 +244,7 @@ sub destroySnapshots {
         ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSet);
         #tag local snapshots as 'local' so we have a key to build the hash
         $remote = $remote || 'local';
-        $toDestroy{$remote} = [] if !exists $toDestroy{$remote};
+        exists $toDestroy{$remote} or $toDestroy{$remote} = [];
         push @{$toDestroy{$remote}}, @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot";
     }
 

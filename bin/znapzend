@@ -25,7 +25,7 @@ sub main {
    $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-   $opts->{nodestroy} = 0 if !defined $opts->{nodestroy};
+   $opts->{nodestroy} = $opts->{nodestroy} // 0;
 
    openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
@@ -62,7 +62,7 @@ sub daemonize {
             }
         }
         setsid or die "Can't start a new session: $!";
-        open STDOUT,'>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
+        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
         open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
         open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
 

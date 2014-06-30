@@ -41,7 +41,8 @@ my $refreshBackupPlans = sub {
     my $self = shift;
     $self->backupSets($self->zConfig->getBackupSetEnabled());
 
-    die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n" if !@{$self->backupSets};
+    @{$self->backupSets}
+        or die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
@@ -81,7 +82,7 @@ my $checkSendRecvCleanup = sub {
 
     if (!$backupSet->{childPid}){
         my $pid = fork();
-        die "ERROR: could not fork child process\n" if !defined $pid;
+        defined $pid or die "ERROR: could not fork child process\n";
 
         if(!$pid){
             my @snapshots;

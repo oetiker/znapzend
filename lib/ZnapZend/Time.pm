@@ -115,13 +115,13 @@ sub backupPlanToHash {
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
         my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan is not valid\n"
-            if !defined $value && exists $self->unitFactors->{$unit};
+        defined $value && exists $self->unitFactors->{$unit}
+            or die "ERROR: backup plan $backupPlan is not valid\n"
 
         my $key = $self->$timeToTimestamp($value, $unit);
         ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan ist not valid\n"
-            if !defined $value && exists $self->unitFactors->{$unit};
+        defined $value && exists $self->unitFactors->{$unit}
+            or die "ERROR: backup plan $backupPlan ist not valid\n"
 
         $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
     }
@@ -188,7 +188,7 @@ sub getSnapshotsToDestroy {
             }
         }
         #maxAge should never be 0 or less, still do a check for safety
-        die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n" if !($maxAge > 0);
+        $maxAge > 0 or die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n";
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
             push @toDestroy, $snapshot;
@@ -197,7 +197,7 @@ sub getSnapshotsToDestroy {
         #calculate timeslot
         my $timeslot = int($snapshotTimestamp / $timePlan->{$maxAge});
         #check if timeslot is already occupied, if so, push this snapshot to the destroy list
-        if (exists $timeslots{$maxAge} and exists $timeslots{$maxAge}->{$timeslot}){
+        if (exists $timeslots{$maxAge} && exists $timeslots{$maxAge}->{$timeslot}){
             push @toDestroy, $snapshot;
         }
         else{
