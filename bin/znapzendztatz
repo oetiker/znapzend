@@ -53,7 +53,8 @@ sub main {
     my $backupSets = $zConfig->getBackupSet(pop @ARGV)
         or die "ERROR: cannot list backup config\n";
 
-    die "ERROR: no valid znapzend setup found on source\n" if !@{$backupSets};
+    #check if there is at least one valid backup set
+    @{$backupSets} or die "ERROR: no valid znapzend setup found on source\n";
 
     #print header
     print "snapshot\ncount   space usage   dataset\n";
