@@ -111,7 +111,7 @@ my $getBackupSet = sub {
         for my $backupSet (@{$self->backupSets}){
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
         }
-        #return enabled only list
+        #return enabled only backup sets
         return \@backupSets;
     }
     #return all available backup sets
