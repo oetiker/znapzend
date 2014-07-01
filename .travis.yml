@@ -16,7 +16,7 @@ script:
   - ./configure --prefix=/opt/znapzend
   - sudo make install
   - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover /opt/znapzend/bin/znapzend --help || test $? == 1 
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover /opt/znapzend/bin/znapzendzetup --help || test $? == 1 
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover ./t/znapzendztatz || test $? == 1 
+  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover ./t/znapzendzetup.t || test $? == 1 
+  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover ./t/znapzendztatz.t || test $? == 1 
   - env PERL5LIB=/opt/znapzend/thirdparty/lib/perl5  /opt/znapzend/thirdparty/bin/cover -report coveralls
 
