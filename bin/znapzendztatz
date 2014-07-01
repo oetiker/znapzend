@@ -12,9 +12,6 @@ use Mojo::Base -strict;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 
-#flush output immediately
-local $| = 1;
-
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
 my $zTime   = ZnapZend::Time->new();
