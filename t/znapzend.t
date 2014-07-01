@@ -6,16 +6,8 @@ use warnings;
 use FindBin;
 $ENV{PATH} .= ":$FindBin::Bin";
 
-my $binDir;
-BEGIN {
-    $binDir = shift;
-    $binDir //= "$FindBin::Bin/../bin";
-}
-
-use lib "$binDir/../lib";
-use lib "$binDir/../thirdparty/lib/perl5";
-
-use ZnapZend;
+my $binDir = shift;
+$binDir //= "$FindBin::Bin/../bin";
 
 my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5",
     "-MDevel::Cover=+ignore,thirdparty");
