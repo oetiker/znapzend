@@ -12,9 +12,6 @@ use Mojo::Base -strict;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 
-#flush output immediately
-$| = 1;
-
 my $zConfig = ZnapZend::Config->new();
 my $zZfs    = ZnapZend::ZFS->new();
 my $zTime   = ZnapZend::Time->new();
@@ -32,6 +29,7 @@ sub collectData {
     my $snapFilter = shift;
     my %data;
     my $snapshots = $zZfs->listSnapshots($dataset, $snapFilter);
+
     $data{count} = $#{$snapshots};
     ${$snapshots}[-1] =~ /^.*\@($snapFilter)$/;
     my $snapshotInterval = ${$snapshots}[0] . '%' . $1;
@@ -44,19 +42,24 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(help man)) or exit(1);
+    GetOptions($opts, qw(help man)) or exit 1;
 
     $opts->{help} && pod2usage(1);
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
-    my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
-    die "ERROR: no valid znapzend setup found on source\n" if not @{$backupSets};
+    my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+        or die "ERROR: cannot list backup config\n";
+
+    #check if there is at least one valid backup set
+    @{$backupSets} or die "ERROR: no valid znapzend setup found on source\n";
 
     #print header
     print "snapshot\ncount   space usage   dataset\n";
 
     for my $backupSet (@{$backupSets}){
-        my $datasets = $backupSet->{recursive} eq 'on' ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+        my $datasets = $backupSet->{recursive} eq 'on'
+            ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
+
         my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset

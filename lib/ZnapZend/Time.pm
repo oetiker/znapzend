@@ -1,7 +1,6 @@
 package ZnapZend::Time;
 
 use Mojo::Base -base;
-use Time::Local qw(timegm timelocal);
 use Time::Piece;
 
 ### attributes ###
@@ -41,25 +40,9 @@ has unitFactors => sub {
     }
 };
 
-has monthTable => sub {
-    {
-        Jan     => 0,
-        Feb     => 1,
-        Mar     => 2,
-        Apr     => 3,
-        May     => 4,
-        Jun     => 5,
-        Jul     => 6,
-        Aug     => 7,
-        Sep     => 8,
-        Oct     => 9,
-        Nov     => 10,
-        Dec     => 11,
-    }
-};
-
-has scrubFilter => sub { qr/scrub repaired/ };
-has scrubTimeFormat => sub { qr/([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/ };
+has scrubFilter     => sub { qr/scrub repaired/ };
+has scrubTimeFilter => sub { qr/[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\d{4}/ };
+has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 
 my $intervalToTimestamp = sub {
     my $time = shift;
@@ -83,9 +66,12 @@ my $getSnapshotTimestamp = sub {
     my $snapFilter = $self->getSnapshotFilter($timeFormat);
 
     if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
-        my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat) or die "ERROR: cannot extract time of '$snapshot'\n";
-        return $snapshotTime->epoch();
+        my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat)
+            or die "ERROR: cannot extract time of '$snapshot'\n";
+
+        return $snapshotTime->epoch;
     }
+
     return 0;
 };
 
@@ -112,10 +98,14 @@ sub backupPlanToHash {
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
         my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan is not valid\n" if not defined $value and exists $self->unitFactors->{$unit};
+        $value && exists $self->unitFactors->{$unit}
+            or die "ERROR: backup plan $backupPlan is not valid\n";
+
         my $key = $self->$timeToTimestamp($value, $unit);
         ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
-        die "ERROR: backup plan $backupPlan ist not valid\n" if not defined $value and exists $self->unitFactors->{$unit};
+        $value && exists $self->unitFactors->{$unit}
+            or die "ERROR: backup plan $backupPlan ist not valid\n";
+
         $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
     }
 
@@ -148,7 +138,7 @@ sub getActionList {
     for my $backupSet (@{$backupSets}){
         my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
         
-        if (not defined $timeStamp or $tmpTime < $timeStamp){
+        if (!defined $timeStamp || $tmpTime < $timeStamp){
             $timeStamp = $tmpTime;
             @backupSets = ();
         }
@@ -167,7 +157,7 @@ sub getSnapshotsToDestroy {
     my @toDestroy;
 
     #initialise with maximum time to keep backups since we run from old to new backups
-    my $maxAge = (sort { $b<=>$a } keys %{$timePlan})[0];
+    my $maxAge = (sort { $a<=>$b } keys %{$timePlan})[-1];
 
     for my $snapshot (@{$snapshots}){
         #get snapshot age
@@ -181,7 +171,7 @@ sub getSnapshotsToDestroy {
             }
         }
         #maxAge should never be 0 or less, still do a check for safety
-        die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n" if not $maxAge > 0;
+        $maxAge > 0 or die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n";
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
             push @toDestroy, $snapshot;
@@ -190,7 +180,7 @@ sub getSnapshotsToDestroy {
         #calculate timeslot
         my $timeslot = int($snapshotTimestamp / $timePlan->{$maxAge});
         #check if timeslot is already occupied, if so, push this snapshot to the destroy list
-        if (exists $timeslots{$maxAge} and exists $timeslots{$maxAge}->{$timeslot}){
+        if (exists $timeslots{$maxAge} && exists $timeslots{$maxAge}->{$timeslot}){
             push @toDestroy, $snapshot;
         }
         else{
@@ -205,24 +195,26 @@ sub getLastScrubTimestamp {
     my $self = shift;
     my $zpoolStatus = shift;
     my $scrubFilter = $self->scrubFilter;
+    my $scrubTimeFilter = $self->scrubTimeFilter;
     my $scrubTimeFormat = $self->scrubTimeFormat;
 
     for (@{$zpoolStatus}){
-        next if not /$scrubFilter/;
-        say $_;
-        if (my ($month, $day, $hour, $min, $sec, $year) = /$scrubTimeFormat/){
-            return timegm($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
-        }
+        next if !/$scrubFilter/;
+
+        /($scrubTimeFilter)$/ or die "ERROR: cannot parse last scrub time\n";
+        my $scrubTime = Time::Piece->strptime($1, $scrubTimeFormat) or die "ERROR: cannot parse last scrub time\n";
+
+        return $scrubTime->epoch;
     }
+
     return 0;
 }
 
 sub getLocalTimestamp {
     my $self = shift;
-    my $time = time();
-    my @t = localtime($time);
+    my $time = localtime;
 
-    return $time + (timegm(@t) - timelocal(@t));
+    return $time->epoch + $time->tzoffset;
 }
 
 sub checkTimeFormat {
@@ -234,8 +226,11 @@ sub checkTimeFormat {
     #just a made-up time to check if strftime and strptime work
     my $timeToCheck = gmtime(1014416542);
 
-    my $formattedTime = $timeToCheck->strftime($timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
-    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat) or die "ERROR: timestamp format not valid. check your syntax\n";
+    my $formattedTime = $timeToCheck->strftime($timeFormat)
+        or die "ERROR: timestamp format not valid. check your syntax\n";
+
+    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat)
+        or die "ERROR: timestamp format not valid. check your syntax\n";
 
     return $timeToCheck == $resultingTime; #times schould be equal
 }

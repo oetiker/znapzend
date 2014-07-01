@@ -19,13 +19,13 @@ use ZnapZend;
 my $opts = {};
 
 sub main {
-   GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit(1);
+   GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit 1;
 
-   if($opts->{help}) { pod2usage(1) };
-   if($opts->{man}) { pod2usage(-exitstatus => 0, -verbose => 2) };
+   $opts->{help} && pod2usage(1);
+   $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-   $opts->{nodestroy} = 0 if not defined $opts->{nodestroy};
+   $opts->{nodestroy} //= 0;
 
    openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
@@ -38,31 +38,37 @@ sub main {
 
 sub daemonize {
    my $pidFile = $opts->{pidfile};
-   if (defined $pidFile and -f $pidFile ) {
+
+   if (defined $pidFile && -f $pidFile){
         chomp(my $pid = slurp $pidFile);
         if (kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
         }
     }
     defined (my $pid = fork) or die "Can't fork: $!";
-    if ($pid) {
+
+    if ($pid){
         exit;
-    } else {
+    }
+    else{
         print STDERR "znapzend ($$) is running in the background now.\n";
+
         if ($pidFile){
-            if( open my $fh, '>', $pidFile ){
+            if (open my $fh, '>', $pidFile){
                 print $fh "$$\n";
-            } else {
+            }
+            else {
                 warn "creating pid file $pidFile: $!\n";
             }
         }
         setsid or die "Can't start a new session: $!";
-        open STDOUT,'>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
+        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
         open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
         open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
+
         # send warnings and die messages to log
         $SIG{__WARN__} = sub { syslog('warning', shift) };
-        $SIG{__DIE__} = sub { return if $^S; syslog('err', shift); exit 1 };
+        $SIG{__DIE__}  = sub { return if $^S; syslog('err', shift); exit 1 };
     }
 }
 

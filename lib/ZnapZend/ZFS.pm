@@ -5,20 +5,21 @@ use Mojo::Base -base;
 local $ENV{PATH} = "/usr/sbin:/usr/bin";
 
 ### attributes ###
-has debug => sub { 0 };
-has noaction => sub { 0 };
-has nodestroy => sub { 1 };
-has propertyPrefix => sub { 'org.znapzend' };
-has sshCmdArray => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
-has mbufferParam => sub { [qw(-s 128k -m 1G -q)] };
+has debug           => sub { 0 };
+has noaction        => sub { 0 };
+has nodestroy       => sub { 1 };
+has propertyPrefix  => sub { q{org.znapzend} };
+has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
+has mbufferParam    => sub { [qw(-s 128k -m 1G -q)] };
 has scrubInProgress => sub { qr/scrub in progress/ };
 
 ### private functions ###
-my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
+my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
 my $splitDataSetSnapshot = sub { return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/); };
 
 my $shellQuote = sub {
     my @return;
+
     for my $group (@_){
         my @args = @$group;
         for (@args){
@@ -26,21 +27,25 @@ my $shellQuote = sub {
         }
         push @return, join ' ', map {/^[-=_0-9a-z]+$/i ? $_ : qq{'$_'}} @args;
     }
+
     return join '|', @return;
 };
 
 my $buildRemoteRefArray = sub {
     my $self = shift;
     my $remote = shift;
+
     if ($remote){
         return [@{$self->sshCmdArray}, $remote, $shellQuote->(@_)];
     }
+
     return @_;
 };
 
 my $buildRemote = sub {
     my $self = shift;
     my @list = $self->$buildRemoteRefArray(@_);
+
     return @{$list[0]};
 };
 
@@ -53,9 +58,11 @@ my $sendRecvSnapshots = sub {
     my $mbuffer = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my $remote;
-    my ($lastSnapshot, $lastCommon) = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
+    my ($lastSnapshot, $lastCommon)
+        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
-    return 1 if !$lastSnapshot or (defined $lastCommon and ($lastSnapshot eq $lastCommon));
+    #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
+    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
 
     ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
 
@@ -75,10 +82,11 @@ my $sendRecvSnapshots = sub {
     my $cmd = $shellQuote->(@cmd);
     print STDERR "# $cmd\n" if $self->debug; 
 
-    if (not $self->noaction){
+    if (!$self->noaction){
         $exec ? exec($cmd) : system($cmd);
         die "ERROR: cannot send snapshot to $remote ($?)\n" if $?;
     }
+
     return 1;
 };
 
@@ -93,7 +101,8 @@ my $scrubZpool = sub {
 
     my @ssh = $self->$buildRemote($remote, [@cmd, $zpool]);
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    (system(@ssh) and die 'ERROR: could not ' . ($startstop ? 'start' : 'stop') .  " scrub on $zpool") if not $self->noaction;
+    system(@ssh) && die 'ERROR: could not ' . ($startstop ? 'start' : 'stop')
+        . " scrub on $zpool" if !$self->noaction;
 
     return 1;
 };
@@ -105,13 +114,15 @@ sub dataSetExists {
     my $remote;
 
     #just in case if someone aks to check '';
-    return 0 if not $dataSet;
+    return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
+    open my $dataSets, '-|', @ssh
+        or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
+
     my @dataSets = <$dataSets>;
     chomp(@dataSets);
 
@@ -124,13 +135,16 @@ sub snapshotExists {
     my $remote;
 
     #just in case if someone aks to check '';
-    return 0 if not $snapshot;
+    return 0 if !$snapshot;
 
     ($remote, $snapshot) = $splitHostDataSet->($snapshot);
-    my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name -t snapshot -r -d 1), $snapshot]);
+    my @ssh = $self->$buildRemote($remote,
+        [qw(zfs list -H -o name -t snapshot -r -d 1), $snapshot]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapshots, '-|', @ssh) or die 'ERROR: cannot get snapshots' . ($remote ? " on $remote\n" : "\n");
+    open my $snapshots, '-|', @ssh
+        or die 'ERROR: cannot get snapshots' . ($remote ? " on $remote\n" : "\n");
+
     my @snapshots = <$snapshots>;
     chomp(@snapshots);
 
@@ -144,7 +158,9 @@ sub listDataSets {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
+    open my $dataSets, '-|', @ssh
+        or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
+
     my @dataSets = <$dataSets>;
     chomp(@dataSets);
 
@@ -159,14 +175,15 @@ sub listSnapshots {
     my @snapshots;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote,[qw(zfs list -t snapshot -o name -s name -r -d 1), $dataSet]);
+    my @ssh = $self->$buildRemote($remote,
+        [qw(zfs list -t snapshot -o name -s name -r -d 1), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapshots, '-|', @ssh) or die "ERROR: cannot get snapshots on $dataSet\n";
+    open my $snapshots, '-|', @ssh or die "ERROR: cannot get snapshots on $dataSet\n";
 
     while (<$snapshots>){
         chomp;
-        next if not /^\Q$dataSet\E\@$snapshotFilter$/;
+        next if !/^\Q$dataSet\E\@$snapshotFilter$/;
         push @snapshots, $_;
     }
 
@@ -184,15 +201,16 @@ sub listSubDataSets {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -r -o name), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die "ERROR: cannot get sub datasets on $dataSet\n";
+    open my $dataSets, '-|', @ssh or die "ERROR: cannot get sub datasets on $dataSet\n";
 
     while (<$dataSets>){
         chomp;
-        next if not /^\Q$dataSet\E/;
+        next if !/^\Q$dataSet\E/;
         push @dataSets, $_;
     }
 
     @dataSets = map { ($remote ? "$remote:" : '') . $_ } @dataSets;
+
     return \@dataSets;
 }
 
@@ -209,7 +227,7 @@ sub createSnapshot {
     my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), @recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
-    (system(@ssh) and die "ERROR: cannot create snapshot $dataSet\n") if not $self->noaction;
+    system(@ssh) && die "ERROR: cannot create snapshot $dataSet\n" if !$self->noaction;
 
     return 1;
 }
@@ -226,16 +244,18 @@ sub destroySnapshots {
         ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSet);
         #tag local snapshots as 'local' so we have a key to build the hash
         $remote = $remote || 'local';
-        $toDestroy{$remote} = [] if not exists $toDestroy{$remote};
+        exists $toDestroy{$remote} or $toDestroy{$remote} = [];
         push @{$toDestroy{$remote}}, @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot";
     }
 
     for $remote (keys %toDestroy){
         #check if remote is flaged as 'local'.
-        my @ssh = $self->$buildRemote($remote ne 'local' ? $remote : undef, [qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
+        my @ssh = $self->$buildRemote($remote ne 'local'
+            ? $remote : undef, [qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
 
         print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-        (system(@ssh) and die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n") if not ($self->noaction || $self->nodestroy);
+        system(@ssh) && die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n"
+            if !($self->noaction || $self->nodestroy);
     }
     return 1;
 }
@@ -249,7 +269,7 @@ sub lastAndCommonSnapshots {
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
 
-    return (undef, undef) if not @{$srcSnapshots};
+    return (undef, undef) if !@{$srcSnapshots};
 
     my ($i, $snapTime);
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
@@ -257,16 +277,20 @@ sub lastAndCommonSnapshots {
 
         last if grep { /$snapTime/ } @{$dstSnapshots};
     }
-    return (${$srcSnapshots}[-1], (grep { /$snapTime/ } @{$dstSnapshots}) ? ${$srcSnapshots}[$i] : undef);
+
+    return (${$srcSnapshots}[-1], (grep { /$snapTime/ } @{$dstSnapshots})
+        ? ${$srcSnapshots}[$i] : undef);
 }
 
 sub sendRecvSnapshots {
     my $self = shift;
+
     return $self->$sendRecvSnapshots(0, @_);
 }
 
 sub sendRecvSnapshotsExec {
     my $self = shift;
+
     return $self->$sendRecvSnapshots(1, @_);;
 }
 
@@ -282,7 +306,7 @@ sub getDataSetProperties {
         my %properties;
         my @cmd = (qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        open (my $props, '-|', @cmd) or die "ERROR: could not get zfs properties\n";
+        open my $props, '-|', @cmd or die "ERROR: could not get zfs properties\n";
         while (<$props>){
             chomp;
             my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
@@ -294,6 +318,7 @@ sub getDataSetProperties {
             push @propertyList, \%properties;
         }
     }
+
     return \@propertyList;
 }
 
@@ -303,13 +328,14 @@ sub setDataSetProperties {
     my $properties = shift;
     my $propertyPrefix = $self->propertyPrefix;
 
-    return 0 if not $self->dataSetExists($dataSet);
+    return 0 if !$self->dataSetExists($dataSet);
 
     for my $prop (keys %{$properties}){
         my @cmd = (qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        (system(@cmd) and die "ERROR: could not set property $prop on $dataSet\n") if not $self->noaction;
+        system(@cmd) && die "ERROR: could not set property $prop on $dataSet\n" if !$self->noaction;
     }
+
     return 1;
 }
 
@@ -318,16 +344,17 @@ sub deleteDataSetProperties {
     my $dataSet = shift;
     my $propertyPrefix = $self->propertyPrefix;
 
-    return 0 if not $self->dataSetExists($dataSet);
+    return 0 if !$self->dataSetExists($dataSet);
     my $properties = $self->getDataSetProperties($dataSet);
 
-    return 0 if not @{$properties}[0];
+    return 0 if !@{$properties}[0];
 
     for my $prop (keys @{$properties}[0]){
         my @cmd = (qw(zfs inherit), "$propertyPrefix:$prop", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        (system(@cmd) and die "ERROR: could not reset property $prop on $dataSet\n") if not $self->noaction;
+        system(@cmd) && die "ERROR: could not reset property $prop on $dataSet\n" if !$self->noaction;
     }
+
     return 1;
 }
 
@@ -336,14 +363,15 @@ sub deleteBackupDestination {
     my $dataSet = shift;
     my $dst = $self->propertyPrefix . ':' . $_[0];
 
-    return 0 if not $self->dataSetExists($dataSet);
+    return 0 if !$self->dataSetExists($dataSet);
     
     my @cmd = (qw(zfs inherit), $dst, $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-    (system(@cmd) and die "ERROR: could not reset property on $dataSet\n") if not $self->noaction;
+    system(@cmd) && die "ERROR: could not reset property on $dataSet\n" if !$self->noaction;
     @cmd = (qw(zfs inherit), $dst . '_plan', $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-    (system(@cmd) and die "ERROR: could not reset property on $dataSet\n") if not $self->noaction;
+    system(@cmd) && die "ERROR: could not reset property on $dataSet\n" if !$self->noaction;
+
     return 1;
 }
 
@@ -356,7 +384,7 @@ sub fileExistsAndExec {
     my @ssh = $self->$buildRemote($remote, [qw(test -x), $filePath]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    return not system(@ssh);
+    return !system(@ssh);
 }
 
 sub listPools {
@@ -366,7 +394,9 @@ sub listPools {
     my @ssh = $self->$buildRemote($remote, [qw(zpool list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zPools, '-|', @ssh) or die 'ERROR: cannot get zpools' . ($remote ? " on $remote\n" : "\n");
+    open my $zPools, '-|', @ssh
+        or die 'ERROR: cannot get zpools' . ($remote ? " on $remote\n" : "\n");
+
     my @zPools = <$zPools>;
     chomp(@zPools);
 
@@ -393,10 +423,11 @@ sub zpoolStatus {
     my $remote;
 
     ($remote, $zpool) = $splitHostDataSet->($zpool);
-    my @ssh = $self->$buildRemote($remote, [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $zpool]);
+    my @ssh = $self->$buildRemote($remote,
+        [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $zpool]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $zpool\n";
+    open my $zpoolStatus, '-|', @ssh or die "ERROR: cannot get status of $zpool\n";
 
     my @status = <$zpoolStatus>;
     chomp(@status);
@@ -419,18 +450,20 @@ sub snapshotReclaim {
     my $reclaim;
     my $remote;
     
-    return 0 if not $snapshotInterval;
+    return 0 if !$snapshotInterval;
     
     ($remote, $snapshotInterval) = $splitHostDataSet->($snapshotInterval);
     my @ssh = $self->$buildRemote($remote, [qw(zfs destroy -nv), $snapshotInterval]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapReclaim, '-|', @ssh) or die "ERROR: cannot get snapshot data usage on $snapshotInterval\n";
+    open my $snapReclaim, '-|', @ssh
+        or die "ERROR: cannot get snapshot data usage on $snapshotInterval\n";
 
     while (<$snapReclaim>){
         chomp;
         last if ($reclaim) = /^would reclaim\s+([\w.]+)$/;
     }
+
     return $reclaim;
 }
 

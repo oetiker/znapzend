@@ -19,7 +19,7 @@ has mandProperties => sub {
     }
 };
 
-has zfs => sub { ZnapZend::ZFS->new(); };
+has zfs  => sub { ZnapZend::ZFS->new(); };
 has time => sub { ZnapZend::Time->new(); };
 
 has backupSets => sub { [] };
@@ -41,14 +41,18 @@ my $checkBackupPlan = sub {
     for my $planItem (@planItems){
         my @planValues = split /=>/, $planItem, 2;
 
-        (my $time = $self->time->checkTimeUnit($planValues[0])) or die "ERROR: backup plan $backupPlan is not valid\n";
+        my $time = $self->time->checkTimeUnit($planValues[0])
+            or die "ERROR: backup plan $backupPlan is not valid\n";
+
         $returnBackupPlan .= "$time=>";
-        ($time = $self->time->checkTimeUnit($planValues[1])) or die "ERROR: backup plan $backupPlan is not valid\n";
+        $time = $self->time->checkTimeUnit($planValues[1])
+            or die "ERROR: backup plan $backupPlan is not valid\n";
 
         $returnBackupPlan .= "$time,";
     }
     # remove trailing comma
     $returnBackupPlan =~ s/,$//;
+
     return $returnBackupPlan;
 };
 
@@ -57,8 +61,9 @@ my $checkBackupSets = sub {
 
     for my $backupSet (@{$self->backupSets}){
         for my $prop (keys $self->mandProperties){
-            die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n" if not exists $backupSet->{$prop};
-
+            exists $backupSet->{$prop}
+                or die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n";
+                
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
                 /^###backupplan###$/ && do {
@@ -66,58 +71,72 @@ my $checkBackupSets = sub {
                     last;
                 };
                 /^###dataset###$/ && do {
-                    $self->zfs->dataSetExists($backupSet->{$prop}) or die 'ERROR: filesystem ' . $backupSet->{$prop} . " does not exist\n";
+                    $self->zfs->dataSetExists($backupSet->{$prop})
+                        or die 'ERROR: filesystem ' . $backupSet->{$prop} . " does not exist\n";
                     last;
                 };
                 /^###tsformat###$/ && do {
-                    $self->time->checkTimeFormat($backupSet->{$prop}) or die "ERROR: timestamp format not valid. check your syntax\n";
+                    $self->time->checkTimeFormat($backupSet->{$prop})
+                        or die "ERROR: timestamp format not valid. check your syntax\n";
                     last;
                 };
                 #check if properties are valid
                 my @values = split /\|/, $self->mandProperties->{$prop}, 2;
                 my $value = $backupSet->{$prop};
-                die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n" if not ( grep { /^$value$/ } @values);
+                grep { /^$value$/ } @values
+                    or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
             }
         }
         #check destination plans and datasets
         for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
-            $self->zfs->dataSetExists($backupSet->{$dst}) or die 'ERROR: filesystem ' . $backupSet->{$dst} . " does not exist\n";
+            $self->zfs->dataSetExists($backupSet->{$dst})
+                or die 'ERROR: filesystem ' . $backupSet->{$dst} . " does not exist\n";
+
             $backupSet->{$dst . '_plan'} = $self->$checkBackupPlan($backupSet->{$dst . '_plan'});
 
             # mbuffer property set? check if executable is available on remote host
             if ($backupSet->{mbuffer} ne 'off'){
                 my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
                 my $file = ($remote ? "$remote:" : '') . $backupSet->{mbuffer};
-                $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $backupSet->{mbuffer} . "' does not exist on $remote\n";
+                $self->zfs->fileExistsAndExec($file)
+                    or die "ERROR: executable '" . $backupSet->{mbuffer} . "' does not exist on $remote\n";
             }
         }
     }
     return 1;
 };
 
-
 my $getBackupSet = sub {
     my $self = shift;
     my $enabledOnly = shift;
     my $dataSet = shift;
     
+    #get all backup sets and check if valid
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
-    if ($enabledOnly){
-        for (my $i = $#{$self->backupSets}; $i >= 0; $i--){
-            splice @{$self->backupSets}, $i, 1 if ${$self->backupSets}[$i]->{enabled} ne 'on';
-        }
-    }
     $self->$checkBackupSets();
+
+    if ($enabledOnly){
+        my @backupSets;
+
+        for my $backupSet (@{$self->backupSets}){
+            push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
+        }
+        #return enabled only backup sets
+        return \@backupSets;
+    }
+    #return all available backup sets
     return $self->backupSets;
 };
 
 sub getBackupSet {
     my $self = shift;
+
     return $self->$getBackupSet(0, @_);
 }
 
 sub getBackupSetEnabled {
     my $self = shift;
+
     return $self->$getBackupSet(1, @_);
 }
 
@@ -127,21 +146,29 @@ sub checkBackupSet {
 
     #check if source dataset exists and if source backup plan is valid
     $self->zfs->dataSetExists($dataSet) or die "ERROR: filesystem $dataSet does not exist\n";
-    $self->cfg->{src_plan} = $self->$checkBackupPlan($self->cfg->{src_plan}) or die "ERROR: src backup plan not valid\n";
-    $self->time->checkTimeFormat($self->cfg->{tsformat}) or die "ERROR:  timestamp format not valid. check your syntax\n"; 
+    $self->cfg->{src_plan} = $self->$checkBackupPlan($self->cfg->{src_plan})
+        or die "ERROR: src backup plan not valid\n";
+
+    $self->time->checkTimeFormat($self->cfg->{tsformat})
+        or die "ERROR:  timestamp format not valid. check your syntax\n"; 
 
     #check if destination datasets exist anf if destination backup plans are valid
     for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
-        $self->zfs->dataSetExists($self->cfg->{$dst}) or die 'ERROR: filesystem ' . $self->cfg->{$dst} . " does not exist\n";
-        $self->cfg->{$dst. '_plan'} = $self->$checkBackupPlan($self->cfg->{$dst . '_plan'}) or die "ERROR: dst backup plan not valid\n";
+        $self->zfs->dataSetExists($self->cfg->{$dst})
+            or die 'ERROR: filesystem ' . $self->cfg->{$dst} . " does not exist\n";
+
+        $self->cfg->{$dst. '_plan'} = $self->$checkBackupPlan($self->cfg->{$dst . '_plan'})
+            or die "ERROR: dst backup plan not valid\n";
 
         if ($self->cfg->{mbuffer} ne 'off'){
             # property set. check if executable is available on remote host
             my ($remote, $dataset) = $splitHostDataSet->($self->cfg->{$dst});
             my $file = ($remote ? "$remote:" : '') . $self->cfg->{mbuffer};
-            $self->zfs->fileExistsAndExec($file) or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
+            $self->zfs->fileExistsAndExec($file)
+                or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
         }
     }
+
     return $self->cfg;
 }
 
@@ -153,6 +180,7 @@ sub setBackupSet {
     $self->checkBackupSet($dataSet);
 
     $self->zfs->setDataSetProperties($dataSet, $self->cfg);
+
     return 1;
 }
 
@@ -161,6 +189,7 @@ sub deleteBackupSet {
     my $dataSet = shift;
 
     $self->zfs->deleteDataSetProperties($dataSet);
+
     return 1;
 }
 
@@ -170,6 +199,7 @@ sub deleteBackupDestination {
     my $dst = shift;
 
     $self->zfs->deleteBackupDestination($dataSet, $dst);
+
     return 1;
 }
 
@@ -177,7 +207,7 @@ sub enableBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
-    die "ERROR: dataset $dataSet does not exist\n" if !$self->zfs->dataSetExists($dataSet);
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 
@@ -185,8 +215,10 @@ sub enableBackupSet {
         $self->cfg(${$self->backupSets}[0]);
         $self->cfg->{enabled} = 'on';
         $self->setBackupSet($dataSet);
+
         return 1;
     }
+
     return 0;
 }
 
@@ -194,7 +226,7 @@ sub disableBackupSet {
     my $self = shift;
     my $dataSet = shift;
 
-    die "ERROR: dataset $dataSet does not exist\n" if !$self->zfs->dataSetExists($dataSet);
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 
@@ -202,8 +234,10 @@ sub disableBackupSet {
         $self->cfg(${$self->backupSets}[0]);
         $self->cfg->{enabled} = 'off';
         $self->setBackupSet($dataSet);
+
         return 1;
     }
+
     return 0;
 }
 

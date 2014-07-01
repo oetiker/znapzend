@@ -32,12 +32,12 @@ sub main {
     my $zConfig = ZnapZend::Config->new();
     my $opts = {};
 
-    pod2usage(1) if not defined $mainOpt;
+    defined $mainOpt or pod2usage(1);
 
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, qw(recursive|r mbuffer=s tsformat=s)) or exit(1);
+        GetOptions($opts, qw(recursive|r mbuffer=s tsformat=s)) or exit 1;
 
         $zConfig->cfg->{enabled}    = 'on';
         $zConfig->cfg->{recursive}  = $opts->{recursive} ? 'on' : 'off';
@@ -78,26 +78,29 @@ sub main {
         my $check = <STDIN>;
         chomp ($check);
         if ($check =~ /^y(?:es)?$/i){
-            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet($zConfig->cfg->{src})
+                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }
         last;
     };
     /^delete$/ && do {
-        GetOptions($opts, qw(dst=s)) or exit(1);
+        GetOptions($opts, qw(dst=s)) or exit 1;
 
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
+        defined $opts->{src} or pod2usage(1);
+
         if ($opts->{dst}){
             $zConfig->deleteBackupDestination($opts->{src}, 'dst_' . $opts->{dst});
         }
         else {
-            $zConfig->deleteBackupSet($opts->{src}) or die "ERROR: cannot delete backup config for $opts->{src}\n";
+            $zConfig->deleteBackupSet($opts->{src})
+                or die "ERROR: cannot delete backup config for $opts->{src}\n";
         }
 
         last;
     };
     /^edit$/ && do {
-        GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit(1);
+        GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit 1;
 
         my $key = 0;
         my $state = '';
@@ -126,7 +129,7 @@ sub main {
             $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} and $opts->{recursive} =~ /^on|off$/;
+        $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
         $backupSet{mbuffer}    = $opts->{mbuffer} if $opts->{mbuffer};
         $backupSet{tsformat}   = $opts->{tsformat} if $opts->{tsformat};
 
@@ -148,27 +151,31 @@ sub main {
         chomp ($check);
         if ($check =~ /^y(?:es)?$/i){
             #write new backup set
-            $zConfig->setBackupSet($zConfig->cfg->{src}) or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet($zConfig->cfg->{src})
+                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
         }
 
         last;
     };
     /^enable$/ && do {
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
-        $zConfig->enableBackupSet($opts->{src}) or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
+        defined $opts->{src} or pod2usage(1);
+        $zConfig->enableBackupSet($opts->{src})
+            or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
 
         last;
     };
     /^disable$/ && do {
         $opts->{src} = pop @ARGV;
-        pod2usage(1) if not defined $opts->{src};
-        $zConfig->disableBackupSet($opts->{src}) or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
+        defined $opts->{src} or pod2usage(1);
+        $zConfig->disableBackupSet($opts->{src})
+            or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
 
         last;
     };
     /^list$/ && do {
-        my $backupSets = $zConfig->getBackupSet(pop @ARGV) or die "ERROR: cannot list backup config\n";
+        my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+            or die "ERROR: cannot list backup config\n";
 
         dumpProperties($backupSets);
         last;
