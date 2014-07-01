@@ -115,12 +115,12 @@ sub backupPlanToHash {
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
         my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
-        defined $value && exists $self->unitFactors->{$unit}
+        $value && exists $self->unitFactors->{$unit}
             or die "ERROR: backup plan $backupPlan is not valid\n"
 
         my $key = $self->$timeToTimestamp($value, $unit);
         ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
-        defined $value && exists $self->unitFactors->{$unit}
+        $value && exists $self->unitFactors->{$unit}
             or die "ERROR: backup plan $backupPlan ist not valid\n"
 
         $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
