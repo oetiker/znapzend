@@ -10,7 +10,7 @@ my $binDir = shift @ARGV;
 $binDir //= "$FindBin::Bin/../bin";
 
 my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5",
-    "-MDevel::Cover=+ignore,Base.pm,Util.pm,Carp.pm");
+    "-MDevel::Cover=+ignore,thirdparty");
 
 use Test::More tests => 8;
 
