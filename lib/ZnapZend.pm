@@ -34,7 +34,7 @@ my $killThemAll  = sub {
     for my $backupSet (@{$self->backupSets}){
         kill (SIGTERM, $backupSet->{childPid}) if $backupSet->{childPid};
     }
-    exit(0);
+    exit 0;
 };
 
 my $refreshBackupPlans = sub {
@@ -180,6 +180,13 @@ sub start {
         
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
+        }
+        #do only one round if testing
+        if ($ENV{ZNAPZEND_TESTING}){
+            while ($self->$cleanupChildren()){
+                sleep 1;
+            }
+            return 1;
         }
     }    
 }

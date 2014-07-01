@@ -1,0 +1,73 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin;
+use Time::Piece;
+
+my %dataSets = (
+    'tank'               => '',
+    'tank/source'        => 'src',
+    'backup'             => '',
+    'backup/destination' => 'dst',
+    'remote'             => '',
+    'remote/destination' => 'dst',
+);
+
+#print zfs command
+print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
+
+my $command = shift @ARGV or exit 1;
+
+for ($command){
+    /^(?:snapshot|set|inherit|send|recv)$/ && exit;
+
+    /^list$/ && do {
+        if ($ARGV[0] eq '-t' && $ARGV[1] eq 'snapshot'){
+            my $snapCount = ($dataSets{$ARGV[-1]} eq 'src') ? 60 : 58;
+            #get timestamp rounded to minutes
+            my $time = localtime(int(time / 60) * 60 - 3600);
+            for (my $i = 0; $i < $snapCount; $i++){
+                print $ARGV[-1] . '@' . $time->strftime('%Y-%m-%d-%H%M%S') . "\n";
+                $time += 60;
+            }
+        }
+        else{
+            for (sort keys %dataSets){
+                print "$_\n";
+            }
+        }
+        exit;
+    };
+    
+    /^destroy$/ && do {
+        if ($ARGV[0] eq '-nv'){
+            print "would reclaim 1337G\n";
+        }
+        exit;
+    };
+
+    /^get$/ && do {
+        exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src'); 
+        print <<"ZFS_GET_END";
+org.znapzend:dst_0_plan  1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
+org.znapzend:dst_a_plan  1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
+org.znapzend:src         tank/source
+org.znapzend:src_plan    1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
+org.znapzend:recursive   on
+org.znapzend:tsformat    %Y-%m-%d-%H%M%S
+org.znapzend:enabled     on
+org.znapzend:dst_0       backup/destination
+org.znapzend:dst_a       root\@remote:remote/destination
+org.znapzend:mbuffer     $FindBin::Bin/mbuffer
+ZFS_GET_END
+
+        exit;
+    };
+
+    exit 1;
+}
+
+1;
+

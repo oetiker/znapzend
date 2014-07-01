@@ -15,8 +15,13 @@ before_script:
 script:
   - ./configure --prefix=/opt/znapzend
   - sudo make install
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover /opt/znapzend/bin/znapzend --help || test $? == 1 
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover /opt/znapzend/bin/znapzendzetup --help || test $? == 1 
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover /opt/znapzend/bin/znapzendztatz --help || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzend.t /opt/znapzend || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzendzetup.t /opt/znapzend || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzendztatz.t /opt/znapzend || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t /opt/znapzend || test $? == 1 
   - env PERL5LIB=/opt/znapzend/thirdparty/lib/perl5  /opt/znapzend/thirdparty/bin/cover -report coveralls
 
