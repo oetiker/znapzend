@@ -45,7 +45,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(help man)) or exit(1);
+    GetOptions($opts, qw(help man)) or exit 1;
 
     $opts->{help} && pod2usage(1);
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);

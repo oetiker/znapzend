@@ -37,7 +37,7 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, qw(recursive|r mbuffer=s tsformat=s)) or exit(1);
+        GetOptions($opts, qw(recursive|r mbuffer=s tsformat=s)) or exit 1;
 
         $zConfig->cfg->{enabled}    = 'on';
         $zConfig->cfg->{recursive}  = $opts->{recursive} ? 'on' : 'off';
@@ -84,7 +84,7 @@ sub main {
         last;
     };
     /^delete$/ && do {
-        GetOptions($opts, qw(dst=s)) or exit(1);
+        GetOptions($opts, qw(dst=s)) or exit 1;
 
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
@@ -100,7 +100,7 @@ sub main {
         last;
     };
     /^edit$/ && do {
-        GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit(1);
+        GetOptions($opts, qw(recursive=s mbuffer=s tsformat=s)) or exit 1;
 
         my $key = 0;
         my $state = '';

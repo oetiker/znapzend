@@ -394,8 +394,8 @@ sub listPools {
     my @ssh = $self->$buildRemote($remote, [qw(zpool list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zPools, '-|', @ssh) or die 'ERROR: cannot get zpools'
-        . ($remote ? " on $remote\n" : "\n");
+    open (my $zPools, '-|', @ssh)
+        or die 'ERROR: cannot get zpools' . ($remote ? " on $remote\n" : "\n");
 
     my @zPools = <$zPools>;
     chomp(@zPools);
