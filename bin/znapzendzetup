@@ -63,7 +63,7 @@ sub main {
             /=>/ && do {
                 $zConfig->cfg->{src_plan} = $_ and next if $state eq 'src';
                 $zConfig->cfg->{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
-                die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
+                die "ERROR: backup plan $_ is not related do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
             $zConfig->cfg->{src} = $_ and next if $state eq 'src';

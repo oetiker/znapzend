@@ -12,7 +12,7 @@ $binDir //= "$FindBin::Bin/../bin";
 my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5",
     "-MDevel::Cover=+ignore,Base.pm,Util.pm,Carp.pm");
 
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 isnt (system(@cmdPrefix, "$binDir/znapzendzetup", '--help'), 0, 'znapzendzetup help');
  
@@ -29,6 +29,8 @@ is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(enable tank/source)), 0, 'zna
 is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(disable tank/source)), 0, 'znapzendzetup disable');
 
 is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(delete tank/source)), 0, 'znapzendzetup delete');
+
+is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(delete --dst=0 tank/source)), 0, 'znapzendzetup delete destination');
 
 1;
 
