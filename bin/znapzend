@@ -25,7 +25,7 @@ sub main {
    $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-   $opts->{nodestroy} = $opts->{nodestroy} // 0;
+   $opts->{nodestroy} //= 0;
 
    openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 

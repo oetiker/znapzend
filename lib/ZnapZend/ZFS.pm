@@ -8,7 +8,7 @@ local $ENV{PATH} = "/usr/sbin:/usr/bin";
 has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
-has propertyPrefix  => sub { 'org.znapzend' };
+has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
 has mbufferParam    => sub { [qw(-s 128k -m 1G -q)] };
 has scrubInProgress => sub { qr/scrub in progress/ };

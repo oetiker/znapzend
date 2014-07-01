@@ -1,7 +1,6 @@
 package ZnapZend::Time;
 
 use Mojo::Base -base;
-use Time::Local qw(timegm timelocal);
 use Time::Piece;
 
 ### attributes ###
@@ -41,25 +40,9 @@ has unitFactors => sub {
     }
 };
 
-has monthTable => sub {
-    {
-        Jan     => 0,
-        Feb     => 1,
-        Mar     => 2,
-        Apr     => 3,
-        May     => 4,
-        Jun     => 5,
-        Jul     => 6,
-        Aug     => 7,
-        Sep     => 8,
-        Oct     => 9,
-        Nov     => 10,
-        Dec     => 11,
-    }
-};
-
-has scrubFilter => sub { qr/scrub repaired/ };
-has scrubTimeFormat => sub { qr/([A-Z][a-z]{2})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/ };
+has scrubFilter     => sub { qr/scrub repaired/ };
+has scrubTimeFilter => sub { qr/[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\d{4}/ };
+has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 
 my $intervalToTimestamp = sub {
     my $time = shift;
@@ -86,7 +69,7 @@ my $getSnapshotTimestamp = sub {
         my $snapshotTime = Time::Piece->strptime($snapshotTimestamp, $timeFormat)
             or die "ERROR: cannot extract time of '$snapshot'\n";
 
-        return $snapshotTime->epoch();
+        return $snapshotTime->epoch;
     }
 
     return 0;
@@ -212,13 +195,16 @@ sub getLastScrubTimestamp {
     my $self = shift;
     my $zpoolStatus = shift;
     my $scrubFilter = $self->scrubFilter;
+    my $scrubTimeFilter = $self->scrubTimeFilter;
     my $scrubTimeFormat = $self->scrubTimeFormat;
 
     for (@{$zpoolStatus}){
         next if !/$scrubFilter/;
-        if (my ($month, $day, $hour, $min, $sec, $year) = /$scrubTimeFormat/){
-            return timegm($sec, $min, $hour, $day, $self->monthTable->{$month}, $year);
-        }
+
+        /($scrubTimeFilter)$/ or die "ERROR: cannot parse last scrub time\n";
+        my $scrubTime = Time::Piece->strptime($1, $scrubTimeFormat) or die "ERROR: cannot parse last scrub time\n";
+
+        return $scrubTime->epoch;
     }
 
     return 0;
@@ -226,10 +212,9 @@ sub getLastScrubTimestamp {
 
 sub getLocalTimestamp {
     my $self = shift;
-    my $time = time();
-    my @t = localtime($time);
+    my $time = localtime;
 
-    return $time + (timegm(@t) - timelocal(@t));
+    return $time->epoch + $time->tzoffset;
 }
 
 sub checkTimeFormat {

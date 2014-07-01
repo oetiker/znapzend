@@ -160,14 +160,18 @@ sub start {
             sleep($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait);
         }
         else{
-            syslog('info', "nothing to do for me. am so bored... off for a coffee break. will be back in $timeToWait seconds to serve you, my master");
-            sleep($timeToWait);
+            syslog('info', 'nothing to do for me. am so bored... off for a coffee break.'
+                . " will be back in $timeToWait seconds to serve you, my master");
+
+            sleep $timeToWait;
         }
 
         # check if we need to snapshot, since we start polling if child is active and might be early
         if ($self->zTime->getLocalTimestamp() >= $timeStamp){
             for my $backupSet (@{$actionList}){
-                syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '') . 'snapshot on ' . $backupSet->{src});
+                syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
+                    . 'snapshot on ' . $backupSet->{src});
+
                 my $snapshotName = $backupSet->{src} . '@'
                     . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
 
