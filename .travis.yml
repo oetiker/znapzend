@@ -15,8 +15,8 @@ before_script:
 script:
   - ./configure --prefix=/opt/znapzend
   - sudo make install
-  - perl -I/opt/znapzend/thirdparty/lib/perl5 -MDevel::Cover=+ignore,thirdparty
-        /opt/znapzend/bin/znapzend --help || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover ./t/znapzend.t /opt/znapzend/bin || test $? == 1 
   - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
         -MDevel::Cover ./t/znapzendzetup.t /opt/znapzend/bin || test $? == 1 
   - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
