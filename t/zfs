@@ -13,7 +13,7 @@ my %dataSets = (
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:set|send)$/ && exit;
+    /^(?:set|inherit|send|recv)$/ && exit;
 
     /^list$/ && do {
         if ($ARGV[0] eq '-t' && $ARGV[1] eq 'snapshot'){
