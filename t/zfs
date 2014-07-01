@@ -7,7 +7,7 @@ my %dataSets = (
     'tank'               => '',
     'tank/source'        => 'src',
     'backup'             => '',
-    'backup_destination' => 'dst',
+    'backup/destination' => 'dst',
 );
 
 my $command = shift @ARGV or exit 1;
