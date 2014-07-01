@@ -6,7 +6,8 @@ $ENV{PATH} .= ":$FindBin::Bin";
 my $binDir = shift;
 $binDir //= "$FindBin::Bin/../bin";
 
-my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5", '-MDevel::Cover');
+my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5",
+    "-MDevel::Cover=+ignore,Base.pm,Util.pm,Carp.pm");
 
 use Test::More tests => 2;
 
