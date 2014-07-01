@@ -120,7 +120,7 @@ sub dataSetExists {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh)
+    open my $dataSets, '-|', @ssh
         or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
 
     my @dataSets = <$dataSets>;
@@ -142,7 +142,7 @@ sub snapshotExists {
         [qw(zfs list -H -o name -t snapshot -r -d 1), $snapshot]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapshots, '-|', @ssh)
+    open my $snapshots, '-|', @ssh
         or die 'ERROR: cannot get snapshots' . ($remote ? " on $remote\n" : "\n");
 
     my @snapshots = <$snapshots>;
@@ -158,7 +158,7 @@ sub listDataSets {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh)
+    open my $dataSets, '-|', @ssh
         or die 'ERROR: cannot get datasets' . ($remote ? " on $remote\n" : "\n");
 
     my @dataSets = <$dataSets>;
@@ -179,7 +179,7 @@ sub listSnapshots {
         [qw(zfs list -t snapshot -o name -s name -r -d 1), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapshots, '-|', @ssh) or die "ERROR: cannot get snapshots on $dataSet\n";
+    open my $snapshots, '-|', @ssh or die "ERROR: cannot get snapshots on $dataSet\n";
 
     while (<$snapshots>){
         chomp;
@@ -201,7 +201,7 @@ sub listSubDataSets {
     my @ssh = $self->$buildRemote($remote, [qw(zfs list -H -r -o name), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $dataSets, '-|', @ssh) or die "ERROR: cannot get sub datasets on $dataSet\n";
+    open my $dataSets, '-|', @ssh or die "ERROR: cannot get sub datasets on $dataSet\n";
 
     while (<$dataSets>){
         chomp;
@@ -306,7 +306,7 @@ sub getDataSetProperties {
         my %properties;
         my @cmd = (qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        open (my $props, '-|', @cmd) or die "ERROR: could not get zfs properties\n";
+        open my $props, '-|', @cmd or die "ERROR: could not get zfs properties\n";
         while (<$props>){
             chomp;
             my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
@@ -394,7 +394,7 @@ sub listPools {
     my @ssh = $self->$buildRemote($remote, [qw(zpool list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zPools, '-|', @ssh)
+    open my $zPools, '-|', @ssh
         or die 'ERROR: cannot get zpools' . ($remote ? " on $remote\n" : "\n");
 
     my @zPools = <$zPools>;
@@ -427,7 +427,7 @@ sub zpoolStatus {
         [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $zpool]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $zpoolStatus, '-|', @ssh) or die "ERROR: cannot get status of $zpool\n";
+    open my $zpoolStatus, '-|', @ssh or die "ERROR: cannot get status of $zpool\n";
 
     my @status = <$zpoolStatus>;
     chomp(@status);
@@ -456,7 +456,7 @@ sub snapshotReclaim {
     my @ssh = $self->$buildRemote($remote, [qw(zfs destroy -nv), $snapshotInterval]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open (my $snapReclaim, '-|', @ssh)
+    open my $snapReclaim, '-|', @ssh
         or die "ERROR: cannot get snapshot data usage on $snapshotInterval\n";
 
     while (<$snapReclaim>){
