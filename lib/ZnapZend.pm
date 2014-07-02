@@ -181,6 +181,13 @@ sub start {
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
         }
+        #do only one round if testing
+        if ($ENV{ZNAPZEND_TESTING}){
+            while ($self->$cleanupChildren()){
+                sleep 1;
+            }
+            return 1;
+        }
     }    
 }
 

@@ -19,21 +19,29 @@ use ZnapZend;
 my $opts = {};
 
 sub main {
-   GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit 1;
+    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit 1;
 
-   $opts->{help} && pod2usage(1);
-   $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
+    $opts->{help} && do {
+        pod2usage(-exitval => 'NOEXIT');
 
-   # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-   $opts->{nodestroy} //= 0;
+        #clear options if testing
+        $opts = {} if $ENV{ZNAPZEND_TESTING};
 
-   openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
+        return 1;
+    };
+    $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
-   my $znapzend = ZnapZend->new($opts);
+    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
+    $opts->{nodestroy} //= 0;
 
-   daemonize() if $opts->{daemonize};
+    openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
 
-   $znapzend->start();
+    my $znapzend = ZnapZend->new($opts);
+
+    daemonize() if $opts->{daemonize};
+
+    $znapzend->start();
+    return 1;
 }
 
 sub daemonize {
@@ -48,6 +56,9 @@ sub daemonize {
     defined (my $pid = fork) or die "Can't fork: $!";
 
     if ($pid){
+        #return if testing instead of exit
+        return 1 if $ENV{ZNAPZEND_TESTING};
+
         exit;
     }
     else{

@@ -2,8 +2,6 @@ package ZnapZend::ZFS;
 
 use Mojo::Base -base;
 
-local $ENV{PATH} = "/usr/sbin:/usr/bin";
-
 ### attributes ###
 has debug           => sub { 0 };
 has noaction        => sub { 0 };
