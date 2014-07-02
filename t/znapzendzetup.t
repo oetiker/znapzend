@@ -12,6 +12,9 @@ BEGIN {
     $binDir //= "$FindBin::Bin/../bin";
 }
 
+#set testing switch
+$ENV{ZNAPZEND_TESTING} = 1;
+
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../thirdparty/lib/perl5";
@@ -62,10 +65,10 @@ is (runCommand('help'), 1, 'znapzendzetup help');
 
 is (runCommand('list'), 1, 'znapzendzetup list');
 
-is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source), 
+is (runCommand(qw(create SRC 1h=>10min tank/source), 
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
 
-is (runCommand(qw(edit --donotask SRC 1h=>10min tank/source),
+is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit');
 
 is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');

@@ -12,6 +12,9 @@ BEGIN {
     $binDir //= "$FindBin::Bin/../bin";
 }
 
+#set testing switch
+$ENV{ZNAPZEND_TESTING} = 1;
+
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../thirdparty/lib/perl5";
