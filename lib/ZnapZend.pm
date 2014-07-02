@@ -182,7 +182,12 @@ sub start {
             }
         }
         #do only one round if testing
-        return 1 if $ENV{ZNAPZEND_TESTING};
+        if ($ENV{ZNAPZEND_TESTING}){
+            while ($self->$cleanupChildren()){
+                sleep 1;
+            }
+            return 1;
+        }
     }    
 }
 
