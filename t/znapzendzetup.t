@@ -5,32 +5,75 @@ use warnings;
 
 use FindBin;
 $ENV{PATH} .= ":$FindBin::Bin";
+my $binDir;
 
-my $binDir = shift @ARGV;
-$binDir //= "$FindBin::Bin/../bin";
+BEGIN {
+    $binDir = shift @ARGV;
+    $binDir //= "$FindBin::Bin/../bin";
+}
 
-my @cmdPrefix = ('perl', "-I$binDir/../thirdparty/lib/perl5",
-    "-MDevel::Cover=+ignore,thirdparty");
+# PERL5LIB
+use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
-use Test::More tests => 8;
+unshift @INC, sub {
+    my (undef, $filename) = @_;
+    return () if $filename !~ /ZnapZend/;
+    if (my $found = (grep { -e $_ } map { "$_/$filename" } grep { !ref } @INC)[0] ) {
+                local $/ = undef;
+                open my $fh, '<', $found or die("Can't read module file $found\n");
+                my $module_text = <$fh>;
+                close $fh;
 
-isnt (system(@cmdPrefix, "$binDir/znapzendzetup", '--help'), 0, 'znapzendzetup help');
- 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", 'list'), 0, 'znapzendzetup list');
+                # define everything in a sub, so Devel::Cover will DTRT
+                # NB this introduces no extra linefeeds so D::C's line numbers
+                # in reports match the file on disk
+                $module_text =~ s/(.*?package\s+\S+)(.*)__END__/$1sub classWrapper {$2} classWrapper();/s;
+                
+                # filehandle on the scalar
+                open $fh, '<', \$module_text;
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(create --donotask SRC 1h=>10min tank/source),
-    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create');
+                # and put it into %INC too so that it looks like we loaded the code
+                # from the file directly
+                $INC{$filename} = $found;
+                return $fh;
+     }
+     else {
+        return ();
+    }
+};
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(edit --donotask SRC 1h=>10min tank/source),
-    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit');
+sub runCommand {
+    my $mainOpt = shift;
+    @ARGV = @_;
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(enable tank/source)), 0, 'znapzendzetup enable');
+    main($mainOpt);
+}
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(disable tank/source)), 0, 'znapzendzetup disable');
+use Test::More tests => 9;
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(delete tank/source)), 0, 'znapzendzetup delete');
+use_ok 'ZnapZend';
+#load program
+@ARGV = qw(help);
+do "$binDir/znapzendzetup" or die "ERROR: loading program znapzendzetup\n";
 
-is (system(@cmdPrefix, "$binDir/znapzendzetup", qw(delete --dst=0 tank/source)), 0, 'znapzendzetup delete destination');
+is (runCommand('help'), 1, 'znapzendzetup help');
+
+is (runCommand('list'), 1, 'znapzendzetup list');
+
+is (runCommand(qw(create --donotask SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
+
+is (runCommand(qw(edit --donotask SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit');
+
+is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');
+
+is (runCommand(qw(disable tank/source)), 1, 'znapzendzetup disable');
+
+is (runCommand(qw(delete tank/source)), 1, 'znapzendzetup delete');
+
+is (runCommand(qw(delete --dst=0 tank/source)), 1, 'znapzendzetup delete destination');
 
 1;
 

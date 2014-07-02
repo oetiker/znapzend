@@ -197,8 +197,9 @@ sub main {
 
         last;
     };
-        pod2usage(1);
+        pod2usage(-exitval => 'NOEXIT');
     }
+    return 1;
 }
 
 main(shift);
