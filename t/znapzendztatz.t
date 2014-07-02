@@ -44,10 +44,9 @@ unshift @INC, sub {
 };
 
 sub runCommand {
-    my $mainOpt = shift;
     @ARGV = @_;
 
-    main($mainOpt);
+    main();
 }
 
 use Test::More tests => 3;

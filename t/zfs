@@ -13,11 +13,12 @@ my %dataSets = (
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:set|inherit|send|recv)$/ && exit;
+    /^(?:snapshot|set|inherit|send|recv)$/ && exit;
 
     /^list$/ && do {
         if ($ARGV[0] eq '-t' && $ARGV[1] eq 'snapshot'){
-            for (my $i = 0; $i < 60; $i++){
+            my $snapCount = ($dataSets{$ARGV[-1]} eq 'src') ? 60 : 58;
+            for (my $i = 0; $i < $snapCount; $i++){
                 print $ARGV[-1] . '@' . '2002-02-22-2222' . ($i < 10 ? "0$i" : $i) . "\n";
             }
         }
@@ -41,7 +42,7 @@ for ($command){
         print <<'ZFS_GET_END';
 org.znapzend:dst_0_plan  1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
 org.znapzend:src         tank/source
-org.znapzend:src_plan    1hours=>10minutes,30minutes=>5minutes,10minutes=>1minutes
+org.znapzend:src_plan    1hours=>10minutes,30minutes=>5minutes,10minutes=>6seconds
 org.znapzend:recursive   on
 org.znapzend:tsformat    %Y-%m-%d-%H%M%S
 org.znapzend:enabled     on

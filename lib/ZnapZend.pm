@@ -181,6 +181,8 @@ sub start {
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
         }
+        #do only one round if testing
+        return 1 if $ENV{ZNAPZEND_TESTING};
     }    
 }
 
