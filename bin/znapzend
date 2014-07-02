@@ -56,6 +56,9 @@ sub daemonize {
     defined (my $pid = fork) or die "Can't fork: $!";
 
     if ($pid){
+        #return if testing instead of exit
+        return 1 if $ENV{ZNAPZEND_TESTING};
+
         exit;
     }
     else{

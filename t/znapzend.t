@@ -47,13 +47,12 @@ unshift @INC, sub {
 };
 
 sub runCommand {
-    my $mainOpt = shift;
     @ARGV = @_;
 
-    main($mainOpt);
+    main();
 }
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 use_ok 'ZnapZend';
 
@@ -64,6 +63,8 @@ do "$binDir/znapzend" or die "ERROR: loading program znapzend\n";
 is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
+
+is (runCommand(qw(--daemonize --debug)), 1, 'znapzend --daemonize');
  
 1;
 
