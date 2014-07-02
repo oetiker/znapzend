@@ -197,7 +197,13 @@ sub main {
 
         last;
     };
+    /^help$/ && do {
         pod2usage(-exitval => 'NOEXIT');
+
+        last;
+    };
+        #main argument invalid
+        pod2usage(1);
     }
     return 1;
 }
