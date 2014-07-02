@@ -12,6 +12,9 @@ my %dataSets = (
     'backup/destination' => 'dst',
 );
 
+#print zfs command
+print 'zfs ' . join(' ', @ARGV) . "\n";
+
 my $command = shift @ARGV or exit 1;
 
 for ($command){
