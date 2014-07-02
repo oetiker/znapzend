@@ -53,7 +53,7 @@ sub runCommand {
     main($mainOpt);
 }
 
-use Test::More tests => 9;
+use Test::More tests => 11;
 
 use_ok 'ZnapZend';
 
@@ -68,8 +68,14 @@ is (runCommand('list'), 1, 'znapzendzetup list');
 is (runCommand(qw(create SRC 1h=>10min tank/source), 
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
 
-is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
+is (runCommand(qw(edit SRC 1h=>10min tank/source), 
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit');
+
+is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
+
+is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
 
 is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');
 
