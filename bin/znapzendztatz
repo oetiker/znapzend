@@ -44,7 +44,10 @@ sub main {
 
     GetOptions($opts, qw(help man)) or exit 1;
 
-    $opts->{help} && pod2usage(1);
+    $opts->{help} && do {
+        pod2usage(-exitval => 'NOEXIT');
+        return 1;
+    };
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     my $backupSets = $zConfig->getBackupSet(pop @ARGV)
@@ -76,6 +79,7 @@ sub main {
               
         }
     }
+    return 1;
 }
 
 main();

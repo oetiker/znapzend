@@ -53,6 +53,7 @@ sub runCommand {
 use Test::More tests => 9;
 
 use_ok 'ZnapZend';
+
 #load program
 @ARGV = qw(help);
 do "$binDir/znapzendzetup" or die "ERROR: loading program znapzendzetup\n";
