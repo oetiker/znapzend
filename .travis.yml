@@ -21,5 +21,7 @@ script:
         -MDevel::Cover=+ignore,thirdparty ./t/znapzendzetup.t /opt/znapzend/bin || test $? == 1 
   - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
         -MDevel::Cover=+ignore,thirdparty ./t/znapzendztatz.t /opt/znapzend/bin || test $? == 1 
+  - env PATH=/opt/znapzend/bin:$PATH perl -I/opt/znapzend/thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t /opt/znapzend/bin || test $? == 1 
   - env PERL5LIB=/opt/znapzend/thirdparty/lib/perl5  /opt/znapzend/thirdparty/bin/cover -report coveralls
 
