@@ -64,7 +64,7 @@ is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
 
-is (runCommand(qw(--daemonize --debug)), 1, 'znapzend --daemonize');
+is (runCommand(qw(--daemonize --debug --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
  
 1;
 
