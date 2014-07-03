@@ -8,8 +8,8 @@ $ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
 my $buildDir;
 
 BEGIN {
-        $buildDir = shift @ARGV;
-            $buildDir //= "$FindBin::Bin/../";
+    $buildDir = shift @ARGV;
+    $buildDir //= "$FindBin::Bin/../";
 }
 
 #set testing switch
