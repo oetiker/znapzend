@@ -83,7 +83,7 @@ is (runCommand(qw(disable tank/source)), 1, 'znapzendzetup disable');
 
 is (runCommand(qw(delete tank/source)), 1, 'znapzendzetup delete');
 
-is (runCommand(qw(delete --dst=0 tank/source)), 1, 'znapzendzetup delete destination');
+is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete destination');
 
 1;
 
