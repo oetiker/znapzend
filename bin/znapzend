@@ -56,7 +56,7 @@ sub daemonize {
     defined (my $pid = fork) or die "Can't fork: $!";
 
     if ($pid){
-        #return if testing instead of exit
+        #return if testing instead of exit; will cause to run 2 znapzend in parallel
         return 1 if $ENV{ZNAPZEND_TESTING};
 
         exit;

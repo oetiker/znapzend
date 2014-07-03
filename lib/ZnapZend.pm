@@ -34,7 +34,7 @@ my $killThemAll  = sub {
     for my $backupSet (@{$self->backupSets}){
         kill (SIGTERM, $backupSet->{childPid}) if $backupSet->{childPid};
     }
-    exit(0);
+    exit 0;
 };
 
 my $refreshBackupPlans = sub {

@@ -46,23 +46,31 @@ unshift @INC, sub {
     }
 };
 
-sub runCommand {
-    @ARGV = @_;
+use Test::More tests => 10;
 
-    main();
-}
+use_ok 'ZnapZend::ZFS';
+use_ok 'ZnapZend::Time';
 
-use Test::More tests => 3;
+my $zZFS  = ZnapZend::ZFS->new();
+my $zTime = ZnapZend::Time->new();
 
-use_ok 'ZnapZend';
+is (ref $zZFS,'ZnapZend::ZFS', 'instantiation of ZFS');
 
-#load program
-@ARGV = qw(--help);
-do "$FindBin::Bin/../bin/znapzendztatz" or die "ERROR: loading program znapzendztatz\n";
+is (ref $zTime, 'ZnapZend::Time', 'instantiation of Time');
 
-is (runCommand('--help'), 1, 'znapzendztatz help');
+isnt ($zZFS->listPools(), '', 'list pools');
+
+my $zpoolStatus = $zZFS->zpoolStatus('tank');
+isnt ($zpoolStatus, '', 'zpool status');
+
+is ($zZFS->startScrub('tank'), 1, 'start scrub');
+
+is ($zZFS->stopScrub('tank'), 1, 'stop scrub');
+
+is ($zZFS->scrubActive('tank'), 0, 'scrub active');
+
+isnt ($zTime->getLastScrubTimestamp($zpoolStatus), 0, 'last scrub time');
+    
  
-is (runCommand(), 1, 'znapzendztatz');
-
 1;
 
