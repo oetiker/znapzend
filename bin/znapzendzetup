@@ -76,7 +76,8 @@ sub main {
         #ask user if backup plan shall be stored unless option 'y' is passed
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
-            my $check = <STDIN>;
+            #bypass check if testing
+            my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet($zConfig->cfg->{src})
@@ -155,7 +156,8 @@ sub main {
         #ask user if backup plan shall be stored
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
-            my $check = <STDIN>;
+            #bypass check if testing
+            my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet($zConfig->cfg->{src})
