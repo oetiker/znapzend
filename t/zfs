@@ -14,7 +14,7 @@ my %dataSets = (
 );
 
 #print zfs command
-print STDERR 'zfs ' . join(' ', @ARGV) . "\n";
+print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 
 my $command = shift @ARGV or exit 1;
 
