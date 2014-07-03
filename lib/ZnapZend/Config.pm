@@ -24,8 +24,6 @@ has time => sub { ZnapZend::Time->new(); };
 
 has backupSets => sub { [] };
 
-has cfg => sub { {} };
-
 ### private functions ###
 my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
 
@@ -142,44 +140,22 @@ sub getBackupSetEnabled {
 
 sub checkBackupSet {
     my $self = shift;
-    my $dataSet = shift;
+    my $cfg = shift;
 
-    #check if source dataset exists and if source backup plan is valid
-    $self->zfs->dataSetExists($dataSet) or die "ERROR: filesystem $dataSet does not exist\n";
-    $self->cfg->{src_plan} = $self->$checkBackupPlan($self->cfg->{src_plan})
-        or die "ERROR: src backup plan not valid\n";
+    $self->backupSets([$cfg]);
+    $self->$checkBackupSets();
 
-    $self->time->checkTimeFormat($self->cfg->{tsformat})
-        or die "ERROR:  timestamp format not valid. check your syntax\n"; 
-
-    #check if destination datasets exist anf if destination backup plans are valid
-    for my $dst (grep { /^dst_[^_]+$/ } (keys %{$self->cfg})){
-        $self->zfs->dataSetExists($self->cfg->{$dst})
-            or die 'ERROR: filesystem ' . $self->cfg->{$dst} . " does not exist\n";
-
-        $self->cfg->{$dst. '_plan'} = $self->$checkBackupPlan($self->cfg->{$dst . '_plan'})
-            or die "ERROR: dst backup plan not valid\n";
-
-        if ($self->cfg->{mbuffer} ne 'off'){
-            # property set. check if executable is available on remote host
-            my ($remote, $dataset) = $splitHostDataSet->($self->cfg->{$dst});
-            my $file = ($remote ? "$remote:" : '') . $self->cfg->{mbuffer};
-            $self->zfs->fileExistsAndExec($file)
-                or die "ERROR: executable '" . $self->cfg->{mbuffer} . "' does not exist on $remote\n";
-        }
-    }
-
-    return $self->cfg;
+    return $self->backupSets->[0];
 }
 
 sub setBackupSet {
     my $self = shift;
-    my $dataSet = shift;
+    my $cfg = shift;
     
     #main program should check backup set prior to set it. anyway, check again just to be sure
-    $self->checkBackupSet($dataSet);
+    $self->checkBackupSet($cfg);
 
-    $self->zfs->setDataSetProperties($dataSet, $self->cfg);
+    $self->zfs->setDataSetProperties($self->backupSets->[0]->{src}, $self->backupSets->[0]);
 
     return 1;
 }
@@ -212,9 +188,9 @@ sub enableBackupSet {
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 
     if (@{$self->backupSets}){
-        $self->cfg(${$self->backupSets}[0]);
-        $self->cfg->{enabled} = 'on';
-        $self->setBackupSet($dataSet);
+        my %cfg = %{$self->backupSets->[0]};
+        $cfg{enabled} = 'on';
+        $self->setBackupSet(\%cfg);
 
         return 1;
     }
@@ -231,9 +207,9 @@ sub disableBackupSet {
     $self->backupSets($self->zfs->getDataSetProperties($dataSet));
 
     if (@{$self->backupSets}){
-        $self->cfg(${$self->backupSets}[0]);
-        $self->cfg->{enabled} = 'off';
-        $self->setBackupSet($dataSet);
+        my %cfg = %{$self->backupSets->[0]};
+        $cfg{enabled} = 'off';
+        $self->setBackupSet(\%cfg);
 
         return 1;
     }

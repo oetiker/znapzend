@@ -31,6 +31,7 @@ sub main {
     my $mainOpt = shift;
     my $zConfig = ZnapZend::Config->new();
     my $opts = {};
+    my %cfg;
 
     defined $mainOpt or pod2usage(1);
 
@@ -39,10 +40,10 @@ sub main {
     /^create$/ && do {
         GetOptions($opts, qw(recursive|r donotask mbuffer=s tsformat=s)) or exit 1;
 
-        $zConfig->cfg->{enabled}    = 'on';
-        $zConfig->cfg->{recursive}  = $opts->{recursive} ? 'on' : 'off';
-        $zConfig->cfg->{mbuffer}    = $opts->{mbuffer} || 'off';
-        $zConfig->cfg->{tsformat}   = $opts->{tsformat} || '%Y-%m-%d-%H%M%S';
+        $cfg{enabled}    = 'on';
+        $cfg{recursive}  = $opts->{recursive} ? 'on' : 'off';
+        $cfg{mbuffer}    = $opts->{mbuffer}  || 'off';
+        $cfg{tsformat}   = $opts->{tsformat} || '%Y-%m-%d-%H%M%S';
 
         my $key = 0;
         my $state = '';
@@ -61,18 +62,18 @@ sub main {
             };
             #option contains '=>' so it must be a backup plan
             /=>/ && do {
-                $zConfig->cfg->{src_plan} = $_ and next if $state eq 'src';
-                $zConfig->cfg->{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
+                $cfg{src_plan} = $_ and next if $state eq 'src';
+                $cfg{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
                 die "ERROR: backup plan $_ is not related do a source or destination dataset. check the syntax\n";
             };
             #option must be a dataset or invalid
-            $zConfig->cfg->{src} = $_ and next if $state eq 'src';
-            $zConfig->cfg->{"dst_$key"} = $_ and next if $state eq 'dst';
+            $cfg{src} = $_ and next if $state eq 'src';
+            $cfg{"dst_$key"} = $_ and next if $state eq 'dst';
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
-        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        $zConfig->checkBackupSet(\%cfg);
         
-        dumpProperties([$zConfig->cfg]);
+        dumpProperties([\%cfg]);
         #ask user if backup plan shall be stored unless option 'y' is passed
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
@@ -80,13 +81,13 @@ sub main {
             my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
-                $zConfig->setBackupSet($zConfig->cfg->{src})
-                    or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+                $zConfig->setBackupSet(\%cfg)
+                    or die "ERROR: cannot create backup config for $cfg{src}\n";
             }
         }
         else {
-            $zConfig->setBackupSet($zConfig->cfg->{src})
-                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet(\%cfg)
+                or die "ERROR: cannot create backup config for $cfg{src}\n";
         }
 
         last;
@@ -138,21 +139,22 @@ sub main {
             die "ERROR: dont know what to do with $_. check the syntax\n";
         }
         $backupSet{recursive}  = $opts->{recursive} if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
-        $backupSet{mbuffer}    = $opts->{mbuffer} if $opts->{mbuffer};
-        $backupSet{tsformat}   = $opts->{tsformat} if $opts->{tsformat};
+        $backupSet{mbuffer}    = $opts->{mbuffer}   if $opts->{mbuffer};
+        $backupSet{tsformat}   = $opts->{tsformat}  if $opts->{tsformat};
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet{src}) or die "ERROR: cannot get backup config\n";
-        $zConfig->cfg(${$backupSets}[0]);
+        @{$backupSets} or die "ERROR: backup set for $backupSet{src} does not exist\n";
+        %cfg = %{$backupSets->[0]};
 
         #merge new config
         for (keys %backupSet){
-            $zConfig->cfg->{$_} = $backupSet{$_};
+            $cfg{$_} = $backupSet{$_};
         }
         #check new backup set
-        $zConfig->checkBackupSet($zConfig->cfg->{src});
+        $zConfig->checkBackupSet(\%cfg);
         
-        dumpProperties([$zConfig->cfg]);
+        dumpProperties([\%cfg]);
         #ask user if backup plan shall be stored
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
@@ -160,13 +162,13 @@ sub main {
             my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
-                $zConfig->setBackupSet($zConfig->cfg->{src})
-                    or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+                $zConfig->setBackupSet(\%cfg)
+                    or die "ERROR: cannot create backup config for $cfg{src}\n";
             }
         }
         else {
-            $zConfig->setBackupSet($zConfig->cfg->{src})
-                or die "ERROR: cannot create backup config for $zConfig->cfg->{src}\n";
+            $zConfig->setBackupSet(\%cfg)
+                or die "ERROR: cannot create backup config for $cfg{src}\n";
         }
 
         last;
