@@ -46,7 +46,7 @@ unshift @INC, sub {
     }
 };
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use_ok 'ZnapZend::ZFS';
 use_ok 'ZnapZend::Time';
@@ -57,6 +57,8 @@ my $zTime = ZnapZend::Time->new();
 is (ref $zZFS,'ZnapZend::ZFS', 'instantiation of ZFS');
 
 is (ref $zTime, 'ZnapZend::Time', 'instantiation of Time');
+
+isnt ($zZFS->listPools(), '', 'list pools');
 
 my $zpoolStatus = $zZFS->zpoolStatus('tank');
 isnt ($zpoolStatus, '', 'zpool status');
