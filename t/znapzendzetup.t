@@ -5,11 +5,11 @@ use warnings;
 
 use FindBin;
 $ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
-my $binDir;
+my $buildDir;
 
 BEGIN {
-    $binDir = shift @ARGV;
-    $binDir //= "$FindBin::Bin/../bin";
+        $buildDir = shift @ARGV;
+            $buildDir //= "$FindBin::Bin/../";
 }
 
 #set testing switch
@@ -17,7 +17,7 @@ $ENV{ZNAPZEND_TESTING} = 1;
 
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
-use lib "$FindBin::Bin/../thirdparty/lib/perl5";
+use lib "$buildDir/thirdparty/lib/perl5";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
@@ -59,7 +59,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(help);
-do "$binDir/znapzendzetup" or die "ERROR: loading program znapzendzetup\n";
+do "$FindBin::Bin/../bin/znapzendzetup" or die "ERROR: loading program znapzendzetup\n";
 
 is (runCommand('help'), 1, 'znapzendzetup help');
 
