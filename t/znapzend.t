@@ -23,23 +23,23 @@ unshift @INC, sub {
     my (undef, $filename) = @_;
     return () if $filename !~ /ZnapZend/;
     if (my $found = (grep { -e $_ } map { "$_/$filename" } grep { !ref } @INC)[0] ) {
-                local $/ = undef;
-                open my $fh, '<', $found or die("Can't read module file $found\n");
-                my $module_text = <$fh>;
-                close $fh;
+        local $/ = undef;
+        open my $fh, '<', $found or die("Can't read module file $found\n");
+        my $module_text = <$fh>;
+        close $fh;
 
-                # define everything in a sub, so Devel::Cover will DTRT
-                # NB this introduces no extra linefeeds so D::C's line numbers
-                # in reports match the file on disk
-                $module_text =~ s/(.*?package\s+\S+)(.*)__END__/$1sub classWrapper {$2} classWrapper();/s;
+        # define everything in a sub, so Devel::Cover will DTRT
+        # NB this introduces no extra linefeeds so D::C's line numbers
+        # in reports match the file on disk
+        $module_text =~ s/(.*?package\s+\S+)(.*)__END__/$1sub classWrapper {$2} classWrapper();/s;
 
-                # filehandle on the scalar
-                open $fh, '<', \$module_text;
+        # filehandle on the scalar
+        open $fh, '<', \$module_text;
 
-                # and put it into %INC too so that it looks like we loaded the code
-                # from the file directly
-                $INC{$filename} = $found;
-                return $fh;
+        # and put it into %INC too so that it looks like we loaded the code
+        # from the file directly
+        $INC{$filename} = $found;
+        return $fh;
      }
      else {
         return ();

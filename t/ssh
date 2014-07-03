@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-#print zfs command
+#print ssh command
 print STDERR '# ssh ' . join(' ', @ARGV) . "\n";
 
 while (@ARGV){
