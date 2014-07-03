@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use FindBin;
-$ENV{PATH} .= ":$FindBin::Bin";
+$ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
 my $binDir;
 
 BEGIN {
