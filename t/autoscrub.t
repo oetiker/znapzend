@@ -12,12 +12,11 @@ BEGIN {
     $buildDir //= "$FindBin::Bin/../";
 }
 
-#set testing switch
-$ENV{ZNAPZEND_TESTING} = 1;
-
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
+#place bin path to lib so it is stored in @INC
+use lib "$FindBin::Bin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;

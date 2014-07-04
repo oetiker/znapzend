@@ -24,8 +24,8 @@ sub main {
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
 
-        #clear options if testing
-        $opts = {} if $ENV{ZNAPZEND_TESTING};
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  $opts = {};
 
         return 1;
     };
@@ -56,8 +56,9 @@ sub daemonize {
     defined (my $pid = fork) or die "Can't fork: $!";
 
     if ($pid){
-        #return if testing instead of exit; will cause to run 2 znapzend in parallel
-        return 1 if $ENV{ZNAPZEND_TESTING};
+
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  return 1;
 
         exit;
     }

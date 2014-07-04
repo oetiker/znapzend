@@ -12,16 +12,15 @@ BEGIN {
     $buildDir //= "$FindBin::Bin/../";
 }
 
-#set testing switch
-$ENV{ZNAPZEND_TESTING} = 1;
-
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
+#place bin path to lib so it is stored in @INC
+use lib "$FindBin::Bin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
-    return () if $filename !~ /ZnapZend/;
+    return () if $filename !~ /ZnapZend|znapzendztatz/;
     if (my $found = (grep { -e $_ } map { "$_/$filename" } grep { !ref } @INC)[0] ) {
         local $/ = undef;
         open my $fh, '<', $found or die("Can't read module file $found\n");
@@ -58,7 +57,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(--help);
-do "$FindBin::Bin/../bin/znapzendztatz" or die "ERROR: loading program znapzendztatz\n";
+do 'znapzendztatz' or die "ERROR: loading program znapzendztatz\n";
 
 is (runCommand('--help'), 1, 'znapzendztatz help');
  

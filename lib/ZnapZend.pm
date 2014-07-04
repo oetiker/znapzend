@@ -181,13 +181,11 @@ sub start {
                 $self->$checkSendRecvCleanup($backupSet, $timeStamp);
             }
         }
-        #do only one round if testing
-        if ($ENV{ZNAPZEND_TESTING}){
-            while ($self->$cleanupChildren()){
-                sleep 1;
-            }
-            return 1;
-        }
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  while ($self->$cleanupChildren()){
+### RM_COMM_4_TEST ###      sleep 1;
+### RM_COMM_4_TEST ###  }
+### RM_COMM_4_TEST ###  return 1;
     }    
 }
 
