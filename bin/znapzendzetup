@@ -27,6 +27,50 @@ sub dumpProperties {
     }
 }
 
+sub parseArguments {
+    my $args = shift;
+    my %backupSet;
+    my $key = 0;
+    my $state = '';
+
+    for (@$args){
+        #keyword SRC detected. start setting up source filesystem and plan
+        /^SRC$/ && do {
+            $state = 'src';
+            next;
+        };
+        #keyword DST detected. start setting up destination filesystem and plan
+        /^DST(?::([a-z0-9_]+))?/ && do {
+            $state = 'dst';
+            $key = $1 // $key++;
+            next;
+        };
+        #option contains '=>' so it must be a backup plan
+        /=>/ && do {
+            $backupSet{src_plan} = $_ and next if $state eq 'src';
+            $backupSet{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
+            die "ERROR: backup plan $_ is not related do a source or destination dataset. check the syntax\n";
+        };
+        #option must be a dataset or invalid
+        $state eq 'src' && do {
+            $backupSet{src} = $_;
+            $state = '';
+            next;
+        };
+        $state eq 'dst' && do {
+            $backupSet{"dst_$key"} = $_;
+            $state = '';
+            next;
+        };
+        die "ERROR: dont know what to do with $_. check the syntax\n";
+    }
+
+    #check if we have a valid source as this is crucial
+    $backupSet{src} or die "ERROR: no source dataset given. check the syntax\n";
+
+    return \%backupSet;
+}
+
 sub main {
     my $mainOpt = shift;
     my $zConfig = ZnapZend::Config->new();
@@ -50,32 +94,12 @@ sub main {
         $cfg{mbuffer_size} = $opts->{mbuffersize} || '1G'; 
         $cfg{tsformat}     = $opts->{tsformat}    || '%Y-%m-%d-%H%M%S';
 
-        my $key = 0;
-        my $state = '';
-        for (@ARGV){
-            #keyword SRC detected. start setting up source filesystem and plan
-            /^SRC$/ && do {
-                $state = 'src';
-                next;
-            };
-
-            #keyword DST detected. start setting up destination filesystem and plan
-            /^DST(?::([a-z0-9_]+))?/ && do {
-                $state = 'dst';
-                $key = $1 // $key++;
-                next;
-            };
-            #option contains '=>' so it must be a backup plan
-            /=>/ && do {
-                $cfg{src_plan} = $_ and next if $state eq 'src';
-                $cfg{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
-                die "ERROR: backup plan $_ is not related do a source or destination dataset. check the syntax\n";
-            };
-            #option must be a dataset or invalid
-            $cfg{src} = $_ and next if $state eq 'src';
-            $cfg{"dst_$key"} = $_ and next if $state eq 'dst';
-            die "ERROR: dont know what to do with $_. check the syntax\n";
+        my $backupSet = parseArguments(\@ARGV);
+        #merge arguments to our cfg
+        for (keys %$backupSet){
+            $cfg{$_} = $backupSet->{$_};
         }
+
         $zConfig->checkBackupSet(\%cfg);
         
         dumpProperties([\%cfg]);
@@ -116,46 +140,22 @@ sub main {
     /^edit$/ && do {
         GetOptions($opts, qw(donotask recursive=s mbuffer=s mbuffersize=s tsformat=s)) or exit 1;
 
-        my $key = 0;
-        my $state = '';
-        my %backupSet;
-        for (@ARGV){
-            #keyword SRC detected. start setting up source filesystem and plan
-            /^SRC$/ && do {
-                $state = 'src';
-                next;
-            };
+        my $backupSet = parseArguments(\@ARGV);
 
-            #keyword DST detected. start setting up destination filesystem and plan
-            /^DST:([a-z0-9_]+)/ && do {
-                $state = 'dst';
-                $key = $1 // $key++;
-                next;
-            };
-            #option contains '=>' so it must be a backup plan
-            /=>/ && do {
-                $backupSet{src_plan} = $_ and next if $state eq 'src';
-                $backupSet{'dst_' . $key . '_plan'} = $_ and next if $state eq 'dst';
-                die "ERROR: backup plan $_ is not relatet do a source or destination dataset. check the syntax\n";
-            };
-            #option must be a dataset or invalid
-            $backupSet{src} = $_ and next if $state eq 'src';
-            $backupSet{"dst_$key"} = $_ and next if $state eq 'dst';
-            die "ERROR: dont know what to do with $_. check the syntax\n";
-        }
-        $backupSet{recursive}    = $opts->{recursive}   if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
-        $backupSet{mbuffer}      = $opts->{mbuffer}     if $opts->{mbuffer};
-        $backupSet{mbuffer_size} = $opts->{mbuffersize} if $opts->{mbuffersize};  
-        $backupSet{tsformat}     = $opts->{tsformat}    if $opts->{tsformat};
+        $backupSet->{recursive}    = $opts->{recursive}
+            if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
+        $backupSet->{mbuffer}      = $opts->{mbuffer}     if $opts->{mbuffer};
+        $backupSet->{mbuffer_size} = $opts->{mbuffersize} if $opts->{mbuffersize};  
+        $backupSet->{tsformat}     = $opts->{tsformat}    if $opts->{tsformat};
 
         #get active backup config
-        my $backupSets = $zConfig->getBackupSet($backupSet{src}) or die "ERROR: cannot get backup config\n";
-        @$backupSets or die "ERROR: backup set for $backupSet{src} does not exist\n";
+        my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
+        @$backupSets or die "ERROR: backup set for $backupSet->{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
         #merge new config
-        for (keys %backupSet){
-            $cfg{$_} = $backupSet{$_};
+        for (keys %$backupSet){
+            $cfg{$_} = $backupSet->{$_};
         }
         #check new backup set
         $zConfig->checkBackupSet(\%cfg);
