@@ -53,7 +53,7 @@ sub runCommand {
     main();
 }
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 use_ok 'ZnapZend';
 
@@ -64,6 +64,8 @@ do 'znapzend' or die "ERROR: loading program znapzend\n";
 is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
+
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
 
 is (runCommand(qw(--daemonize --debug --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
  

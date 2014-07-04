@@ -11,6 +11,7 @@ use Sys::Syslog;
 has debug       => sub { 0 };
 has noaction    => sub { 0 };
 has nodestroy   => sub { 1 };
+has runonce     => sub { q{} };
 
 has backupSets       => sub { [] };
 has forkPollInterval => sub { 5 };
@@ -39,7 +40,9 @@ my $killThemAll  = sub {
 
 my $refreshBackupPlans = sub {
     my $self = shift;
-    $self->backupSets($self->zConfig->getBackupSetEnabled());
+    my $dataSet = $self->runonce;
+
+    $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
 
     @{$self->backupSets}
         or die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
@@ -47,12 +50,12 @@ my $refreshBackupPlans = sub {
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #create backup hashes for all destinations
-        for (keys %{$backupSet}){
+        for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
             $backupSet->{"dst$key" . 'PlanHash'}
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
-        $backupSet->{interval} = $self->zTime->getInterval($backupSet->{srcPlanHash});
+        $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
         $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
         syslog('info', "found a valid backup plan for $backupSet->{src}...");
     }
@@ -93,11 +96,11 @@ my $checkSendRecvCleanup = sub {
                 ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
             #loop through all destinations
-            for my $dst (grep { /^dst_[^_]+$/ } (keys %{$backupSet})){
+            for my $dst (grep { /^dst_[^_]+$/ } (keys %$backupSet)){
                 my ($key) = $dst =~ /dst_([^_]+)$/;
 
                 #loop through all subdatasets
-                for my $srcDataSet (@{$srcSubDataSets}){
+                for my $srcDataSet (@$srcSubDataSets){
                     my $dstDataSet = $srcDataSet;
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
@@ -116,7 +119,7 @@ my $checkSendRecvCleanup = sub {
             }
 
             #cleanup source
-            for my $srcDataSet (@{$srcSubDataSets}){
+            for my $srcDataSet (@$srcSubDataSets){
                 # cleanup according to backup schedule
                 @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
                 $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
@@ -148,6 +151,27 @@ sub start {
     syslog('info', 'refreshing backup plans...');
     $self->$refreshBackupPlans();
 
+    if ($self->runonce){
+        my $timeStamp = $self->zTime->getLocalTimestamp();
+        my $backupSet = $self->backupSets->[0]
+            or die "ERROR: no backup set defined for '$self->runonce'\n";
+
+        my $snapshotName = $backupSet->{src} . '@'
+            . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+        $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
+            or print STDERR "snapshot '$snapshotName' does already exist\n";
+        
+        $self->$checkSendRecvCleanup($backupSet, $timeStamp);
+
+        #wait for send/recv and cleanup to finish
+        while ($self->$cleanupChildren()){
+            sleep 1;
+        }
+
+        return 1;
+    }
+
     ### main loop ###
     while (1){
         # clean up child processes
@@ -168,7 +192,7 @@ sub start {
 
         # check if we need to snapshot, since we start polling if child is active and might be early
         if ($self->zTime->getLocalTimestamp() >= $timeStamp){
-            for my $backupSet (@{$actionList}){
+            for my $backupSet (@$actionList){
                 syslog('info', 'creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
                     . 'snapshot on ' . $backupSet->{src});
 

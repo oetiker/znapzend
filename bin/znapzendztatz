@@ -32,7 +32,7 @@ sub collectData {
 
     $data{count} = $#{$snapshots};
     ${$snapshots}[-1] =~ /^.*\@($snapFilter)$/;
-    my $snapshotInterval = ${$snapshots}[0] . '%' . $1;
+    my $snapshotInterval = $snapshots->[0] . '%' . $1;
     $data{usage} = $zZfs->snapshotReclaim($snapshotInterval);
     $data{dataset} = $dataset;
 
@@ -58,23 +58,23 @@ sub main {
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set
-    @{$backupSets} or die "ERROR: no valid znapzend setup found on source\n";
+    @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
 
     #print header
     print "snapshot\ncount   space usage   dataset\n";
 
-    for my $backupSet (@{$backupSets}){
+    for my $backupSet (@$backupSets){
         my $datasets = $backupSet->{recursive} eq 'on'
             ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
 
         my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset
-        for my $dataset (@{$datasets}){
+        for my $dataset (@$datasets){
             dumpStats(collectData($dataset, $snapFilter));
 
             #destination datasets
-            for (keys %{$backupSet}){
+            for (keys %$backupSet){
                 my ($key) = /^(dst_[^_]+)$/ or next;
                 my $dstDataSet = $dataset;
                 $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;

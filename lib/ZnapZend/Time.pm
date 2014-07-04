@@ -30,8 +30,8 @@ has configUnits => sub {
 
 has unitFactors => sub {
     {
-        years   => 3600 * 24 * 366,
-        months  => 3600 * 24 * 31,
+        years   => 3600 * 24 * 365.25,
+        months  => 3600 * 24 * 30,
         weeks   => 3600 * 24 * 7,
         days    => 3600 * 24,
         hours   => 3600,
@@ -116,7 +116,7 @@ sub getInterval {
     my $self = shift;
     my $backupHash = shift;
 
-    return (sort { $a<=>$b } (values %{$backupHash}))[0];
+    return (sort { $a<=>$b } (values %$backupHash))[0];
 }
 
 sub createSnapshotTime {
@@ -135,7 +135,7 @@ sub getActionList {
     my @backupSets;
     my $time = $self->getLocalTimestamp();
 
-    for my $backupSet (@{$backupSets}){
+    for my $backupSet (@$backupSets){
         my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
         
         if (!defined $timeStamp || $tmpTime < $timeStamp){
@@ -157,14 +157,14 @@ sub getSnapshotsToDestroy {
     my @toDestroy;
 
     #initialise with maximum time to keep backups since we run from old to new backups
-    my $maxAge = (sort { $a<=>$b } keys %{$timePlan})[-1];
+    my $maxAge = (sort { $a<=>$b } keys %$timePlan)[-1];
 
-    for my $snapshot (@{$snapshots}){
+    for my $snapshot (@$snapshots){
         #get snapshot age
         my $snapshotTimestamp = $self->$getSnapshotTimestamp($snapshot, $timeFormat);
         my $snapshotAge = $time - $snapshotTimestamp;
         #get valid snapshot schedule for this dataset
-        for my $key (sort { $a<=>$b } keys %{$timePlan}){
+        for my $key (sort { $a<=>$b } keys %$timePlan){
             if ($key >= $snapshotAge){
                 $maxAge = $key;
                 last;
@@ -185,7 +185,7 @@ sub getSnapshotsToDestroy {
         }
         else{
             #define timeslot
-            $timeslots{$maxAge}->{$timeslot} = '';
+            $timeslots{$maxAge}->{$timeslot} = 1;
         }
     }
     return \@toDestroy;
@@ -198,7 +198,7 @@ sub getLastScrubTimestamp {
     my $scrubTimeFilter = $self->scrubTimeFilter;
     my $scrubTimeFormat = $self->scrubTimeFormat;
 
-    for (@{$zpoolStatus}){
+    for (@$zpoolStatus){
         next if !/$scrubFilter/;
 
         /($scrubTimeFilter)$/ or die "ERROR: cannot parse last scrub time\n";
@@ -214,7 +214,8 @@ sub getLocalTimestamp {
     my $self = shift;
     my $time = localtime;
 
-    return $time->epoch + $time->tzoffset;
+    #need to call method seconds as addition will return a Time::Seconds object
+    return ($time->epoch + $time->tzoffset)->seconds;
 }
 
 sub checkTimeFormat {

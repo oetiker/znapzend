@@ -268,16 +268,16 @@ sub lastAndCommonSnapshots {
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
 
-    return (undef, undef) if !@{$srcSnapshots};
+    return (undef, undef) if !@$srcSnapshots;
 
     my ($i, $snapTime);
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
         ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
 
-        last if grep { /$snapTime/ } @{$dstSnapshots};
+        last if grep { /$snapTime/ } @$dstSnapshots;
     }
 
-    return (${$srcSnapshots}[-1], (grep { /$snapTime/ } @{$dstSnapshots})
+    return (${$srcSnapshots}[-1], (grep { /$snapTime/ } @$dstSnapshots)
         ? ${$srcSnapshots}[$i] : undef);
 }
 
@@ -301,7 +301,7 @@ sub getDataSetProperties {
 
     my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
     
-    for my $listElem (@{$list}){
+    for my $listElem (@$list){
         my %properties;
         my @cmd = (qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
@@ -329,7 +329,7 @@ sub setDataSetProperties {
 
     return 0 if !$self->dataSetExists($dataSet);
 
-    for my $prop (keys %{$properties}){
+    for my $prop (keys %$properties){
         my @cmd = (qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd) && die "ERROR: could not set property $prop on $dataSet\n" if !$self->noaction;
@@ -346,9 +346,9 @@ sub deleteDataSetProperties {
     return 0 if !$self->dataSetExists($dataSet);
     my $properties = $self->getDataSetProperties($dataSet);
 
-    return 0 if !@{$properties}[0];
+    return 0 if !$properties->[0];
 
-    for my $prop (keys @{$properties}[0]){
+    for my $prop (keys $properties->[0]){
         my @cmd = (qw(zfs inherit), "$propertyPrefix:$prop", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd) && die "ERROR: could not reset property $prop on $dataSet\n" if !$self->noaction;

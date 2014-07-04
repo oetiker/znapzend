@@ -19,7 +19,8 @@ use ZnapZend;
 my $opts = {};
 
 sub main {
-    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy daemonize pidfile=s syslog=s)) or exit 1;
+    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy),
+        qw(daemonize pidfile=s syslog=s runonce=s)) or exit 1;
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -106,6 +107,7 @@ B<znapzend> [I<options>...]
  --syslog=x    select the syslog facility 
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
+ --runonce=x   run one round on source dataset x
 
 =head1 DESCRIPTION
 
