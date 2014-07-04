@@ -32,6 +32,10 @@ sub main {
     my $zConfig = ZnapZend::Config->new();
     my $opts = {};
     my %cfg;
+    my $ZNAPZEND_TESTING = 0;
+
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  $ZNAPZEND_TESTING = 1;
 
     defined $mainOpt or pod2usage(1);
 
@@ -78,7 +82,7 @@ sub main {
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
-            my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
+            my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
@@ -159,7 +163,7 @@ sub main {
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
-            my $check = $ENV{ZNAPZEND_TESTING} ? 'y' : <STDIN>;
+            my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)

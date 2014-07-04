@@ -12,16 +12,15 @@ BEGIN {
     $buildDir //= "$FindBin::Bin/../";
 }
 
-#set testing switch
-$ENV{ZNAPZEND_TESTING} = 1;
-
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
+#place bin path to lib so it is stored in @INC
+use lib "$FindBin::Bin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
-    return () if $filename !~ /ZnapZend/;
+    return () if $filename !~ /ZnapZend|znapzend/;
     if (my $found = (grep { -e $_ } map { "$_/$filename" } grep { !ref } @INC)[0] ) {
         local $/ = undef;
         open my $fh, '<', $found or die("Can't read module file $found\n");
@@ -32,6 +31,9 @@ unshift @INC, sub {
         # NB this introduces no extra linefeeds so D::C's line numbers
         # in reports match the file on disk
         $module_text =~ s/(.*?package\s+\S+)(.*)__END__/$1sub classWrapper {$2} classWrapper();/s;
+
+        # uncomment testing code
+        $module_text =~ s/### RM_COMM_4_TEST ###//sg;
 
         # filehandle on the scalar
         open $fh, '<', \$module_text;
@@ -58,7 +60,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(--help);
-do "$FindBin::Bin/../bin/znapzend" or die "ERROR: loading program znapzend\n";
+do 'znapzend' or die "ERROR: loading program znapzend\n";
 
 is (runCommand('--help'), 1, 'znapzend help');
 
