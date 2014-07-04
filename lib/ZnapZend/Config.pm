@@ -98,6 +98,8 @@ my $checkBackupSets = sub {
                 my $file = ($remote ? "$remote:" : '') . $backupSet->{mbuffer};
                 $self->zfs->fileExistsAndExec($file)
                     or die "ERROR: executable '" . $backupSet->{mbuffer} . "' does not exist on $remote\n";
+                #check if mbuffer size is valid
+                $backupSet->{mbuffer_size} =~ /^\d+[bkMG%]?$/ or die "ERROR: mbuffer size '" . $backupSet->{mbuf_size} . "' invalid\n";
             }
         }
     }

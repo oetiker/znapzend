@@ -45,9 +45,9 @@ sub main {
 }
 
 sub daemonize {
-   my $pidFile = $opts->{pidfile};
+    my $pidFile = $opts->{pidfile};
 
-   if (defined $pidFile && -f $pidFile){
+    if (defined $pidFile && -f $pidFile){
         chomp(my $pid = slurp $pidFile);
         if (kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";

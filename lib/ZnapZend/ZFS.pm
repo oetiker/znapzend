@@ -8,7 +8,7 @@ has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
-has mbufferParam    => sub { [qw(-s 128k -m 1G -q)] };
+has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
 
 ### private functions ###
@@ -54,6 +54,7 @@ my $sendRecvSnapshots = sub {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $mbuffer = shift;
+    my $mbufferSize = shift; 
     my $snapFilter = $_[0] || qr/.*/;
     my $remote;
     my ($lastSnapshot, $lastCommon)
@@ -72,7 +73,7 @@ my $sendRecvSnapshots = sub {
         @cmd = (['zfs', 'send', $lastSnapshot]);
     }
 
-    my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}]) : () ;
+    my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
     my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
 
     push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
