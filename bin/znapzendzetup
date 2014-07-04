@@ -14,9 +14,9 @@ use ZnapZend::Config;
 sub dumpProperties {
     my $props = shift;
 
-    for my $backupSet (@{$props}){
+    for my $backupSet (@$props){
         print "*** backup plan: $backupSet->{src} ***\n";
-        for my $opt (sort keys %{$backupSet}){ 
+        for my $opt (sort keys %$backupSet){ 
             #singular plural check on backup plans. if value is 1, remove trailing 's'
             if ($opt =~ /plan$/){
                 $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
@@ -150,7 +150,7 @@ sub main {
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet{src}) or die "ERROR: cannot get backup config\n";
-        @{$backupSets} or die "ERROR: backup set for $backupSet{src} does not exist\n";
+        @$backupSets or die "ERROR: backup set for $backupSet{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
         #merge new config
@@ -305,6 +305,17 @@ and optional
 characters.
 
 If not specified, tsformat defaults to '%Y-%m-%d-%H%M%S'.
+
+If mbuffer is specified, the size of the mbuffer can be set with
+the 'mbuffersize' option. mbuffersize supports the following units:
+
+ b, k, M, G
+
+To specify a mbuffer size of 100 MB:
+
+ --mbuffersize=100M
+
+If not set, mbuffersize defaults to 1 GB.
 
 Use option 'donotask' for create/edit to run changes immediately.
 
