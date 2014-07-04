@@ -51,16 +51,17 @@ for ($command){
     /^get$/ && do {
         exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src'); 
         print <<"ZFS_GET_END";
-org.znapzend:dst_0_plan  1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
-org.znapzend:dst_a_plan  1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
-org.znapzend:src         tank/source
-org.znapzend:src_plan    1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
-org.znapzend:recursive   on
-org.znapzend:tsformat    %Y-%m-%d-%H%M%S
-org.znapzend:enabled     on
-org.znapzend:dst_0       backup/destination
-org.znapzend:dst_a       root\@remote:remote/destination
-org.znapzend:mbuffer     $FindBin::Bin/mbuffer
+org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
+org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
+org.znapzend:src            tank/source
+org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
+org.znapzend:recursive      on
+org.znapzend:tsformat       %Y-%m-%d-%H%M%S
+org.znapzend:enabled        on
+org.znapzend:dst_0          backup/destination
+org.znapzend:dst_a          root\@remote:remote/destination
+org.znapzend:mbuffer        $FindBin::Bin/mbuffer
+org.znapzend:mbuffer_size   100M
 ZFS_GET_END
 
         exit;

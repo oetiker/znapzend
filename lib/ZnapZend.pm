@@ -12,7 +12,7 @@ has debug       => sub { 0 };
 has noaction    => sub { 0 };
 has nodestroy   => sub { 1 };
 
-has backupSets  => sub { [] };
+has backupSets       => sub { [] };
 has forkPollInterval => sub { 5 };
 
 has zConfig => sub {
@@ -102,8 +102,8 @@ my $checkSendRecvCleanup = sub {
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
                     syslog('info', 'sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-                    $self->zZfs->sendRecvSnapshots($srcDataSet,
-                        $dstDataSet, $backupSet->{mbuffer}, $backupSet->{snapFilter});
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
             
                     # cleanup according to backup schedule
                     @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
@@ -127,7 +127,7 @@ my $checkSendRecvCleanup = sub {
             }
 
             #exit the forked worker
-            exit(0);
+            exit 0;
         }
         else {
             #parent process, save child pid
