@@ -181,7 +181,7 @@ sub getSnapshotsToDestroy {
         my $timeslot = int($snapshotTimestamp / $timePlan->{$maxAge});
         #check if timeslot is already occupied, if so, push this snapshot to the destroy list
         if (exists $timeslots{$maxAge} && exists $timeslots{$maxAge}->{$timeslot}){
-            push @toDestroy, $snapshot;
+            push @toDestroy, $snapshot if $snapshotTimestamp != $time; #make sure, latest snapshot won't be deleted
         }
         else{
             #define timeslot
