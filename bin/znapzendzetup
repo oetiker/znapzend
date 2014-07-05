@@ -103,7 +103,7 @@ sub main {
         $zConfig->checkBackupSet(\%cfg);
         
         dumpProperties([\%cfg]);
-        #ask user if backup plan shall be stored unless option 'y' is passed
+        #ask user if backup plan shall be stored unless option 'donotask' is passed
         if (!$opts->{donotask}){
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
@@ -321,8 +321,8 @@ Use option 'donotask' for create/edit to run changes immediately.
 
 =head1 EXAMPLE
 
-    znapzendzetup create --mbuffer=/opt/omni/bin/mbuffer \
-       --tsformat='%Y-%m-%d-%H%M%S' \
+    znapzendzetup create -r --mbuffer=/opt/omni/bin/mbuffer \
+       --mbuffersize=1337M --tsformat='%Y-%m-%d-%H%M%S' \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
        DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
