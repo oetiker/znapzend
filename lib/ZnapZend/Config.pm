@@ -86,9 +86,12 @@ my $checkBackupSets = sub {
             }
         }
         #check destination plans and datasets
-        for my $dst (grep { /^dst_[^_]+$/ } (keys %$backupSet)){
+        for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
             $self->zfs->dataSetExists($backupSet->{$dst})
                 or die 'ERROR: filesystem ' . $backupSet->{$dst} . " does not exist\n";
+
+            #if a backup destination is given, we also need a plan
+            $backupSet->{$dst . '_plan'} or die "ERROR: no backup plan given for destination\n";
 
             $backupSet->{$dst . '_plan'} = $self->$checkBackupPlan($backupSet->{$dst . '_plan'});
 
@@ -101,6 +104,13 @@ my $checkBackupSets = sub {
                 #check if mbuffer size is valid
                 $backupSet->{mbuffer_size} =~ /^\d+[bkMG%]?$/ or die "ERROR: mbuffer size '" . $backupSet->{mbuf_size} . "' invalid\n";
             }
+        }
+        #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan
+        for my $dst (grep { /^dst_[^_]+_plan$/ } keys %$backupSet){
+            $dst  =~ s/_plan//; #remove trailing '_plan' so we get destination
+            
+            #remove destination plan if destination is not specified
+            exists $backupSet->{$dst} or delete $backupSet->{$dst . '_plan'};
         }
     }
     return 1;
