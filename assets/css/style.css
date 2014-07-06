@@ -1,25 +1,48 @@
 body {
     font-family: 'Roboto', sans-serif;
 }
-
+.btn-lg, .btn-group-lg>.btn {
+    border-radius: 0px;
+}
 #banner {
     background-image: url(../images/IMG_1051.jpg);
     background-position: center;
     background-size: cover;
-    height: 500px;
+    height: 430px;
     color: #fff;
     padding-top: 10ex;
-    text-shadow: 0px 0px 15px rgba(0, 0, 0, 1);
+    margin-bottom: 10ex;
+    
 }
 
 #banner h1 {
     font-size: 600%;
     font-weight: 700;
     font-family: 'Orbitron', sans-serif;
+    text-shadow: 0px 0px 15px rgba(0, 0, 0, 1);
 }
 
 #banner .claim {
     font-size: 300%;
     margin-bottom: 4ex;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
 }
-    
+
+.thumbnail.feature {
+    border-radius: 0px;
+    background-color: #23241f;
+    color: #fff;
+}
+
+.thumbnail.feature .icon {
+    font-size: 500%;
+    text-align: center;
+    color: #87a0fe;
+    margin-top: 0.6ex;
+    margin-bottom: -0.5ex;
+} 
+
+.thumbnail.feature h3 {
+    color: #fff;
+    text-align: center;
+}
