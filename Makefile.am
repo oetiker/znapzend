@@ -39,21 +39,12 @@ dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
 
-doc/znapzend.pod: bin/znap
-
-man/znapzend.1: bin/znapzend
-	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
-	grep -A100000 '=head1 NAME' $< > doc/znapzend.pod
+doc/%.pod: bin/%
+	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
         
-man/znapzendzetup.1: bin/znapzendzetup
+man/%.1: doc/%.pod
 	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
-	grep -A100000 '=head1 NAME' $< > doc/znapzendzetup.pod
-
-
-man/znapzendztatz.1: bin/znapzendztatz
-	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
-	grep -A100000 '=head1 NAME' $< > doc/znapzendztatz.pod
-
+        
 README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
 

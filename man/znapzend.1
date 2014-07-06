@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2014-06-10" "0.6.0" "znapzend"
+.TH ZNAPZEND 1 "2014-07-06" "0.7.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -135,7 +135,7 @@ znapzend \- znapzend daemon
 .IX Header "SYNOPSIS"
 \&\fBznapzend\fR [\fIoptions\fR...]
 .PP
-.Vb 8
+.Vb 9
 \& \-\-man         show man\-page and exit
 \& \-h,\-\-help     display this help and exit 
 \& \-d,\-\-debug    print debug messages to STDERR
@@ -144,6 +144,7 @@ znapzend \- znapzend daemon
 \& \-\-syslog=x    select the syslog facility 
 \& \-\-pidfile=x   write a pid file when running in daemon mode
 \& \-\-daemonize   fork into the background
+\& \-\-runonce=x   run one round on source dataset x
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"

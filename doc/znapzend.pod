@@ -14,6 +14,7 @@ B<znapzend> [I<options>...]
  --syslog=x    select the syslog facility 
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
+ --runonce=x   run one round on source dataset x
 
 =head1 DESCRIPTION
 

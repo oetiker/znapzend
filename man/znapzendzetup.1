@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-06-29" "0.6.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-07-06" "0.7.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -137,14 +137,16 @@ znapzendzetup \- znapzend setup utility
 .PP
 where 'command' is one of the following:
 .PP
-.Vb 3
-\&    create [\-\-recursive] [\-\-mbuffer=<path>] [\-\-tsformat=<format>] \e
+.Vb 4
+\&    create [\-\-recursive] [\-\-mbuffer=<path>] [\-\-mbuffersize=<size>] \e
+\&           [\-\-tsformat=<format>] \-\-donotask \e
 \&           SRC plan dataset \e
 \&           [ DST[:key] plan [[user@]host:]dataset ]
 \&
 \&    delete [\-\-dst=key] <src_dataset>
 \&
-\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-tsformat=<format>] \e
+\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-mbuffersize=<size>] \e
+\&           [\-\-tsformat=<format>] \-\-donotask \e
 \&           SRC [plan] dataset \e
 \&           [ DST:key [plan] [dataset] ]
 \&
@@ -217,11 +219,28 @@ and optional
 characters.
 .PP
 If not specified, tsformat defaults to '%Y\-%m\-%d\-%H%M%S'.
+.PP
+If mbuffer is specified, the size of the mbuffer can be set with
+the 'mbuffersize' option. mbuffersize supports the following units:
+.PP
+.Vb 1
+\& b, k, M, G
+.Ve
+.PP
+To specify a mbuffer size of 100 \s-1MB:\s0
+.PP
+.Vb 1
+\& \-\-mbuffersize=100M
+.Ve
+.PP
+If not set, mbuffersize defaults to 1 \s-1GB\s0.
+.PP
+Use option 'donotask' for create/edit to run changes immediately.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 .Vb 5
-\&    znapzendzetup create \-\-mbuffer=/opt/omni/bin/mbuffer \e
-\&       \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
+\&    znapzendzetup create \-r \-\-mbuffer=/opt/omni/bin/mbuffer \e
+\&       \-\-mbuffersize=1337M \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
 \&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
