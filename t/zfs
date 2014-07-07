@@ -32,11 +32,15 @@ for ($command){
                 print $ARGV[-1] . '@' . $time->strftime('%Y-%m-%d-%H%M%S') . "\n";
                 $time += 60;
             }
+            exit;
         }
-        else{
-            for (sort keys %dataSets){
-                print "$_\n";
-            }
+        #if there is a '/' it is a dataset
+        if ($ARGV[-1] =~ /\//){
+            print $ARGV[-1] if grep { $ARGV[-1] eq $_ } keys %dataSets;
+            exit;
+        }
+        for (sort keys %dataSets){
+            print "$_\n";
         }
         exit;
     };
@@ -53,6 +57,7 @@ for ($command){
         print <<"ZFS_GET_END";
 org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
 org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
+org.znapzend:dst_fail_plan  1hours=>1minutes
 org.znapzend:src            tank/source
 org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
 org.znapzend:recursive      on
@@ -60,6 +65,7 @@ org.znapzend:tsformat       %Y-%m-%d-%H%M%S
 org.znapzend:enabled        on
 org.znapzend:dst_0          backup/destination
 org.znapzend:dst_a          root\@remote:remote/destination
+org.znapzend:dst_fail       backup/destfail
 org.znapzend:mbuffer        $FindBin::Bin/mbuffer
 org.znapzend:mbuffer_size   100M
 ZFS_GET_END

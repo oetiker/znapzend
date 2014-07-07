@@ -51,7 +51,18 @@ my $refreshBackupPlans = sub {
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #create backup hashes for all destinations
         for (keys %$backupSet){
-            my ($key) = /^dst_([^_]+)_[^_]+$/ or next;
+            my ($key) = /^dst_([^_]+)_plan$/ or next;
+
+            #check if destination exists (i.e. is valid) otherwise remove it
+            if (!$backupSet->{"dst_$key" . '_valid'}){
+                syslog('warning', "destination '" . $backupSet->{"dst_$key"}
+                    . "' does not exist. ignoring it...");
+                print STDERR "\n# WARNING: destination '" . $backupSet->{"dst_$key"}
+                    . "' does not exist. ignoring it...\n\n" if $self->debug;
+
+                delete $backupSet->{"dst_$key"};
+                next;
+            }
             $backupSet->{"dst$key" . 'PlanHash'}
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }

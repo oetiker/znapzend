@@ -76,9 +76,17 @@ sub main {
             #destination datasets
             for (keys %$backupSet){
                 my ($key) = /^(dst_[^_]+)$/ or next;
-                my $dstDataSet = $dataset;
-                $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                dumpStats(collectData($dstDataSet, $snapFilter));
+
+                #skipping destination if it does not exists
+                if (!$backupSet->{$key . '_valid'}){
+                    print "*** WARNING: destination '$backupSet->{$key}'"
+                        . " does not exist! ***\n\n";
+                }
+                else{
+                    my $dstDataSet = $dataset;
+                    $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
+                    dumpStats(collectData($dstDataSet, $snapFilter));
+                }
             }
               
         }
