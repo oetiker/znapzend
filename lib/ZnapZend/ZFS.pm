@@ -330,6 +330,9 @@ sub setDataSetProperties {
     return 0 if !$self->dataSetExists($dataSet);
 
     for my $prop (keys %$properties){
+        #don't save source dataset as we know the source from the property location
+        next if $prop eq 'src';
+
         my @cmd = (qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd) && die "ERROR: could not set property $prop on $dataSet\n" if !$self->noaction;
