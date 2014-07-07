@@ -91,7 +91,17 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Online Backup Scheduler</h3>
-                                    <p>ZnapZend operates as a daemon. It automatically finds all the ZFS filesets with a znapzend configuration. Newly setup configurations will be picked up automatically. Even when a snapshot takes a long time to transfer to its remote destination, the new snapshots on the original filesystem will continue to be created on time and sending snapshots to remote destinations will be caught up.</p>
+
+                                    <p>ZnapZend operates as a daemon. It
+                                    organizes all snapshotting and remote
+                                    data transfer activities. Even when a snapshot
+                                    takes a long time to transfer to its
+                                    remote destination, snapshots on the
+                                    source fileset will continue to be
+                                    created according to schedule. Multiple
+                                    snapshots will be transfered at once to
+                                    catch up slow destinations.
+                                    </p>
                                 </div>
                             </div>
                         </div>
