@@ -32,6 +32,7 @@ body {
     border-radius: 0px;
     background-color: #23241f;
     color: #fff;
+    min-height: 490px;
 }
 
 .thumbnail.feature .icon {
