@@ -44,9 +44,9 @@
                                     <span class="glyphicon glyphicon-camera"></span>
                                 </div>
                                 <div class="caption">
-                                    <h3>Consitant Snapshots</h3>
-                                    <p>ZnapZend uses the built in snapshot functionality of ZFS for
-                                    fully consistant backups. Many other filebased backup systems, will not succeed in capturing a coherent state of a fast changeing set of data.</p>
+                                    <h3>Consitent Snapshots</h3>
+                                    <p>ZnapZend uses the built-in snapshot functionality of ZFS for
+                                    fully consistent backups. Many other filebased backup systems will not succeed in capturing a coherent state of a fast changing set of data.</p>
                                 </div>
                             </div>
                         </div>
@@ -68,7 +68,7 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Remote Backup Locations</h3>
-                                    <p>ZnapZend uses the ZFS send/receive functionality to transfer backups to remote locations. It employs ssh and mbuffer for the transfer to achieve optimal transfer rates for the data. You can configure any number of remote destinations for a fileset. Even no destinations at all if all you need are well managed local snapshots.</p>
+                                    <p>ZnapZend uses the ZFS send/receive functionality to transfer backups to remote locations. It employs ssh and (optionally) mbuffer for the transfer to achieve optimal transfer rates for the data. You can configure any number of remote destinations for a fileset. Even no destinations at all if all you need are well managed local snapshots.</p>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +79,7 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Progressive Thinning</h3>
-                                    <p>ZnapZend can be configured to remove snapshots as they get older. The configuration allows to easily setup schemes where the backup density is progressively reduced as the backups get older. This technique can be applied both to the local snapshots as well as to any remote locations.</p>
+                                    <p>ZnapZend can be configured to remove snapshots as they get older. The configuration allows to easily setup schemes where the backup density is progressively reduced as the backups get older. This technique can be individually applied both to the local snapshots as well as to any remote locations.</p>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Online Backup Scheduler</h3>
-                                    <p>ZnapZend operates as a daemon. It automatically finds all the ZFS filesets with a znapzend configuration. Newly setup configurations will be picked up automatically. And even when a snapshot takes a long time to transfer to its remote destination, the new snapshots on the original filesystem will continue to be created on time.</p>
+                                    <p>ZnapZend operates as a daemon. It automatically finds all the ZFS filesets with a znapzend configuration. Newly setup configurations will be picked up automatically. Even when a snapshot takes a long time to transfer to its remote destination, the new snapshots on the original filesystem will continue to be created on time and sending snapshots to remote destinations will be caught up.</p>
                                 </div>
                             </div>
                         </div>
@@ -118,3 +118,4 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     </body>
 </html>
+
