@@ -25,7 +25,7 @@
         <div class="container-fluid" id="banner">
             <div class="container">
                 <div class="row">
-                    <div class="col-xs-12">
+                    <div class="col-xs-12 col-md-8 col-md-offset-2">
                         <h1>ZnapZend</h1>
                         <div class="claim">The Multilevel Backup Tool for ZFS</div>
                         <a href="#" class="btn btn-success btn-lg" role="button">Get Started Now</a>
@@ -36,73 +36,78 @@
 
         <div class="container">
             <div class="row">
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-camera"></span>
+                <div class="col-sm-12 col-md-8 col-md-offset-2">        
+                    <div class="row">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-camera"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>Consitant Snapshots</h3>
+                                    <p>ZnapZend uses the built in snapshot functionality of ZFS for
+                                    fully consistant backups. Many other filebased backup systems, will not succeed in capturing a coherent state of a fast changeing set of data.</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="caption">
-                            <h3>Snapshotting</h3>
-                            <p>...</p>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>Persistant Configuration</h3>
+                                    <p>ZnapZend stores all its congfiguration in custom zfs properties. So all configuration is hooked right into the zfs fileset structure. When you modify the fileset, rename it, remove it, znapzend will happily jug along. ZnapZend comes with a special tool for setting and checking the backup configuration.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-send"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>Remote Backup Locations</h3>
+                                    <p>ZnapZend uses the ZFS send/receive functionality to transfer backups to remote locations. It employs ssh and mbuffer for the transfer to achieve optimal transfer rates for the data. You can configure any number of remote destinations for a fileset. Even no destinations at all if all you need are well managed local snapshots.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>Multi Generation</h3>
+                                    <p>ZnapZend can be configured to remove snapshots as they get older. The configuration allows to easily setup schemes where the backup density is progressively reduced as the backups get older. This technique can be applied both to the local snapshots as well as to any remote locations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>One Backup Daemon</h3>
+                                    <p>ZnapZend operates as a daemon. It automatically finds all the ZFS filesets with a znapzend configuration. Newly setup configurations will be picked up automatically. And even when a snapshot takes a long time to transfer to its remote destination, the new snapshots on the original filesystem will continue to be created on time.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="thumbnail feature">
+                                <div class="icon">
+                                    <span class="glyphicon glyphicon-eye-cutlery"></span>
+                                </div>
+                                <div class="caption">
+                                    <h3>Configurable Snapshot Nameing</h3>
+                                    <p>ZnapZend is configurable in how it names its snapshots. This means that the system can easily be configured to deal with snapshots created by different software. So switching from your current ZFS snaphotting too to ZnapZend will be very simple indeed.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-sort-by-attributes-alt"></span>
-                        </div>
-                        <div class="caption">
-                            <h3>Snapshotting</h3>
-                            <p>...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-send"></span>
-                        </div>
-                        <div class="caption">
-                            <h3>Snapshotting</h3>
-                            <p>...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-cog"></span>
-                        </div>
-                        <div class="caption">
-                            <h3>Property based Configuration</h3>
-                            <p>...</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-tasks"></span>
-                        </div>
-                        <div class="caption">
-                            <h3>Snapshotting</h3>
-                            <p>...</p>
-                        </div>
-                    </div>
-                </div>
-                                <div class="col-sm-6 col-md-4">
-                    <div class="thumbnail feature">
-                        <div class="icon">
-                            <span class="glyphicon glyphicon-eye-open"></span>
-                        </div>
-                        <div class="caption">
-                            <h3>Snapshotting</h3>
-                            <p>...</p>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
 

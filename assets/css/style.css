@@ -45,4 +45,10 @@ body {
 .thumbnail.feature h3 {
     color: #fff;
     text-align: center;
+    margin-bottom: 2ex;
+}
+
+.thumbnail.feature p {
+    color: #fff;
+    line-height: 150%;
 }
