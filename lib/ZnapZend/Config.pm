@@ -87,8 +87,8 @@ my $checkBackupSets = sub {
         }
         #check destination plans and datasets
         for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
-            $self->zfs->dataSetExists($backupSet->{$dst})
-                or die 'ERROR: filesystem ' . $backupSet->{$dst} . " does not exist\n";
+            #store backup destination validity. will be checked where used
+            $backupSet->{$dst . '_valid'} = $self->zfs->dataSetExists($backupSet->{$dst});
 
             #if a backup destination is given, we also need a plan
             $backupSet->{$dst . '_plan'} or die "ERROR: no backup plan given for destination\n";
