@@ -79,7 +79,7 @@ my $getSnapshotTimestamp = sub {
 sub checkTimeUnit {
     my $self = shift;
     my $arg = shift;
-    my ($time, $unit) = $arg =~ /^(\d+)\s*(\w+)$/;
+    my ($time, $unit) = $arg =~ /^(\d+)\s*([a-z]+)$/;
 
     if ($time && $unit){
         return $time . $self->configUnits()->{$unit} if (exists $self->configUnits->{$unit});
@@ -97,12 +97,12 @@ sub backupPlanToHash {
 
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
-        my ($value, $unit) = $planValues[0] =~ /(\d+)([a-z]+)/;
+        my ($value, $unit) = $planValues[0] =~ /^(\d+)([a-z]+)$/;
         $value && exists $self->unitFactors->{$unit}
             or die "ERROR: backup plan $backupPlan is not valid\n";
 
         my $key = $self->$timeToTimestamp($value, $unit);
-        ($value, $unit) = $planValues[1] =~ /(\d+)([a-z]+)/;
+        ($value, $unit) = $planValues[1] =~ /^(\d+)([a-z]+)$/;
         $value && exists $self->unitFactors->{$unit}
             or die "ERROR: backup plan $backupPlan ist not valid\n";
 
