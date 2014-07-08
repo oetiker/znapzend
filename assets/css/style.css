@@ -20,9 +20,14 @@ body {
     position: absolute;
     top: -6ex;
     right: 0ex;
-    height: 41px;
+    height: 35px;
 }
 
+@media (min-width: 750px) {
+    #oposs-logo {
+        height: 41px;
+    }
+}
 #banner h1 {
     font-size: 310%;
     font-weight: 700;
