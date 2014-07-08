@@ -1,9 +1,23 @@
 body {
     font-family: 'Roboto', sans-serif;
 }
+/* bootstrap overrides */
+
 .btn-lg, .btn-group-lg>.btn {
     border-radius: 0px;
 }
+
+.btn-success {
+    background-color: #49b700;
+    border-color: #40a000;
+}
+
+.btn-success:hover, .btn-success:focus, .btn-success:active {
+    background-color: #50c800;    
+}
+
+/* our stuff */
+
 #banner {
     background-image: url(../images/IMG_1051.jpg);
     background-position: center;
