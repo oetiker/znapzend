@@ -42,6 +42,7 @@ body {
         height: 41px;
     }
 }
+
 #banner h1 {
     font-size: 310%;
     font-weight: 700;
@@ -70,8 +71,17 @@ body {
 
 .thumbnail.feature {
     border-radius: 0px;
-    background-color: #23241f;
+    background-color: #1f1f24;
     color: #fff;
+}
+
+.thumbnail.feature:hover, .thumbnail.feature:active {   
+   background-color: #112;
+}
+
+.thumbnail.feature:hover .icon, .thumbnail.feature:active .icon {
+   color: #9aafff;
+   text-shadow: 0px 0px 5px #9aafff;   
 }
 
 @media (min-width: 750px) {
