@@ -8,40 +8,78 @@ body {
     background-image: url(../images/IMG_1051.jpg);
     background-position: center;
     background-size: cover;
-    height: 430px;
     color: #fff;
     padding-top: 10ex;
     margin-bottom: 10ex;
-    
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 5ex;    
+}
+
+#oposs-logo {
+    position: absolute;
+    top: -6ex;
+    right: 0ex;
+    width: 100px;
 }
 
 #banner h1 {
-    font-size: 600%;
+    font-size: 380%;
     font-weight: 700;
     font-family: 'Orbitron', sans-serif;
     text-shadow: 0px 0px 15px rgba(0, 0, 0, 1);
 }
 
+@media (min-width: 750px) {
+    #banner h1 {
+        font-size: 600%;
+    }
+}
+
 #banner .claim {
-    font-size: 300%;
-    margin-bottom: 4ex;
+    font-size: 200%;
+    margin-bottom: 3ex;
     text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+
+@media (min-width: 750px) {
+    #banner .claim {
+        font-size: 300%;
+        margin-bottom: 4ex;
+    }
 }
 
 .thumbnail.feature {
     border-radius: 0px;
     background-color: #23241f;
     color: #fff;
-    min-height: 490px;
+}
+
+@media (min-width: 750px) {
+    .thumbnail.feature {
+        min-height: 390px;
+    }
+}
+
+@media (min-width: 992px) {
+    .thumbnail.feature {
+        min-height: 490px;
+    }
 }
 
 .thumbnail.feature .icon {
-    font-size: 500%;
+    font-size: 400%;
     text-align: center;
     color: #87a0fe;
     margin-top: 0.6ex;
     margin-bottom: -0.5ex;
 } 
+
+@media (min-width: 750px) {
+    .thumbnail.feature .icon {
+         font-size: 500%;
+    }
+}
 
 .thumbnail.feature h3 {
     color: #fff;
