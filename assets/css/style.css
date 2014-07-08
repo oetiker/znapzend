@@ -24,7 +24,7 @@ body {
 }
 
 #banner h1 {
-    font-size: 380%;
+    font-size: 310%;
     font-weight: 700;
     font-family: 'Orbitron', sans-serif;
     text-shadow: 0px 0px 15px rgba(0, 0, 0, 1);    
@@ -37,8 +37,8 @@ body {
 }
 
 #banner .claim {
-    font-size: 200%;
-    margin-bottom: 1ex;
+    font-size: 170%;
+    margin-bottom: 2ex;
     text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
 }
 
