@@ -63,6 +63,12 @@ my $sendRecvSnapshots = sub {
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
     return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
 
+    #check if snapshots exist on destination if there is no common snapshot
+    #as this will cause zfs send/recv to fail
+    !$lastCommon && @{$self->listSnapshots($dstDataSet)}
+        and die "ERROR: snapshot(s) exist on destination, but no common found on source and destination\n"
+                . "clean up destination (i.e. destroy existing snapshots on destination dataset)\n";
+
     ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
 
     my @cmd;
