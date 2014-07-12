@@ -42,7 +42,7 @@ iman_DATA = $(MAN)
 doc/%.pod: bin/%
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
         
-man/%.1: doc/%.pod
+man/%.1: doc/%.pod VERSION
 	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
         
 README.md COPYRIGHT: VERSION
