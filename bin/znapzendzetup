@@ -29,7 +29,7 @@ sub dumpProperties {
                 }
             }
             else{
-                print "$opt" . ' ' x (16 - length($opt)) ."= $backupSet->{$opt}\n";
+                print $opt . ' ' x (16 - length($opt)) . "= $backupSet->{$opt}\n";
             }
         }
         print "\n";
