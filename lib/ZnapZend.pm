@@ -230,18 +230,18 @@ __END__
 
 =head1 NAME
 
-ZnapZend::Worker - znapzend worker class
+ZnapZend - znapzend main class
 
 =head1 SYNOPSIS
 
-use ZnapZend::Worker;
+use ZnapZend;
 ...
-my $zWorker = ZnapZend::Worker->new(debug=>0, noaction=>0, nodestroy=>0);
+my $znapzend = ZnapZend->new(debug=>0, noaction=>0, nodestroy=>0);
 ...
 
 =head1 DESCRIPTION
 
-main znapzend controller. does the scheduling and executes the necessary commands
+main znapzend class. does the scheduling and executes the necessary commands
 
 =head1 ATTRIBUTES
 
