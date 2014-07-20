@@ -10,10 +10,19 @@ use POSIX qw(setsid WNOHANG SIGTERM);
 use Sys::Syslog;
 use File::Basename;
 
+### loglevels ###
+my %logLevels = (
+    debug   => 'debug',
+    info    => 'info',
+    warn    => 'warning',
+    error   => 'err',
+    fatal   => 'alert',
+);
+
 ### attributes ###
 has debug       => sub { 0 };
 has noaction    => sub { 0 };
-has nodestroy   => sub { 1 };
+has nodestroy   => sub { 0 };
 has runonce     => sub { q{} };
 has daemonize   => sub { 0 };
 has loglevel    => sub { q{debug} };
@@ -22,16 +31,6 @@ has pidfile     => sub { q{} };
 
 has backupSets       => sub { [] };
 has forkPollInterval => sub { 5 };
-
-has logLevels   => sub {
-    {
-        debug   => 'debug',
-        info    => 'info',
-        warn    => 'warning',
-        error   => 'err',
-        fatal   => 'alert',
-    }
-};
 
 has zConfig => sub {
     my $self = shift;
@@ -53,8 +52,8 @@ has zLog => sub {
     my ($syslog) = $self->logto =~ /^syslog::(\w+)$/;
 
     #make level mojo conform
-    my ($level) = grep { $self->logLevels->{$_} eq $self->loglevel } keys %{$self->logLevels}
-        or die "ERROR: only log levels '" . join("', '", values %{$self->logLevels})
+    my ($level) = grep { $logLevels{$_} eq $self->loglevel } keys %logLevels
+        or die "ERROR: only log levels '" . join("', '", values %logLevels)
             . "' are supported\n";
 
     my $log = Mojo::Log->new(path => $syslog ? '/dev/null'
@@ -67,9 +66,9 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                print STDERR $self->logLevels->{$level} . ': ' . join(' ', @lines) . "\n";
+                print STDERR $logLevels{$level} . ': ' . join(' ', @lines) . "\n";
             }
-        )
+        );
 
         return $log;
     };
@@ -81,13 +80,13 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                syslog($self->logLevels->{$level}, @lines);
+                syslog($logLevels{$level}, @lines);
             }
-        )
+        );
 
         return $log;
     };
-    #default logging to file
+    #logging to file
     return $log;
 };
 
@@ -213,7 +212,7 @@ my $checkSendRecvCleanup = sub {
 };
 
 ### start znapzend ###
-my $start = sub {
+my $mainLoop = sub {
     my $self = shift;
     
     $self->zLog->info('starting znapzend...');
@@ -327,12 +326,12 @@ my $daemonize = sub {
     }
 };
 
-sub main {
+sub start {
     my $self = shift;
 
     $self->$daemonize if $self->daemonize;
 
-    $self->$start;
+    $self->$mainLoop;
     return 1;
 }
 
