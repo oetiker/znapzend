@@ -7,12 +7,6 @@ use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
 use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
 use Pod::Usage 1.14;
-use Sys::Syslog;
-use File::Basename;
-
-use Mojo::Base -strict;
-use Mojo::Util qw(slurp);
-use POSIX qw(setsid);
 
 use ZnapZend;
 
@@ -20,7 +14,7 @@ my $opts = {};
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy),
-        qw(daemonize pidfile=s syslog=s runonce=s)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s)) or exit 1;
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -30,59 +24,13 @@ sub main {
 
         return 1;
     };
-    $opts->{man}  && pod2usage(-exitstatus => 0, -verbose => 2);
 
-    # need to set nodestroy to 0 if not set, to override nodestroy=1 default value in ZFS.pm
-    $opts->{nodestroy} //= 0;
-
-    openlog(basename($0), 'cons,pid', $opts->{syslog} || 'local6');
+    $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     my $znapzend = ZnapZend->new($opts);
+    $znapzend->start;
 
-    daemonize() if $opts->{daemonize};
-
-    $znapzend->start();
     return 1;
-}
-
-sub daemonize {
-    my $pidFile = $opts->{pidfile};
-
-    if (defined $pidFile && -f $pidFile){
-        chomp(my $pid = slurp $pidFile);
-        if (kill 0, $pid){
-            die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
-        }
-    }
-    defined (my $pid = fork) or die "Can't fork: $!";
-
-    if ($pid){
-
-### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
-### RM_COMM_4_TEST ###  return 1;
-
-        exit;
-    }
-    else{
-        print STDERR "znapzend ($$) is running in the background now.\n";
-
-        if ($pidFile){
-            if (open my $fh, '>', $pidFile){
-                print $fh "$$\n";
-            }
-            else {
-                warn "creating pid file $pidFile: $!\n";
-            }
-        }
-        setsid or die "Can't start a new session: $!";
-        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
-        open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
-        open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
-
-        # send warnings and die messages to log
-        $SIG{__WARN__} = sub { syslog('warning', shift) };
-        $SIG{__DIE__}  = sub { return if $^S; syslog('err', shift); exit 1 };
-    }
 }
 
 main();
@@ -104,7 +52,8 @@ B<znapzend> [I<options>...]
  -d,--debug    print debug messages to STDERR
  -n,--noaction run in simulation mode. does no changes to the filesystem
  --nodestroy   does all changes to the filesystem except destroy
- --syslog=x    select the syslog facility 
+ --logto=x     select where to log to (syslog::<facility> or <filepath>)
+ --loglevel=x  define the log level when logging to file
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
  --runonce=x   run one round on source dataset x
