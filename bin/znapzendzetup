@@ -160,8 +160,8 @@ sub main {
         $backupSet->{mbuffer}       = $opts->{mbuffer}             if $opts->{mbuffer};
         $backupSet->{mbuffer_size}  = $opts->{mbuffersize}         if $opts->{mbuffersize};  
         $backupSet->{tsformat}      = $opts->{tsformat}            if $opts->{tsformat};
-        $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{pre};
-        $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{post};
+        $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
+        $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
