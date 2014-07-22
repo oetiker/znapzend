@@ -224,6 +224,13 @@ my $snapWorker = sub {
             my $backupSet = shift;
             my $timeStamp = shift;
 
+            if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
+                $self->zLog->info("running pre snapshot command on $backupSet->{src}");
+
+                system($backupSet->{pre_znap_cmd})
+                    && $self->zLog->warn("running pre snapshot command on $backupSet->{src} failed");
+            }
+
             $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
                 . 'snapshot on ' . $backupSet->{src});
 
@@ -232,6 +239,13 @@ my $snapWorker = sub {
 
             $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
                 or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
+
+            if ($backupSet->{post_znap_cmd} && $backupSet->{post_znap_cmd} ne 'off'){
+                $self->zLog->info("running post snapshot command on $backupSet->{src}");
+
+                system($backupSet->{post_znap_cmd})
+                    && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
+            }
         
         },
         #snapshot worker arguments
