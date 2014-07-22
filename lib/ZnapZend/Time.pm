@@ -47,8 +47,9 @@ has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 my $intervalToTimestamp = sub {
     my $time = shift;
     my $interval = shift;
+    my $next = shift;
 
-    return $interval * (int($time / $interval) + 1);
+    return $interval * (int($time / $interval) + $next);
 };
 
 my $timeToTimestamp = sub {
@@ -128,23 +129,22 @@ sub createSnapshotTime {
     return $time->strftime($timeFormat);
 }
 
-sub getActionList {
+sub getNextSnapshotTimestamp {
     my $self = shift;
-    my $backupSets = shift;
-    my $timeStamp = undef;
-    my @backupSets;
+    my $backupSet = shift;
+
     my $time = $self->getLocalTimestamp();
 
-    for my $backupSet (@$backupSets){
-        my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
-        
-        if (!defined $timeStamp || $tmpTime < $timeStamp){
-            $timeStamp = $tmpTime;
-            @backupSets = ();
-        }
-        push @backupSets, $backupSet if $timeStamp == $tmpTime;
-    }
-    return ($timeStamp, \@backupSets);
+    return $intervalToTimestamp->($time, $backupSet->{interval}, 1);
+}
+
+sub getActualSnapshotTimestamp {
+    my $self = shift;
+    my $backupSet = shift;
+
+    my $time = $self->getLocalTimestamp();
+
+    return $intervalToTimestamp->($time, $backupSet->{interval}, 0);
 }
 
 sub getSnapshotsToDestroy {
@@ -293,9 +293,13 @@ returns the smallest time interval within a backup plan -> this will be the snap
 
 returns a formatted string from a timestamp and a timestamp format
 
-=head2 getActionList
+=head2 getNextSnapshotTimestamp
 
-returns a timestamp when the next action (i.e. snapshot creation) has to be done and returns a list of backup plans which need action
+returns a timestamp when the next action (i.e. snapshot creation) has to be done for a specific backup set
+
+=head2 getActualSnapshotTimestamp
+
+returns a timestamp of the snapshot to be taken for a specific backup set
 
 =head2 snapshotsToDestroy
 
@@ -343,6 +347,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-07-22 had Pre and post snapshot commands
 2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup
