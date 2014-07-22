@@ -1,6 +1,7 @@
 package ZnapZend;
 
 use Mojo::Base -base;
+use Mojo::IOLoop::ForkCall;
 use Mojo::Util qw(slurp);
 use Mojo::Log;
 use ZnapZend::Config;
@@ -30,7 +31,6 @@ has logto       => sub { q{} };
 has pidfile     => sub { q{} };
 
 has backupSets       => sub { [] };
-has forkPollInterval => sub { 5 };
 
 has zConfig => sub {
     my $self = shift;
@@ -94,15 +94,17 @@ my $killThemAll  = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
-        kill (SIGTERM, $backupSet->{childPid}) if $backupSet->{childPid};
+        kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
+        kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
     }
     exit 0;
 };
 
 my $refreshBackupPlans = sub {
     my $self = shift;
-    my $dataSet = $self->runonce;
+    my $dataSet = shift;
 
+    $self->zLog->info('refreshing backup plans...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
 
     @{$self->backupSets}
@@ -133,156 +135,164 @@ my $refreshBackupPlans = sub {
     }
 };
 
-my $cleanupChildren = sub {
-    my $self = shift;
-    my $aliveChildren = 0;
-
-    for my $backupSet (@{$self->backupSets}){
-        if ($backupSet->{childPid}){
-            if (!waitpid($backupSet->{childPid}, WNOHANG)){
-                $aliveChildren++;
-            }
-            else{
-                $backupSet->{childPid} = 0;
-            }
-        }
-    }
-    return $aliveChildren;
-};
-
-my $checkSendRecvCleanup = sub {
+my $sendRecvCleanup = sub {
     my $self = shift;
     my $backupSet = shift;
     my $timeStamp = shift;
 
-    if (!$backupSet->{childPid}){
-        my $pid = fork();
-        defined $pid or die "ERROR: could not fork child process\n";
+    my @snapshots;
+    my $toDestroy;
 
-        if(!$pid){
-            my @snapshots;
-            my $toDestroy;
+    #get all sub datasets of source filesystem; need to send them all individually if recursive
+    my $srcSubDataSets = $backupSet->{recursive} eq 'on'
+        ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
-            #get all sub datasets of source filesystem; need to send them all individually if recursive
-            my $srcSubDataSets = $backupSet->{recursive} eq 'on'
-                ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
+    #loop through all destinations
+    for my $dst (grep { /^dst_[^_]+$/ } (keys %$backupSet)){
+        my ($key) = $dst =~ /dst_([^_]+)$/;
 
-            #loop through all destinations
-            for my $dst (grep { /^dst_[^_]+$/ } (keys %$backupSet)){
-                my ($key) = $dst =~ /dst_([^_]+)$/;
+        #loop through all subdatasets
+        for my $srcDataSet (@$srcSubDataSets){
+            my $dstDataSet = $srcDataSet;
+            $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
-                #loop through all subdatasets
-                for my $srcDataSet (@$srcSubDataSets){
-                    my $dstDataSet = $srcDataSet;
-                    $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
-
-                    $self->zLog->info('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
+            $self->zLog->info('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
+            $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
             
-                    # cleanup according to backup schedule
-                    @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
-                    $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                                 $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
+            # cleanup according to backup schedule
+            @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
+            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
-                    $self->zLog->info('cleaning up snapshots on ' . $dstDataSet);
-                    $self->zZfs->destroySnapshots($toDestroy);
-                }
-            }
-
-            #cleanup source
-            for my $srcDataSet (@$srcSubDataSets){
-                # cleanup according to backup schedule
-                @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
-                $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                             $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
-
-                $self->zLog->info('cleaning up snapshots on ' . $srcDataSet);
-                $self->zZfs->destroySnapshots($toDestroy);
-            }
-
-            #exit the forked worker
-            exit 0;
+            $self->zLog->info('cleaning up snapshots on ' . $dstDataSet);
+            $self->zZfs->destroySnapshots($toDestroy);
         }
-        else {
-            #parent process, save child pid
-            $backupSet->{childPid} = $pid;
-        }
+    }
+
+    #cleanup source
+    for my $srcDataSet (@$srcSubDataSets){
+        # cleanup according to backup schedule
+        @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
+        $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                     $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
+        $self->zLog->info('cleaning up snapshots on ' . $srcDataSet);
+        $self->zZfs->destroySnapshots($toDestroy);
     }
 };
 
-### start znapzend ###
-my $mainLoop = sub {
+my $sendWorker = sub {
     my $self = shift;
-    
-    $self->zLog->info('starting znapzend...');
-    # set signal handlers
-    local $SIG{INT}  = sub { $self->$killThemAll; };
-    local $SIG{TERM} = sub { $self->$killThemAll; };
+    my $backupSet = shift;
+    my $timeStamp = shift;
 
-    $self->zLog->info('refreshing backup plans...');
-    $self->$refreshBackupPlans();
+    #send/receive fork
+    my $fc = Mojo::IOLoop::ForkCall->new;
+    my $pid = $fc->run(
+        #send/receive worker
+        sub {
+            my $backupSet = shift;
+            my $timeStamp = shift;
 
-    if ($self->runonce){
-        my $timeStamp = $self->zTime->getLocalTimestamp();
-        my $backupSet = $self->backupSets->[0]
-            or die "ERROR: no backup set defined for '$self->runonce'\n";
+            $self->$sendRecvCleanup($backupSet, $timeStamp); 
+        },
+        #send/receive worker arguments
+        [$backupSet, $timeStamp],
+        #send/receive worker callback
+        sub {
+            my ($fc, $err, @return) = @_;
 
-        my $snapshotName = $backupSet->{src} . '@'
-            . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+            #send/receive process finished, clear pid from backup set
+            $backupSet->{send_pid} = 0;
+        }
+    );
 
-        $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
-            or print STDERR "snapshot '$snapshotName' does already exist\n";
+    return $pid;
+};
+
+my $snapWorker = sub {
+    my $self = shift;
+    my $backupSet = shift;
+    my $timeStamp = shift;
+
+    #snapshot fork
+    my $fc = Mojo::IOLoop::ForkCall->new;
+    my $pid = $fc->run(
+        #snapshot worker
+        sub {
+            my $backupSet = shift;
+            my $timeStamp = shift;
+
+            $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
+                . 'snapshot on ' . $backupSet->{src});
+
+            my $snapshotName = $backupSet->{src} . '@'
+                . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+            $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
+                or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
         
-        $self->$checkSendRecvCleanup($backupSet, $timeStamp);
+        },
+        #snapshot worker arguments
+        [$backupSet, $timeStamp],
+        #snapshot worker callback
+        sub {
+            my ($fc, $err, @return) = @_;
 
-        #wait for send/recv and cleanup to finish
-        while ($self->$cleanupChildren()){
-            sleep 1;
-        }
+            #snapshot process finished, clear pid from backup set
+            $backupSet->{snap_pid} = 0;
 
-        return 1;
-    }
-
-    ### main loop ###
-    while (1){
-        # clean up child processes
-        my $cleanUp = $self->$cleanupChildren();
-        # get time to wait for next snapshot creation and list of backup sets which requires action
-        my ($timeStamp, $actionList) =  $self->zTime->getActionList($self->backupSets);    
-        my $timeToWait = $timeStamp - $self->zTime->getLocalTimestamp();
-
-        if ($cleanUp){
-            sleep($timeToWait > $self->forkPollInterval ? $self->forkPollInterval : $timeToWait);
-        }
-        else{
-            $self->zLog->info('nothing to do for me. am so bored... off for a coffee break.'
-                . " will be back in $timeToWait seconds to serve you, my master");
-
-            sleep $timeToWait;
-        }
-
-        # check if we need to snapshot, since we start polling if child is active and might be early
-        if ($self->zTime->getLocalTimestamp() >= $timeStamp){
-            for my $backupSet (@$actionList){
-                $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
-                    . 'snapshot on ' . $backupSet->{src});
-
-                my $snapshotName = $backupSet->{src} . '@'
-                    . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
-
-                $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
-                    or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
-        
-                $self->$checkSendRecvCleanup($backupSet, $timeStamp);
+            if ($backupSet->{send_pid}){
+                $self->zLog->info('last send/receive process still running!'
+                    . 'skipping this round. missed snapshots will be sent next time...');
+            }
+            else{
+                $backupSet->{send_pid} = $self->$sendWorker($backupSet, $timeStamp);
             }
         }
+    );
+
+    return $pid;
+};
+
+my $createWorkers = sub {
+    my $self = shift;
+
+    #create a timer for each backup set
+    for my $backupSet (@{$self->backupSets}){
+        #calculate next snapshot timestamp
+        my $timeStamp = $self->zTime->getActionTimestamp($backupSet);
+        #define timer callback
+        my $cb;
+        $cb = sub {
+            if ($backupSet->{snap_pid}){
+                $self->zLog->warn('last snapshot process still running! it seems your pre or '
+                    . 'post snapshot script takes too long. snapshot will not be taken this time!');
+            }
+            else{
+                $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
+            }
+            #get next timestamp when a snapshot has to be taken
+            $timeStamp = $self->zTime->getActionTimestamp($backupSet);
+
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
-### RM_COMM_4_TEST ###  while ($self->$cleanupChildren()){
-### RM_COMM_4_TEST ###      sleep 1;
-### RM_COMM_4_TEST ###  }
 ### RM_COMM_4_TEST ###  return 1;
-    }    
+
+            #reset timer for next snapshot if not runonce
+            !$self->runonce && Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb);
+        };
+
+        #set timer for next snapshot or run immediately if runonce
+        if ($self->runonce){
+            $timeStamp = $self->zTime->getLocalTimestamp();
+            $cb->();
+        }
+        else{
+            Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb);
+        }
+    };
+
 };
 
 my $daemonize = sub {
@@ -331,7 +341,17 @@ sub start {
 
     $self->$daemonize if $self->daemonize;
 
-    $self->$mainLoop;
+    # set signal handlers
+    local $SIG{INT}  = sub { $self->$killThemAll; };
+    local $SIG{TERM} = sub { $self->$killThemAll; };
+
+    $self->$refreshBackupPlans($self->runonce);
+
+    $self->$createWorkers;
+
+    #start eventloop
+    Mojo::IOLoop->start;
+
     return 1;
 }
 
@@ -400,6 +420,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-07-22 had Pre and post snapshot commands
 2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup

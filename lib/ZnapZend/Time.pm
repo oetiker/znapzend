@@ -128,23 +128,13 @@ sub createSnapshotTime {
     return $time->strftime($timeFormat);
 }
 
-sub getActionList {
+sub getActionTimestamp {
     my $self = shift;
-    my $backupSets = shift;
-    my $timeStamp = undef;
-    my @backupSets;
+    my $backupSet = shift;
+
     my $time = $self->getLocalTimestamp();
 
-    for my $backupSet (@$backupSets){
-        my $tmpTime = $intervalToTimestamp->($time, $backupSet->{interval});
-        
-        if (!defined $timeStamp || $tmpTime < $timeStamp){
-            $timeStamp = $tmpTime;
-            @backupSets = ();
-        }
-        push @backupSets, $backupSet if $timeStamp == $tmpTime;
-    }
-    return ($timeStamp, \@backupSets);
+    return $intervalToTimestamp->($time, $backupSet->{interval});
 }
 
 sub getSnapshotsToDestroy {
@@ -293,9 +283,9 @@ returns the smallest time interval within a backup plan -> this will be the snap
 
 returns a formatted string from a timestamp and a timestamp format
 
-=head2 getActionList
+=head2 getActionTimestamp
 
-returns a timestamp when the next action (i.e. snapshot creation) has to be done and returns a list of backup plans which need action
+returns a timestamp when the next action (i.e. snapshot creation) has to be done for a specific backup set
 
 =head2 snapshotsToDestroy
 
