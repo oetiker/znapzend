@@ -216,6 +216,10 @@ my $sendWorker = sub {
     my $backupSet = shift;
     my $timeStamp = shift;
 
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  $self->$sendRecvCleanup($backupSet, $timeStamp);
+### RM_COMM_4_TEST ###  return 0;
+
     #send/receive fork
     my $fc = Mojo::IOLoop::ForkCall->new;
     my $pid = $fc->run(
@@ -239,6 +243,11 @@ my $snapWorker = sub {
     my $self = shift;
     my $backupSet = shift;
     my $timeStamp = shift;
+
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  $self->$createSnapshot($backupSet, $timeStamp);
+### RM_COMM_4_TEST ###  $self->$sendWorker($backupSet, $timeStamp);
+### RM_COMM_4_TEST ###  return 0;
 
     #snapshot fork
     my $fc = Mojo::IOLoop::ForkCall->new;
