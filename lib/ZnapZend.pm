@@ -282,10 +282,12 @@ my $createWorkers = sub {
     #create a timer for each backup set
     for my $backupSet (@{$self->backupSets}){
         #calculate next snapshot timestamp
-        my $timeStamp = $self->zTime->getActionTimestamp($backupSet);
+        my $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
         #define timer callback
         my $cb;
         $cb = sub {
+            #get actual snapshot timestamp as it might have changed due to DST 'jump'
+            $timeStamp = $self->zTime->getActualSnapshotTimestamp($backupSet);
             if ($backupSet->{snap_pid}){
                 $self->zLog->warn('last snapshot process still running! it seems your pre or '
                     . 'post snapshot script runs too long. snapshot will not be taken this time!');
@@ -294,7 +296,7 @@ my $createWorkers = sub {
                 $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
             }
             #get next timestamp when a snapshot has to be taken
-            $timeStamp = $self->zTime->getActionTimestamp($backupSet);
+            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  return 1;

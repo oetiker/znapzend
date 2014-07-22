@@ -47,8 +47,9 @@ has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 my $intervalToTimestamp = sub {
     my $time = shift;
     my $interval = shift;
+    my $next = shift;
 
-    return $interval * (int($time / $interval) + 1);
+    return $interval * (int($time / $interval) + $next);
 };
 
 my $timeToTimestamp = sub {
@@ -128,13 +129,22 @@ sub createSnapshotTime {
     return $time->strftime($timeFormat);
 }
 
-sub getActionTimestamp {
+sub getNextSnapshotTimestamp {
     my $self = shift;
     my $backupSet = shift;
 
     my $time = $self->getLocalTimestamp();
 
-    return $intervalToTimestamp->($time, $backupSet->{interval});
+    return $intervalToTimestamp->($time, $backupSet->{interval}, 1);
+}
+
+sub getActualSnapshotTimestamp {
+    my $self = shift;
+    my $backupSet = shift;
+
+    my $time = $self->getLocalTimestamp();
+
+    return $intervalToTimestamp->($time, $backupSet->{interval}, 0);
 }
 
 sub getSnapshotsToDestroy {
@@ -283,9 +293,13 @@ returns the smallest time interval within a backup plan -> this will be the snap
 
 returns a formatted string from a timestamp and a timestamp format
 
-=head2 getActionTimestamp
+=head2 getNextSnapshotTimestamp
 
 returns a timestamp when the next action (i.e. snapshot creation) has to be done for a specific backup set
+
+=head2 getActualSnapshotTimestamp
+
+returns a timestamp of the snapshot to be taken for a specific backup set
 
 =head2 snapshotsToDestroy
 
