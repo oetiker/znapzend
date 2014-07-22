@@ -333,6 +333,7 @@ S<Dominik Hassler>
 
 =head1 HISTORY
 
+2014-07-22 had Pre and post snapshot commands
 2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
 2014-06-01 had Multi destination backup

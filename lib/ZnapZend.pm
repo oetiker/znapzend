@@ -7,7 +7,7 @@ use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 use ZnapZend::Time;
-use POSIX qw(setsid WNOHANG SIGTERM);
+use POSIX qw(setsid SIGTERM);
 use Sys::Syslog;
 use File::Basename;
 
@@ -148,7 +148,7 @@ my $sendRecvCleanup = sub {
         ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
     #loop through all destinations
-    for my $dst (grep { /^dst_[^_]+$/ } (keys %$backupSet)){
+    for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
 
         #loop through all subdatasets
@@ -182,6 +182,35 @@ my $sendRecvCleanup = sub {
     }
 };
 
+my $createSnapshot = sub {
+    my $self = shift;
+    my $backupSet = shift;
+    my $timeStamp = shift;
+ 
+    if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
+        $self->zLog->info("running pre snapshot command on $backupSet->{src}");
+
+        system($backupSet->{pre_znap_cmd})
+            && $self->zLog->warn("running pre snapshot command on $backupSet->{src} failed");
+    }
+
+    $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
+        . 'snapshot on ' . $backupSet->{src});
+
+    my $snapshotName = $backupSet->{src} . '@'
+        . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+    $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
+        or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
+
+    if ($backupSet->{post_znap_cmd} && $backupSet->{post_znap_cmd} ne 'off'){
+        $self->zLog->info("running post snapshot command on $backupSet->{src}");
+
+        system($backupSet->{post_znap_cmd})
+            && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
+    }
+};
+
 my $sendWorker = sub {
     my $self = shift;
     my $backupSet = shift;
@@ -191,14 +220,9 @@ my $sendWorker = sub {
     my $fc = Mojo::IOLoop::ForkCall->new;
     my $pid = $fc->run(
         #send/receive worker
-        sub {
-            my $backupSet = shift;
-            my $timeStamp = shift;
-
-            $self->$sendRecvCleanup($backupSet, $timeStamp); 
-        },
+        $sendRecvCleanup,
         #send/receive worker arguments
-        [$backupSet, $timeStamp],
+        [$self, $backupSet, $timeStamp],
         #send/receive worker callback
         sub {
             my ($fc, $err, @return) = @_;
@@ -220,36 +244,9 @@ my $snapWorker = sub {
     my $fc = Mojo::IOLoop::ForkCall->new;
     my $pid = $fc->run(
         #snapshot worker
-        sub {
-            my $backupSet = shift;
-            my $timeStamp = shift;
-
-            if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
-                $self->zLog->info("running pre snapshot command on $backupSet->{src}");
-
-                system($backupSet->{pre_znap_cmd})
-                    && $self->zLog->warn("running pre snapshot command on $backupSet->{src} failed");
-            }
-
-            $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
-                . 'snapshot on ' . $backupSet->{src});
-
-            my $snapshotName = $backupSet->{src} . '@'
-                . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
-
-            $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
-                or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
-
-            if ($backupSet->{post_znap_cmd} && $backupSet->{post_znap_cmd} ne 'off'){
-                $self->zLog->info("running post snapshot command on $backupSet->{src}");
-
-                system($backupSet->{post_znap_cmd})
-                    && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
-            }
-        
-        },
+        $createSnapshot,
         #snapshot worker arguments
-        [$backupSet, $timeStamp],
+        [$self, $backupSet, $timeStamp],
         #snapshot worker callback
         sub {
             my ($fc, $err, @return) = @_;
@@ -282,7 +279,7 @@ my $createWorkers = sub {
         $cb = sub {
             if ($backupSet->{snap_pid}){
                 $self->zLog->warn('last snapshot process still running! it seems your pre or '
-                    . 'post snapshot script takes too long. snapshot will not be taken this time!');
+                    . 'post snapshot script runs too long. snapshot will not be taken this time!');
             }
             else{
                 $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
