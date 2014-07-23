@@ -314,6 +314,7 @@ my $createWorkers = sub {
 
         #set timer for next snapshot or run immediately if runonce
         if ($self->runonce){
+            #run immediately
             $timeStamp = $self->zTime->getLocalTimestamp();
             $cb->();
         }
