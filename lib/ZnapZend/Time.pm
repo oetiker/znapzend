@@ -47,9 +47,8 @@ has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 my $intervalToTimestamp = sub {
     my $time = shift;
     my $interval = shift;
-    my $next = shift;
 
-    return $interval * (int($time / $interval) + $next);
+    return $interval * (int($time / $interval) + 1);
 };
 
 my $timeToTimestamp = sub {
@@ -135,16 +134,7 @@ sub getNextSnapshotTimestamp {
 
     my $time = $self->getLocalTimestamp();
 
-    return $intervalToTimestamp->($time, $backupSet->{interval}, 1);
-}
-
-sub getActualSnapshotTimestamp {
-    my $self = shift;
-    my $backupSet = shift;
-
-    my $time = $self->getLocalTimestamp();
-
-    return $intervalToTimestamp->($time, $backupSet->{interval}, 0);
+    return $intervalToTimestamp->($time, $backupSet->{interval});
 }
 
 sub getSnapshotsToDestroy {
@@ -296,10 +286,6 @@ returns a formatted string from a timestamp and a timestamp format
 =head2 getNextSnapshotTimestamp
 
 returns a timestamp when the next action (i.e. snapshot creation) has to be done for a specific backup set
-
-=head2 getActualSnapshotTimestamp
-
-returns a timestamp of the snapshot to be taken for a specific backup set
 
 =head2 snapshotsToDestroy
 
