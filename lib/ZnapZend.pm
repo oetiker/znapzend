@@ -180,6 +180,8 @@ my $sendRecvCleanup = sub {
         $self->zLog->info('cleaning up snapshots on ' . $srcDataSet);
         $self->zZfs->destroySnapshots($toDestroy);
     }
+    #return pid for ForkCall workaround
+    return $$;
 };
 
 my $createSnapshot = sub {
@@ -209,6 +211,8 @@ my $createSnapshot = sub {
         system($backupSet->{post_znap_cmd})
             && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
     }
+    #return pid for ForkCall workaround
+    return $$;
 };
 
 my $sendWorker = sub {
@@ -229,7 +233,10 @@ my $sendWorker = sub {
         [$self, $backupSet, $timeStamp],
         #send/receive worker callback
         sub {
-            my ($fc, $err, @return) = @_;
+            my ($fc, $err, $sendPid) = @_;
+
+            #workaround since callback will run if more than one fork are created in parallel
+            return if !$sendPid || $sendPid != $backupSet->{send_pid}; 
 
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
@@ -258,7 +265,10 @@ my $snapWorker = sub {
         [$self, $backupSet, $timeStamp],
         #snapshot worker callback
         sub {
-            my ($fc, $err, @return) = @_;
+            my ($fc, $err, $snapPid) = @_;
+
+            #workaround since callback will run if more than one fork are created in parallel
+            return if !$snapPid || $snapPid != $backupSet->{snap_pid}; 
 
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
