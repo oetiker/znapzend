@@ -68,7 +68,7 @@ org.znapzend:dst_a          root\@remote:remote/destination
 org.znapzend:dst_fail       backup/destfail
 org.znapzend:mbuffer        $FindBin::Bin/mbuffer
 org.znapzend:mbuffer_size   100M
-org.znapzend:pre_znap_cmd   echo 'pre znap comand'
+org.znapzend:pre_znap_cmd   echo 'pre znap command'
 org.znapzend:post_znap_cmd  echo 'post znap command'
 ZFS_GET_END
 
