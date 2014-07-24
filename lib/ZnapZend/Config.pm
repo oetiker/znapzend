@@ -3,6 +3,7 @@ package ZnapZend::Config;
 use Mojo::Base -base;
 use ZnapZend::ZFS;
 use ZnapZend::Time;
+use Text::ParseWords qw(shellwords);
 
 ### attributes ###
 has debug => sub { 0 };
@@ -11,11 +12,13 @@ has noaction => sub { 0 };
 #mandatory properties
 has mandProperties => sub {
     {
-        enabled     => 'on|off',
-        recursive   => 'on|off',
-        src         => '###dataset###',
-        src_plan    => '###backupplan###',
-        tsformat    => '###tsformat###',
+        enabled       => 'on|off',
+        recursive     => 'on|off',
+        src           => '###dataset###',
+        src_plan      => '###backupplan###',
+        tsformat      => '###tsformat###',
+        pre_znap_cmd  => '###command###',
+        post_znap_cmd => '###command###',
     }
 };
 
@@ -76,6 +79,14 @@ my $checkBackupSets = sub {
                 /^###tsformat###$/ && do {
                     $self->time->checkTimeFormat($backupSet->{$prop})
                         or die "ERROR: timestamp format not valid. check your syntax\n";
+                    last;
+                };
+                /^###command###$/ && do {
+                    last if $backupSet->{$prop} eq 'off';
+                    
+                    my $file = (shellwords($backupSet->{$prop}))[0];
+                    $self->zfs->fileExistsAndExec($file)
+                        or die "ERROR: property $prop: executable '$file' does not exist or can't be executed\n";
                     last;
                 };
                 #check if properties are valid
@@ -319,7 +330,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
+S<Dominik Hassler> E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
