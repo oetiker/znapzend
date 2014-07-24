@@ -231,8 +231,9 @@ my $sendWorker = sub {
         [$self, $backupSet, $timeStamp],
         #send/receive worker callback
         sub {
-            my ($fc, $err, @return) = @_;
+            my ($fc, $err) = @_;
 
+            $self->zLog->warn($err) if $err;
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
@@ -260,8 +261,9 @@ my $snapWorker = sub {
         [$self, $backupSet, $timeStamp],
         #snapshot worker callback
         sub {
-            my ($fc, $err, @return) = @_;
-
+            my ($fc, $err) = @_;
+            
+            $self->zLog->warn($err) if $err;
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
 
@@ -297,19 +299,20 @@ my $createWorkers = sub {
 
             if ($backupSet->{snap_pid}){
                 $self->zLog->warn('last snapshot process still running! it seems your pre or '
-                    . 'post snapshot script runs too long. snapshot will not be taken this time!');
+                    . 'post snapshot script runs for ages. snapshot will not be taken this time!');
             }
             else{
                 $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
             }
-            #get next timestamp when a snapshot has to be taken
-            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  return 1;
 
+            #get next timestamp when a snapshot has to be taken
+            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
+
             #reset timer for next snapshot if not runonce
-            !$self->runonce && Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb);
+            Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb) if !$self->runonce;
         };
 
         #set timer for next snapshot or run immediately if runonce
