@@ -19,8 +19,8 @@ my $zTime   = ZnapZend::Time->new();
 sub dumpStats {
     my $stats = shift;
 
-    print ' ' x (5- length($stats->{count})) . $stats->{count};
-    print ' ' x (14 - length($stats->{usage})) . $stats->{usage};
+    print ' ' x (7 - length($stats->{count})) . $stats->{count};
+    print ' ' x (8 - length($stats->{usage})) . $stats->{usage};
     print "   $stats->{dataset}\n";
 }
 
@@ -42,7 +42,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(help man)) or exit 1;
+    GetOptions($opts, qw(H help|h man)) or exit 1;
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -61,7 +61,7 @@ sub main {
     @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
 
     #print header
-    print "snapshot\ncount   space usage   dataset\n";
+    print "COUNT      USED   DATASET\n" if !$opts->{H};
 
     for my $backupSet (@$backupSets){
         my $datasets = $backupSet->{recursive} eq 'on'
@@ -106,10 +106,11 @@ znapzendztatz - znapzend statistics utility
 
 =head1 SYNOPSIS
 
-B<znapzendztatz> [src_dataset]
+B<znapzendztatz> [I<options>...] [src_dataset]
 
-    --help
-    --man
+ -H         do not print headers
+ --man      show man-page and exit
+ -h,--help  display this help and exi
 
 =head1 DESCRIPTION
 
