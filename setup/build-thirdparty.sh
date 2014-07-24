@@ -4,6 +4,7 @@
 
 for module in \
   Mojolicious \
+  IO::Pipely \
 ; do
 perlmodule $module
 done
