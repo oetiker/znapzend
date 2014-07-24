@@ -266,8 +266,8 @@ my $snapWorker = sub {
             $backupSet->{snap_pid} = 0;
 
             if ($backupSet->{send_pid}){
-                $self->zLog->info('last send/receive process still running!'
-                    . 'skipping this round. missed snapshots will be sent next time...');
+                $self->zLog->info('last send/receive process on ' . $backupSet->{src}
+                    . ' still running! skipping this round...');
             }
             else{
                 $backupSet->{send_pid} = $self->$sendWorker($backupSet, $timeStamp);
@@ -446,7 +446,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler> E<lt>hadfl@cpan.orgE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 

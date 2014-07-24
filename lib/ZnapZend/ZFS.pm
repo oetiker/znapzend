@@ -617,7 +617,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler> E<lt>hadfl@cpan.orgE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
