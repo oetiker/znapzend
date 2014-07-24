@@ -66,7 +66,8 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                print STDERR $logLevels{$level} . ': ' . join(' ', @lines) . "\n";
+                print STDERR '[' . localtime . '] ['
+                    . $level . '] ' . join(' ', @lines) . "\n";
             }
         );
 
