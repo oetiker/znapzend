@@ -319,7 +319,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler>
+S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
 
 =head1 HISTORY
 

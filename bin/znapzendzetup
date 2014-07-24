@@ -5,8 +5,8 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
-use Getopt::Long 2.25 qw(:config posix_default no_ignore_case);
-use Pod::Usage 1.14;
+use Getopt::Long qw(:config posix_default no_ignore_case);
+use Pod::Usage;
 
 use Mojo::Base -strict;
 use ZnapZend::Config;
@@ -374,7 +374,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler>
+S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
 
 =head1 HISTORY
 

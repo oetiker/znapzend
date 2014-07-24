@@ -93,6 +93,8 @@ has zLog => sub {
 my $killThemAll  = sub {
     my $self = shift;
 
+    Mojo::IOLoop->reset;
+
     for my $backupSet (@{$self->backupSets}){
         kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
         kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
@@ -286,8 +288,13 @@ my $createWorkers = sub {
         #define timer callback
         my $cb;
         $cb = sub {
-            #get actual snapshot timestamp as it might have changed due to DST 'jump'
-            $timeStamp = $self->zTime->getActualSnapshotTimestamp($backupSet);
+            #check if we run too early (can be caused by DST time 'jump')
+            my $timeDelta = $timeStamp - $self->zTime->getLocalTimestamp();
+            if ($timeDelta > 0){
+                Mojo::IOLoop->timer($timeDelta => $cb);
+                return;
+            }
+
             if ($backupSet->{snap_pid}){
                 $self->zLog->warn('last snapshot process still running! it seems your pre or '
                     . 'post snapshot script runs too long. snapshot will not be taken this time!');
@@ -307,6 +314,7 @@ my $createWorkers = sub {
 
         #set timer for next snapshot or run immediately if runonce
         if ($self->runonce){
+            #run immediately
             $timeStamp = $self->zTime->getLocalTimestamp();
             $cb->();
         }
@@ -438,7 +446,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler>
+S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
 
 =head1 HISTORY
 
