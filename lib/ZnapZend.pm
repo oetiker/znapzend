@@ -29,6 +29,7 @@ has daemonize   => sub { 0 };
 has loglevel    => sub { q{debug} };
 has logto       => sub { q{} };
 has pidfile     => sub { q{} };
+has terminate   => sub { 0 };
 
 has backupSets       => sub { [] };
 
@@ -93,6 +94,9 @@ has zLog => sub {
 
 my $killThemAll  = sub {
     my $self = shift;
+
+    #set termination flag
+    $self->terminate(1);
 
     Mojo::IOLoop->reset;
 
@@ -234,7 +238,7 @@ my $sendWorker = sub {
         sub {
             my ($fc, $err) = @_;
 
-            $self->zLog->warn($err) if $err;
+            $self->zLog->warn($err) if $err && !$self->terminate;
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
@@ -264,7 +268,7 @@ my $snapWorker = sub {
         sub {
             my ($fc, $err) = @_;
             
-            $self->zLog->warn($err) if $err;
+            $self->zLog->warn($err) if $err && !$self->terminate;
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
 
