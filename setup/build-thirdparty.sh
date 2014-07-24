@@ -4,7 +4,7 @@
 
 for module in \
   Mojolicious \
-  Mojo::IOLoop::ForkCall \
+  IO::Pipely \
 ; do
 perlmodule $module
 done
