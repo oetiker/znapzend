@@ -29,6 +29,7 @@ has daemonize   => sub { 0 };
 has loglevel    => sub { q{debug} };
 has logto       => sub { q{} };
 has pidfile     => sub { q{} };
+has terminate   => sub { 0 };
 
 has backupSets       => sub { [] };
 
@@ -66,7 +67,8 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                print STDERR $logLevels{$level} . ': ' . join(' ', @lines) . "\n";
+                print STDERR '[' . localtime . '] ['
+                    . $level . '] ' . join(' ', @lines) . "\n";
             }
         );
 
@@ -92,6 +94,9 @@ has zLog => sub {
 
 my $killThemAll  = sub {
     my $self = shift;
+
+    #set termination flag
+    $self->terminate(1);
 
     Mojo::IOLoop->reset;
 
@@ -224,21 +229,28 @@ my $sendWorker = sub {
 
     #send/receive fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    my $pid = $fc->run(
+    $fc->run(
         #send/receive worker
         $sendRecvCleanup,
         #send/receive worker arguments
         [$self, $backupSet, $timeStamp],
         #send/receive worker callback
         sub {
-            my ($fc, $err, @return) = @_;
+            my ($fc, $err) = @_;
 
+            $self->zLog->warn($err) if $err && !$self->terminate;
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
     );
 
-    return $pid;
+    #spawn event
+    $fc->on(spawn => sub {
+        my ($fc, $pid) = @_;
+        
+        print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
+        $backupSet->{send_pid} = $pid;
+    });
 };
 
 my $snapWorker = sub {
@@ -253,29 +265,36 @@ my $snapWorker = sub {
 
     #snapshot fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    my $pid = $fc->run(
+    $fc->run(
         #snapshot worker
         $createSnapshot,
         #snapshot worker arguments
         [$self, $backupSet, $timeStamp],
         #snapshot worker callback
         sub {
-            my ($fc, $err, @return) = @_;
-
+            my ($fc, $err) = @_;
+            
+            $self->zLog->warn($err) if $err && !$self->terminate;
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
 
             if ($backupSet->{send_pid}){
-                $self->zLog->info('last send/receive process still running!'
-                    . 'skipping this round. missed snapshots will be sent next time...');
+                $self->zLog->info('last send/receive process on ' . $backupSet->{src}
+                    . ' still running! skipping this round...');
             }
             else{
-                $backupSet->{send_pid} = $self->$sendWorker($backupSet, $timeStamp);
+                $self->$sendWorker($backupSet, $timeStamp);
             }
         }
     );
 
-    return $pid;
+    #spawn event
+    $fc->on(spawn => sub {
+        my ($fc, $pid) = @_;
+        
+        print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
+        $backupSet->{snap_pid} = $pid;
+    });
 };
 
 my $createWorkers = sub {
@@ -297,19 +316,20 @@ my $createWorkers = sub {
 
             if ($backupSet->{snap_pid}){
                 $self->zLog->warn('last snapshot process still running! it seems your pre or '
-                    . 'post snapshot script runs too long. snapshot will not be taken this time!');
+                    . 'post snapshot script runs for ages. snapshot will not be taken this time!');
             }
             else{
-                $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
+                $self->$snapWorker($backupSet, $timeStamp);
             }
-            #get next timestamp when a snapshot has to be taken
-            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  return 1;
 
+            #get next timestamp when a snapshot has to be taken
+            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
+
             #reset timer for next snapshot if not runonce
-            !$self->runonce && Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb);
+            Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb) if !$self->runonce;
         };
 
         #set timer for next snapshot or run immediately if runonce
@@ -446,7 +466,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
