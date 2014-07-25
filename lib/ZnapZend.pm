@@ -246,19 +246,23 @@ my $sendWorker = sub {
     );
 
     #spawn event
-    $fc->on(spawn => sub {
-        my ($fc, $pid) = @_;
+    $fc->on(
+        spawn => sub {
+            my ($fc, $pid) = @_;
         
-        print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
-        $backupSet->{send_pid} = $pid;
-    });
+            print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
+            $backupSet->{send_pid} = $pid;
+        }
+    );
 
     #error event
-    $fc->on(error => sub {
-        my ($fc, $err) = @_;
+    $fc->on(
+        error => sub {
+            my ($fc, $err) = @_;
 
-        $self->zLog->warn($err) if !$self->terminate;
-    });
+            $self->zLog->warn($err) if !$self->terminate;
+        }
+    );
 };
 
 my $snapWorker = sub {
@@ -299,19 +303,23 @@ my $snapWorker = sub {
     );
 
     #spawn event
-    $fc->on(spawn => sub {
-        my ($fc, $pid) = @_;
+    $fc->on(
+        spawn => sub {
+            my ($fc, $pid) = @_;
         
-        print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
-        $backupSet->{snap_pid} = $pid;
-    });
+            print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
+            $backupSet->{snap_pid} = $pid;
+        }
+    );
 
     #error event
-    $fc->on(error => sub {
-        my ($fc, $err) = @_;
+    $fc->on(
+        error => sub {
+            my ($fc, $err) = @_;
 
-        $self->zLog->warn($err) if !$self->terminate;
-    });
+            $self->zLog->warn($err) if !$self->terminate;
+        }
+    );
 };
 
 my $createWorkers = sub {
