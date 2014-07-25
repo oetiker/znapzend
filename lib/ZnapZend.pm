@@ -225,7 +225,7 @@ my $sendWorker = sub {
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  $self->$sendRecvCleanup($backupSet, $timeStamp);
-### RM_COMM_4_TEST ###  return 0;
+### RM_COMM_4_TEST ###  return;
 
     #send/receive fork
     my $fc = Mojo::IOLoop::ForkCall->new;
@@ -238,8 +238,12 @@ my $sendWorker = sub {
         sub {
             my ($fc, $err) = @_;
 
+            #############################################################
+            #TBD: remove && !$self->terminate as it is not used anymore #
+            #once ForkCall error event gets released!                   #
+            #############################################################
             $self->zLog->warn('send/receive for ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err;
+                . ' failed: ' . $err) if $err && !$self->terminate;
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
@@ -250,7 +254,8 @@ my $sendWorker = sub {
         spawn => sub {
             my ($fc, $pid) = @_;
         
-            print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
+            print STDERR '# send/receive worker for ' . $backupSet->{src}
+                . " spawned ($pid)\n" if $self->debug;
             $backupSet->{send_pid} = $pid;
         }
     );
@@ -273,7 +278,7 @@ my $snapWorker = sub {
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  $self->$createSnapshot($backupSet, $timeStamp);
 ### RM_COMM_4_TEST ###  $self->$sendWorker($backupSet, $timeStamp);
-### RM_COMM_4_TEST ###  return 0;
+### RM_COMM_4_TEST ###  return;
 
     #snapshot fork
     my $fc = Mojo::IOLoop::ForkCall->new;
@@ -286,8 +291,12 @@ my $snapWorker = sub {
         sub {
             my ($fc, $err) = @_;
             
+            #############################################################
+            #TBD: remove && !$self->terminate as it is not used anymore #
+            #once ForkCall error event gets released!                   #
+            #############################################################
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err;
+                . ' failed: ' . $err) if $err && !$self->terminate;
 
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
@@ -307,7 +316,8 @@ my $snapWorker = sub {
         spawn => sub {
             my ($fc, $pid) = @_;
         
-            print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
+            print STDERR '# snapshot worker for ' . $backupSet->{src}
+                . " spawned ($pid)\n" if $self->debug;
             $backupSet->{snap_pid} = $pid;
         }
     );
@@ -348,7 +358,7 @@ my $createWorkers = sub {
             }
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
-### RM_COMM_4_TEST ###  return 1;
+### RM_COMM_4_TEST ###  return;
 
             #get next timestamp when a snapshot has to be taken
             $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
@@ -385,7 +395,7 @@ my $daemonize = sub {
     if ($pid){
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
-### RM_COMM_4_TEST ###  return 1;
+### RM_COMM_4_TEST ###  return;
 
         exit;
     }

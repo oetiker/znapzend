@@ -258,7 +258,7 @@ where 'command' is one of the following:
 
     delete [--dst=key] <src_dataset>
 
-    edit [--recursive=on|off] [--mbuffer=<path>|off] [--mbuffersize=<size>] \
+    edit   [--recursive=on|off] [--mbuffer=<path>|off] [--mbuffersize=<size>] \
            [--pre-snap-command=<command>|off] \
            [--post-snap-command=<command>|off] \
            [--tsformat=<format>] --donotask \
