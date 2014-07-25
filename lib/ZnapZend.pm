@@ -229,7 +229,7 @@ my $sendWorker = sub {
 
     #send/receive fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    my $pid = $fc->run(
+    $fc->run(
         #send/receive worker
         $sendRecvCleanup,
         #send/receive worker arguments
@@ -244,7 +244,13 @@ my $sendWorker = sub {
         }
     );
 
-    return $pid;
+    #spawn event
+    $fc->on(spawn => sub {
+        my ($fc, $pid) = @_;
+        
+        print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
+        $backupSet->{send_pid} = $pid;
+    });
 };
 
 my $snapWorker = sub {
@@ -259,7 +265,7 @@ my $snapWorker = sub {
 
     #snapshot fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    my $pid = $fc->run(
+    $fc->run(
         #snapshot worker
         $createSnapshot,
         #snapshot worker arguments
@@ -277,12 +283,18 @@ my $snapWorker = sub {
                     . ' still running! skipping this round...');
             }
             else{
-                $backupSet->{send_pid} = $self->$sendWorker($backupSet, $timeStamp);
+                $self->$sendWorker($backupSet, $timeStamp);
             }
         }
     );
 
-    return $pid;
+    #spawn event
+    $fc->on(spawn => sub {
+        my ($fc, $pid) = @_;
+        
+        print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
+        $backupSet->{snap_pid} = $pid;
+    });
 };
 
 my $createWorkers = sub {
@@ -307,7 +319,7 @@ my $createWorkers = sub {
                     . 'post snapshot script runs for ages. snapshot will not be taken this time!');
             }
             else{
-                $backupSet->{snap_pid} = $self->$snapWorker($backupSet, $timeStamp);
+                $self->$snapWorker($backupSet, $timeStamp);
             }
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
