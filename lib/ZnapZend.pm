@@ -238,7 +238,8 @@ my $sendWorker = sub {
         sub {
             my ($fc, $err) = @_;
 
-            $self->zLog->warn($err) if $err && !$self->terminate;
+            $self->zLog->warn('send/receive for ' . $backupSet->{src}
+                . ' failed: ' . $err) if $err;
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
@@ -250,6 +251,13 @@ my $sendWorker = sub {
         
         print STDERR "# send/receive fork spawned ($pid)\n" if $self->debug;
         $backupSet->{send_pid} = $pid;
+    });
+
+    #error event
+    $fc->on(error => sub {
+        my ($fc, $err) = @_;
+
+        $self->zLog->warn($err) if !$self->terminate;
     });
 };
 
@@ -274,7 +282,9 @@ my $snapWorker = sub {
         sub {
             my ($fc, $err) = @_;
             
-            $self->zLog->warn($err) if $err && !$self->terminate;
+            $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
+                . ' failed: ' . $err) if $err;
+
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
 
@@ -294,6 +304,13 @@ my $snapWorker = sub {
         
         print STDERR "# snap fork spawned ($pid)\n" if $self->debug;
         $backupSet->{snap_pid} = $pid;
+    });
+
+    #error event
+    $fc->on(error => sub {
+        my ($fc, $err) = @_;
+
+        $self->zLog->warn($err) if !$self->terminate;
     });
 };
 
