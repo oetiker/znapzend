@@ -46,8 +46,14 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Consistent Snapshots</h3>
-                                    <p>ZnapZend uses the built-in snapshot functionality of ZFS for
-                                    fully consistent backups. Many other filebased backup systems will not succeed in capturing a coherent state of a fast changing set of data.</p>
+
+                                    <p>ZnapZend uses the built-in snapshot
+                                    functionality of ZFS for fully
+                                    consistent backups. For each fileset, a pre- and
+                                    post-snapshot command can be configured
+                                    to quiet down any software writing to
+                                    the fileset prior to snapshotting.</p>
+
                                 </div>
                             </div>
                         </div>
@@ -58,8 +64,17 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Fileset-Based Configuration</h3>
-                                    <p>ZnapZend stores all its congfiguration in custom ZFS properties. So all configuration is hooked right into the
-                                    ZFS fileset structure. When you modify the fileset, rename it, remove it, znapzend will happily jug along. ZnapZend comes with a special tool for setting and checking the backup configuration.</p>
+
+                                    <p>ZnapZend stores all its
+                                    congfiguration in custom ZFS properties. 
+                                    So all configuration is hooked right
+                                    into the ZFS fileset structure.  When
+                                    you modify the fileset, rename it,
+                                    remove it, znapzend will happily jug
+                                    along.  ZnapZend comes with a special
+                                    tool for setting and checking the backup
+                                    configuration.</p>
+
                                 </div>
                             </div>
                         </div>
@@ -70,7 +85,17 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Remote Backup Locations</h3>
-                                    <p>ZnapZend uses the ZFS send/receive functionality to transfer backups to remote locations. It employs ssh and (optionally) mbuffer for the transfer to achieve optimal transfer rates for the data. You can configure any number of remote destinations for a fileset. Even no destinations at all if all you need are well managed local snapshots.</p>
+
+                                    <p>ZnapZend uses the ZFS send/receive
+                                    functionality to transfer backups to
+                                    remote locations.  It employs ssh and
+                                    (optionally) mbuffer for the transfer to
+                                    achieve optimal transfer rates for the
+                                    data.  You can configure any number of
+                                    remote destinations for a fileset.  Even
+                                    no destinations at all if all you need
+                                    are well managed local snapshots.</p>
+
                                 </div>
                             </div>
                         </div>
@@ -81,7 +106,17 @@
                                 </div>
                                 <div class="caption">
                                     <h3>Progressive Thinning</h3>
-                                    <p>ZnapZend can be configured to remove snapshots as they get older. The configuration allows to easily setup schemes where the backup density is progressively reduced as the backups get older. This technique can be individually applied both to the local snapshots as well as to any remote locations.</p>
+
+                                    <p>ZnapZend can be configured to remove
+                                    snapshots as they get older.  The
+                                    configuration allows to easily setup
+                                    schemes where the backup density is
+                                    progressively reduced as the backups get
+                                    older.  This technique can be
+                                    individually applied both to the local
+                                    snapshots as well as to any remote
+                                    locations.</p>
+
                                 </div>
                             </div>
                         </div>
@@ -94,16 +129,16 @@
                                 <div class="caption">
                                     <h3>Online Backup Scheduler</h3>
 
-                                    <p>ZnapZend operates as a daemon. It
-                                    organizes all snapshotting and remote
-                                    data transfer activities. Even when a snapshot
-                                    takes a long time to transfer to its
-                                    remote destination, snapshots on the
-                                    source fileset will continue to be
-                                    created according to schedule. Multiple
-                                    snapshots will be transfered as a group to
-                                    catch up slow destinations.
-                                    </p>
+                                    <p>ZnapZend operates as a daemon and
+                                    uses the Mojo::IOLoop for scheduling all
+                                    snapshotting and remote data transfer
+                                    activities.  Even when a snapshot takes
+                                    a long time to transfer to its remote
+                                    destination, snapshots on the source
+                                    fileset will continue to be created
+                                    according to schedule.  Multiple
+                                    snapshots will be transfered as a group
+                                    to catch up slow destinations.  </p>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +156,6 @@
                                     does not cause you to loose your backup
                                     history or having to rename all existing
                                     snapshots.</p>
-
                                 </div>
                             </div>
                         </div>
