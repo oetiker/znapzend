@@ -181,7 +181,7 @@ sub listSnapshots {
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote,
-        [qw(zfs list -t snapshot -o name -s name -d 1), $dataSet]);
+        [qw(zfs list -t snapshot -o name -s creation -d 1), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $snapshots, '-|', @ssh or die "ERROR: cannot get snapshots on $dataSet\n";
