@@ -258,7 +258,7 @@ where 'command' is one of the following:
 
     delete [--dst=key] <src_dataset>
 
-    edit [--recursive=on|off] [--mbuffer=<path>|off] [--mbuffersize=<size>] \
+    edit   [--recursive=on|off] [--mbuffer=<path>|off] [--mbuffersize=<size>] \
            [--pre-snap-command=<command>|off] \
            [--post-snap-command=<command>|off] \
            [--tsformat=<format>] --donotask \
@@ -374,7 +374,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler> E<lt>hadfl.oss@gmail.comE<gt>>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
