@@ -11,7 +11,8 @@ B<znapzend> [I<options>...]
  -d,--debug    print debug messages to STDERR
  -n,--noaction run in simulation mode. does no changes to the filesystem
  --nodestroy   does all changes to the filesystem except destroy
- --syslog=x    select the syslog facility 
+ --logto=x     select where to log to (syslog::<facility> or <filepath>)
+ --loglevel=x  define the log level when logging to file
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
  --runonce=x   run one round on source dataset x
@@ -42,7 +43,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-07-12" "0.7.2" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-07-26" "0.8.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -137,15 +137,19 @@ znapzendzetup \- znapzend setup utility
 .PP
 where 'command' is one of the following:
 .PP
-.Vb 4
+.Vb 6
 \&    create [\-\-recursive] [\-\-mbuffer=<path>] [\-\-mbuffersize=<size>] \e
+\&           [\-\-pre\-snap\-command=<command>] \e
+\&           [\-\-post\-snap\-command=<command>] \e
 \&           [\-\-tsformat=<format>] \-\-donotask \e
 \&           SRC plan dataset \e
 \&           [ DST[:key] plan [[user@]host:]dataset ]
 \&
 \&    delete [\-\-dst=key] <src_dataset>
 \&
-\&    edit [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-mbuffersize=<size>] \e
+\&    edit   [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-mbuffersize=<size>] \e
+\&           [\-\-pre\-snap\-command=<command>|off] \e
+\&           [\-\-post\-snap\-command=<command>|off] \e
 \&           [\-\-tsformat=<format>] \-\-donotask \e
 \&           SRC [plan] dataset \e
 \&           [ DST:key [plan] [dataset] ]
@@ -236,11 +240,17 @@ To specify a mbuffer size of 100 \s-1MB:\s0
 If not set, mbuffersize defaults to 1 \s-1GB\s0.
 .PP
 Use option 'donotask' for create/edit to run changes immediately.
+.PP
+Use option 'pre\-snap\-command' and 'post\-snap\-command' to run
+commands/scripts before and after snapshots are taken on source
+(e.g. for database locking/flushing (pre) and unlocking (post)).
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
-.Vb 5
+.Vb 7
 \&    znapzendzetup create \-r \-\-mbuffer=/opt/omni/bin/mbuffer \e
 \&       \-\-mbuffersize=1337M \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
+\&       \-\-pre\-snap\-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \e
+\&       \-\-post\-snap\-command="/bin/sh /usr/local/bin/unlock_db.sh" \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
 \&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home
@@ -265,9 +275,10 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Tobias\ Oetiker\ <tobi@oetiker.ch>
-Dominik\ Hassler
+Dominik\ Hassler\ <hadfl@cpan.org>
 .SH "HISTORY"
 .IX Header "HISTORY"
+2014\-07\-22 had Pre and post snapshot commands
 2014\-06\-29 had Flexible snapshot time format
 2014\-06\-01 had Multi destination backup
 2014\-05\-30 had Initial Version

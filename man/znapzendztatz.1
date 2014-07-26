@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZTATZ 1"
-.TH ZNAPZENDZTATZ 1 "2014-07-12" "0.7.2" "znapzend"
+.TH ZNAPZENDZTATZ 1 "2014-07-26" "0.8.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -133,11 +133,12 @@
 znapzendztatz \- znapzend statistics utility
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBznapzendztatz\fR [src_dataset]
+\&\fBznapzendztatz\fR [\fIoptions\fR...] [src_dataset]
 .PP
-.Vb 2
-\&    \-\-help
-\&    \-\-man
+.Vb 3
+\& \-H         do not print headers
+\& \-\-man      show man\-page and exit
+\& \-h,\-\-help  display this help and exi
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -162,7 +163,7 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
 Tobias\ Oetiker\ <tobi@oetiker.ch>
-Dominik\ Hassler
+Dominik\ Hassler\ <hadfl@cpan.org>
 .SH "HISTORY"
 .IX Header "HISTORY"
 2014\-06\-29 had Flexible snapshot time format

@@ -4,10 +4,11 @@ znapzendztatz - znapzend statistics utility
 
 =head1 SYNOPSIS
 
-B<znapzendztatz> [src_dataset]
+B<znapzendztatz> [I<options>...] [src_dataset]
 
-    --help
-    --man
+ -H         do not print headers
+ --man      show man-page and exit
+ -h,--help  display this help and exi
 
 =head1 DESCRIPTION
 
@@ -35,7 +36,7 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 =head1 AUTHOR
 
 S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
-S<Dominik Hassler>
+S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
