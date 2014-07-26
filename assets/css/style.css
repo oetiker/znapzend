@@ -120,3 +120,8 @@ body {
     color: #fff;
     line-height: 150%;
 }
+
+.footer {
+    min-height: 4ex;
+}
+    
