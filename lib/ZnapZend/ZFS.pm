@@ -458,6 +458,8 @@ sub usedBySnapshots {
     my $dataSet = shift;
     my $remote;
 
+    return 0 if !$dataSet;
+
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote,
         [qw(zfs get -H -o value usedbysnapshots), $dataSet]);
@@ -466,10 +468,10 @@ sub usedBySnapshots {
     open my $prop, '-|', @ssh
         or die "ERROR: cannot get usedbysnapshot property of $dataSet\n";
 
-    my @usedBySnap = <$prop>;
-    chomp(@usedBySnap);
+    my $usedBySnap = <$prop>;
+    chomp $usedBySnap;
 
-    return $usedBySnap[0];
+    return $usedBySnap;
 }
 
 1;
