@@ -50,13 +50,13 @@ The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backu
 To see if your configuration is any good, run znapzend in noaction mode first.
 
 ```sh
-znapzend --noaction --debug
+/opt/znapzend-0.8.0/bin/znapzend --noaction --debug
 ```
 
 then when you are happy with what you got, start it in daemon mode.
 
 ```sh
-znapzend --daemon
+/opt/znapzend-0.8.0/bin/znapzend --daemon
 ```
  
 Best is to integrate znapzend into your system startup sequence, but you can also
