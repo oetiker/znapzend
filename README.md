@@ -45,8 +45,25 @@ Make sure to configure password free login for ssh to the backup target host.
 Running
 -------
 
-The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups. Best is to integrate it into your
-system startup sequence, but you can also run it by hand. See the [documentation](doc/znapzend.pod) for details.
+The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups. 
+
+To see if your configuration is any good, run znapzend in noaction mode first.
+
+```sh
+znapzend --noaction --debug
+```
+
+then when you are happy with what you got, start it in daemon mode.
+
+```sh
+znapzend --daemon
+```
+ 
+Best is to integrate znapzend into your system startup sequence, but you can also
+run it by hand.
+
+Statistics
+----------
 
 If you want to know how much space your backups are using, try the [znapzendztatz](doc/znapzendztatz.pod) utility.
 
