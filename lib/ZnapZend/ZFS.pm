@@ -47,54 +47,6 @@ my $buildRemote = sub {
     return @{$list[0]};
 };
 
-
-my $sendRecvSnapshots = sub {
-    my $self = shift;
-    my $exec = shift;
-    my $srcDataSet = shift;
-    my $dstDataSet = shift;
-    my $mbuffer = shift;
-    my $mbufferSize = shift; 
-    my $snapFilter = $_[0] || qr/.*/;
-    my $remote;
-    my ($lastSnapshot, $lastCommon)
-        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
-
-    #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
-    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
-
-    #check if snapshots exist on destination if there is no common snapshot
-    #as this will cause zfs send/recv to fail
-    !$lastCommon && @{$self->listSnapshots($dstDataSet)}
-        and die "ERROR: snapshot(s) exist on destination, but no common found on source and destination\n"
-                . "clean up destination (i.e. destroy existing snapshots on destination dataset)\n";
-
-    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
-
-    my @cmd;
-    if ($lastCommon){
-        @cmd = (['zfs', 'send', '-I', $lastCommon, $lastSnapshot]);
-    }
-    else{
-        @cmd = (['zfs', 'send', $lastSnapshot]);
-    }
-
-    my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-    my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
-
-    push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
-
-    my $cmd = $shellQuote->(@cmd);
-    print STDERR "# $cmd\n" if $self->debug; 
-
-    if (!$self->noaction){
-        $exec ? exec($cmd) : system($cmd);
-        die "ERROR: cannot send snapshot to $remote ($?)\n" if $?;
-    }
-
-    return 1;
-};
-
 my $scrubZpool = sub {
     my $self = shift;
     my $startstop = shift;
@@ -289,14 +241,46 @@ sub lastAndCommonSnapshots {
 
 sub sendRecvSnapshots {
     my $self = shift;
+    my $srcDataSet = shift;
+    my $dstDataSet = shift;
+    my $mbuffer = shift;
+    my $mbufferSize = shift; 
+    my $snapFilter = $_[0] || qr/.*/;
+    my $remote;
+    my ($lastSnapshot, $lastCommon)
+        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
-    return $self->$sendRecvSnapshots(0, @_);
-}
+    #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
+    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
 
-sub sendRecvSnapshotsExec {
-    my $self = shift;
+    #check if snapshots exist on destination if there is no common snapshot
+    #as this will cause zfs send/recv to fail
+    !$lastCommon && @{$self->listSnapshots($dstDataSet)}
+        and die "ERROR: snapshot(s) exist on destination, but no common found on source and destination\n"
+                . "clean up destination (i.e. destroy existing snapshots on destination dataset)\n";
 
-    return $self->$sendRecvSnapshots(1, @_);;
+    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
+
+    my @cmd;
+    if ($lastCommon){
+        @cmd = (['zfs', 'send', '-I', $lastCommon, $lastSnapshot]);
+    }
+    else{
+        @cmd = (['zfs', 'send', $lastSnapshot]);
+    }
+
+    my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
+    my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
+
+    push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+
+    my $cmd = $shellQuote->(@cmd);
+    print STDERR "# $cmd\n" if $self->debug; 
+
+    system($cmd) && die "ERROR: cannot send snapshots to $dstDataSet"
+        . ($remote ? " on $remote\n" : "\n") if !$self->noaction;
+
+    return 1;
 }
 
 sub getDataSetProperties {
