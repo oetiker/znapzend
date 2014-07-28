@@ -121,7 +121,17 @@ body {
     line-height: 150%;
 }
 
-.footer {
-    min-height: 4ex;
+#footer {
+    padding-top: 4ex;
+    margin-top: 10ex;
+    padding-bottom: 4ex;
+    background-color: black;
+    color: #aaa;
+    font-size: 80%;
 }
+
+#footer a {
+    color: #aaa;
+}
+
     
