@@ -453,27 +453,23 @@ sub scrubActive {
     return grep { /$scrubProgress/ } @{$self->zpoolStatus(@_)};
 }
 
-sub snapshotReclaim {
+sub usedBySnapshots {
     my $self = shift;
-    my $snapshotInterval = shift;
-    my $reclaim;
+    my $dataSet = shift;
     my $remote;
-    
-    return 0 if !$snapshotInterval;
-    
-    ($remote, $snapshotInterval) = $splitHostDataSet->($snapshotInterval);
-    my @ssh = $self->$buildRemote($remote, [qw(zfs destroy -nv), $snapshotInterval]);
+
+    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+    my @ssh = $self->$buildRemote($remote,
+        [qw(zfs get -H -o value usedbysnapshots), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    open my $snapReclaim, '-|', @ssh
-        or die "ERROR: cannot get snapshot data usage on $snapshotInterval\n";
+    open my $prop, '-|', @ssh
+        or die "ERROR: cannot get usedbysnapshot property of $dataSet\n";
 
-    while (<$snapReclaim>){
-        chomp;
-        last if ($reclaim) = /^would reclaim\s+([\w.]+)$/;
-    }
+    my @usedBySnap = <$prop>;
+    chomp(@usedBySnap);
 
-    return $reclaim;
+    return $usedBySnap[0];
 }
 
 1;
@@ -591,9 +587,9 @@ returns status info of a zpool
 
 returns whether scrub is active on zpool or not
 
-=head2 snapshotReclaim
+=head2 usedBySnapshots
 
-returns the amount of space to be reclaimed if an 'interval' of snapshots would be destroyed
+returns the amount of storage space used by snapshots of a sepcific dataset
 
 =head1 COPYRIGHT
 

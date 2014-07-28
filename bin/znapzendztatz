@@ -19,8 +19,7 @@ my $zTime   = ZnapZend::Time->new();
 sub dumpStats {
     my $stats = shift;
 
-    print ' ' x (7 - length($stats->{count})) . $stats->{count};
-    print ' ' x (8 - length($stats->{usage})) . $stats->{usage};
+    print ' ' x (5 - length($stats->{usage})) . $stats->{usage};
     print "   $stats->{dataset}\n";
 }
 
@@ -30,10 +29,7 @@ sub collectData {
     my %data;
     my $snapshots = $zZfs->listSnapshots($dataset, $snapFilter);
 
-    $data{count} = $#{$snapshots};
-    ${$snapshots}[-1] =~ /^.*\@($snapFilter)$/;
-    my $snapshotInterval = $snapshots->[0] . '%' . $1;
-    $data{usage} = $zZfs->snapshotReclaim($snapshotInterval);
+    $data{usage} = $zZfs->usedBySnapshots($dataset);
     $data{dataset} = $dataset;
 
     return \%data;
@@ -61,7 +57,7 @@ sub main {
     @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
 
     #print header
-    print "COUNT      USED   DATASET\n" if !$opts->{H};
+    print "USED    DATASET\n" if !$opts->{H};
 
     for my $backupSet (@$backupSets){
         my $datasets = $backupSet->{recursive} eq 'on'
