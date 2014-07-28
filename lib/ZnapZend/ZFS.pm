@@ -174,19 +174,22 @@ sub listSubDataSets {
 sub createSnapshot {
     my $self = shift;
     my $dataSet = shift;
-    my $remote;
     my @recursive = $_[0] ? ('-r') : ();
-
-    #check if snapshot already exists, if so, exit.
-    return 0 if $self->snapshotExists($dataSet);
+    my $remote;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote, [qw(zfs snapshot), @recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
-    system(@ssh) && die "ERROR: cannot create snapshot $dataSet\n" if !$self->noaction;
 
-    return 1;
+    #return if 'noaction' or snapshot creation successful
+    return 1 if $self->noaction || !system(@ssh);
+
+    #check if snapshot already exists and therefore creation failed
+    return 0 if $self->snapshotExists($dataSet);
+
+    #creation failed and snapshot does not exist, throw an exception
+    die "ERROR: cannot create snapshot $dataSet\n";
 }
 
 # known limitation: snapshots from subdatasets have to be destroyed individually
