@@ -39,7 +39,8 @@ make install
 Configuration
 -------------
 
-Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings.
+Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings. For remote backup, znapzend uses ssh.
+Make sure to configure password free login for ssh to the backup target host.
 
 Running
 -------
@@ -48,7 +49,6 @@ The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backu
 system startup sequence, but you can also run it by hand. See the [documentation](doc/znapzend.pod) for details.
 
 If you want to know how much space your backups are using, try the [znapzendztatz](doc/znapzendztatz.pod) utility.
-
 
 
 Enjoy!
