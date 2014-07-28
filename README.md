@@ -1,5 +1,5 @@
 ZnapZend 0.8.0
---------------
+==============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
@@ -10,6 +10,9 @@ snapshots as well as remote copies by thining them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
+
+Zetup
+-----
 
 To zetup znapzend follow these zimple inztructionz
 
@@ -25,13 +28,28 @@ if configure complains about missing perl modules, run
 ./setup/build-thirdparty.sh /opt/znapzend-0.8.0/thirdparty
 ```
 
-now you can run configure again and then
+to install the missing modules into the specified directry. This will NOT messup your local perl installation!
+
+Now you can run configure again and then
 
 ```sh
 make install
 ```
 
-now you can configure the thing with the znapzendzetup program
+Configuration
+-------------
+
+Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings.
+
+Running
+-------
+
+The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups. Best is to integrate it into your
+system startup sequence, but you can also run it by hand. See the [documentation](doc/znapzend.pod) for details.
+
+If you want to know how much space your backups are using, try the [znapzendztatz](doc/znapzendztatz.pod) utility.
+
+
 
 Enjoy!
 
