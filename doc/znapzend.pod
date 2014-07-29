@@ -43,7 +43,7 @@ do all changes to the filesystem except destroy old snapshots
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
 send logs out to either syslog or a logfile. Default is to send logs to
-B<syslog::local6> when runing daemonized. When running in debug mode, the
+B<syslog::daemon> when runing daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
 Examples: 
@@ -79,7 +79,7 @@ To test a new config
 
 To run as a daemon
 
- znapzend --deamonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
+ znapzend --daemonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
 
 =head1 COPYRIGHT
 

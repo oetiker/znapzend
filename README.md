@@ -1,4 +1,4 @@
-ZnapZend 0.8.1
+ZnapZend 0.8.2
 ==============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -17,15 +17,15 @@ Zetup
 To zetup znapzend follow these zimple inztructionz
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.8.1/znapzend-0.8.1.tar.gz
-tar zxvf znapzend-0.8.1.tar.gz
-cd znapzend-0.8.1
-./configure --prefix=/opt/znapzend-0.8.1
+wget https://github.com/oetiker/znapzend/releases/download/v0.8.2/znapzend-0.8.2.tar.gz
+tar zxvf znapzend-0.8.2.tar.gz
+cd znapzend-0.8.2
+./configure --prefix=/opt/znapzend-0.8.2
 ```
 if configure complains about missing perl modules, run
 
 ```sh
-./setup/build-thirdparty.sh /opt/znapzend-0.8.1/thirdparty
+./setup/build-thirdparty.sh /opt/znapzend-0.8.2/thirdparty
 ```
 
 to install the missing modules into the specified directry. This will NOT messup your local perl installation!
@@ -50,19 +50,19 @@ The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backu
 To see if your configuration is any good, run znapzend in noaction mode first.
 
 ```sh
-/opt/znapzend-0.8.1/bin/znapzend --noaction --debug
+/opt/znapzend-0.8.2/bin/znapzend --noaction --debug
 ```
 
 If you don't want to wait for the scheduler to actually schedule work, you can also force immediate action by calling
 
 ```sh
-/opt/znapzend-0.8.1/bin/znapzend --noaction --debug --runonce=<src_dataset>
+/opt/znapzend-0.8.2/bin/znapzend --noaction --debug --runonce=<src_dataset>
 ``` 
 
 then when you are happy with what you got, start it in daemon mode.
 
 ```sh
-/opt/znapzend-0.8.1/bin/znapzend --daemonize
+/opt/znapzend-0.8.2/bin/znapzend --daemonize
 ```
  
 Best is to integrate znapzend into your system startup sequence, but you can also
@@ -71,8 +71,8 @@ run it by hand.
 For illumos OSes you can import the znapzend service manifest provided in the install directory:
 
 ```sh
-svccfg validate /opt/znapzend-0.8.1/init/znapzend.xml
-svccfg import /opt/znapzend-0.8.1/init/znapzend.xml
+svccfg validate /opt/znapzend-0.8.2/init/znapzend.xml
+svccfg import /opt/znapzend-0.8.2/init/znapzend.xml
 ```
 
 and then enable the service 

@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-07-29" "0.8.1" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-07-29" "0.8.2" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -166,10 +166,10 @@ where 'command' is one of the following:
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-Znapzend is a snapshot based zfs backup daemon creating snapshots on a
-scheduled basis on the source filesystem and on a destination filesystem
-.SS "Create Command"
-.IX Subsection "Create Command"
+Use znapzendsetup to configure your backup tasks. The cli is modled after
+the zfs commandline. Below a few notes on main commands.
+.SS "\fBcreate\fP"
+.IX Subsection "create"
 The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
@@ -191,7 +191,7 @@ to the following table:
 \& hour|h
 \& day|d
 \& week|w
-\& mon|month|m
+\& month|mon|m
 \& year|y
 .Ve
 .PP
@@ -217,13 +217,13 @@ The syntax is strftime\-like. The string must consist of the mandatory
 \& %Y %m %d %H %M %S
 .Ve
 .Sp
-and optional
+Optionally,
 .Sp
 .Vb 1
 \& \- _ . :
 .Ve
 .Sp
-characters.
+characters as well as any alphanumeric character are allowed.
 .Sp
 If not specified, \fB\-\-tsformat\fR defaults to \f(CW\*(C`%Y\-%m\-%d\-%H%M%S\*(C'\fR.
 .IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer\fR" 4
@@ -253,6 +253,23 @@ intended it to be.
 .IX Item "--pre-snap-command=/path/bin args, --post-snap-command=/path/bin args"
 Run commands/scripts before and after snapshots are taken on source.
 e.g. for database locking/flushing (pre) and unlocking (post).
+.SS "\fBdelete\fP"
+.IX Subsection "delete"
+to remove configuration from a dataset just give its name
+.PP
+.Vb 1
+\& znapzendzetup I<dataset>
+.Ve
+.PP
+the \fBdelete\fR function understands the following options
+.IP "\fB\-\-dst\fR=\fIkey\fR" 4
+.IX Item "--dst=key"
+to only remove a destination, specify the key of the destionation. Use the
+\&\fBlist\fR function to see the keys.
+.SS "\fBedit\fP"
+.IX Subsection "edit"
+modify the configuration of a dataset. see the descriptions in the \fBcreate\fR
+function for details.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 .Vb 7

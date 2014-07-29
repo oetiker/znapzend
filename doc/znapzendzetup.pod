@@ -36,10 +36,10 @@ where 'command' is one of the following:
 
 =head1 DESCRIPTION
 
-Znapzend is a snapshot based zfs backup daemon creating snapshots on a
-scheduled basis on the source filesystem and on a destination filesystem
+Use znapzendsetup to configure your backup tasks. The cli is modled after
+the zfs commandline. Below a few notes on main commands.
 
-=head2 Create Command
+=head2 B<create>
 
 The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
@@ -59,7 +59,7 @@ to the following table:
  hour|h
  day|d
  week|w
- mon|month|m
+ month|mon|m
  year|y
 
 To keep one copy every 30 minutes for one week, specify:
@@ -82,11 +82,11 @@ The syntax is L<strftime>-like. The string must consist of the mandatory
 
  %Y %m %d %H %M %S
 
-and optional
+Optionally,
 
  - _ . :
 
-characters.
+characters as well as any alphanumeric character are allowed.
 
 If not specified, B<--tsformat> defaults to C<%Y-%m-%d-%H%M%S>.
 
@@ -118,6 +118,28 @@ Run commands/scripts before and after snapshots are taken on source.
 e.g. for database locking/flushing (pre) and unlocking (post).
 
 =back
+
+=head2 B<delete>
+
+to remove configuration from a dataset just give its name
+
+ znapzendzetup I<dataset>
+
+the B<delete> function understands the following options
+
+=over
+
+=item B<--dst>=I<key>
+
+to only remove a destination, specify the key of the destionation. Use the
+B<list> function to see the keys.
+
+=back
+
+=head2 B<edit>
+
+modify the configuration of a dataset. see the descriptions in the B<create>
+function for details.
 
 =head1 EXAMPLE
 
