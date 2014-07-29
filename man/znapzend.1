@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2014-07-28" "0.8.1" "znapzend"
+.TH ZNAPZEND 1 "2014-07-29" "0.8.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -149,7 +149,60 @@ znapzend \- znapzend daemon
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on destination filesystems
+ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
+scheduled basis on the source filesystem and on destination filesystems.
+.PP
+ZnapZend reads its configuration from custom properties in the fileset. Use
+znapzendzetup to set these properties.
+.IP "\fB\-d\fR, \fB\-\-debug\fR" 4
+.IX Item "-d, --debug"
+talk a lot while running. Sends debug messages to stderr.
+.IP "\fB\-n\fR, \fB\-\-noaction\fR" 4
+.IX Item "-n, --noaction"
+don't do any actions which have lasting effect. Ideal to try our new new
+configurations together with \fB\-\-debug\fR
+.IP "\fB\-\-nodestroy\fR" 4
+.IX Item "--nodestroy"
+do all changes to the filesystem except destroy old snapshots
+.IP "\fB\-\-logto\fR={\fBsyslog::\fR\fIfacility\fR|\fIfilepath\fR}" 4
+.IX Item "--logto={syslog::facility|filepath}"
+send logs out to either syslog or a logfile. Default is to send logs to
+\&\fBsyslog::local6\fR when runing daemonized. When running in debug mode, the
+logs will go to \s-1STDERR\s0 by default.
+.Sp
+Examples:
+.Sp
+.Vb 2
+\& \-\-logto=/var/log/znapzend.log
+\& \-\-logto=syslog::daemon
+.Ve
+.IP "\fB\-\-loglevel\fR={\fBdebug\fR|\fBinfo\fR|\fBwarn\fR|\fBerror\fR|\fBfatal\fR}" 4
+.IX Item "--loglevel={debug|info|warn|error|fatal}"
+Define the log level when logging to file. Default is debug.
+.IP "\fB\-\-pidfile\fR=\fIpath\fR" 4
+.IX Item "--pidfile=path"
+write a pid file when running in daemon mode
+.IP "\fB\-\-daemonize\fR" 4
+.IX Item "--daemonize"
+Fork into the background.
+.IP "\fB\-\-runonce\fR=\fIfileset\fR" 4
+.IX Item "--runonce=fileset"
+run one round on source \fIfileset\fR. This is very useful for testing.
+Use it in connection with \fB\-\-noaction\fR and \fB\-\-debug\fR while
+testing your new configuration
+.SH "EXAMPLE"
+.IX Header "EXAMPLE"
+To test a new config
+.PP
+.Vb 1
+\& znapzend \-\-debug \-\-noaction \-\-runonce=tank/test
+.Ve
+.PP
+To run as a daemon
+.PP
+.Vb 1
+\& znapzend \-\-deamonize \-\-pidfile=/var/run/znapzend.pid \-\-logto=syslog::daemon
+.Ve
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2014 by \s-1OETIKER+PARTNER\s0 \s-1AG\s0. All rights reserved.
@@ -169,9 +222,11 @@ You should have received a copy of the \s-1GNU\s0 General Public License along w
 this program. If not, see <http://www.gnu.org/licenses/>.
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Tobias\ Oetiker\ <tobi@oetiker.ch>
+Tobias\ Oetiker\ <tobi@oetiker.ch>,
 Dominik\ Hassler\ <hadfl@cpan.org>
 .SH "HISTORY"
 .IX Header "HISTORY"
-2014\-06\-01 had Multi destination backup
-2014\-05\-30 had Initial Version
+.Vb 2
+\& 2014\-06\-01 had Multi destination backup
+\& 2014\-05\-30 had Initial Version
+.Ve

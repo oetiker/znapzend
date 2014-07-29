@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-07-28" "0.8.1" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-07-29" "0.8.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -206,44 +206,53 @@ To keep one copy every two days for 10 years:
 .Vb 1
 \& 10year=>2day
 .Ve
-.PP
-The 'tsformat' option specifies the format of the snapshots being created.
-The syntax is 'strftime like'. The string must consist of the mandatory
-.PP
+.IP "\fB\-\-tsformat\fR=\fIlimited-strftime-format\fR" 4
+.IX Item "--tsformat=limited-strftime-format"
+The \fB\-\-tsformat\fR option specifies how the names of the snapshots are
+constructed.
+.Sp
+The syntax is strftime\-like. The string must consist of the mandatory
+.Sp
 .Vb 1
-\& (%Y, %m, %d, %H, %M, %S)
+\& %Y %m %d %H %M %S
 .Ve
-.PP
+.Sp
 and optional
-.PP
+.Sp
 .Vb 1
-\& (\-, _, ., :)
+\& \- _ . :
 .Ve
-.PP
+.Sp
 characters.
-.PP
-If not specified, tsformat defaults to '%Y\-%m\-%d\-%H%M%S'.
-.PP
-If mbuffer is specified, the size of the mbuffer can be set with
-the 'mbuffersize' option. mbuffersize supports the following units:
-.PP
+.Sp
+If not specified, \fB\-\-tsformat\fR defaults to \f(CW\*(C`%Y\-%m\-%d\-%H%M%S\*(C'\fR.
+.IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer\fR" 4
+.IX Item "--mbuffer=/usr/bin/mbuffer"
+Specify the path to your copy of the mbuffer utility.
+.IP "\fB\-\-mbuffersize\fR=\fInumber\fR{\fBb\fR|\fBk\fR|\fBM\fR|\fBG\fR}" 4
+.IX Item "--mbuffersize=number{b|k|M|G}"
+The size of the mbuffer can be set with the \fB\-\-mbuffersize\fR option.  It
+supports the following units:
+.Sp
 .Vb 1
 \& b, k, M, G
 .Ve
-.PP
-To specify a mbuffer size of 100 \s-1MB:\s0
-.PP
+.Sp
+To specify a mbuffer size of 100MB:
+.Sp
 .Vb 1
 \& \-\-mbuffersize=100M
 .Ve
-.PP
-If not set, mbuffersize defaults to 1 \s-1GB\s0.
-.PP
-Use option 'donotask' for create/edit to run changes immediately.
-.PP
-Use option 'pre\-snap\-command' and 'post\-snap\-command' to run
-commands/scripts before and after snapshots are taken on source
-(e.g. for database locking/flushing (pre) and unlocking (post)).
+.Sp
+If not set, the buffer size defaults to 1GB.
+.IP "\fB\-\-donotask\fR" 4
+.IX Item "--donotask"
+Apply changes immediately. Without being asked if the config is as you
+intended it to be.
+.IP "\fB\-\-pre\-snap\-command\fR=\fI/path/bin args\fR, \fB\-\-post\-snap\-command\fR=\fI/path/bin args\fR" 4
+.IX Item "--pre-snap-command=/path/bin args, --post-snap-command=/path/bin args"
+Run commands/scripts before and after snapshots are taken on source.
+e.g. for database locking/flushing (pre) and unlocking (post).
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 .Vb 7

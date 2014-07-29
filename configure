@@ -4147,7 +4147,7 @@ NOTES
 
 fi
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile init/znapzend.xml"
 
 
 
@@ -4885,6 +4885,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "init/znapzend.xml") CONFIG_FILES="$CONFIG_FILES init/znapzend.xml" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
