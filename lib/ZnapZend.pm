@@ -78,7 +78,7 @@ has zLog => sub {
     ($syslog || !$self->logto) && do {
         $log->unsubscribe('message');
         #add syslog handler if either syslog is explicitly specified or no logfile is given
-        openlog(basename($0), 'cons,pid', $syslog || 'local6');
+        openlog(basename($0), 'cons,pid', $syslog || 'daemon');
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
@@ -244,6 +244,9 @@ my $sendWorker = sub {
             #############################################################
             $self->zLog->warn('send/receive for ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err && !$self->terminate;
+
+            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+                . " done ($backupSet->{send_pid})");
             #send/receive process finished, clear pid from backup set
             $backupSet->{send_pid} = 0;
         }
@@ -254,8 +257,8 @@ my $sendWorker = sub {
         spawn => sub {
             my ($fc, $pid) = @_;
         
-            print STDERR '# send/receive worker for ' . $backupSet->{src}
-                . " spawned ($pid)\n" if $self->debug;
+            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+                . " spawned ($pid)");
             $backupSet->{send_pid} = $pid;
         }
     );
@@ -298,6 +301,8 @@ my $snapWorker = sub {
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err && !$self->terminate;
 
+            $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+                . " done ($backupSet->{snap_pid})");
             #snapshot process finished, clear pid from backup set
             $backupSet->{snap_pid} = 0;
 
@@ -316,8 +321,8 @@ my $snapWorker = sub {
         spawn => sub {
             my ($fc, $pid) = @_;
         
-            print STDERR '# snapshot worker for ' . $backupSet->{src}
-                . " spawned ($pid)\n" if $self->debug;
+            $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+                . " spawned ($pid)");
             $backupSet->{snap_pid} = $pid;
         }
     );
