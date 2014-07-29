@@ -104,6 +104,7 @@ fi
                                                                                                                         
 AC_CONFIG_FILES([
 	Makefile
+	init/znapzend.xml
 ])
 
 AC_SUBST(VERSION)

@@ -68,6 +68,19 @@ then when you are happy with what you got, start it in daemon mode.
 Best is to integrate znapzend into your system startup sequence, but you can also
 run it by hand.
 
+For illumos OSes you can import the znapzend service manifest provided in the install directory:
+
+```sh
+svccfg validate /opt/znapzend-0.8.1/init/znapzend.xml
+svccfg import /opt/znapzend-0.8.1/init/znapzend.xml
+```
+
+and then enable the service 
+
+```sh
+svcadm enable oep/znapzend
+```
+
 Statistics
 ----------
 

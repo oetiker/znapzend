@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<service_bundle type="manifest" name="znapzend">
+
+    <service name="oep/znapzend" type="service" version="1">
+
+        <create_default_instance enabled="false" />
+
+        <single_instance/>
+
+        <dependency name="net-loopback" grouping="require_any" restart_on="none" type="service">
+            <service_fmri value="svc:/network/loopback" />
+        </dependency>
+
+        <dependency name="net-service" grouping="require_all" restart_on="none" type="service">
+            <service_fmri value="svc:/network/service"/>
+        </dependency>
+
+        <dependency name="net-physical" grouping="require_all" restart_on="none" type="service">
+            <service_fmri value="svc:/network/physical" />
+        </dependency>
+
+        <dependency name="filesystem-local" grouping="require_all" restart_on="none" type="service">
+            <service_fmri value="svc:/system/filesystem/local" />
+        </dependency>
+
+        <dependent name="samba-smbd-multi-user-server" grouping="optional_all" restart_on="none">
+            <service_fmri value="svc:/milestone/multi-user-server" />
+        </dependent>
+
+        <exec_method type="method" name="start" exec="@prefix@/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" timeout_seconds="170" />
+
+        <exec_method type="method" name="stop" exec="/usr/bin/kill `cat /var/run/znapzend.pid`" timeout_seconds="60" />
+
+        <stability value="Unstable" />
+
+        <template>
+            <common_name>
+                <loctext xml:lang="C">
+                ZnapZend - ZFS Backup System
+                </loctext>
+            </common_name>
+            <documentation>
+                <manpage title="znapzend" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzendzetup" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzendztatz" section="1" manpath="@prefix@/share/man" />
+            </documentation>
+        </template>
+    </service>
+
+</service_bundle>
