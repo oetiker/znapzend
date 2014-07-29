@@ -8,7 +8,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
 
  -H         do not print headers
  --man      show man-page and exit
- -h,--help  display this help and exi
+ -h,--help  display this help and exit
 
 =head1 DESCRIPTION
 
