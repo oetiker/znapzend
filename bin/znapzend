@@ -92,7 +92,7 @@ Examples:
  --logto=/var/log/znapzend.log
  --logto=syslog::daemon
 
-=item B<--loglevel>={B<debug>|B<info>|B<warn>|B<error>|B<fatal>}
+=item B<--loglevel>={B<debug>|B<info>|B<warning>|B<err>|B<alert>}
 
 Define the log level when logging to file. Default is debug.
 
