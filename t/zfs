@@ -21,10 +21,17 @@ print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:snapshot|set|inherit|send|recv)$/ && exit;
+    /^(?:set|inherit|send|recv)$/ && exit;
+
+    #pretend snapshot to fail => snapshot does exist already
+    /^snapshot$/ && exit 1;
 
     /^list$/ && do {
         if ($ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
+            if ($ARGV[-1] =~ /^[^\@]+\@[^\@]+$/){
+                print $ARGV[-1] . "\n";
+                exit;
+            }
             my $snapCount = ($dataSets{$ARGV[-1]} eq 'src') ? 60 : 58;
             #get timestamp rounded to minutes
             my $time = localtime(int(time / 60) * 60 - 3600);
