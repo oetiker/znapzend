@@ -156,7 +156,7 @@ sub main {
         my $backupSet = parseArguments(\@ARGV);
 
         $backupSet->{recursive}     = $opts->{recursive}
-            if $opts->{recursive} && $opts->{recursive} =~ /^on|off$/;
+            if $opts->{recursive} && $opts->{recursive} =~ /^(?:on|off)$/;
         $backupSet->{mbuffer}       = $opts->{mbuffer}             if $opts->{mbuffer};
         $backupSet->{mbuffer_size}  = $opts->{mbuffersize}         if $opts->{mbuffersize};  
         $backupSet->{tsformat}      = $opts->{tsformat}            if $opts->{tsformat};
