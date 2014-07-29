@@ -23,7 +23,7 @@ my $shellQuote = sub {
         for (@args){
             s/'/'"'"'/g;
         }
-        push @return, join ' ', map {/^[-=_0-9a-z]+$/i ? $_ : qq{'$_'}} @args;
+        push @return, join ' ', map {/^[-\/=\w]+$/ ? $_ : qq{'$_'}} @args;
     }
 
     return join '|', @return;
