@@ -601,15 +601,15 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 
 =head1 AUTHOR
 
-S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>,
 S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
-2014-06-29 had Flexible snapshot time format
-2014-06-10 had localtime implementation
-2014-06-02 had zpool functionality added
-2014-06-01 had Multi destination backup
-2014-05-30 had Initial Version
+ 2014-06-29 had Flexible snapshot time format
+ 2014-06-10 had localtime implementation
+ 2014-06-02 had zpool functionality added
+ 2014-06-01 had Multi destination backup
+ 2014-05-30 had Initial Version
 
 =cut

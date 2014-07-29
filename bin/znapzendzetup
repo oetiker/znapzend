@@ -300,7 +300,7 @@ to the following table:
  hour|h
  day|d
  week|w
- mon|month|m
+ month|mon|m
  year|y
 
 To keep one copy every 30 minutes for one week, specify:
@@ -323,11 +323,11 @@ The syntax is L<strftime>-like. The string must consist of the mandatory
 
  %Y %m %d %H %M %S
 
-and optional
+Optionally,
 
  - _ . :
 
-characters.
+characters as well as any alphanumeric character are allowed.
 
 If not specified, B<--tsformat> defaults to C<%Y-%m-%d-%H%M%S>.
 
