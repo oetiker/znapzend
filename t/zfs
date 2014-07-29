@@ -27,7 +27,7 @@ for ($command){
     /^snapshot$/ && exit 1;
 
     /^list$/ && do {
-        if ($ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
+        if ($ARGV[4] && $ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
             if ($ARGV[-1] =~ /^[^\@]+\@[^\@]+$/){
                 print $ARGV[-1] . "\n";
                 exit;
