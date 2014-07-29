@@ -71,35 +71,53 @@ To keep one copy every two days for 10 years:
  10year=>2day
 
 
-The 'tsformat' option specifies the format of the snapshots being created.
-The syntax is 'strftime like'. The string must consist of the mandatory
+=over
 
- (%Y, %m, %d, %H, %M, %S)
+=item B<--tsformat>=I<limited-strftime-format>
+
+The B<--tsformat> option specifies how the names of the snapshots are
+constructed.
+
+The syntax is L<strftime>-like. The string must consist of the mandatory
+
+ %Y %m %d %H %M %S
 
 and optional
 
- (-, _, ., :)
+ - _ . :
 
 characters.
 
-If not specified, tsformat defaults to '%Y-%m-%d-%H%M%S'.
+If not specified, B<--tsformat> defaults to C<%Y-%m-%d-%H%M%S>.
 
-If mbuffer is specified, the size of the mbuffer can be set with
-the 'mbuffersize' option. mbuffersize supports the following units:
+=item B<--mbuffer>=I</usr/bin/mbuffer>
+
+Specify the path to your copy of the mbuffer utility.
+
+=item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
+
+The size of the mbuffer can be set with the B<--mbuffersize> option.  It
+supports the following units:
 
  b, k, M, G
 
-To specify a mbuffer size of 100 MB:
+To specify a mbuffer size of 100MB:
 
  --mbuffersize=100M
 
-If not set, mbuffersize defaults to 1 GB.
+If not set, the buffer size defaults to 1GB.
 
-Use option 'donotask' for create/edit to run changes immediately.
+=item B<--donotask>
 
-Use option 'pre-snap-command' and 'post-snap-command' to run
-commands/scripts before and after snapshots are taken on source
-(e.g. for database locking/flushing (pre) and unlocking (post)).
+Apply changes immediately. Without being asked if the config is as you
+intended it to be.
+
+=item B<--pre-snap-command>=I</path/bin args>, B<--post-snap-command>=I</path/bin args>
+
+Run commands/scripts before and after snapshots are taken on source.
+e.g. for database locking/flushing (pre) and unlocking (post).
+
+=back
 
 =head1 EXAMPLE
 

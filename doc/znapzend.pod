@@ -19,7 +19,67 @@ B<znapzend> [I<options>...]
 
 =head1 DESCRIPTION
 
-znapzend is a snapshot based zfs backup daemon creating snapshots on a scheduled basis on the source filesystem and on destination filesystems
+ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
+scheduled basis on the source filesystem and on destination filesystems.
+
+ZnapZend reads its configuration from custom properties in the fileset. Use
+L<znapzendzetup> to set these properties.
+
+=over
+
+=item B<-d>, B<--debug>
+
+talk a lot while running. Sends debug messages to stderr.
+
+=item B<-n>, B<--noaction>
+
+don't do any actions which have lasting effect. Ideal to try our new new
+configurations together with B<--debug>
+
+=item B<--nodestroy>
+
+do all changes to the filesystem except destroy old snapshots
+
+=item B<--logto>={B<syslog::>I<facility>|I<filepath>}
+
+send logs out to either syslog or a logfile. Default is to send logs to
+B<syslog::local6> when runing daemonized. When running in debug mode, the
+logs will go to STDERR by default.
+
+Examples: 
+
+ --logto=/var/log/znapzend.log
+ --logto=syslog::daemon
+
+=item B<--loglevel>={B<debug>|B<info>|B<warn>|B<error>|B<fatal>}
+
+Define the log level when logging to file. Default is debug.
+
+=item B<--pidfile>=I<path>
+
+write a pid file when running in daemon mode
+
+=item B<--daemonize>
+
+Fork into the background.
+
+=item B<--runonce>=I<fileset>
+
+run one round on source I<fileset>. This is very useful for testing.
+Use it in connection with B<--noaction> and B<--debug> while
+testing your new configuration
+
+=back
+
+=head1 EXAMPLE
+
+To test a new config
+
+ znapzend --debug --noaction --runonce=tank/test
+
+To run as a daemon
+
+ znapzend --deamonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
 
 =head1 COPYRIGHT
 
@@ -42,13 +102,13 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 
 =head1 AUTHOR
 
-S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>,
 S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
-2014-06-01 had Multi destination backup
-2014-05-30 had Initial Version
+ 2014-06-01 had Multi destination backup
+ 2014-05-30 had Initial Version
 
 =cut
 
