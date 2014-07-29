@@ -120,7 +120,7 @@ To test a new config
 
 To run as a daemon
 
- znapzend --deamonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
+ znapzend --daemonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
 
 =head1 COPYRIGHT
 
