@@ -1,12 +1,12 @@
-language: C
+language: c
 
 perl:
   - "5.19"
   - "5.18"
   - "5.16"
   - "5.14"
-
-before_install:
+  - "5.12"
+  - "5.10"
 
 before_script:
   - sudo ./setup/build-thirdparty.sh /opt/znapzend/thirdparty
