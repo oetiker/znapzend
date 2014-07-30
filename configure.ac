@@ -68,7 +68,8 @@ AC_SUBST(PERL5LIB)
 mod_ok=1
 if test "$enable_pkgonly" != yes; then
    for module in \
-     Mojolicious
+     Mojolicious \
+     Mojo::IOLoop::ForkCall
    do 
      AC_MSG_CHECKING([checking for perl module '$module'])
      if ${PERL} -e 'use lib qw('$actual_prefix/thirdparty/lib/perl5'); use '$module 2>/dev/null ; then
