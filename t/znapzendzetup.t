@@ -54,7 +54,7 @@ sub runCommand {
     main($mainOpt);
 }
 
-use Test::More tests => 11;
+use Test::More tests => 14;
 
 use_ok 'ZnapZend';
 
@@ -85,6 +85,15 @@ is (runCommand(qw(disable tank/source)), 1, 'znapzendzetup disable');
 is (runCommand(qw(delete tank/source)), 1, 'znapzendzetup delete');
 
 is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete destination');
+
+{
+    local *STDOUT;
+    open STDOUT, ">./dump.dmp";
+    is (runCommand(qw(export tank/source)), 1, 'znapzendzetup export');
+}
+
+is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
+is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
 
 1;
 
