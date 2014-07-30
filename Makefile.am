@@ -23,6 +23,7 @@ BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 PM :=  $(shell find lib/ -name "*.pm")
 
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
+POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 
 GENERATED_EXTRADIST = $(MAN) $(POD)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in
@@ -54,6 +55,7 @@ install-exec-hook:
 
 dist-hook:
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
+	$(AM_V_GEN)cd $(distdir) && touch doc/* man/*
 	
 
 
