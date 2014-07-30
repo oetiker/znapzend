@@ -7,7 +7,9 @@ perl:
   - "5.12"
   - "5.10"
 
-before_install:
+# disable dependency install
+install:
+  - true
 
 before_script:
   - perlbrew use $MYPV
