@@ -25,7 +25,7 @@ AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no-perl-found,$actual_prefix/thirdparty/bin:$PATH)
 AC_PATH_PROG(POD2MAN, pod2man, no)
 
-ac_perl_version="5.12.1"
+ac_perl_version="5.10.1"
 
 
 if test "x$PERL" != "x"; then
