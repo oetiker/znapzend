@@ -206,6 +206,14 @@ To keep one copy every two days for 10 years:
 .Vb 1
 \& 10year=>2day
 .Ve
+.PP
+In a minimal setup, you just specify a plan for the \fB\s-1SRC\s0\fR fileset. This
+will cause snapshots to be taken and destroyed according to the plan. You
+can then add one or several destinations (\fB\s-1DST\s0\fR) both local (preferably on
+a different pool) or remote.
+.PP
+When adding multiple \fB\s-1DST\s0\fR entries, each will get labled for later
+identification, optionally you can specify your own label.
 .IP "\fB\-\-tsformat\fR=\fIlimited-strftime-format\fR" 4
 .IX Item "--tsformat=limited-strftime-format"
 The \fB\-\-tsformat\fR option specifies how the names of the snapshots are
