@@ -24,7 +24,7 @@ PM :=  $(shell find lib/ -name "*.pm")
 
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 
-GENERATED_EXTRADIST = $(MAN)
+GENERATED_EXTRADIST = $(MAN) $(POD)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in
 
 YEAR := $(shell date +%Y)
