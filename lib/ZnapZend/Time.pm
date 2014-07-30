@@ -9,7 +9,6 @@ has configUnits => sub {
         s       => 'seconds',
         sec     => 'seconds',
         second  => 'seconds',
-        M       => 'minutes',
         min     => 'minutes',
         mins    => 'minutes',
         minute  => 'minutes',
