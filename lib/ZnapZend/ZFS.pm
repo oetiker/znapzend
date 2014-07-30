@@ -345,7 +345,7 @@ sub deleteDataSetProperties {
 
     return 0 if !$properties->[0];
 
-    for my $prop (keys $properties->[0]){
+    for my $prop (keys %{$properties->[0]}){
         my @cmd = (qw(zfs inherit), "$propertyPrefix:$prop", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd) && die "ERROR: could not reset property $prop on $dataSet\n" if !$self->noaction;

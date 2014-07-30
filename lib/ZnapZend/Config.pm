@@ -61,7 +61,7 @@ my $checkBackupSets = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
-        for my $prop (keys $self->mandProperties){
+        for my $prop (keys %{$self->mandProperties}){
             exists $backupSet->{$prop}
                 or die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n";
                 
