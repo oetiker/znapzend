@@ -1,14 +1,14 @@
-language: perl
+language: c
 
-perl:
-  - "5.19"
-  - "5.18"
-  - "5.16"
-  - "5.14"
-  - "5.12"
-  - "5.10"
+env:
+  - MYPV=5.18
+  - MYPV=5.16
+  - MYPV=5.14
+  - MYPV=5.12
+  - MYPV=5.10
 
 before_script:
+  - perlbrew use $MYPV
   - sudo ./setup/build-thirdparty.sh /opt/znapzend/thirdparty
   - sudo ./setup/build-devel.sh /opt/znapzend/thirdparty
 
