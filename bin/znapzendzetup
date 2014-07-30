@@ -217,6 +217,58 @@ sub main {
         dumpProperties($backupSets);
         last;
     };
+    /^export$/ && do {
+        $opts->{src} = pop @ARGV;
+        defined $opts->{src} or pod2usage(1);
+
+        my $backupSet = $zConfig->getBackupSet($opts->{src})->[0];
+
+        for my $prop (sort keys %$backupSet){
+            #don't export valid flag for destinations as this will be evaluated on demand
+            next if $prop =~ /^dst_[^_]+_valid/;
+
+            print "$prop=$backupSet->{$prop}\n";
+        }
+
+        last;
+    };
+    /^import$/ && do {
+        my @props;
+        my $fh;
+
+        GetOptions($opts, 'write|w', 'prop=s' => \@props) or exit 1;
+
+        if ($#ARGV){
+            my $filename = pop @ARGV;
+            open $fh, "<$filename" or die "ERROR: cannot open file $filename\n";
+        }
+        else{
+            $fh = *STDIN;
+        }
+
+        while (my $prop = <$fh>){
+            chomp $prop;
+            my ($key, $value) = split /=/, $prop, 2;
+            $cfg{$key} = $value;
+        }
+
+        $cfg{src} = pop @ARGV;
+
+        #check new backup set
+        $zConfig->checkBackupSet(\%cfg);
+
+        dumpProperties([\%cfg]);
+
+        if ($opts->{write}){
+            $zConfig->setBackupSet(\%cfg)
+                or die "ERROR: cannot create backup config for $cfg{src}\n";
+        }
+        else{
+            print "backup set not written to dataset $cfg{src}. use option --write to store it\n";
+        }
+
+        last;
+    };
     /^man$/ && do {
         pod2usage(-exitstatus => 0, -verbose => 2);
 
@@ -270,6 +322,11 @@ where 'command' is one of the following:
     disable <src_dataset>
 
     list [src_dataset]
+
+    export <src_dataset>
+
+    import [--write] [--prop <property>=<value>, [--prop ...] ...]
+           <src_dataset> [<prop_dump_file>]
 
     help
 
@@ -371,7 +428,7 @@ e.g. for database locking/flushing (pre) and unlocking (post).
 
 to remove configuration from a dataset just give its name
 
- znapzendzetup I<dataset>
+ znapzendzetup delete I<dataset>
 
 the B<delete> function understands the following options
 
@@ -389,6 +446,18 @@ B<list> function to see the keys.
 modify the configuration of a dataset. see the descriptions in the B<create>
 function for details.
 
+head2 B<export>
+
+dumps the backup configuration of a dataset
+ 
+ znapzendzetup export I<dataset>
+
+head2 B<import>
+
+imports a configuration from a file or STDIN and applies it to a dataset
+
+use the option B<--write> to store the configuration on the dataset
+
 =head1 EXAMPLE
 
     znapzendzetup create --recursive --mbuffer=/opt/omni/bin/mbuffer \
@@ -398,6 +467,10 @@ function for details.
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
        DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+
+head1 EXAMPLE
+
+    znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
 
 =head1 COPYRIGHT
 
