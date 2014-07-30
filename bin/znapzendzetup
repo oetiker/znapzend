@@ -391,7 +391,7 @@ function for details.
 
 =head1 EXAMPLE
 
-    znapzendzetup create -r --mbuffer=/opt/omni/bin/mbuffer \
+    znapzendzetup create --recursive --mbuffer=/opt/omni/bin/mbuffer \
        --mbuffersize=1337M --tsformat='%Y-%m-%d-%H%M%S' \
        --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
