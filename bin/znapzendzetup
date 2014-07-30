@@ -254,6 +254,12 @@ sub main {
 
         $cfg{src} = pop @ARGV;
 
+        #merge properties by CLI
+        for my $prop (@props){
+            my ($key, $value) = split /=/, $prop, 2;
+            $cfg{$key} = $value;
+        }
+
         #check new backup set
         $zConfig->checkBackupSet(\%cfg);
 
