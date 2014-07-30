@@ -30,6 +30,11 @@ where 'command' is one of the following:
 
     list [src_dataset]
 
+    export <src_dataset>
+
+    import [--write] [--prop <property>=<value>, [--prop ...] ...]
+           <src_dataset> [<prop_dump_file>]
+
     help
 
     man
@@ -55,7 +60,7 @@ or multiples of them. You can use both the full name or a shortcut according
 to the following table:
 
  second|sec|s
- minute|min|M
+ minute|min
  hour|h
  day|d
  week|w
@@ -130,7 +135,7 @@ e.g. for database locking/flushing (pre) and unlocking (post).
 
 to remove configuration from a dataset just give its name
 
- znapzendzetup I<dataset>
+ znapzendzetup delete I<dataset>
 
 the B<delete> function understands the following options
 
@@ -148,15 +153,43 @@ B<list> function to see the keys.
 modify the configuration of a dataset. see the descriptions in the B<create>
 function for details.
 
-=head1 EXAMPLE
+=head2 B<export>
+
+dumps the backup configuration of a dataset
+ 
+ znapzendzetup export I<dataset>
+
+=head2 B<import>
+
+reads configuration data from a file or STDIN and prints it content
+
+=over
+
+=item B<--write>
+
+actually store the new configuration into the dataset given on the
+commandline.
+
+=item B<--prop> I<key>="I<value>" [ B<--prop> ... ]
+
+may be called multiple times to override properties in the imported config.
+
+
+=head1 EXAMPLES
+
+create a complex backup task
 
     znapzendzetup create --recursive --mbuffer=/opt/omni/bin/mbuffer \
-       --mbuffersize=1337M --tsformat='%Y-%m-%d-%H%M%S' \
+       --mbuffersize=1G --tsformat='%Y-%m-%d-%H%M%S' \
        --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
        DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+
+copy the setup from one fileset to another
+
+    znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
 
 =head1 COPYRIGHT
 
