@@ -2,37 +2,44 @@
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <service_bundle type="manifest" name="znapzend">
 
-    <service name="oep/znapzend" type="service" version="1">
+<service 
+        name="oep/znapzend" 
+        type="service" 
+        version="3">
 
-        <create_default_instance enabled="false" />
+        <create_default_instance 
+                enabled="false" />
 
         <single_instance/>
 
-        <dependency name="net-loopback" grouping="require_any" restart_on="none" type="service">
-            <service_fmri value="svc:/network/loopback" />
+        <dependency
+                name='milestone'
+                grouping='require_all'
+                restart_on='none'
+                type='service'>
+                <service_fmri value='svc:/milestone/sysconfig' />
         </dependency>
 
-        <dependency name="net-service" grouping="require_all" restart_on="none" type="service">
-            <service_fmri value="svc:/network/service"/>
-        </dependency>
+        <method_context>
+                <method_credential
+                        user='root'/>
+        </method_context>
 
-        <dependency name="net-physical" grouping="require_all" restart_on="none" type="service">
-            <service_fmri value="svc:/network/physical" />
-        </dependency>
+        <exec_method 
+                type="method" 
+                name="start" 
+                exec="@prefix@/oep/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" 
+                timeout_seconds="170" />
 
-        <dependency name="filesystem-local" grouping="require_all" restart_on="none" type="service">
-            <service_fmri value="svc:/system/filesystem/local" />
-        </dependency>
+        <exec_method
+                type="method"
+                name="stop"
+                exec="/usr/bin/kill `cat /var/run/znapzend.pid`"
+                timeout_seconds="60" />
 
-        <dependent name="samba-smbd-multi-user-server" grouping="optional_all" restart_on="none">
-            <service_fmri value="svc:/milestone/multi-user-server" />
-        </dependent>
 
-        <exec_method type="method" name="start" exec="@prefix@/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" timeout_seconds="170" />
-
-        <exec_method type="method" name="stop" exec="/usr/bin/kill `cat /var/run/znapzend.pid`" timeout_seconds="60" />
-
-        <stability value="Unstable" />
+        <stability 
+                value="Unstable" />
 
         <template>
             <common_name>
@@ -41,11 +48,10 @@
                 </loctext>
             </common_name>
             <documentation>
-                <manpage title="znapzend" section="1" manpath="@prefix@/share/man" />
-                <manpage title="znapzendzetup" section="1" manpath="@prefix@/share/man" />
-                <manpage title="znapzendztatz" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzend" section="1" manpath="@prefix@/oep/share/man" />
+                <manpage title="znapzendzetup" section="1" manpath="@prefix@/oep/share/man" />
+                <manpage title="znapzendztatz" section="1" manpath="@prefix@/oep/share/man" />
             </documentation>
         </template>
-    </service>
-
+</service>
 </service_bundle>
