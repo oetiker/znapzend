@@ -59,6 +59,16 @@ AC_ARG_ENABLE(pkgonly,
                         [Skip all checking]))
 AC_SUBST(enable_pkgonly)
 
+AC_ARG_ENABLE(svcinstall,
+        AC_HELP_STRING(
+                [--enable-svcinstall=DIR],
+                [install svc manifest into given directory]
+        ),
+        [SVCINSTALLDIR=$enableval],
+        [SVCINSTALLDIR=no]
+)
+AC_SUBST(SVCINSTALLDIR)
+AM_CONDITIONAL(ENABLE_SVCINSTALL,[test $SVCINSTALLDIR != no])
 
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
@@ -118,7 +128,8 @@ cat <<NOTES
 
      PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
-
+     SVCINSTALLDIR = $SVCINSTALLDIR
+     
    Note that the Makefiles uses GNU make functionality.
    Continue installation with
 

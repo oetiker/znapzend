@@ -568,6 +568,9 @@ ac_default_prefix=/opt/$PACKAGE_NAME-$PACKAGE_VERSION
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 PERL5LIB
+ENABLE_SVCINSTALL_FALSE
+ENABLE_SVCINSTALL_TRUE
+SVCINSTALLDIR
 enable_pkgonly
 GMAKE
 POD2MAN
@@ -646,6 +649,7 @@ enable_option_checking
 enable_maintainer_mode
 enable_silent_rules
 enable_pkgonly
+enable_svcinstall
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1274,6 +1278,7 @@ Optional Features:
   --enable-silent-rules          less verbose build output (undo: `make V=1')
   --disable-silent-rules         verbose build output (undo: `make V=0')
   --enable-pkgonly        Skip all checking
+  --enable-svcinstall=DIR install svc manifest into given directory
 
 Some influential environment variables:
   PERL        Path to local perl binary
@@ -2551,6 +2556,23 @@ fi
 
 
 
+# Check whether --enable-svcinstall was given.
+if test "${enable_svcinstall+set}" = set; then :
+  enableval=$enable_svcinstall; SVCINSTALLDIR=$enableval
+else
+  SVCINSTALLDIR=no
+
+fi
+
+
+ if test $SVCINSTALLDIR != no; then
+  ENABLE_SVCINSTALL_TRUE=
+  ENABLE_SVCINSTALL_FALSE='#'
+else
+  ENABLE_SVCINSTALL_TRUE='#'
+  ENABLE_SVCINSTALL_FALSE=
+fi
+
 
 
 
@@ -2749,6 +2771,10 @@ LTLIBOBJS=$ac_ltlibobjs
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_SVCINSTALL_TRUE}" && test -z "${ENABLE_SVCINSTALL_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_SVCINSTALL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -3797,6 +3823,7 @@ cat <<NOTES
 
      PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
+     SVCINSTALLDIR = $SVCINSTALLDIR
 
    Note that the Makefiles uses GNU make functionality.
    Continue installation with

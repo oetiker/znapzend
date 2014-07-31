@@ -32,8 +32,14 @@ YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 
 datadir = $(prefix)
+nobase_data_DATA = $(PM)
 
-nobase_data_DATA = $(PM) init/znapzend.xml
+if ENABLE_SVCINSTALL
+
+svcdir = @SVCINSTALLDIR@
+svc_DATA = init/znapzend.xml
+
+endif
 
 dist_bin_SCRIPTS = $(BIN)
 
@@ -56,4 +62,14 @@ install-exec-hook:
 dist-hook: $(POD) $(MAN)
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
 	$(AM_V_GEN)cd $(distdir) && touch man/*
+
+prebuild:
+	make dist
+	tar xvf znapzend-$(PACKAGE_VERSION).tar.gz
+	cd znapzend-$(PACKAGE_VERSION) && mkdir -p znapzend-prebuilt-$(PACKAGE_VERSION)
+	cd znapzend-$(PACKAGE_VERSION)/znapzend-prebuilt-$(PACKAGE_VERSION) && tar zxvf ../../znapzend-thirdparty-FAT-2014-07-31.tar.gz        
+	cd znapzend-$(PACKAGE_VERSION) && ./configure --prefix=`pwd`/znapzend-prebuilt-$(PACKAGE_VERSION)
+	cd znapzend-$(PACKAGE_VERSION) && make install
+	cd znapzend-$(PACKAGE_VERSION)/znapzend-prebuilt-$(PACKAGE_VERSION) && $(PERL) -i -p -e 's{^#!.*perl.*}{#!/usr/bin/env perl};' $(BIN)
+	cd znapzend-$(PACKAGE_VERSION) && tar czf ../znapzend-prebuilt-$(PACKAGE_VERSION).tar.gz znapzend-prebuilt-$(PACKAGE_VERSION)
 #END

@@ -92,7 +92,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" \
-	"$(DESTDIR)$(datadir)"
+	"$(DESTDIR)$(datadir)" "$(DESTDIR)$(svcdir)"
 SCRIPTS = $(dist_bin_SCRIPTS)
 depcomp =
 am__depfiles_maybe =
@@ -104,7 +104,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 SOURCES =
 DIST_SOURCES =
-DATA = $(iman_DATA) $(nobase_data_DATA)
+DATA = $(iman_DATA) $(nobase_data_DATA) $(svc_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -158,6 +158,7 @@ POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SVCINSTALLDIR = @SVCINSTALLDIR@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -206,10 +207,12 @@ PM := $(shell find lib/ -name "*.pm")
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in
+EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer t/zfs t/znapzendzetup.t t/zpool
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
-nobase_data_DATA = $(PM) init/znapzend.xml
+nobase_data_DATA = $(PM)
+@ENABLE_SVCINSTALL_TRUE@svcdir = @SVCINSTALLDIR@
+@ENABLE_SVCINSTALL_TRUE@svc_DATA = init/znapzend.xml
 dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
@@ -324,6 +327,24 @@ uninstall-nobase_dataDATA:
 	@list='$(nobase_data_DATA)'; test -n "$(datadir)" || list=; \
 	$(am__nobase_strip_setup); files=`$(am__nobase_strip)`; \
 	dir='$(DESTDIR)$(datadir)'; $(am__uninstall_files_from_dir)
+install-svcDATA: $(svc_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(svcdir)" || $(MKDIR_P) "$(DESTDIR)$(svcdir)"
+	@list='$(svc_DATA)'; test -n "$(svcdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(svcdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(svcdir)" || exit $$?; \
+	done
+
+uninstall-svcDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(svc_DATA)'; test -n "$(svcdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(svcdir)'; $(am__uninstall_files_from_dir)
 tags: TAGS
 TAGS:
 
@@ -500,7 +521,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(SCRIPTS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(datadir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(datadir)" "$(DESTDIR)$(svcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -554,7 +575,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-imanDATA install-nobase_dataDATA
+install-data-am: install-imanDATA install-nobase_dataDATA \
+	install-svcDATA
 
 install-dvi: install-dvi-am
 
@@ -602,7 +624,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
-	uninstall-nobase_dataDATA
+	uninstall-nobase_dataDATA uninstall-svcDATA
 
 .MAKE: install-am install-exec-am install-strip
 
@@ -616,18 +638,19 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	install-exec-hook install-html install-html-am \
 	install-imanDATA install-info install-info-am install-man \
 	install-nobase_dataDATA install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am uninstall \
-	uninstall-am uninstall-dist_binSCRIPTS uninstall-imanDATA \
-	uninstall-nobase_dataDATA
+	install-ps-am install-strip install-svcDATA installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-dist_binSCRIPTS uninstall-imanDATA \
+	uninstall-nobase_dataDATA uninstall-svcDATA
 
 
-doc/%.pod: bin/%
+doc/%.pod: bin/% VERSION
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
 
 man/%.1: VERSION
-	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+	$(AM_V_GEN)mkdir -p man; test "@POD2MAN@" = "no" || @POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
 
 README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
@@ -638,7 +661,17 @@ install-exec-hook:
 
 dist-hook: $(POD) $(MAN)
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
+	$(AM_V_GEN)cd $(distdir) && touch man/*
 
+prebuild:
+	make dist
+	tar xvf znapzend-$(PACKAGE_VERSION).tar.gz
+	cd znapzend-$(PACKAGE_VERSION) && mkdir -p znapzend-prebuilt-$(PACKAGE_VERSION)
+	cd znapzend-$(PACKAGE_VERSION)/znapzend-prebuilt-$(PACKAGE_VERSION) && tar zxvf ../../znapzend-thirdparty-FAT-2014-07-31.tar.gz        
+	cd znapzend-$(PACKAGE_VERSION) && ./configure --prefix=`pwd`/znapzend-prebuilt-$(PACKAGE_VERSION)
+	cd znapzend-$(PACKAGE_VERSION) && make install
+	cd znapzend-$(PACKAGE_VERSION)/znapzend-prebuilt-$(PACKAGE_VERSION) && $(PERL) -i -p -e 's{^#!.*perl.*}{#!/usr/bin/env perl};' $(BIN)
+	cd znapzend-$(PACKAGE_VERSION) && tar czf ../znapzend-prebuilt-$(PACKAGE_VERSION).tar.gz znapzend-prebuilt-$(PACKAGE_VERSION)
 #END
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
