@@ -26,7 +26,7 @@ MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in
+EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer t/zfs t/znapzendzetup.t t/zpool
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -40,11 +40,11 @@ dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
 
-doc/%.pod: bin/%
+doc/%.pod: bin/% VERSION
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
         
 man/%.1: VERSION
-	$(AM_V_GEN)mkdir -p man;@POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+	$(AM_V_GEN)mkdir -p man; test "@POD2MAN@" = "no" || @POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
         
 README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
@@ -55,5 +55,5 @@ install-exec-hook:
 
 dist-hook: $(POD) $(MAN)
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
-
+	$(AM_V_GEN)cd $(distdir) && touch man/*
 #END
