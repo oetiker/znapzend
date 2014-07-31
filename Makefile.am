@@ -18,6 +18,8 @@ AUTOMAKE_OPTIONS = foreign
 
 SUFFIXES = .1 .man .pm
 
+SUBDIRS = lib
+
 BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 
 PM :=  $(shell find lib/ -name "*.pm")
@@ -30,9 +32,6 @@ EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thi
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
-
-datadir = $(prefix)
-nobase_data_DATA = $(PM)
 
 if ENABLE_SVCINSTALL
 
