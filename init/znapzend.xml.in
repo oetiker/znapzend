@@ -28,7 +28,7 @@
         <exec_method 
                 type="method" 
                 name="start" 
-                exec="@prefix@/oep/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" 
+                exec="@prefix@/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" 
                 timeout_seconds="170" />
 
         <exec_method
@@ -48,9 +48,9 @@
                 </loctext>
             </common_name>
             <documentation>
-                <manpage title="znapzend" section="1" manpath="@prefix@/oep/share/man" />
-                <manpage title="znapzendzetup" section="1" manpath="@prefix@/oep/share/man" />
-                <manpage title="znapzendztatz" section="1" manpath="@prefix@/oep/share/man" />
+                <manpage title="znapzend" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzendzetup" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzendztatz" section="1" manpath="@prefix@/share/man" />
             </documentation>
         </template>
 </service>
