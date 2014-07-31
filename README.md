@@ -85,11 +85,16 @@ then when you are happy with what you got, start it in daemon mode.
 Best is to integrate znapzend into your system startup sequence, but you can also
 run it by hand.
 
-For illumos OSes you can import the znapzend service manifest provided in the install directory:
+For solaris/illumos OSes you can import make configure install a znapzend
+service manifest by calling configure with the option
+```--enable-svcinstall=/var/svc/manifest/site```.  Since the manifest
+contains the absolute path the the znapzend install directory, it is not
+contained in the prebuilt version.  But you can get a copy from github and
+roll your own.
 
 ```sh
-svccfg validate /opt/znapzend-0.8.8/init/znapzend.xml
-svccfg import /opt/znapzend-0.8.8/init/znapzend.xml
+svccfg validate /var/svc/manifest/site/znapzend.xml
+svccfg import /var/svc/manifest/site/znapzend.xml
 ```
 
 and then enable the service 
