@@ -12,7 +12,7 @@ has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the 
 has scrubInProgress => sub { qr/scrub in progress/ };
 
 ### private functions ###
-my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
+my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
 my $splitDataSetSnapshot = sub { return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/); };
 
 my $shellQuote = sub {
