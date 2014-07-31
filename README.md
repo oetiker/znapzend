@@ -11,11 +11,12 @@ snapshots as well as remote copies by thining them out as time progresses.
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
 
-Zetup
------
+Zetup Zimple
+------------
 
-There are two ways to get going with znapzend. You can take the simple way out and download our prebuilt release. It comes with all the perlmodules required
-for running znapzend with a copy of perl as old as 5.10.1:
+There are two ways to get going with znapzend. You can take the simple way
+out and download our prebuilt release.  It comes with all the perlmodules
+required for running znapzend with a copy of perl as old as 5.10.1:
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.8.8/znapzend-prebuilt-0.8.8.tar.gz
@@ -23,7 +24,12 @@ tar zxvf znapzend-prebuilt-0.8.8.tar.gz
 cp -rp znapzend-prebuilt-0.8.8 /opt/znapzend-0.8.8
 ```
 
-On the otherhand if you are the proud owner of a properly setup unix box
+Read on in the [Configuration](#configuration) Section.
+
+Zetup for Power Admins
+----------------------
+
+On the other hand if you are the proud owner of a properly setup unix box
 with all the tools and trimmings for building stuff, follow these zimple
 inztructionz below to get a cusom made copy of znapzend.
 
