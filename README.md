@@ -101,8 +101,16 @@ svcadm enable oep/znapzend
 Statistics
 ----------
 
-If you want to know how much space your backups are using, try the [znapzendztatz](doc/znapzendztatz.pod) utility.
+If you want to know how much space your backups are using, try the
+[znapzendztatz](doc/znapzendztatz.pod) utility.
 
+Support and Bugreports
+----------------------
+If you find, bugs with znapzend, please open an Issue on GitHub.
+
+If you like to get in touch, you can find Dominik and Tobi on irc freenode #znapzend.
+
+And if you have a contribution, please send a pull request.
 
 Enjoy!
 
