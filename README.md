@@ -106,7 +106,7 @@ If you want to know how much space your backups are using, try the
 
 Support and Contributions
 -------------------------
-If you find, bugs with znapzend, please open an Issue on GitHub.
+If you find a problem with znapzend, please open an Issue on GitHub.
 
 If you like to get in touch, you can find Dominik and Tobi on irc freenode #znapzend.
 
