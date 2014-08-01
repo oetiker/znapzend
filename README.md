@@ -114,7 +114,7 @@ Support and Contributions
 -------------------------
 If you find a problem with znapzend, please open an Issue on GitHub.
 
-If you like to get in touch, you can find Dominik and Tobi on irc freenode #znapzend.
+If you like to get in touch, you can find Dominik and Tobi on #znapzend on irc.freenode.net.
 
 And if you have a contribution, please send a pull request.
 
