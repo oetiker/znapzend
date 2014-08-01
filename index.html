@@ -25,6 +25,26 @@
           ga('create', 'UA-374525-25', 'auto');
           ga('send', 'pageview');
         </script>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <!-- Latest compiled and minified JavaScript --> 
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <script>
+           jQuery(document).ready(function(){
+                $('.startNow').on('click', function() {
+                  ga('send', 'event', 'button', 'click', 'Start Now Clicked');
+                });
+                $('.goGithub').on('click', function() {
+                  ga('send', 'event', 'link', 'click', 'Goto GitHub');
+                });
+                $('.goIRC').on('click', function() {
+                  ga('send', 'event', 'link', 'click', 'Goto IRC');
+                });
+                $('.goOP').on('click', function() {
+                  ga('send', 'event', 'link', 'click', 'Goto O+P');
+                });
+           });
     </head>
     <body>
 
@@ -35,10 +55,10 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
-                        <a href="http://www.oetiker.ch/en/"><img id="oposs-logo" src="assets/images/oposs-logo-white.png"/></a>
+                        <a href="http://www.oetiker.ch/en/" class="goOP"><img id="oposs-logo" src="assets/images/oposs-logo-white.png"/></a>
                         <h1>ZnapZend</h1>
                         <div class="claim">The Multilevel Backup Tool for ZFS</div>
-                        <a href="#startnow" class="btn btn-success btn-lg" role="button">Get Started Now</a>
+                        <a class="startNow" href="#startnow" class="btn btn-success btn-lg" role="button">Get Started Now</a>
                     </div>
                 </div>
             </div>
@@ -173,30 +193,31 @@
                              <h2><a name="startnow">Get Started Now!</a></h2>
                              <p>ZnapZend is free software.  Just download
                              it and get started.  Follow the instructions in
-                             the <a
+                             the <a class="goGitHub"
                              href="https://github.com/oetiker/znapzend/blob/master/README.md">README</a>. 
                              </p>
                              
                              <p>ZnapZend is written in modern object
                              oriented Perl.  Development happens out in the
-                             open on <a
+                             open on <a class="goGitHub"
                              href="https://github.com/oetiker/znapzend/">GitHub</a>.</p>
                              
                              <h2><a name="support">Need Help?</a></h2>
                              <p>If you find a problem with ZnapZend, please
-                             open an <a
+                             open an <a class="goGitHub"
                              href="https://github.com/oetiker/znapzend/issues">Issue on
                              GitHub</a>.</p>
                              
                              <p>If you like to get in touch, you can find
                              Dominik and Tobi on the IRC-Channel <a
+                             class="goIRC"
                              href="irc://irc.freenode.net/#znapzend">#znapzend
                              on
                              irc.freenode.net</a>.</p>
 
                              <h2><a name="support">Anything to Contribute?</a></h2>
                                                           
-                             <p>And if you have a contribution, please <a
+                             <p>And if you have a contribution, please <a class="goGitHub"
                              href="https://github.com/oetiker/znapzend/fork">fork
                              us</a> on GitHub, create a branch and send a pull
                              request.</p>
@@ -205,7 +226,7 @@
 
                              <p>If you need extra help or customization,
                              please feel free to get in touch directly with
-                             use here at <a href="http://www.oetiker.ch/en/kontakt-en-us/">OETIKER+PARTNER</a>.</p>
+                             use here at <a class="goOP" href="http://www.oetiker.ch/en/kontakt-en-us/">OETIKER+PARTNER</a>.</p>
                              
                         </div>
                     </div>                    
@@ -217,7 +238,7 @@
              <div class="container">
              <div class="row">
                 <div class="col-xs-12 col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">
-                ZnapZend is an <a
+                ZnapZend is an <a class="goOP"
                 href="http://www.oetiker.ch/en">OETIKER+PARTNER</a> Open Source
                 Project.
                 </div>                        
@@ -225,11 +246,6 @@
              </div>
         </div>
                 
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <!-- Latest compiled and minified JavaScript --> 
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     </body>
 </html>
 
