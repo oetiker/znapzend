@@ -138,6 +138,7 @@ my $refreshBackupPlans = sub {
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
         $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
     }
 };
@@ -343,12 +344,12 @@ my $createWorkers = sub {
     #create a timer for each backup set
     for my $backupSet (@{$self->backupSets}){
         #calculate next snapshot timestamp
-        my $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
+        my $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet->{interval}, $backupSet->{UTC});
         #define timer callback
         my $cb;
         $cb = sub {
             #check if we run too early (can be caused by DST time 'jump')
-            my $timeDelta = $timeStamp - $self->zTime->getLocalTimestamp();
+            my $timeDelta = $timeStamp - $self->zTime->getTimestamp($backupSet->{UTC});
             if ($timeDelta > 0){
                 Mojo::IOLoop->timer($timeDelta => $cb);
                 return;
@@ -366,20 +367,21 @@ my $createWorkers = sub {
 ### RM_COMM_4_TEST ###  return;
 
             #get next timestamp when a snapshot has to be taken
-            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet);
+            $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet->{interval}, $backupSet->{UTC});
 
             #reset timer for next snapshot if not runonce
-            Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb) if !$self->runonce;
+            Mojo::IOLoop->timer($timeStamp
+                - $self->zTime->getTimestamp($backupSet->{UTC}) => $cb) if !$self->runonce;
         };
 
         #set timer for next snapshot or run immediately if runonce
         if ($self->runonce){
             #run immediately
-            $timeStamp = $self->zTime->getLocalTimestamp();
+            $timeStamp = $self->zTime->getTimestamp($backupSet->{UTC});
             $cb->();
         }
         else{
-            Mojo::IOLoop->timer($timeStamp - $self->zTime->getLocalTimestamp() => $cb);
+            Mojo::IOLoop->timer($timeStamp - $self->zTime->getTimestamp($backupSet->{UTC}) => $cb);
         }
     };
 

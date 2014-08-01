@@ -92,7 +92,7 @@ sub backupPlanToHash {
     my $backupPlan = shift;
     my %backupPlan;
 
-    my @planItems = split ',', $backupPlan;
+    my @planItems = split /,/, $backupPlan;
 
     for my $planItem (@planItems){
         my @planValues = split '=>', $planItem, 2;
@@ -109,6 +109,13 @@ sub backupPlanToHash {
     }
 
     return \%backupPlan;
+}
+
+sub useUTC {
+    my $self = shift;
+    my $timeFormat = shift;
+    
+    return $timeFormat =~ /Z$/;
 }
 
 sub getInterval {
@@ -129,11 +136,11 @@ sub createSnapshotTime {
 
 sub getNextSnapshotTimestamp {
     my $self = shift;
-    my $backupSet = shift;
+    my $interval = shift;
+    #useUTC is second argument
+    my $time = $self->getTimestamp(shift);
 
-    my $time = $self->getLocalTimestamp();
-
-    return $intervalToTimestamp->($time, $backupSet->{interval});
+    return $intervalToTimestamp->($time, $interval);
 }
 
 sub getSnapshotsToDestroy {
@@ -141,7 +148,7 @@ sub getSnapshotsToDestroy {
     my $snapshots = shift;
     my $timePlan = shift;
     my $timeFormat = shift;
-    my $time = $_[0] || $self->getLocalTimestamp();
+    my $time = $_[0] || $self->getTimestamp($self->useUTC($timeFormat));
     my %timeslots;
     my @toDestroy;
 
@@ -199,9 +206,10 @@ sub getLastScrubTimestamp {
     return 0;
 }
 
-sub getLocalTimestamp {
+sub getTimestamp {
     my $self = shift;
-    my $time = localtime;
+    #useUTC flag set?
+    my $time = $_[0] ? gmtime : localtime;
 
     #need to call method seconds as addition will return a Time::Seconds object
     return ($time->epoch + $time->tzoffset)->seconds;
@@ -274,6 +282,10 @@ checks if time and time unit are valid
 
 converts a backup plan to a timestamp hash
 
+=head2 useUTC
+
+returns whether UTC or localtime will be used for the given time format
+
 =head2 getInterval
 
 returns the smallest time interval within a backup plan -> this will be the snapshot creation interval
@@ -294,9 +306,9 @@ returns a list of snapshots which have to be destroyed according to the backup p
 
 extracts the time scrub ran (and finished) last on a pool
 
-=head2 getLocalTimestamp
+=head2 getTimestamp
 
-returns a timezone compensated 'unix timestamp'
+returns the current timestamp
 
 =head2 checkTimeFormat
 
