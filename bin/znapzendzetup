@@ -187,6 +187,8 @@ sub main {
                 my ($key, $value) = split /=/, $prop, 2;
                 $cfg{$key} = $value;
             }
+            close $fh;
+            unlink $filename;
 
             #check new backup set
             $zConfig->checkBackupSet(\%cfg);
