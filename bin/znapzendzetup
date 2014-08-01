@@ -401,6 +401,10 @@ characters as well as any alphanumeric character are allowed.
 
 If not specified, B<--tsformat> defaults to C<%Y-%m-%d-%H%M%S>.
 
+If B<--tsformat> string is suffixed by a 'Z', times will be in UTC. E.g.:
+
+ --tsformat='%Y-%m-%dT%H:%M:%SZ'
+
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
 Specify the path to your copy of the mbuffer utility.
