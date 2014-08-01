@@ -827,8 +827,8 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 doc/%.pod: bin/% VERSION
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
 
-man/%.1: VERSION
-	$(AM_V_GEN)mkdir -p man; test "@POD2MAN@" = "no" || @POD2MAN@ --release=$(VERSION) --center=@PACKAGE@ $<  > $@
+man/%.1: bin/% VERSION
+	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
 
 README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
@@ -839,10 +839,10 @@ install-exec-hook:
 
 dist-hook: $(POD) $(MAN)
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
-	$(AM_V_GEN)cd $(distdir) && touch man/*
+	$(GMAKE) $(MAN)
 
 prebuild:
-	make dist
+	$(GMAKE) dist
 	tar xvf znapzend-$(PACKAGE_VERSION).tar.gz
 	cd znapzend-$(PACKAGE_VERSION) && mkdir -p znapzend-prebuilt-$(PACKAGE_VERSION)
 	cd znapzend-$(PACKAGE_VERSION)/znapzend-prebuilt-$(PACKAGE_VERSION) && tar zxvf ../../znapzend-thirdparty-FAT-2014-07-31.tar.gz        
