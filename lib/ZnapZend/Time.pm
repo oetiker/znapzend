@@ -221,13 +221,13 @@ sub checkTimeFormat {
 
     $timeFormat =~ /^(?:%[YmdHMS]|[\w\-.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
 
-    #just a made-up time to check if strftime and strptime work
-    my $timeToCheck = gmtime(1014416542);
+    #just a made-up timestamp to check if strftime and strptime work
+    my $timeToCheck = 1014416542;
 
-    my $formattedTime = $timeToCheck->strftime($timeFormat)
+    my $formattedTime = $self->createSnapshotTime($timeToCheck, $timeFormat)
         or die "ERROR: timestamp format not valid. check your syntax\n";
 
-    my $resultingTime = Time::Piece->strptime($formattedTime, $timeFormat)
+    my $resultingTime = $self->$getSnapshotTimestamp("dummydataset\@$formattedTime", $timeFormat)
         or die "ERROR: timestamp format not valid. check your syntax\n";
 
     return $timeToCheck == $resultingTime; #times schould be equal
