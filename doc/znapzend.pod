@@ -16,6 +16,7 @@ B<znapzend> [I<options>...]
  --pidfile=x   write a pid file when running in daemon mode
  --daemonize   fork into the background
  --runonce=x   run one round on source dataset x
+ --features=x  comma separated list of features to be enabled
 
 =head1 DESCRIPTION
 
@@ -68,6 +69,15 @@ Fork into the background.
 run one round on source I<fileset>. This is very useful for testing.
 Use it in connection with B<--noaction> and B<--debug> while
 testing your new configuration
+
+=item B<--features>=I<feature1,feature2>
+
+enables enhanced zfs features not supported by all zfs implementations.
+Do not enable features unless you are sure your zfs supports it
+
+Available features:
+
+ combinedDestroy
 
 =back
 

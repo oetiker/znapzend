@@ -24,6 +24,8 @@ where 'command' is one of the following:
            SRC [plan] dataset \
            [ DST:key [plan] [dataset] ]
 
+    edit <src_dataset>
+
     enable <src_dataset>
 
     disable <src_dataset>
@@ -157,6 +159,9 @@ B<list> function to see the keys.
 modify the configuration of a dataset. see the descriptions in the B<create>
 function for details.
 
+If B<edit> is used with a source dataset as single argument, properties
+can be edited in an editor.
+
 =head2 B<export>
 
 dumps the backup configuration of a dataset
@@ -178,6 +183,7 @@ commandline.
 
 may be called multiple times to override properties in the imported config.
 
+=back
 
 =head1 EXAMPLES
 

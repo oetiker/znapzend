@@ -45,13 +45,13 @@ dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
 
-doc/%.pod: bin/% VERSION
+doc/%.pod: bin/% configure
 	$(AM_V_GEN)mkdir -p doc;grep -A100000 '=head1 NAME' $< > $@
         
-man/%.1: bin/% VERSION
+man/%.1: bin/% configure
 	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
         
-README.md COPYRIGHT: VERSION
+README.md COPYRIGHT: configure
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
 
 install-exec-hook:
