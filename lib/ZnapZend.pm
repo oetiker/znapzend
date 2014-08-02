@@ -158,7 +158,7 @@ my $sendRecvCleanup = sub {
         ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
     #loop through all destinations
-    for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
+    for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
 
         #loop through all subdatasets
