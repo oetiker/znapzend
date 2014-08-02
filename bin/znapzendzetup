@@ -537,6 +537,7 @@ commandline.
 
 may be called multiple times to override properties in the imported config.
 
+=back
 
 =head1 EXAMPLES
 
