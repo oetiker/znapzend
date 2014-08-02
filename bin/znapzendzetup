@@ -179,7 +179,7 @@ sub main {
             close $fh;
 
             my $editor = $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
-            system ($editor, $filename) && die "ERROR: executing editor\n";
+            system ($editor, $filename) && die "ERROR: executing editor\n" if !$ZNAPZEND_TESTING;
 
             open $fh, "<$filename" or die "ERROR: cannot open temp file $filename\n";
             while (my $prop = <$fh>){
@@ -196,7 +196,7 @@ sub main {
             dumpProperties([\%cfg]);
 
             print "Do you want to save this backup set [y/N]? ";
-            my $check = <STDIN>;
+            my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
             chomp ($check);
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
