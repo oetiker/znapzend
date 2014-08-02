@@ -7,6 +7,7 @@ use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
+use File::Temp qw(tempfile);
 
 use Mojo::Base -strict;
 use ZnapZend::Config;
@@ -34,6 +35,19 @@ sub dumpProperties {
         }
         print "\n";
     }
+}
+
+sub dumpPropertiesRaw {
+    my $backupSet = shift;
+    my @dump;
+        
+    for my $prop (sort keys %$backupSet){
+        #don't export valid flag for destinations as this will be evaluated on demand
+        next if $prop =~ /^dst_[^_]+_valid/;
+
+        push @dump, "$prop=$backupSet->{$prop}";
+    }
+    return \@dump;
 }
 
 sub parseArguments {
@@ -150,6 +164,48 @@ sub main {
         last;
     };
     /^edit$/ && do {
+        #only dataset given so we use the editor based edit mode
+        if ($#ARGV == 0){
+            $opts->{src} = pop @ARGV;
+        
+            my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
+                or die "ERROR: cannot get backup config\n";
+
+            my $props = dumpPropertiesRaw($backupSet);
+            my ($fh, $filename) = tempfile();
+            for (@$props){
+                print $fh "$_\n";
+            }
+            close $fh;
+
+            my $editor = $ENV{VISUAL} || $ENV{EDITOR} || 'vi';
+            system ($editor, $filename) && die "ERROR: executing editor\n" if !$ZNAPZEND_TESTING;
+
+            open $fh, "<$filename" or die "ERROR: cannot open temp file $filename\n";
+            while (my $prop = <$fh>){
+                chomp $prop;
+                my ($key, $value) = split /=/, $prop, 2;
+                $cfg{$key} = $value;
+            }
+            close $fh;
+            unlink $filename;
+
+            #check new backup set
+            $zConfig->checkBackupSet(\%cfg);
+
+            dumpProperties([\%cfg]);
+
+            print "Do you want to save this backup set [y/N]? ";
+            my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
+            chomp ($check);
+            if ($check =~ /^y(?:es)?$/i){
+                $zConfig->setBackupSet(\%cfg)
+                    or die "ERROR: cannot create backup config for $cfg{src}\n";
+            }
+
+            last;
+        }
+
         GetOptions($opts, (qw(donotask recursive=s mbuffer=s mbuffersize=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s))) or exit 1;
 
@@ -221,13 +277,12 @@ sub main {
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
 
-        my $backupSet = $zConfig->getBackupSet($opts->{src})->[0];
+        my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
+            or die "ERROR: cannot get backup config\n";
 
-        for my $prop (sort keys %$backupSet){
-            #don't export valid flag for destinations as this will be evaluated on demand
-            next if $prop =~ /^dst_[^_]+_valid/;
-
-            print "$prop=$backupSet->{$prop}\n";
+        my $props = dumpPropertiesRaw($backupSet);
+        for (@$props){
+            print "$_\n";
         }
 
         last;
@@ -322,6 +377,8 @@ where 'command' is one of the following:
            [--tsformat=<format>] --donotask \
            SRC [plan] dataset \
            [ DST:key [plan] [dataset] ]
+
+    edit <src_dataset>
 
     enable <src_dataset>
 
@@ -456,6 +513,9 @@ B<list> function to see the keys.
 modify the configuration of a dataset. see the descriptions in the B<create>
 function for details.
 
+If B<edit> is used with a source dataset as single argument, properties
+can be edited in an editor.
+
 =head2 B<export>
 
 dumps the backup configuration of a dataset
@@ -477,6 +537,7 @@ commandline.
 
 may be called multiple times to override properties in the imported config.
 
+=back
 
 =head1 EXAMPLES
 
