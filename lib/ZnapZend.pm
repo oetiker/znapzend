@@ -21,15 +21,16 @@ my %logLevels = (
 );
 
 ### attributes ###
-has debug       => sub { 0 };
-has noaction    => sub { 0 };
-has nodestroy   => sub { 0 };
-has runonce     => sub { q{} };
-has daemonize   => sub { 0 };
-has loglevel    => sub { q{debug} };
-has logto       => sub { q{} };
-has pidfile     => sub { q{} };
-has terminate   => sub { 0 };
+has debug           => sub { 0 };
+has noaction        => sub { 0 };
+has nodestroy       => sub { 0 };
+has combinedDestroy => sub { 0 };
+has runonce         => sub { q{} };
+has daemonize       => sub { 0 };
+has loglevel        => sub { q{debug} };
+has logto           => sub { q{} };
+has pidfile         => sub { q{} };
+has terminate       => sub { 0 };
 
 has backupSets       => sub { [] };
 
@@ -40,8 +41,9 @@ has zConfig => sub {
 
 has zZfs => sub {
     my $self = shift;
-    ZnapZend::ZFS->new(debug => $self->debug,
-        noaction => $self->noaction, nodestroy => $self->nodestroy);
+    ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
+        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy);
+        
 };
 
 has zTime => sub { ZnapZend::Time->new() };

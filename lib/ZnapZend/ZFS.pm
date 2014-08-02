@@ -6,6 +6,7 @@ use Mojo::Base -base;
 has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
+has combinedDestroy => sub { 0 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
@@ -199,24 +200,39 @@ sub destroySnapshots {
     my %toDestroy;
     my ($remote, $dataSet, $snapshot);
 
+    #combinedDestroy flag set...
+    if ($self->combinedDestroy){
+        for (@toDestroy){
+            ($remote, $dataSet) = $splitHostDataSet->($_);
+            ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSet);
+            #tag local snapshots as 'local' so we have a key to build the hash
+            $remote = $remote || 'local';
+            exists $toDestroy{$remote} or $toDestroy{$remote} = [];
+            push @{$toDestroy{$remote}}, @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot";
+        }
+
+        for $remote (keys %toDestroy){
+            #check if remote is flaged as 'local'.
+            my @ssh = $self->$buildRemote($remote ne 'local'
+                ? $remote : undef, [qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
+
+            print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+            system(@ssh) && die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n"
+                if !($self->noaction || $self->nodestroy);
+        }
+        return 1;
+    }
+
+    #destroy each snapshot individually
     for (@toDestroy){
         ($remote, $dataSet) = $splitHostDataSet->($_);
-        ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSet);
-        #tag local snapshots as 'local' so we have a key to build the hash
-        $remote = $remote || 'local';
-        exists $toDestroy{$remote} or $toDestroy{$remote} = [];
-        push @{$toDestroy{$remote}}, @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot";
-    }
-
-    for $remote (keys %toDestroy){
-        #check if remote is flaged as 'local'.
-        my @ssh = $self->$buildRemote($remote ne 'local'
-            ? $remote : undef, [qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
+        my @ssh = $self->$buildRemote($remote, [qw(zfs destroy), $dataSet]);
 
         print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-        system(@ssh) && die "ERROR: cannot destroy snapshot(s) $toDestroy[0]\n"
+        system(@ssh) && die "ERROR: cannot destroy snapshot $dataSet\n"
             if !($self->noaction || $self->nodestroy);
     }
+
     return 1;
 }
 
