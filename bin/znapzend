@@ -11,11 +11,19 @@ use Pod::Usage;
 use ZnapZend;
 
 my $opts = {};
+my %featureMap = map { $_ => 1 } qw(combinedDestroy);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(daemonize pidfile=s logto=s loglevel=s runonce=s)) or exit 1;
 
+    #split all features into individual options
+    for my $feature (split /,/, $opts->{features}){
+        $featureMap{$feature} or die "ERROR: feature '$feature' not supported\n";
+        $opts->{$feature} = 1;
+    }
+    delete $opts->{features};
+    
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
 
@@ -26,11 +34,6 @@ sub main {
     };
 
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
-
-    $opts->{combinedDestroy} = 1 if $opts->{features} =~ /combinedDestroy/;
-
-    #clear features
-    delete $opts->{features};
 
     my $znapzend = ZnapZend->new($opts);
     $znapzend->start;
