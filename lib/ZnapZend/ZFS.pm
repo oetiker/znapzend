@@ -7,6 +7,7 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has combinedDestroy => sub { 0 };
+has sendRetries     => sub { 5 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
@@ -242,7 +243,7 @@ sub lastAndCommonSnapshots {
     my $dstDataSet = shift;
     my $snapshotFilter = $_[0] || qr/.*/;
 
-    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
+    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter); 
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
 
     return (undef, undef) if !@$srcSnapshots;
@@ -266,6 +267,7 @@ sub sendRecvSnapshots {
     my $mbufferSize = shift; 
     my $snapFilter = $_[0] || qr/.*/;
     my $remote;
+    my $mbufferPort;
     my ($lastSnapshot, $lastCommon)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
@@ -279,6 +281,7 @@ sub sendRecvSnapshots {
                 . "clean up destination (i.e. destroy existing snapshots on destination dataset)\n";
 
     ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
+    ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
     my @cmd;
     if ($lastCommon){
@@ -288,16 +291,52 @@ sub sendRecvSnapshots {
         @cmd = (['zfs', 'send', $lastSnapshot]);
     }
 
-    my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-    my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
+    #if mbuffer port is set, run in 'network mode'
+    if ($mbufferPort && $mbuffer ne 'off'){
+        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
+            '-I', $mbufferPort], ['zfs', 'recv', '-F', $dstDataSet]);
 
-    push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+        my $cmd = $shellQuote->(@recvCmd);
 
-    my $cmd = $shellQuote->(@cmd);
-    print STDERR "# $cmd\n" if $self->debug; 
+        print STDERR "# $cmd\n" if $self->debug;
 
-    system($cmd) && die "ERROR: cannot send snapshots to $dstDataSet"
-        . ($remote ? " on $remote\n" : "\n") if !$self->noaction;
+        defined (my $pid = fork) or die "ERROR: cannot fork receive process\n";
+        if ($pid == 0){
+            exec($cmd) && die "ERROR: executing receive process\n" if !$self->noaction;
+        }
+
+        $remote =~ s/^[^@]+\@//; #remove username if given
+
+        push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
+            '-e', '-O', "$remote:$mbufferPort"];
+
+        $cmd = $shellQuote->(@cmd);
+        print STDERR "# $cmd\n" if $self->debug;
+        
+        my $counter = $self->sendRetries;
+
+        return 1 if $self->noaction;
+
+        sleep 1;
+        while ($counter--){
+            system($cmd) || return 1;
+            
+            sleep 1;
+        }
+        die "ERROR: cannot send snapshots to $dstDataSet" . ($remote ? " on $remote\n" : "\n");
+    }
+    else{
+        my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
+        my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
+
+        push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+
+        my $cmd = $shellQuote->(@cmd);
+        print STDERR "# $cmd\n" if $self->debug; 
+
+        system($cmd) && die "ERROR: cannot send snapshots to $dstDataSet"
+            . ($remote ? " on $remote\n" : "\n") if !$self->noaction;
+    }
 
     return 1;
 }
