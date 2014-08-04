@@ -393,9 +393,14 @@ my $daemonize = sub {
     my $self = shift;
     my $pidFile = $self->pidfile;
 
+    #make sure pid file is writable
+    open my $fh, '>', $pidFile or die "ERROR: pid file '$pidFile' is not writable\n";
+    close $fh;
+
     if (defined $pidFile && -f $pidFile){
         chomp(my $pid = slurp $pidFile);
-        if (kill 0, $pid){
+        #pid is not empty and is numeric
+        if ($pid && ($pid = int($pid)) && kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
         }
     }
