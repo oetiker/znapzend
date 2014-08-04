@@ -108,13 +108,19 @@ my $checkBackupSets = sub {
 
             # mbuffer property set? check if executable is available on remote host
             if ($backupSet->{mbuffer} ne 'off'){
+                my ($mbuffer, $mbufferPort) = split /:/, $backupSet->{mbuffer}, 2;
                 my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
-                my $file = ($remote ? "$remote:" : '') . $backupSet->{mbuffer};
+                my $file = ($remote ? "$remote:" : '') . $mbuffer;
                 $self->zfs->fileExistsAndExec($file)
-                    or die "ERROR: executable '" . $backupSet->{mbuffer} . "' does not exist on $remote\n";
+                    or die "ERROR: executable '" . $mbuffer . "' does not exist on $remote\n";
                 #check if mbuffer size is valid
                 $backupSet->{mbuffer_size} =~ /^\d+[bkMG%]?$/
                     or die "ERROR: mbuffer size '" . $backupSet->{mbuffer_size} . "' invalid\n";
+                #check if port is numeric
+                $mbufferPort && do {
+                    $mbufferPort =~ /^\d{1,5}$/ && int($mbufferPort) < 65535
+                        or die "ERROR: $mbufferPort not a valid port number\n";
+                };
             }
         }
         #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan

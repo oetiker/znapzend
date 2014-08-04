@@ -1,13 +1,14 @@
 package ZnapZend::ZFS;
 
 use Mojo::Base -base;
+use POSIX qw(WNOHANG SIGTERM SIGKILL);
 
 ### attributes ###
 has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has combinedDestroy => sub { 0 };
-has sendRetries     => sub { 5 };
+has sendRetries     => sub { 2 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
@@ -308,7 +309,7 @@ sub sendRecvSnapshots {
         $remote =~ s/^[^@]+\@//; #remove username if given
 
         push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-            '-e', '-O', "$remote:$mbufferPort"];
+            '-O', "$remote:$mbufferPort"];
 
         $cmd = $shellQuote->(@cmd);
         print STDERR "# $cmd\n" if $self->debug;
@@ -317,13 +318,26 @@ sub sendRecvSnapshots {
 
         return 1 if $self->noaction;
 
-        sleep 1;
+        sleep 3;
         while ($counter--){
-            system($cmd) || return 1;
+            if (system($cmd) == 0){
+                sleep 3;
+                #child should be finished, cleanup
+                waitpid($pid, WNOHANG) && last;
+                #ok it's not finished so send SIGTERM
+                kill SIGTERM, $pid;
+                sleep 1;
+                waitpid($pid, WNOHANG) && last;
+                #brute force!
+                kill SIGKILL, $pid;
+                sleep 1;
+                waitpid($pid, WNOHANG);
+                last;
+            }
             
             sleep 1;
         }
-        die "ERROR: cannot send snapshots to $dstDataSet" . ($remote ? " on $remote\n" : "\n");
+        die "ERROR: cannot send snapshots to $dstDataSet" . ($remote ? " on $remote\n" : "\n") if !$counter;
     }
     else{
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
@@ -337,7 +351,7 @@ sub sendRecvSnapshots {
         system($cmd) && die "ERROR: cannot send snapshots to $dstDataSet"
             . ($remote ? " on $remote\n" : "\n") if !$self->noaction;
     }
-
+    
     return 1;
 }
 

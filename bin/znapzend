@@ -11,7 +11,7 @@ use Pod::Usage;
 use ZnapZend;
 
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(combinedDestroy networkMode);
+my %featureMap = map { $_ => 1 } qw(combinedDestroy);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),

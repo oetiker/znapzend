@@ -25,7 +25,6 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
 has combinedDestroy => sub { 0 };
-has networkMode     => sub { 0 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
 has loglevel        => sub { q{debug} };
@@ -168,14 +167,9 @@ my $sendRecvCleanup = sub {
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
             $self->zLog->info('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-            if ($self->networkMode){
-                $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                    $backupSet->{mbuffer} . ':9002', $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
-            }
-            else{
-                $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                    $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
-            }
+
+            $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
             
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
