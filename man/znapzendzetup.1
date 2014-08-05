@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2014-08-02" "0.11.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2014-08-05" "0.11.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -138,7 +138,7 @@ znapzendzetup \- znapzend setup utility
 where 'command' is one of the following:
 .PP
 .Vb 6
-\&    create [\-\-recursive] [\-\-mbuffer=<path>] [\-\-mbuffersize=<size>] \e
+\&    create [\-\-recursive] [\-\-mbuffer=<path>[:<port>]] [\-\-mbuffersize=<size>] \e
 \&           [\-\-pre\-snap\-command=<command>] \e
 \&           [\-\-post\-snap\-command=<command>] \e
 \&           [\-\-tsformat=<format>] \-\-donotask \e
@@ -147,7 +147,7 @@ where 'command' is one of the following:
 \&
 \&    delete [\-\-dst=key] <src_dataset>
 \&
-\&    edit   [\-\-recursive=on|off] [\-\-mbuffer=<path>|off] [\-\-mbuffersize=<size>] \e
+\&    edit   [\-\-recursive=on|off] [\-\-mbuffer=<path>[:<port>]|off] [\-\-mbuffersize=<size>] \e
 \&           [\-\-pre\-snap\-command=<command>|off] \e
 \&           [\-\-post\-snap\-command=<command>|off] \e
 \&           [\-\-tsformat=<format>] \-\-donotask \e
@@ -250,6 +250,12 @@ If \fB\-\-tsformat\fR string is suffixed by a 'Z', times will be in \s-1UTC\s0. 
 .IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer\fR" 4
 .IX Item "--mbuffer=/usr/bin/mbuffer"
 Specify the path to your copy of the mbuffer utility.
+.IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer:31337\fR" 4
+.IX Item "--mbuffer=/usr/bin/mbuffer:31337"
+Specifiy the path to your copy of the mbuffer utility and the port used
+on the destination. Caution: znapzend will send the data directly
+from source mbuffer to destination mbuffer, thus data stream is \fBnot\fR
+encrypted.
 .IP "\fB\-\-mbuffersize\fR=\fInumber\fR{\fBb\fR|\fBk\fR|\fBM\fR|\fBG\fR}" 4
 .IX Item "--mbuffersize=number{b|k|M|G}"
 The size of the mbuffer can be set with the \fB\-\-mbuffersize\fR option.  It
