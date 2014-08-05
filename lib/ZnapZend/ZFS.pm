@@ -297,8 +297,8 @@ sub sendRecvSnapshots {
     if ($mbufferPort && $mbuffer ne 'off'){
         my $recvPid;
 
-        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-            '-I', $mbufferPort], ['zfs', 'recv', '-F', $dstDataSet]);
+        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
+            $mbufferSize, '-I', $mbufferPort], ['zfs', 'recv', '-F', $dstDataSet]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
