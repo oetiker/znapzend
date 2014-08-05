@@ -1,6 +1,7 @@
 package ZnapZend::ZFS;
 
 use Mojo::Base -base;
+use Mojo::IOLoop::ForkCall;
 use POSIX qw(WNOHANG SIGTERM SIGKILL);
 
 ### attributes ###
@@ -8,7 +9,7 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has combinedDestroy => sub { 0 };
-has sendRetries     => sub { 2 };
+has sendDelay       => sub { 3 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchmode=yes)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
@@ -294,50 +295,77 @@ sub sendRecvSnapshots {
 
     #if mbuffer port is set, run in 'network mode'
     if ($mbufferPort && $mbuffer ne 'off'){
+        my $recvPid;
+
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
             '-I', $mbufferPort], ['zfs', 'recv', '-F', $dstDataSet]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
-        print STDERR "# $cmd\n" if $self->debug;
+        my $fc = Mojo::IOLoop::ForkCall->new;
+        $fc->run(
+            #receive worker fork
+            sub {
+                my $cmd = shift;
+                my $debug = shift;
+                my $noaction = shift;
 
-        defined (my $pid = fork) or die "ERROR: cannot fork receive process\n";
-        if ($pid == 0){
-            exec($cmd) && die "ERROR: executing receive process\n" if !$self->noaction;
-        }
+                print STDERR "# $cmd\n" if $debug;
 
-        $remote =~ s/^[^@]+\@//; #remove username if given
-
-        push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-            '-O', "$remote:$mbufferPort"];
-
-        $cmd = $shellQuote->(@cmd);
-        print STDERR "# $cmd\n" if $self->debug;
-        
-        my $counter = $self->sendRetries;
-
-        return 1 if $self->noaction;
-
-        sleep 3;
-        while ($counter--){
-            if (system($cmd) == 0){
-                sleep 3;
-                #child should be finished, cleanup
-                waitpid($pid, WNOHANG) && last;
-                #ok it's not finished so send SIGTERM
-                kill SIGTERM, $pid;
-                sleep 1;
-                waitpid($pid, WNOHANG) && last;
-                #brute force!
-                kill SIGKILL, $pid;
-                sleep 1;
-                waitpid($pid, WNOHANG);
-                last;
+                system($cmd) && die "ERROR: executing receive process\n" if !$noaction;
+            },
+            #arguments
+            [$cmd, $self->debug, $self->noaction],
+            #callback
+            sub {
+                my ($fc, $err) = @_;
+                print STDERR "# receive process on $remote done ($recvPid)\n" if $self->debug;
+                die $err if $err;
             }
-            
-            sleep 1;
-        }
-        die "ERROR: cannot send snapshots to $dstDataSet" . ($remote ? " on $remote\n" : "\n") if !$counter;
+        );
+        #spawn event 
+        $fc->on(
+            spawn => sub {
+                my ($fc, $pid) = @_;
+
+                $recvPid = $pid;
+
+                $remote =~ s/^[^@]+\@//; #remove username if given
+                print STDERR "# receive process on $remote  spawned ($pid)\n" if $self->debug;
+
+                push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
+                    '-O', "$remote:$mbufferPort"];
+
+                $cmd = $shellQuote->(@cmd);
+                print STDERR "# $cmd\n" if $self->debug;
+
+                #wait so remote mbuffer has enough time to start listening
+                sleep $self->sendDelay;
+        
+                if (!$self->noaction && system($cmd)){
+                    #command failed. check if child is alive and try to cleanup
+                    kill SIGTERM, $pid;
+                    sleep 1;
+                    waitpid($pid, WNOHANG) || do {
+                        kill SIGKILL, $pid;
+                        sleep 1;
+                        waitpid($pid, WNOHANG);
+                    };
+                    die "ERROR: cannot send snapshots to $dstDataSet"
+                        . ($remote ? " on $remote\n" : "\n");
+                }
+            }
+        );
+        #error event
+        $fc->on(
+            error => sub {
+                #not yet implementec
+                my ($fc, $err) = @_;
+                die $err if $err;
+            }
+        );
+        #start forkcall event loop
+        $fc->ioloop->start if !$fc->ioloop->is_running;
     }
     else{
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;

@@ -167,7 +167,6 @@ my $sendRecvCleanup = sub {
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
             $self->zLog->info('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-
             $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
             
