@@ -337,10 +337,11 @@ sub sendRecvSnapshots {
                     '-O', "$remote:$mbufferPort"];
 
                 $cmd = $shellQuote->(@cmd);
-                print STDERR "# $cmd\n" if $self->debug;
 
                 #wait so remote mbuffer has enough time to start listening
                 sleep $self->sendDelay;
+
+                print STDERR "# $cmd\n" if $self->debug;
         
                 if (!$self->noaction && system($cmd)){
                     #command failed. check if child is alive and try to cleanup

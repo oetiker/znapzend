@@ -108,6 +108,7 @@ Define the log level when logging to file. Default is debug.
 =item B<--pidfile>=I<path>
 
 write a pid file when running in daemon mode
+B<pidfile> defaults to I</var/run/znapzend.pid> if no pidfile is given
 
 =item B<--daemonize>
 
