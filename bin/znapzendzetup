@@ -362,7 +362,7 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [--recursive] [--mbuffer=<path>] [--mbuffersize=<size>] \
+    create [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
            [--pre-snap-command=<command>] \
            [--post-snap-command=<command>] \
            [--tsformat=<format>] --donotask \
@@ -371,7 +371,7 @@ where 'command' is one of the following:
 
     delete [--dst=key] <src_dataset>
 
-    edit   [--recursive=on|off] [--mbuffer=<path>|off] [--mbuffersize=<size>] \
+    edit   [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
            [--pre-snap-command=<command>|off] \
            [--post-snap-command=<command>|off] \
            [--tsformat=<format>] --donotask \
@@ -465,6 +465,13 @@ If B<--tsformat> string is suffixed by a 'Z', times will be in UTC. E.g.:
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
 Specify the path to your copy of the mbuffer utility.
+
+=item B<--mbuffer>=I</usr/bin/mbuffer:31337>
+
+Specifiy the path to your copy of the mbuffer utility and the port used
+on the destination. Caution: znapzend will send the data directly
+from source mbuffer to destination mbuffer, thus data stream is B<not>
+encrypted.
 
 =item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
 
