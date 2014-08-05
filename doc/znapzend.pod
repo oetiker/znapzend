@@ -70,7 +70,7 @@ run one round on source I<fileset>. This is very useful for testing.
 Use it in connection with B<--noaction> and B<--debug> while
 testing your new configuration
 
-=item B<--features>=I<feature1,feature2>
+=item B<--features>=I<feature1>,I<feature2>,...
 
 enables enhanced zfs features not supported by all zfs implementations.
 Do not enable features unless you are sure your zfs supports it
