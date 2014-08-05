@@ -193,6 +193,8 @@ my $sendRecvCleanup = sub {
         $self->zZfs->destroySnapshots($toDestroy);
     }
     $self->zLog->info('done with backupset ' . $backupSet->{src} . ' ' . (time - $startTime). ' seconds');
+
+    return 1;
 };
 
 my $createSnapshot = sub {
@@ -222,6 +224,8 @@ my $createSnapshot = sub {
         system($backupSet->{post_znap_cmd})
             && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
     }
+
+    return 1;
 };
 
 my $sendWorker = sub {
