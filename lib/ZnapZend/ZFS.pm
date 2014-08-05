@@ -359,7 +359,7 @@ sub sendRecvSnapshots {
         #error event
         $fc->on(
             error => sub {
-                #not yet implementec
+                #not yet implemented (will be in ForkCall 0.13)
                 my ($fc, $err) = @_;
                 die $err if $err;
             }
