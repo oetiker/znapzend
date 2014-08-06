@@ -294,7 +294,7 @@ sub sendRecvSnapshots {
     }
 
     #if mbuffer port is set, run in 'network mode'
-    if ($mbufferPort && $mbuffer ne 'off'){
+    if ($remote && $mbufferPort && $mbuffer ne 'off'){
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},

@@ -73,7 +73,7 @@ org.znapzend:enabled        on
 org.znapzend:dst_0          backup/destination
 org.znapzend:dst_a          root\@remote:remote/destination
 org.znapzend:dst_fail       backup/destfail
-org.znapzend:mbuffer        $FindBin::Bin/mbuffer
+org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
 org.znapzend:mbuffer_size   100M
 org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
 org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
