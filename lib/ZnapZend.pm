@@ -25,6 +25,7 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
 has combinedDestroy => sub { 0 };
+has recvu           => sub { 0 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
 has loglevel        => sub { q{debug} };
@@ -43,7 +44,8 @@ has zConfig => sub {
 has zZfs => sub {
     my $self = shift;
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
-        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy);
+        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy,
+        recvu => $self->recvu);
         
 };
 

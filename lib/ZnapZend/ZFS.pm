@@ -9,6 +9,7 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has combinedDestroy => sub { 0 };
+has recvu           => sub { 0 };
 has sendDelay       => sub { 3 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o ConnectTimeout=3)] };
@@ -268,6 +269,7 @@ sub sendRecvSnapshots {
     my $mbuffer = shift;
     my $mbufferSize = shift; 
     my $snapFilter = $_[0] || qr/.*/;
+    my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
     my $mbufferPort;
     my ($lastSnapshot, $lastCommon)
@@ -298,7 +300,7 @@ sub sendRecvSnapshots {
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-I', $mbufferPort], ['zfs', 'recv', '-F', $dstDataSet]);
+            $mbufferSize, '-I', $mbufferPort], ['zfs', 'recv', $recvOpt, $dstDataSet]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -370,7 +372,7 @@ sub sendRecvSnapshots {
     }
     else{
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-        my $recvCmd = ['zfs', 'recv' , '-F', $dstDataSet];
+        my $recvCmd = ['zfs', 'recv' , $recvOpt, $dstDataSet];
 
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
