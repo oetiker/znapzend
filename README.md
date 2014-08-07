@@ -1,5 +1,5 @@
-ZnapZend 0.11.1 
-==============
+ZnapZend 0.11.1
+===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
@@ -17,12 +17,12 @@ Zetup Zimple
 There are two ways to get going with znapzend. The way of the real sysadmin
 (as described below) or you can take the simple way out and download our
 prebuilt release.  It comes with all the perlmodules required for running
-znapzend with a copy of perl as old as 0.11.1 :
+znapzend with a copy of perl as old as 0.11.1:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.11.1/znapzend-prebuilt-0.11.1 .tar.gz
-tar zxvf znapzend-prebuilt-0.11.1 .tar.gz
-cp -rp znapzend-prebuilt-0.11.1  /opt/znapzend-0.11.1 
+wget https://github.com/oetiker/znapzend/releases/download/v0.11.1/znapzend-prebuilt-0.11.1.tar.gz
+tar zxvf znapzend-prebuilt-0.11.1.tar.gz
+cp -rp znapzend-prebuilt-0.11.1 /opt/znapzend-0.11.1
 ```
 
 Read on in the [Configuration](#configuration) Section.
@@ -35,10 +35,10 @@ with all the tools and trimmings for building stuff, follow these zimple
 inztructionz below to get a cusom made copy of znapzend.
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.11.1/znapzend-0.11.1 .tar.gz
-tar zxvf znapzend-0.11.1 .tar.gz
-cd znapzend-0.11.1 
-./configure --prefix=/opt/znapzend-0.11.1 
+wget https://github.com/oetiker/znapzend/releases/download/v0.11.1/znapzend-0.11.1.tar.gz
+tar zxvf znapzend-0.11.1.tar.gz
+cd znapzend-0.11.1
+./configure --prefix=/opt/znapzend-0.11.1
 ```
 if configure complains about missing perl modules, run
 
