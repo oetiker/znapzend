@@ -17,7 +17,7 @@ Zetup Zimple
 There are two ways to get going with znapzend. The way of the real sysadmin
 (as described below) or you can take the simple way out and download our
 prebuilt release.  It comes with all the perlmodules required for running
-znapzend with a copy of perl as old as 0.11.2:
+znapzend with a copy of perl as old as 5.10.1:
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.11.2/znapzend-prebuilt-0.11.2.tar.gz
