@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2014-08-05" "0.11.0" "znapzend"
+.TH ZNAPZEND 1 "2014-08-05" "0.11.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -183,6 +183,7 @@ Define the log level when logging to file. Default is debug.
 .IP "\fB\-\-pidfile\fR=\fIpath\fR" 4
 .IX Item "--pidfile=path"
 write a pid file when running in daemon mode
+\&\fBpidfile\fR defaults to \fI/var/run/znapzend.pid\fR if no pidfile is given
 .IP "\fB\-\-daemonize\fR" 4
 .IX Item "--daemonize"
 Fork into the background.

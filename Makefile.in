@@ -841,7 +841,7 @@ dist-hook: $(POD) $(MAN)
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
 	$(GMAKE) $(MAN)
 
-prebuild:
+prebuilt:
 	$(GMAKE) dist
 	tar xvf znapzend-$(PACKAGE_VERSION).tar.gz
 	cd znapzend-$(PACKAGE_VERSION) && mkdir -p znapzend-prebuilt-$(PACKAGE_VERSION)
