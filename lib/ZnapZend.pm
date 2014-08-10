@@ -172,16 +172,34 @@ my $sendRecvCleanup = sub {
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-            $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
-            
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
+                };
+                $self->zLog->warn($@) if $@;
+            }
+        } 
+        for my $srcDataSet (@$srcSubDataSets){
+            my $dstDataSet = $srcDataSet;
+            $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
             $self->zLog->debug('cleaning up snapshots on ' . $dstDataSet);
-            $self->zZfs->destroySnapshots($toDestroy);
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->destroySnapshots($toDestroy);
+                };
+                $self->zLog->warn($@) if $@;
+            }
         }
     }
 
@@ -193,9 +211,17 @@ my $sendRecvCleanup = sub {
                      $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
         $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
-        $self->zZfs->destroySnapshots($toDestroy);
+        {
+            local $@;
+            eval {
+                local $SIG{__DIE__};
+                $self->zZfs->destroySnapshots($toDestroy);
+            };
+            $self->zLog->warn($@) if $@;
+        }
     }
-    $self->zLog->info('done with backupset ' . $backupSet->{src} . ' ' . (time - $startTime). ' seconds');
+    $self->zLog->info('done with backupset ' . $backupSet->{src} . ' in '
+        . (time - $startTime) . ' seconds');
 
     return 1;
 };
