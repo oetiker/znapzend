@@ -179,7 +179,14 @@ my $sendRecvCleanup = sub {
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
                 };
-                $self->zLog->warn($@) if $@;
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->to_string);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
             }
         } 
         for my $srcDataSet (@$srcSubDataSets){
@@ -198,7 +205,14 @@ my $sendRecvCleanup = sub {
                     local $SIG{__DIE__};
                     $self->zZfs->destroySnapshots($toDestroy);
                 };
-                $self->zLog->warn($@) if $@;
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->to_string);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
             }
         }
     }
@@ -217,7 +231,14 @@ my $sendRecvCleanup = sub {
                 local $SIG{__DIE__};
                 $self->zZfs->destroySnapshots($toDestroy);
             };
-            $self->zLog->warn($@) if $@;
+            if ($@){
+                if (blessed $@ && $@->isa('Mojo::Exception')){
+                    $self->zLog->warn($@->to_string);
+                }
+                else{
+                    $self->zLog->warn($@);
+                }
+            }
         }
     }
     $self->zLog->info('done with backupset ' . $backupSet->{src} . ' in '
