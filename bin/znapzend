@@ -11,7 +11,7 @@ use Pod::Usage;
 use ZnapZend;
 
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(combinedDestroy);
+my %featureMap = map { $_ => 1 } qw(combinedDestroy recvu);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
@@ -128,6 +128,7 @@ Do not enable features unless you are sure your zfs supports it
 Available features:
 
  combinedDestroy
+ recvu
 
 =back
 

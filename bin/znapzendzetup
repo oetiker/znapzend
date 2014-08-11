@@ -346,7 +346,21 @@ sub main {
     return 1;
 }
 
-main(shift);
+{
+    local $@;
+    eval {
+        local $SIG{__DIE__};
+        main(shift);
+    };
+    if ($@){
+        if (blessed $@ && $@->isa('Mojo::Exception')){
+            print STDERR $@->to_string . "\n";
+        }
+        else{
+            print STDERR $@ . "\n";
+        }
+    }
+}
 
 1;
 

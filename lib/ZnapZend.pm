@@ -25,6 +25,7 @@ has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
 has combinedDestroy => sub { 0 };
+has recvu           => sub { 0 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
 has loglevel        => sub { q{debug} };
@@ -43,7 +44,8 @@ has zConfig => sub {
 has zZfs => sub {
     my $self = shift;
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
-        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy);
+        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy,
+        recvu => $self->recvu);
         
 };
 
@@ -170,16 +172,48 @@ my $sendRecvCleanup = sub {
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
-            $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
-            
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
+                };
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->to_string);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
+            }
+        } 
+        for my $srcDataSet (@$srcSubDataSets){
+            my $dstDataSet = $srcDataSet;
+            $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
             $self->zLog->debug('cleaning up snapshots on ' . $dstDataSet);
-            $self->zZfs->destroySnapshots($toDestroy);
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->destroySnapshots($toDestroy);
+                };
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->to_string);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
+            }
         }
     }
 
@@ -191,9 +225,24 @@ my $sendRecvCleanup = sub {
                      $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
         $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
-        $self->zZfs->destroySnapshots($toDestroy);
+        {
+            local $@;
+            eval {
+                local $SIG{__DIE__};
+                $self->zZfs->destroySnapshots($toDestroy);
+            };
+            if ($@){
+                if (blessed $@ && $@->isa('Mojo::Exception')){
+                    $self->zLog->warn($@->to_string);
+                }
+                else{
+                    $self->zLog->warn($@);
+                }
+            }
+        }
     }
-    $self->zLog->info('done with backupset ' . $backupSet->{src} . ' ' . (time - $startTime). ' seconds');
+    $self->zLog->info('done with backupset ' . $backupSet->{src} . ' in '
+        . (time - $startTime) . ' seconds');
 
     return 1;
 };
