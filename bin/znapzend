@@ -127,8 +127,19 @@ Do not enable features unless you are sure your zfs supports it
 
 Available features:
 
- combinedDestroy
- recvu
+=over
+
+=item combinedDestroy
+
+use the open-zfs syntax for destroying multiple snapshots in one call to zfs
+destroy.
+
+=item recvua
+
+use the -u option on the receive end, to keep the destination zfs
+filesystems unmounted.
+
+=back
 
 =back
 

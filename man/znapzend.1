@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2014-08-05" "0.11.2" "znapzend"
+.TH ZNAPZEND 1 "2014-08-11" "0.11.4" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -198,10 +198,18 @@ enables enhanced zfs features not supported by all zfs implementations.
 Do not enable features unless you are sure your zfs supports it
 .Sp
 Available features:
-.Sp
-.Vb 1
-\& combinedDestroy
-.Ve
+.RS 4
+.IP "combinedDestroy" 4
+.IX Item "combinedDestroy"
+use the open-zfs syntax for destroying multiple snapshots in one call to zfs
+destroy.
+.IP "recvua" 4
+.IX Item "recvua"
+use the \-u option on the receive end, to keep the destination zfs
+filesystems unmounted.
+.RE
+.RS 4
+.RE
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 To test a new config

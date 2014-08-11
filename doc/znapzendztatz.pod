@@ -6,9 +6,10 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
- -H         do not print headers
- --man      show man-page and exit
- -h,--help  display this help and exit
+ -H             do not print headers
+ -r,--recursive show statistics for dataset and sub datasets
+ --man          show man-page and exit
+ -h,--help      display this help and exit
 
 =head1 DESCRIPTION
 
