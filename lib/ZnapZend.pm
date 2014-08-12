@@ -181,7 +181,7 @@ my $sendRecvCleanup = sub {
                 };
                 if ($@){
                     if (blessed $@ && $@->isa('Mojo::Exception')){
-                        $self->zLog->warn($@->to_string);
+                        $self->zLog->warn($@->message);
                     }
                     else{
                         $self->zLog->warn($@);
@@ -207,7 +207,7 @@ my $sendRecvCleanup = sub {
                 };
                 if ($@){
                     if (blessed $@ && $@->isa('Mojo::Exception')){
-                        $self->zLog->warn($@->to_string);
+                        $self->zLog->warn($@->message);
                     }
                     else{
                         $self->zLog->warn($@);
@@ -233,7 +233,7 @@ my $sendRecvCleanup = sub {
             };
             if ($@){
                 if (blessed $@ && $@->isa('Mojo::Exception')){
-                    $self->zLog->warn($@->to_string);
+                    $self->zLog->warn($@->message);
                 }
                 else{
                     $self->zLog->warn($@);
