@@ -155,6 +155,7 @@ my $sendRecvCleanup = sub {
 
     my @snapshots;
     my $toDestroy;
+    my $sendFailed = 0;
     my $startTime = time;
     $self->zLog->info('starting work on backupSet ' . $backupSet->{src});
     
@@ -180,6 +181,7 @@ my $sendRecvCleanup = sub {
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
                 };
                 if ($@){
+                    $sendFailed = 1;
                     if (blessed $@ && $@->isa('Mojo::Exception')){
                         $self->zLog->warn($@->message);
                     }
@@ -218,25 +220,30 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    for my $srcDataSet (@$srcSubDataSets){
-        # cleanup according to backup schedule
-        @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
-        $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                     $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+    if ($sendFailed){
+        $self->zLog->warn('ERROR: suspending cleanup source dataset because at least one send task failed');
+    }
+    else{
+        for my $srcDataSet (@$srcSubDataSets){
+            # cleanup according to backup schedule
+            @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
+            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
-        $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
-        {
-            local $@;
-            eval {
-                local $SIG{__DIE__};
-                $self->zZfs->destroySnapshots($toDestroy);
-            };
-            if ($@){
-                if (blessed $@ && $@->isa('Mojo::Exception')){
-                    $self->zLog->warn($@->message);
-                }
-                else{
-                    $self->zLog->warn($@);
+            $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->destroySnapshots($toDestroy);
+                };
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->message);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
                 }
             }
         }
