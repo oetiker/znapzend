@@ -287,9 +287,9 @@ sub sendRecvSnapshots {
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
     !$lastCommon && @{$self->listSnapshots($dstDataSet)}
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common'
+        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
             . "found on source and destination\n"
-            . 'clean up destination (i.e. destroy existing snapshots on destination dataset)');
+            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
 
     ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;

@@ -354,7 +354,7 @@ sub main {
     };
     if ($@){
         if (blessed $@ && $@->isa('Mojo::Exception')){
-            print STDERR $@->to_string . "\n";
+            print STDERR $@->message . "\n";
         }
         else{
             print STDERR $@ . "\n";
