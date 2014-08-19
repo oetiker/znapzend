@@ -1,0 +1,309 @@
+ (HEAD, master)  explain new oracleMode 6 minutes ago <Tobias Oetiker>
+  - upgrading to ForkCall 0.14 2 hours ago <Dominik Hassler>
+  - oracle zfs handling improved 3 hours ago <Dominik Hassler>
+  - don't clean up source if send fails 6 days ago <Dominik Hassler>
+  - exception handling: log only message 7 days ago <Dominik Hassler>
+  non released 0.11.4 8 days ago <Tobias Oetiker>
+  - one to make tobi happy 9 days ago <Dominik Hassler>
+  - exception handling improved for send/recv 9 days ago <Dominik Hassler>
+  - pod 9 days ago <Dominik Hassler>
+  - recvu feature added 9 days ago <Dominik Hassler>
+  tracking changes in source files 9 days ago <Tobias Oetiker>
+  - show last snapshot time in ztatz 11 days ago <Dominik Hassler>
+  use the latest syslog module 9 days ago <Tobias Oetiker>
+  do NOT replace 5.10.1 in the README.md 12 days ago <Tobias Oetiker>
+ (v0.11.2)  0.11.2 12 days ago <Tobias Oetiker>
+  remove more spaces 12 days ago <Tobias Oetiker>
+  remove extra spaces 12 days ago <Tobias Oetiker>
+  - fixing pid file handling - mbuffer network mode only if sending to remote host - test case for network mode 13 days ago <Dominik Hassler>
+  0.11.1 12 days ago <Tobias Oetiker>
+  timeout connections after 3 seconds 2 weeks ago <Tobias Oetiker>
+  - log message order corrected 2 weeks ago <Dominik Hassler>
+  - pidfile defaults to '/var/run/znapzend.pid' when using --daemonize 2 weeks ago <Dominik Hassler>
+  prebuild -> prebuilt 2 weeks ago <Tobias Oetiker>
+ (v0.11.0)  update pods 2 weeks ago <Tobias Oetiker>
+  - typo 2 weeks ago <Dominik Hassler>
+  - line wrap 2 weeks ago <Dominik Hassler>
+  - docu... 2 weeks ago <Dominik Hassler>
+  - unencrypted datastream handling improved 2 weeks ago <Dominik Hassler>
+  - send/receive w/o encryption 2 weeks ago <Dominik Hassler>
+  - networkMode testing release 2 weeks ago <Dominik Hassler>
+  - bugfix: log 2 weeks ago <Dominik Hassler>
+  0.11.0 2 weeks ago <Tobias Oetiker>
+  - improve pid file handling 2 weeks ago <Dominik Hassler>
+ (origin/log-level-update, log-level-update)  optimized log messages ... be less chatty at log level info 2 weeks ago <Tobias Oetiker>
+  0.10.1 2 weeks ago <Tobias Oetiker>
+  - check if feature is supported 2 weeks ago <Dominik Hassler>
+  - send to destinations in alphabetic order 2 weeks ago <Dominik Hassler>
+  add ,... to feature list 2 weeks ago <Tobias Oetiker>
+ (v0.10.0)  prep for 0.10.0 2 weeks ago <Tobias Oetiker>
+  - pod correction 2 weeks ago <Dominik Hassler>
+  - combinedDestroy as a feature not per default 2 weeks ago <Dominik Hassler>
+  - fixing pod 2 weeks ago <Dominik Hassler>
+  - znapzendzetup edit - testing 2 weeks ago <Dominik Hassler>
+  - znapzendzetup edit 2 weeks ago <Dominik Hassler>
+  - delete temp file 3 weeks ago <Dominik Hassler>
+  - calling znapzendzetup edit <src_dataset> will now open an editor 3 weeks ago <Dominik Hassler>
+  updated readme 2 weeks ago <Tobias Oetiker>
+ (v0.9.1)  fix manpage building 3 weeks ago <Tobias Oetiker>
+  try to make the irc link work 3 weeks ago <Tobias Oetiker>
+ (v0.9.0)  0.9.0 3 weeks ago <Tobias Oetiker>
+  add link to freenode 3 weeks ago <Tobias Oetiker>
+  change wording on freenode 3 weeks ago <Tobias Oetiker>
+  - checking tsformat improved 3 weeks ago <Dominik Hassler>
+  - documentation 3 weeks ago <Dominik Hassler>
+  - UTC support implemented 3 weeks ago <Dominik Hassler>
+  better wording 3 weeks ago <Tobias Oetiker>
+  need to integrated that new Makefile.am too 3 weeks ago <Tobias Oetiker>
+  need to integrated that new Makefile.am too 3 weeks ago <Tobias Oetiker>
+  allow configuration of perl module install path using --libdir configure option 3 weeks ago <Tobias Oetiker>
+  - export/import coverage 3 weeks ago <Dominik Hassler>
+  better wording 3 weeks ago <Tobias Oetiker>
+  better wording 3 weeks ago <Tobias Oetiker>
+  better wording 3 weeks ago <Tobias Oetiker>
+  - bugfix: ':' character in snapshot name does now work 3 weeks ago <Dominik Hassler>
+  more README 3 weeks ago <Tobias Oetiker>
+  remove stray oep/ 3 weeks ago <Tobias Oetiker>
+  new configure option --enable-svcinstall=DIR install svc manifest into given directory 3 weeks ago <Tobias Oetiker>
+  update wording 3 weeks ago <Tobias Oetiker>
+  update 3 weeks ago <Tobias Oetiker>
+  * only try tu run pod2man when it was found * do not rebuild the manpages on install 3 weeks ago <Tobias Oetiker>
+ (v0.8.8)  prep for 0.8.8 3 weeks ago <Tobias Oetiker>
+  - import: override properties by CLI does now work 3 weeks ago <Dominik Hassler>
+ (v0.8.7)  more documentation 3 weeks ago <Tobias Oetiker>
+  better service description 3 weeks ago <Tobias Oetiker>
+  - export/import function added 3 weeks ago <Dominik Hassler>
+  - remove 'M' for backup plans 3 weeks ago <Dominik Hassler>
+  disable dependeny install 3 weeks ago <Tobias Oetiker>
+  disable dependeny install 3 weeks ago <Tobias Oetiker>
+  disable dependeny install 3 weeks ago <Tobias Oetiker>
+  re-activate the build matrix using env 3 weeks ago <Tobias Oetiker>
+  re-activate the build matrix 3 weeks ago <Tobias Oetiker>
+  build on perl 5.10 too 3 weeks ago <Tobias Oetiker>
+  mojo wants perl 5.10.1 (still) 3 weeks ago <Tobias Oetiker>
+  mojo wants perl 5.12.1 3 weeks ago <Tobias Oetiker>
+  Update znapzendzetup 3 weeks ago <Manuel Oetiker>
+  Update znapzendzetup.pod 3 weeks ago <Manuel Oetiker>
+  only recent perls allow keys on scalars containing hashpointers 3 weeks ago <Tobias Oetiker>
+  further streamline install ... 3 weeks ago <Tobias Oetiker>
+ (v0.8.6)  make sure pod and man do NOT get rebuilt -> 0.8.6 3 weeks ago <Tobias Oetiker>
+ (v0.8.5)  updated README 3 weeks ago <Tobias Oetiker>
+  include the POD files into 0.8.5 distro 3 weeks ago <Tobias Oetiker>
+ (v0.8.4)  prep 0.8.4 3 weeks ago <Tobias Oetiker>
+  explain SRC and DST 3 weeks ago <Tobias Oetiker>
+ (v0.8.3)  prep for v0.8.3 3 weeks ago <Tobias Oetiker>
+  removed AC_USE_SYSTEM_EXTENSIONS from configure thus NOT triggering the whole 'find the C compiler' stuff 3 weeks ago <Tobias Oetiker>
+  - regex bugfix 3 weeks ago <Dominik Hassler>
+ (v0.8.2)  freeze versions 3 weeks ago <Tobias Oetiker>
+  release 0.8.2 3 weeks ago <Tobias Oetiker>
+  better documentation 3 weeks ago <Tobias Oetiker>
+  - daemon as default syslog facility 3 weeks ago <Dominik Hassler>
+  - log messages on fork and once fork terminated 3 weeks ago <Dominik Hassler>
+  - shell quoter improved 3 weeks ago <Dominik Hassler>
+  - documentation corrections 3 weeks ago <Dominik Hassler>
+  sync docu 3 weeks ago <Tobias Oetiker>
+  no need to escape / and @ 3 weeks ago <Tobias Oetiker>
+  loglevels are syslogstyle 3 weeks ago <Tobias Oetiker>
+  sync generated files 3 weeks ago <Tobias Oetiker>
+  improved documentation 3 weeks ago <Tobias Oetiker>
+  add smv manifest 3 weeks ago <Tobias Oetiker>
+ (v0.8.1)  release 0.8.1 3 weeks ago <Tobias Oetiker>
+  - increase coverage... 3 weeks ago <Dominik Hassler>
+  - snapshot creation optimised... 3 weeks ago <Dominik Hassler>
+  - check if $dataSet is set 3 weeks ago <Dominik Hassler>
+  - check if $dataSet is set 3 weeks ago <Dominik Hassler>
+  - speedup znapzendztatz 3 weeks ago <Dominik Hassler>
+  - typo and cleanup in ZFS.pm 3 weeks ago <Dominik Hassler>
+  more detailed runtime instructions 3 weeks ago <Tobias Oetiker>
+  more detailed README 3 weeks ago <Tobias Oetiker>
+  more detailed README 3 weeks ago <Tobias Oetiker>
+  more detailed README 3 weeks ago <Tobias Oetiker>
+  more detailed README 3 weeks ago <Tobias Oetiker>
+ (v0.8.0)  prepare for 0.8 release 3 weeks ago <Tobias Oetiker>
+  - sort snapshots creation and not name based 3 weeks ago <Dominik Hassler>
+  - ready for 0.8 3 weeks ago <Dominik Hassler>
+  - cleanup 4 weeks ago <Dominik Hassler>
+  - getting ready for ForkCall error events 4 weeks ago <Dominik Hassler>
+  - changed API for ForkCall 0.12 4 weeks ago <Dominik Hassler>
+  - terminate flag added 4 weeks ago <Dominik Hassler>
+  - znapzendztatz: do not print header option 4 weeks ago <Dominik Hassler>
+  - add date/time and log level if logging to STDERR 4 weeks ago <Dominik Hassler>
+  - warn if there is a problem w/ the fork 4 weeks ago <Dominik Hassler>
+  - tell which send/receive process is still running 4 weeks ago <Dominik Hassler>
+  - znapzend now checks if pre and post snapshot commands can be executed (at least in theory ;) ) 4 weeks ago <Dominik Hassler>
+  - hurray, got an e-mail address today :D 4 weeks ago <Dominik Hassler>
+  - pre and post snapshot commands added to test scripts 4 weeks ago <Dominik Hassler>
+  - final cleanup 4 weeks ago <Dominik Hassler>
+  - time jumps schould now be handled properly... 4 weeks ago <Dominik Hassler>
+  - DST change bugfix 4 weeks ago <Dominik Hassler>
+  - coverage workaround... 4 weeks ago <Dominik Hassler>
+  - a little bit of cleanup 4 weeks ago <Dominik Hassler>
+  - pre and post snapshot scripts implemented 4 weeks ago <Dominik Hassler>
+  - wip... 4 weeks ago <Dominik Hassler>
+  - we might need this module... 4 weeks ago <Dominik Hassler>
+  - WIP: pre and post snapshot commands/scripts 4 weeks ago <Dominik Hassler>
+  - one to make tobi happy 4 weeks ago <Dominik Hassler>
+  - WIP: znapzend supports now levels and logging to file 4 weeks ago <Dominik Hassler>
+  - we called it ZnapZend::Worker but that was a long, long time ago... 5 weeks ago <Dominik Hassler>
+ (v0.7.2)  0.7.2 5 weeks ago <Tobias Oetiker>
+  - improved handling if no common snapshot exists on source/destination 6 weeks ago <Dominik Hassler>
+  - enhance regexes 6 weeks ago <hadfl>
+  - singular fix 6 weeks ago <hadfl>
+  - destination handling improved 6 weeks ago <hadfl>
+  - backup config keeps being valid now if source dataset is renamed - allow more characters for time format 6 weeks ago <hadfl>
+ (v0.7.0)  0.7.0 6 weeks ago <Tobias Oetiker>
+  - some more testing of zetup parameters - remove destination plan if destination is not given 6 weeks ago <hadfl>
+  - improved znapzendzetup argument parsing - Time.pm bugfix if run w/ --runonce switch and timing is not accurate 6 weeks ago <hadfl>
+  - runonce switch implemented 7 weeks ago <hadfl>
+  - mbuffer size can now be set via znapzendzetup 7 weeks ago <hadfl>
+  - testing switch implemented 7 weeks ago <hadfl>
+  - remove duplicate code in Config.pm 7 weeks ago <hadfl>
+  - vertical alignment 7 weeks ago <hadfl>
+  -  test scripts for travis/coverall implemented 7 weeks ago <hadfl>
+  - wait for cleanup process to be terminated 7 weeks ago <hadfl>
+  - --daemonize option added to coverage 7 weeks ago <hadfl>
+  - znapzend coverage added 7 weeks ago <hadfl>
+  - coverage for znapzendztatz 7 weeks ago <hadfl>
+  - 'help' option explicitly added to znapzendzetup 7 weeks ago <hadfl>
+  - try to include private methods to coverage 7 weeks ago <hadfl>
+  - remove dependencies... 7 weeks ago <hadfl>
+  - znapzend coverage added 7 weeks ago <hadfl>
+  - make it simple... 7 weeks ago <hadfl>
+  - another coverage 7 weeks ago <hadfl>
+  - remove dependencies from coverage 7 weeks ago <hadfl>
+  - adding option 'donotask' for znapzendzetup create/edit 7 weeks ago <hadfl>
+  - another try... 7 weeks ago <hadfl>
+  - one more... 7 weeks ago <hadfl>
+  - and another try... 7 weeks ago <hadfl>
+  - make travis work again 7 weeks ago <hadfl>
+  - znapzendzetup.t added 7 weeks ago <hadfl>
+  - increase coverage 7 weeks ago <hadfl>
+  - typo 7 weeks ago <hadfl>
+  - wip 7 weeks ago <hadfl>
+  - remove dependency of Time::Local 7 weeks ago <hadfl>
+  - fixed missing ; 7 weeks ago <hadfl>
+  - remove some more unneccessary brackets 7 weeks ago <hadfl>
+  - this should be the last one... 7 weeks ago <hadfl>
+  - backup plan value > 0 7 weeks ago <hadfl>
+  - time to go to bed... 7 weeks ago <hadfl>
+  - save some unneccessary brackets as we might need them later - cange postfix if into a better form where appropriate 7 weeks ago <hadfl>
+  - remove postfix if 7 weeks ago <hadfl>
+  - break it down... 7 weeks ago <hadfl>
+  - one more to store... 7 weeks ago <hadfl>
+  - eliminated the last bit of c... what happened to me... 7 weeks ago <hadfl>
+  - another one to make tobi happy :) 7 weeks ago <hadfl>
+  - code cleanup 7 weeks ago <hadfl>
+  - code cleanup 7 weeks ago <hadfl>
+  - code cleanup 7 weeks ago <hadfl>
+  fix manpage version number 7 weeks ago <Tobias Oetiker>
+ (v0.6.0)  0.6.0 7 weeks ago <Tobias Oetiker>
+  - make ZFS.pm more generic 7 weeks ago <hadfl>
+  - adding a little extra 'safety' to regex (i.e. make sure snapshot is 'parseable') 7 weeks ago <hadfl>
+  - typo 7 weeks ago <hadfl>
+  - make znapzendztatz work again 7 weeks ago <hadfl>
+  - typo corrected 7 weeks ago <hadfl>
+  - initialise $state to prevent checking if initialised 7 weeks ago <hadfl>
+  - typo 7 weeks ago <hadfl>
+  - flexible snapshot time format support added 7 weeks ago <hadfl>
+ (v0.5.4)  0.5.4 10 weeks ago <Tobias Oetiker>
+  - another non-recursive bugfix 10 weeks ago <hadfl>
+ (v0.5.3)  release 0.5.3 10 weeks ago <Tobias Oetiker>
+  - bugfix: syntax for non recursive snapshots fixed 10 weeks ago <hadfl>
+  - call time() only once 2 months ago <hadfl>
+  0.5.2 10 weeks ago <Tobias Oetiker>
+  - bugfix: recursive was always on due to wrong evaluation of property 2 months ago <hadfl>
+ (v0.5.1)  prep 0.5.1 2 months ago <Tobias Oetiker>
+  - syslog message if snapshot already exists 2 months ago <hadfl>
+  - snapshot creation is now localtime based 2 months ago <hadfl>
+  - man page correction 2 months ago <hadfl>
+  lets have some more fun while running configure 2 months ago <Tobias Oetiker>
+  - znapzendztatz now prints statistics during collection 2 months ago <hadfl>
+ (v0.5.0)  ready for 0.5.0 2 months ago <Tobias Oetiker>
+  - progress fixed... 3 months ago <hadfl>
+  - hope this works now... 3 months ago <hadfl>
+  - man and pod added 2 months ago <hadfl>
+  - man page 3 months ago <hadfl>
+  - and the makefile... 3 months ago <hadfl>
+  - persistent typo... -.- 3 months ago <hadfl>
+  - one to make tobi happy 3 months ago <hadfl>
+  - typo... 3 months ago <hadfl>
+  - znapzendztats included in travis.yml 3 months ago <hadfl>
+  - znapzendztats - znapzend statistics utility added 3 months ago <hadfl>
+  - replace \t with \s+ within regex 3 months ago <hadfl>
+  - fun does *not* save you from making mistakes -.- 3 months ago <hadfl>
+  - life's too short not to have a bit of fun from time to time... 3 months ago <hadfl>
+ (v0.4.1)  ready for 0.4.1 3 months ago <Tobias Oetiker>
+  ready for 0.4.1 3 months ago <Tobias Oetiker>
+  - only one 'zpool status' method 3 months ago <hadfl>
+  - language fix, according to 'pull/11#issuecomment-44950985' by tobi. 3 months ago <hadfl>
+  - info written to syslog is now more detailed 3 months ago <hadfl>
+  - merge2... 3 months ago <hadfl>
+  - merge 3 months ago <hadfl>
+  - read only properties with source==local, so no need to check for it anymore 3 months ago <hadfl>
+  - method to get timestamp of last completed scrub added - feed method w/ 'zpool status' output as parameter 3 months ago <hadfl>
+ (v0.4.0)  two missing pushes 3 months ago <Tobias Oetiker>
+  ready for 0.4.0 3 months ago <Tobias Oetiker>
+  make sure ZFS.pm finds the system commands 3 months ago <Tobias Oetiker>
+  improve test of README 3 months ago <Tobias Oetiker>
+  make shell code non commented 3 months ago <Tobias Oetiker>
+  switch README to Markdown so that we can see build status 3 months ago <Tobias Oetiker>
+  does this work in plain files too ? 3 months ago <Tobias Oetiker>
+  do not try to run make test 3 months ago <Tobias Oetiker>
+  almost there with cover support 3 months ago <Tobias Oetiker>
+  trying to get coverage work 3 months ago <Tobias Oetiker>
+  trying to get coverage reports 3 months ago <Tobias Oetiker>
+  test coveralls 3 months ago <Tobias Oetiker>
+  sync changes 3 months ago <Tobias Oetiker>
+  - typo... 3 months ago <hadfl>
+  - another correction 3 months ago <hadfl>
+  - corrected wrong merge 3 months ago <hadfl>
+  - check b4 zet: create and edit show an overview of the new backup set to be applied 3 months ago <hadfl>
+  - 'zpool' functionality added: list, start/stop scrub, scrubActive 3 months ago <hadfl>
+  - cleanup for recursive source datasets implemented 3 months ago <hadfl>
+  accept -r and --recursive 3 months ago <Tobias Oetiker>
+  - pod corrections 3 months ago <hadfl>
+  the build machanics are those of a C program 3 months ago <Tobias Oetiker>
+  sync manpage 3 months ago <Tobias Oetiker>
+  - pod: filesystem -> dataset 3 months ago <hadfl>
+  remove more .pl 3 months ago <Tobias Oetiker>
+  remove the .pl 3 months ago <Tobias Oetiker>
+  have real pod files 3 months ago <Tobias Oetiker>
+  allow more shortcuts 3 months ago <Tobias Oetiker>
+  better documentation 3 months ago <Tobias Oetiker>
+  the zetup tool is called znapzendzetup and not znapzendzetup.pl 3 months ago <Tobias Oetiker>
+ (v0.3.0)  5.20 not supported in travis yet 3 months ago <Tobias Oetiker>
+  get ready for 0.3.0 3 months ago <Tobias Oetiker>
+  pod files for the benefit of github ... maybe 3 months ago <Tobias Oetiker>
+  - cleanup 3 months ago <hadfl>
+  - znapzend: multi destination backup implemented 3 months ago <hadfl>
+  lets have some testing 3 months ago <Tobias Oetiker>
+  added some more documentation 3 months ago <Tobias Oetiker>
+ (v0.2.0)  version 0.2.0 3 months ago <Tobias Oetiker>
+  re-arranged documentation 3 months ago <Tobias Oetiker>
+  - typo corrected 3 months ago <hadfl>
+  - znapzendzetup edit implemented - tobi's wish is my command... 3 months ago <hadfl>
+ (v0.1.0)  got a new version 3 months ago <Tobias Oetiker>
+  as requested by dominik ... $1 eq '1' 3 months ago <Tobias Oetiker>
+  add main function and remove eval since the __DIE__ handler takes care of this 3 months ago <Tobias Oetiker>
+  - recursive cleanup on destination fixed 3 months ago <hadfl>
+  - corrected typo in ZnapZend.pm 3 months ago <hadfl>
+  - implemented recursive send/recv - some minor corrections in pods 3 months ago <hadfl>
+  - bugfix: singular/plural check for backup set list 3 months ago <hadfl>
+ (v0.0.5)  sync manpage 3 months ago <Tobias Oetiker>
+  fixed nameing 3 months ago <Tobias Oetiker>
+  added new --daemonize and --pidfile options 3 months ago <Tobias Oetiker>
+  put man pages into their own directory 3 months ago <Tobias Oetiker>
+  added documentation 3 months ago <Tobias Oetiker>
+  sync generated files 3 months ago <Tobias Oetiker>
+  we have no POD files 3 months ago <Tobias Oetiker>
+  our module builder is called build-thirdparty.sh 3 months ago <Tobias Oetiker>
+ (v0.0.4)  make sure perl is properly 'replaced' upon installation 3 months ago <Tobias Oetiker>
+ (v0.0.3)  ignore some more files 3 months ago <Tobias Oetiker>
+  go to 0.0.3 3 months ago <Tobias Oetiker>
+  some more readme 3 months ago <Tobias Oetiker>
+ (v0.0.2)  fix regression from renaming ZnapZend::Worker to ZnapZend 3 months ago <Tobias Oetiker>
+  support PERL5LIB settings 3 months ago <Tobias Oetiker>
+  domnik did 99% of the programming, so he should be first 3 months ago <Tobias Oetiker>
+ (v0.0.1)  boom ... znapzend is real. thank you dominik! 3 months ago <Tobias Oetiker>
+  work in progress 8 months ago <Tobias Oetiker>
+  Initial commit 11 months ago <Tobias Oetiker>
