@@ -5,7 +5,7 @@
 for module in \
   Sys::Syslog \
   Mojolicious@5.21 \
-  Mojo::IOLoop::ForkCall@0.12 \
+  Mojo::IOLoop::ForkCall@0.14 \
 ; do
 perlmodule $module
 done
