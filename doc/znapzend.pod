@@ -80,12 +80,26 @@ Available features:
 
 =over
 
-=item combinedDestroy
+=item oracleMode
 
-use the open-zfs syntax for destroying multiple snapshots in one call to zfs
-destroy.
+working around the following zfs issues we have seen on oracle:
 
-=item recvua
+=over
+
+=item *
+
+The multi snapshot destroy syntax is not available. So stick to destroying
+them individually.
+
+=item *
+
+Sometimes a snapshot can not be destroyed because of some oracle zfs bug.
+Only a reeboot seems to be able to fix this. So we just destroy the ones we
+can destroy. Logging an error about the problem
+
+=back
+
+=item recvu
 
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.

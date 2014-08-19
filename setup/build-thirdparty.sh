@@ -2,11 +2,11 @@
 
 . `dirname $0`/sdbs.inc
 
-#  Sys::Syslog \
 
 for module in \
   Mojolicious@5.30 \
   Mojo::IOLoop::ForkCall@0.14 \
+  Sys::Syslog \
 ; do
 perlmodule $module
 done
