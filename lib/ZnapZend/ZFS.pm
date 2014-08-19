@@ -376,7 +376,7 @@ sub sendRecvSnapshots {
         $fc->on(
             error => sub {
                 my ($fc, $err) = @_;
-                Mojo::Exception->throw($err);
+                die $err;
             }
         );
         #start forkcall event loop
