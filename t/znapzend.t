@@ -67,7 +67,7 @@ is (runCommand(), 1, 'znapzend');
 
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
 
-is (runCommand(qw(--daemonize --debug --features=combinedDestroy),
+is (runCommand(qw(--daemonize --debug --features=oracleMode,recvu),
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
  
 1;
