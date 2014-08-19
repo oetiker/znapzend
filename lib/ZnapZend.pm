@@ -24,7 +24,7 @@ my %logLevels = (
 has debug           => sub { 0 };
 has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
-has combinedDestroy => sub { 0 };
+has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
@@ -44,7 +44,7 @@ has zConfig => sub {
 has zZfs => sub {
     my $self = shift;
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
-        nodestroy => $self->nodestroy, combinedDestroy => $self->combinedDestroy,
+        nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu);
         
 };

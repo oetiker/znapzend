@@ -11,7 +11,7 @@ use Pod::Usage;
 use ZnapZend;
 
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(combinedDestroy recvu);
+my %featureMap = map { $_ => 1 } qw(oracleMode recvu);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
@@ -129,12 +129,11 @@ Available features:
 
 =over
 
-=item combinedDestroy
+=item oracleMode
 
-use the open-zfs syntax for destroying multiple snapshots in one call to zfs
-destroy.
+working around a couple of oracle zfs issues
 
-=item recvua
+=item recvu
 
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
