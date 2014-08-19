@@ -305,12 +305,8 @@ my $sendWorker = sub {
         sub {
             my ($fc, $err) = @_;
 
-            #############################################################
-            #TBD: remove && !$self->terminate as it is not used anymore #
-            #once ForkCall error event gets released!                   #
-            #############################################################
             $self->zLog->warn('send/receive for ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err && !$self->terminate;
+                . ' failed: ' . $err) if $err;
 
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " done ($backupSet->{send_pid})");
@@ -361,12 +357,8 @@ my $snapWorker = sub {
         sub {
             my ($fc, $err) = @_;
             
-            #############################################################
-            #TBD: remove && !$self->terminate as it is not used anymore #
-            #once ForkCall error event gets released!                   #
-            #############################################################
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err && !$self->terminate;
+                . ' failed: ' . $err) if $err;
 
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " done ($backupSet->{snap_pid})");
