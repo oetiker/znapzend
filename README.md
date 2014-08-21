@@ -1,4 +1,4 @@
-ZnapZend 0.12.2
+ZnapZend 0.12.3
 ===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -20,9 +20,9 @@ prebuilt release.  It comes with all the perlmodules required for running
 znapzend with a copy of perl as old as 5.10.1:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.12.2/znapzend-prebuilt-0.12.2.tar.gz
-tar zxvf znapzend-prebuilt-0.12.2.tar.gz
-cp -rp znapzend-prebuilt-0.12.2 /opt/znapzend-0.12.2
+wget https://github.com/oetiker/znapzend/releases/download/v0.12.3/znapzend-prebuilt-0.12.3.tar.gz
+tar zxvf znapzend-prebuilt-0.12.3.tar.gz
+cp -rp znapzend-prebuilt-0.12.3 /opt/znapzend-0.12.3
 ```
 
 Read on in the [Configuration](#configuration) Section.
@@ -35,15 +35,15 @@ with all the tools and trimmings for building stuff, follow these zimple
 inztructionz below to get a cusom made copy of znapzend.
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.12.2/znapzend-0.12.2.tar.gz
-tar zxvf znapzend-0.12.2.tar.gz
-cd znapzend-0.12.2
-./configure --prefix=/opt/znapzend-0.12.2
+wget https://github.com/oetiker/znapzend/releases/download/v0.12.3/znapzend-0.12.3.tar.gz
+tar zxvf znapzend-0.12.3.tar.gz
+cd znapzend-0.12.3
+./configure --prefix=/opt/znapzend-0.12.3
 ```
 if configure complains about missing perl modules, run
 
 ```sh
-./setup/build-thirdparty.sh /opt/znapzend-0.12.2/thirdparty
+./setup/build-thirdparty.sh /opt/znapzend-0.12.3/thirdparty
 ```
 
 to install the missing modules into the specified directry. This will NOT messup your local perl installation!
@@ -68,19 +68,19 @@ The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backu
 To see if your configuration is any good, run znapzend in noaction mode first.
 
 ```sh
-/opt/znapzend-0.12.2/bin/znapzend --noaction --debug
+/opt/znapzend-0.12.3/bin/znapzend --noaction --debug
 ```
 
 If you don't want to wait for the scheduler to actually schedule work, you can also force immediate action by calling
 
 ```sh
-/opt/znapzend-0.12.2/bin/znapzend --noaction --debug --runonce=<src_dataset>
+/opt/znapzend-0.12.3/bin/znapzend --noaction --debug --runonce=<src_dataset>
 ``` 
 
 then when you are happy with what you got, start it in daemon mode.
 
 ```sh
-/opt/znapzend-0.12.2/bin/znapzend --daemonize
+/opt/znapzend-0.12.3/bin/znapzend --daemonize
 ```
  
 Best is to integrate znapzend into your system startup sequence, but you can also
@@ -121,4 +121,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2014-08-19
+2014-08-21
