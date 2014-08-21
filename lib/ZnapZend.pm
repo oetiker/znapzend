@@ -8,6 +8,7 @@ use ZnapZend::Config;
 use ZnapZend::ZFS;
 use ZnapZend::Time;
 use POSIX qw(setsid SIGTERM);
+use Scalar::Util qw(blessed);
 use Sys::Syslog;
 use File::Basename;
 
