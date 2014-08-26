@@ -410,7 +410,7 @@ my $createWorkers = sub {
             #check if we run too early (can be caused by DST time 'jump')
             my $timeDelta = $timeStamp - $self->zTime->getTimestamp($backupSet->{UTC});
             if ($timeDelta > 0){
-                Mojo::IOLoop->timer($timeDelta => $cb);
+                $backupSet->{timer_id} = Mojo::IOLoop->timer($timeDelta => $cb);
                 return;
             }
 
@@ -429,7 +429,7 @@ my $createWorkers = sub {
             $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet->{interval}, $backupSet->{UTC});
 
             #reset timer for next snapshot if not runonce
-            Mojo::IOLoop->timer($timeStamp
+            $backupSet->{timer_id} = Mojo::IOLoop->timer($timeStamp
                 - $self->zTime->getTimestamp($backupSet->{UTC}) => $cb) if !$self->runonce;
         };
 
@@ -440,7 +440,8 @@ my $createWorkers = sub {
             $cb->();
         }
         else{
-            Mojo::IOLoop->timer($timeStamp - $self->zTime->getTimestamp($backupSet->{UTC}) => $cb);
+            $backupSet->{timer_id} = Mojo::IOLoop->timer($timeStamp
+                - $self->zTime->getTimestamp($backupSet->{UTC}) => $cb);
         }
     };
 
@@ -498,8 +499,16 @@ sub start {
     $self->$daemonize if $self->daemonize;
 
     # set signal handlers
-    local $SIG{INT}  = sub { $self->$killThemAll; };
-    local $SIG{TERM} = sub { $self->$killThemAll; };
+    $SIG{INT}  = sub { $self->$killThemAll; };
+    $SIG{TERM} = sub { $self->$killThemAll; };
+    $SIG{HUP}  = sub {
+        #remove active timers from ioloop
+        for my $backupSet (@{$self->backupSets}){
+            Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
+        }
+        $self->$refreshBackupPlans($self->runonce);
+        $self->$createWorkers;
+    };
 
     $self->$refreshBackupPlans($self->runonce);
 
