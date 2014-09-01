@@ -7,7 +7,7 @@ use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 use ZnapZend::Time;
-use POSIX qw(setsid SIGTERM);
+use POSIX qw(setsid SIGTERM SIGKILL WNOHANG);
 use Scalar::Util qw(blessed);
 use Sys::Syslog;
 use File::Basename;
@@ -101,6 +101,7 @@ has zLog => sub {
 my $killThemAll  = sub {
     my $self = shift;
 
+    $self->zLog->info('terminating znapzend...');
     #set termination flag
     $self->terminate(1);
 
@@ -109,6 +110,13 @@ my $killThemAll  = sub {
     for my $backupSet (@{$self->backupSets}){
         kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
         kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
+    }
+    sleep 1;
+    for my $backupSet (@{$self->backupSets}){
+        waitpid($backupSet->{snap_pid}, WNOHANG)
+            || kill(SIGKILL, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
+        waitpid($backupSet->{send_pid}, WNOHANG)
+            || kill(SIGKILL, $backupSet->{send_pid}) if $backupSet->{send_pid};
     }
     exit 0;
 };
@@ -449,7 +457,7 @@ my $createWorkers = sub {
 
 my $daemonize = sub {
     my $self = shift;
-    my $pidFile = $self->pidfile // $self->defaultPidFile;
+    my $pidFile = $self->pidfile || $self->defaultPidFile;
 
     if (-f $pidFile){
         chomp(my $pid = slurp $pidFile);

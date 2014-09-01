@@ -313,7 +313,7 @@ sub sendRecvSnapshots {
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-I', $mbufferPort], ['zfs', 'recv', $recvOpt, $dstDataSet]);
+            $mbufferSize, , '-4', '-I', $mbufferPort], ['zfs', 'recv', $recvOpt, $dstDataSet]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
