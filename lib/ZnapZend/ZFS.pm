@@ -12,8 +12,9 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has sendDelay       => sub { 3 };
+has sendRetry       => sub { 3 };
 has propertyPrefix  => sub { q{org.znapzend} };
-has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o ConnectTimeout=3)] };
+has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o ConnectTimeout=9)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
 
@@ -353,12 +354,17 @@ sub sendRecvSnapshots {
 
                 $cmd = $shellQuote->(@cmd);
 
-                #wait so remote mbuffer has enough time to start listening
-                sleep $self->sendDelay;
-
                 print STDERR "# $cmd\n" if $self->debug;
+                return if $self->noaction;
+
+                my $retryCounter = $self->sendRetry;
+                while ($retryCounter--){
+                    #wait so remote mbuffer has enough time to start listening
+                    sleep $self->sendDelay;
+                    system($cmd) || last;
+                }
         
-                if (!$self->noaction && system($cmd)){
+                if (!$retryCounter){
                     #command failed. check if child is alive and try to cleanup
                     kill SIGTERM, $pid;
                     sleep 1;
