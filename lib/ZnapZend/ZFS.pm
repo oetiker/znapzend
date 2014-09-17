@@ -12,11 +12,13 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has sendDelay       => sub { 3 };
-has sendRetry       => sub { 10 };
+has connectTimeout  => sub { 30 };
 has propertyPrefix  => sub { q{org.znapzend} };
-has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o ConnectTimeout=30)] };
+has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o), 'ConnectTimeout=' . shift->connectTimeout] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
+
+has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 
 ### private functions ###
 my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
@@ -328,14 +330,14 @@ sub sendRecvSnapshots {
                 print STDERR "# $cmd\n" if $debug;
 
                 system($cmd)
-                    && Mojo::Exception->throw('ERROR: executing receive process')if !$noaction;
+                    && Mojo::Exception->throw('ERROR: executing receive process') if !$noaction;
             },
             #arguments
             [$cmd, $self->debug, $self->noaction],
             #callback
             sub {
                 my ($fc, $err) = @_;
-                print STDERR "# receive process on $remote done ($recvPid)\n" if $self->debug;
+                $self->zLog->debug("receive process on $remote done ($recvPid)");
                 Mojo::Exception->throw($err) if $err;
             }
         );
@@ -347,7 +349,7 @@ sub sendRecvSnapshots {
                 $recvPid = $pid;
 
                 $remote =~ s/^[^@]+\@//; #remove username if given
-                print STDERR "# receive process on $remote  spawned ($pid)\n" if $self->debug;
+                $self->zLog->debug("receive process on $remote spawned ($pid)");
 
                 push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
                     '-O', "$remote:$mbufferPort"];
@@ -357,25 +359,15 @@ sub sendRecvSnapshots {
                 print STDERR "# $cmd\n" if $self->debug;
                 return if $self->noaction;
 
-                my $retryCounter = $self->sendRetry;
+                my $retryCounter = int($self->connectTimeout / $self->sendDelay) + 1;
                 while ($retryCounter--){
                     #wait so remote mbuffer has enough time to start listening
                     sleep $self->sendDelay;
                     system($cmd) || last;
                 }
         
-                if (!$retryCounter){
-                    #command failed. check if child is alive and try to cleanup
-                    kill SIGTERM, $pid;
-                    sleep 1;
-                    waitpid($pid, WNOHANG) || do {
-                        kill SIGKILL, $pid;
-                        sleep 1;
-                        waitpid($pid, WNOHANG);
-                    };
-                    Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
-                        . ($remote ? " on $remote" : ''));
-                }
+                $retryCounter <= 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
+                    . ($remote ? " on $remote" : ''));
             }
         );
         #error event

@@ -15,7 +15,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s)) or exit 1;
 
     #split all features into individual options
     for my $feature (split /,/, $opts->{features}){
@@ -55,17 +55,18 @@ znapzend - znapzend daemon
 
 B<znapzend> [I<options>...]
 
- --man         show man-page and exit
- -h,--help     display this help and exit 
- -d,--debug    print debug messages to STDERR
- -n,--noaction run in simulation mode. does no changes to the filesystem
- --nodestroy   does all changes to the filesystem except destroy
- --logto=x     select where to log to (syslog::<facility> or <filepath>)
- --loglevel=x  define the log level when logging to file
- --pidfile=x   write a pid file when running in daemon mode
- --daemonize   fork into the background
- --runonce=x   run one round on source dataset x
- --features=x  comma separated list of features to be enabled
+ --man              show man-page and exit
+ -h,--help          display this help and exit 
+ -d,--debug         print debug messages to STDERR
+ -n,--noaction      run in simulation mode. does no changes to the filesystem
+ --nodestroy        does all changes to the filesystem except destroy
+ --logto=x          select where to log to (syslog::<facility> or <filepath>)
+ --loglevel=x       define the log level when logging to file
+ --pidfile=x        write a pid file when running in daemon mode
+ --daemonize        fork into the background
+ --runonce=x        run one round on source dataset x
+ --features=x       comma separated list of features to be enabled
+ --connectTimeout=x sets the ConnectTimeout for ssh commands
 
 =head1 DESCRIPTION
 
@@ -154,6 +155,10 @@ use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
 
 =back
+
+=item B<--connectTimeout>=I<timeout>
+
+sets the ssh connection timeout (in seconds)
 
 =back
 
