@@ -32,7 +32,7 @@ Zetup for Power Admins
 
 On the other hand if you are the proud owner of a properly setup unix box
 with all the tools and trimmings for building stuff, follow these zimple
-inztructionz below to get a cusom made copy of znapzend.
+inztructionz below to get a custom made copy of znapzend.
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.12.3/znapzend-0.12.3.tar.gz
