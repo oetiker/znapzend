@@ -1,317 +1,1959 @@
-2014-08-21 17:50:35 +0200  (HEAD, master)  must import 'blessed' when using it. -- Tobias Oetiker
-2014-08-19 23:31:24 +0200  (v0.12.2, origin/master, origin/HEAD)  tag CHANGES -- Tobias Oetiker
-2014-08-19 23:28:22 +0200   0.12.2 -- Tobias Oetiker
-2014-08-19 22:31:54 +0200   - exception handling improved -- Dominik Hassler
-2014-08-19 14:38:56 +0200  (v0.12.1)  actually include Sys::Syslog in setup script -- Tobias Oetiker
-2014-08-19 14:28:39 +0200   improve changelog look -- Tobias Oetiker
-2014-08-19 14:20:34 +0200   get ready for 0.12.0 -- Tobias Oetiker
-2014-08-19 14:20:31 +0200   get ready for 0.12.0 -- Tobias Oetiker
-2014-08-19 14:06:09 +0200   explain new oracleMode -- Tobias Oetiker
-2014-08-19 11:57:03 +0200   - upgrading to ForkCall 0.14 -- Dominik Hassler
-2014-08-19 11:07:52 +0200   - oracle zfs handling improved -- Dominik Hassler
-2014-08-13 13:00:39 +0200   - don't clean up source if send fails -- Dominik Hassler
-2014-08-12 14:16:41 +0200   - exception handling: log only message -- Dominik Hassler
-2014-08-11 14:32:18 +0200   non released 0.11.4 -- Tobias Oetiker
-2014-08-10 15:49:26 +0200   - one to make tobi happy -- Dominik Hassler
-2014-08-10 10:15:55 +0200   - exception handling improved for send/recv -- Dominik Hassler
-2014-08-07 21:47:44 +0200   - pod -- Dominik Hassler
-2014-08-07 14:30:39 +0200   - recvu feature added -- Dominik Hassler
-2014-08-10 15:16:49 +0200   tracking changes in source files -- Tobias Oetiker
-2014-08-08 10:08:29 +0200   - show last snapshot time in ztatz -- Dominik Hassler
-2014-08-10 15:16:15 +0200   use the latest syslog module -- Tobias Oetiker
-2014-08-07 13:46:20 +0200   do NOT replace 5.10.1 in the README.md -- Tobias Oetiker
-2014-08-07 11:50:47 +0200  (v0.11.2)  0.11.2 -- Tobias Oetiker
-2014-08-07 11:49:51 +0200   remove more spaces -- Tobias Oetiker
-2014-08-07 11:47:31 +0200   remove extra spaces -- Tobias Oetiker
-2014-08-06 16:41:46 +0200   - fixing pid file handling - mbuffer network mode only if sending to remote host - test case for network mode -- Dominik Hassler
-2014-08-07 11:12:41 +0200   0.11.1 -- Tobias Oetiker
-2014-08-05 18:04:58 +0200   timeout connections after 3 seconds -- Tobias Oetiker
-2014-08-05 16:29:55 +0200   - log message order corrected -- Dominik Hassler
-2014-08-05 14:50:09 +0200   - pidfile defaults to '/var/run/znapzend.pid' when using --daemonize -- Dominik Hassler
-2014-08-05 13:55:27 +0200   prebuild -> prebuilt -- Tobias Oetiker
-2014-08-05 13:47:49 +0200  (v0.11.0)  update pods -- Tobias Oetiker
-2014-08-05 10:58:22 +0200   - typo -- Dominik Hassler
-2014-08-05 10:55:11 +0200   - line wrap -- Dominik Hassler
-2014-08-05 10:48:10 +0200   - docu... -- Dominik Hassler
-2014-08-05 09:58:34 +0200   - unencrypted datastream handling improved -- Dominik Hassler
-2014-08-04 20:30:24 +0200   - send/receive w/o encryption -- Dominik Hassler
-2014-08-04 11:52:21 +0200   - networkMode testing release -- Dominik Hassler
-2014-08-05 13:19:28 +0200   - bugfix: log -- Dominik Hassler
-2014-08-05 13:41:14 +0200   0.11.0 -- Tobias Oetiker
-2014-08-04 09:30:05 +0200   - improve pid file handling -- Dominik Hassler
-2014-08-05 09:59:03 +0200  (origin/log-level-update, log-level-update)  optimized log messages ... be less chatty at log level info -- Tobias Oetiker
-2014-08-05 10:10:32 +0200   0.10.1 -- Tobias Oetiker
-2014-08-03 13:10:46 +0200   - check if feature is supported -- Dominik Hassler
-2014-08-02 18:27:01 +0200   - send to destinations in alphabetic order -- Dominik Hassler
-2014-08-02 17:49:27 +0200   add ,... to feature list -- Tobias Oetiker
-2014-08-02 17:37:34 +0200  (v0.10.0)  prep for 0.10.0 -- Tobias Oetiker
-2014-08-02 15:17:24 +0200   - pod correction -- Dominik Hassler
-2014-08-02 15:10:51 +0200   - combinedDestroy as a feature not per default -- Dominik Hassler
-2014-08-02 12:06:13 +0200   - fixing pod -- Dominik Hassler
-2014-08-02 11:54:27 +0200   - znapzendzetup edit - testing -- Dominik Hassler
-2014-08-02 11:46:33 +0200   - znapzendzetup edit -- Dominik Hassler
-2014-08-01 12:50:20 +0200   - delete temp file -- Dominik Hassler
-2014-08-01 12:26:53 +0200   - calling znapzendzetup edit <src_dataset> will now open an editor -- Dominik Hassler
-2014-08-02 10:31:17 +0200   updated readme -- Tobias Oetiker
-2014-08-01 13:05:18 +0200  (v0.9.1)  fix manpage building -- Tobias Oetiker
-2014-08-01 11:32:59 +0200   try to make the irc link work -- Tobias Oetiker
-2014-08-01 11:19:40 +0200  (v0.9.0)  0.9.0 -- Tobias Oetiker
-2014-08-01 11:15:30 +0200   add link to freenode -- Tobias Oetiker
-2014-08-01 11:12:25 +0200   change wording on freenode -- Tobias Oetiker
-2014-08-01 11:00:15 +0200   - checking tsformat improved -- Dominik Hassler
-2014-08-01 10:43:35 +0200   - documentation -- Dominik Hassler
-2014-08-01 10:35:53 +0200   - UTC support implemented -- Dominik Hassler
-2014-07-31 17:32:14 +0200   better wording -- Tobias Oetiker
-2014-07-31 16:08:47 +0200   need to integrated that new Makefile.am too -- Tobias Oetiker
-2014-07-31 16:03:00 +0200   need to integrated that new Makefile.am too -- Tobias Oetiker
-2014-07-31 15:55:02 +0200   allow configuration of perl module install path using --libdir configure option -- Tobias Oetiker
-2014-07-31 00:55:51 +0200   - export/import coverage -- Dominik Hassler
-2014-07-31 15:30:46 +0200   better wording -- Tobias Oetiker
-2014-07-31 15:24:28 +0200   better wording -- Tobias Oetiker
-2014-07-31 15:23:57 +0200   better wording -- Tobias Oetiker
-2014-07-31 14:49:32 +0200   - bugfix: ':' character in snapshot name does now work -- Dominik Hassler
-2014-07-31 15:23:06 +0200   more README -- Tobias Oetiker
-2014-07-31 15:14:21 +0200   remove stray oep/ -- Tobias Oetiker
-2014-07-31 15:11:45 +0200   new configure option --enable-svcinstall=DIR install svc manifest into given directory -- Tobias Oetiker
-2014-07-31 10:55:18 +0200   update wording -- Tobias Oetiker
-2014-07-31 10:52:25 +0200   update -- Tobias Oetiker
-2014-07-31 09:12:42 +0200   * only try tu run pod2man when it was found * do not rebuild the manpages on install -- Tobias Oetiker
-2014-07-31 00:09:05 +0200  (v0.8.8)  prep for 0.8.8 -- Tobias Oetiker
-2014-07-30 19:26:24 +0200   - import: override properties by CLI does now work -- Dominik Hassler
-2014-07-30 18:00:29 +0200  (v0.8.7)  more documentation -- Tobias Oetiker
-2014-07-30 17:53:44 +0200   better service description -- Tobias Oetiker
-2014-07-30 16:36:05 +0200   - export/import function added -- Dominik Hassler
-2014-07-30 16:56:13 +0200   - remove 'M' for backup plans -- Dominik Hassler
-2014-07-30 15:34:05 +0200   disable dependeny install -- Tobias Oetiker
-2014-07-30 15:24:17 +0200   disable dependeny install -- Tobias Oetiker
-2014-07-30 15:16:27 +0200   disable dependeny install -- Tobias Oetiker
-2014-07-30 15:07:56 +0200   re-activate the build matrix using env -- Tobias Oetiker
-2014-07-30 14:56:17 +0200   re-activate the build matrix -- Tobias Oetiker
-2014-07-30 14:47:49 +0200   build on perl 5.10 too -- Tobias Oetiker
-2014-07-30 14:46:14 +0200   mojo wants perl 5.10.1 (still) -- Tobias Oetiker
-2014-07-30 14:43:03 +0200   mojo wants perl 5.12.1 -- Tobias Oetiker
-2014-07-30 12:15:38 +0200   Update znapzendzetup -- Manuel Oetiker
-2014-07-30 11:34:41 +0200   Update znapzendzetup.pod -- Manuel Oetiker
-2014-07-30 14:35:31 +0200   only recent perls allow keys on scalars containing hashpointers -- Tobias Oetiker
-2014-07-30 12:17:48 +0200   further streamline install ... -- Tobias Oetiker
-2014-07-30 11:32:02 +0200  (v0.8.6)  make sure pod and man do NOT get rebuilt -> 0.8.6 -- Tobias Oetiker
-2014-07-30 11:10:17 +0200  (v0.8.5)  updated README -- Tobias Oetiker
-2014-07-30 11:05:01 +0200   include the POD files into 0.8.5 distro -- Tobias Oetiker
-2014-07-30 10:56:53 +0200  (v0.8.4)  prep 0.8.4 -- Tobias Oetiker
-2014-07-30 10:52:27 +0200   explain SRC and DST -- Tobias Oetiker
-2014-07-30 08:33:00 +0200  (v0.8.3)  prep for v0.8.3 -- Tobias Oetiker
-2014-07-30 08:31:12 +0200   removed AC_USE_SYSTEM_EXTENSIONS from configure thus NOT triggering the whole 'find the C compiler' stuff -- Tobias Oetiker
-2014-07-29 23:58:22 +0200   - regex bugfix -- Dominik Hassler
-2014-07-29 16:29:21 +0200  (v0.8.2)  freeze versions -- Tobias Oetiker
-2014-07-29 16:09:18 +0200   release 0.8.2 -- Tobias Oetiker
-2014-07-29 15:46:37 +0200   better documentation -- Tobias Oetiker
-2014-07-29 14:18:57 +0200   - daemon as default syslog facility -- Dominik Hassler
-2014-07-29 14:13:11 +0200   - log messages on fork and once fork terminated -- Dominik Hassler
-2014-07-29 11:53:27 +0200   - shell quoter improved -- Dominik Hassler
-2014-07-29 11:27:29 +0200   - documentation corrections -- Dominik Hassler
-2014-07-29 15:02:27 +0200   sync docu -- Tobias Oetiker
-2014-07-29 15:02:14 +0200   no need to escape / and @ -- Tobias Oetiker
-2014-07-29 10:56:41 +0200   loglevels are syslogstyle -- Tobias Oetiker
-2014-07-29 10:42:37 +0200   sync generated files -- Tobias Oetiker
-2014-07-29 10:42:26 +0200   improved documentation -- Tobias Oetiker
-2014-07-29 10:42:01 +0200   add smv manifest -- Tobias Oetiker
-2014-07-29 06:07:31 +0200  (v0.8.1)  release 0.8.1 -- Tobias Oetiker
-2014-07-29 00:08:04 +0200   - increase coverage... -- Dominik Hassler
-2014-07-28 19:55:37 +0200   - snapshot creation optimised... -- Dominik Hassler
-2014-07-28 16:19:33 +0200   - check if $dataSet is set -- Dominik Hassler
-2014-07-28 16:19:33 +0200   - check if $dataSet is set -- Dominik Hassler
-2014-07-28 16:18:05 +0200   - speedup znapzendztatz -- Dominik Hassler
-2014-07-28 14:10:46 +0200   - typo and cleanup in ZFS.pm -- Dominik Hassler
-2014-07-28 14:25:30 +0200   more detailed runtime instructions -- Tobias Oetiker
-2014-07-28 13:50:49 +0200   more detailed README -- Tobias Oetiker
-2014-07-28 13:50:08 +0200   more detailed README -- Tobias Oetiker
-2014-07-28 13:41:16 +0200   more detailed README -- Tobias Oetiker
-2014-07-28 13:39:15 +0200   more detailed README -- Tobias Oetiker
-2014-07-26 21:22:06 +0200  (v0.8.0)  prepare for 0.8 release -- Tobias Oetiker
-2014-07-26 20:45:59 +0200   - sort snapshots creation and not name based -- Dominik Hassler
-2014-07-25 15:27:26 +0200   - ready for 0.8 -- Dominik Hassler
-2014-07-25 12:35:48 +0200   - cleanup -- Dominik Hassler
-2014-07-25 11:54:48 +0200   - getting ready for ForkCall error events -- Dominik Hassler
-2014-07-25 11:09:31 +0200   - changed API for ForkCall 0.12 -- Dominik Hassler
-2014-07-24 23:07:09 +0200   - terminate flag added -- Dominik Hassler
-2014-07-24 22:52:46 +0200   - znapzendztatz: do not print header option -- Dominik Hassler
-2014-07-24 22:26:16 +0200   - add date/time and log level if logging to STDERR -- Dominik Hassler
-2014-07-24 13:29:59 +0200   - warn if there is a problem w/ the fork -- Dominik Hassler
-2014-07-24 11:09:49 +0200   - tell which send/receive process is still running -- Dominik Hassler
-2014-07-24 10:36:02 +0200   - znapzend now checks if pre and post snapshot commands can be executed (at least in theory ;) ) -- Dominik Hassler
-2014-07-23 20:54:06 +0200   - hurray, got an e-mail address today :D -- Dominik Hassler
-2014-07-23 20:18:39 +0200   - pre and post snapshot commands added to test scripts -- Dominik Hassler
-2014-07-23 20:05:44 +0200   - final cleanup -- Dominik Hassler
-2014-07-23 16:56:19 +0200   - time jumps schould now be handled properly... -- Dominik Hassler
-2014-07-22 23:56:57 +0200   - DST change bugfix -- Dominik Hassler
-2014-07-22 23:39:03 +0200   - coverage workaround... -- Dominik Hassler
-2014-07-22 21:49:57 +0200   - a little bit of cleanup -- Dominik Hassler
-2014-07-22 21:18:18 +0200   - pre and post snapshot scripts implemented -- Dominik Hassler
-2014-07-22 16:56:08 +0200   - wip... -- Dominik Hassler
-2014-07-21 23:25:33 +0200   - we might need this module... -- Dominik Hassler
-2014-07-19 17:12:45 +0200   - WIP: pre and post snapshot commands/scripts -- Dominik Hassler
-2014-07-20 18:30:03 +0200   - one to make tobi happy -- Dominik Hassler
-2014-07-20 12:58:46 +0200   - WIP: znapzend supports now levels and logging to file -- Dominik Hassler
-2014-07-15 23:03:22 +0200   - we called it ZnapZend::Worker but that was a long, long time ago... -- Dominik Hassler
-2014-07-12 07:11:32 +0200  (v0.7.2)  0.7.2 -- Tobias Oetiker
-2014-07-11 11:59:00 +0200   - improved handling if no common snapshot exists on source/destination -- Dominik Hassler
-2014-07-08 14:00:53 +0200   - enhance regexes -- hadfl
-2014-07-07 22:43:49 +0200   - singular fix -- hadfl
-2014-07-07 18:04:35 +0200   - destination handling improved -- hadfl
-2014-07-07 09:30:06 +0200   - backup config keeps being valid now if source dataset is renamed - allow more characters for time format -- hadfl
-2014-07-06 21:50:02 +0200  (v0.7.0)  0.7.0 -- Tobias Oetiker
-2014-07-05 14:03:21 +0200   - some more testing of zetup parameters - remove destination plan if destination is not given -- hadfl
-2014-07-04 17:55:35 +0200   - improved znapzendzetup argument parsing - Time.pm bugfix if run w/ --runonce switch and timing is not accurate -- hadfl
-2014-07-04 17:55:35 +0200   - runonce switch implemented -- hadfl
-2014-07-04 13:01:22 +0200   - mbuffer size can now be set via znapzendzetup -- hadfl
-2014-07-04 11:10:12 +0200   - testing switch implemented -- hadfl
-2014-07-03 16:23:50 +0200   - remove duplicate code in Config.pm -- hadfl
-2014-07-03 14:39:31 +0200   - vertical alignment -- hadfl
-2014-07-03 13:57:48 +0200   -  test scripts for travis/coverall implemented -- hadfl
-2014-07-02 15:24:37 +0200   - wait for cleanup process to be terminated -- hadfl
-2014-07-02 15:05:16 +0200   - --daemonize option added to coverage -- hadfl
-2014-07-02 14:54:29 +0200   - znapzend coverage added -- hadfl
-2014-07-02 12:03:03 +0200   - coverage for znapzendztatz -- hadfl
-2014-07-02 11:48:02 +0200   - 'help' option explicitly added to znapzendzetup -- hadfl
-2014-07-02 11:39:04 +0200   - try to include private methods to coverage -- hadfl
-2014-07-02 00:42:43 +0200   - remove dependencies... -- hadfl
-2014-07-01 23:47:11 +0200   - znapzend coverage added -- hadfl
-2014-07-01 23:22:46 +0200   - make it simple... -- hadfl
-2014-07-01 23:02:28 +0200   - another coverage -- hadfl
-2014-07-01 22:48:33 +0200   - remove dependencies from coverage -- hadfl
-2014-07-01 22:17:30 +0200   - adding option 'donotask' for znapzendzetup create/edit -- hadfl
-2014-07-01 21:46:25 +0200   - another try... -- hadfl
-2014-07-01 20:10:44 +0200   - one more... -- hadfl
-2014-07-01 20:00:08 +0200   - and another try... -- hadfl
-2014-07-01 19:52:01 +0200   - make travis work again -- hadfl
-2014-07-01 19:47:09 +0200   - znapzendzetup.t added -- hadfl
-2014-07-01 18:56:55 +0200   - increase coverage -- hadfl
-2014-07-01 16:59:26 +0200   - typo -- hadfl
-2014-07-01 16:57:02 +0200   - wip -- hadfl
-2014-07-01 12:59:45 +0200   - remove dependency of Time::Local -- hadfl
-2014-07-01 10:39:09 +0200   - fixed missing ; -- hadfl
-2014-07-01 10:36:09 +0200   - remove some more unneccessary brackets -- hadfl
-2014-07-01 10:33:21 +0200   - this should be the last one... -- hadfl
-2014-07-01 10:24:29 +0200   - backup plan value > 0 -- hadfl
-2014-07-01 00:26:47 +0200   - time to go to bed... -- hadfl
-2014-07-01 00:14:37 +0200   - save some unneccessary brackets as we might need them later - cange postfix if into a better form where appropriate -- hadfl
-2014-06-30 23:34:01 +0200   - remove postfix if -- hadfl
-2014-06-30 23:30:42 +0200   - break it down... -- hadfl
-2014-06-30 21:24:49 +0200   - one more to store... -- hadfl
-2014-06-30 21:10:49 +0200   - eliminated the last bit of c... what happened to me... -- hadfl
-2014-06-30 20:06:06 +0200   - another one to make tobi happy :) -- hadfl
-2014-06-30 17:32:01 +0200   - code cleanup -- hadfl
-2014-06-30 14:35:09 +0200   - code cleanup -- hadfl
-2014-06-30 13:08:23 +0200   - code cleanup -- hadfl
-2014-06-29 22:54:26 +0200   fix manpage version number -- Tobias Oetiker
-2014-06-29 22:02:43 +0200  (v0.6.0)  0.6.0 -- Tobias Oetiker
-2014-06-29 19:09:25 +0200   - make ZFS.pm more generic -- hadfl
-2014-06-29 18:13:08 +0200   - adding a little extra 'safety' to regex (i.e. make sure snapshot is 'parseable') -- hadfl
-2014-06-29 18:07:42 +0200   - typo -- hadfl
-2014-06-29 17:39:02 +0200   - make znapzendztatz work again -- hadfl
-2014-06-29 17:16:07 +0200   - typo corrected -- hadfl
-2014-06-29 17:13:27 +0200   - initialise $state to prevent checking if initialised -- hadfl
-2014-06-29 17:08:47 +0200   - typo -- hadfl
-2014-06-29 17:01:00 +0200   - flexible snapshot time format support added -- hadfl
-2014-06-13 07:52:30 +0200  (v0.5.4)  0.5.4 -- Tobias Oetiker
-2014-06-13 00:23:31 +0200   - another non-recursive bugfix -- hadfl
-2014-06-12 10:52:37 +0200  (v0.5.3)  release 0.5.3 -- Tobias Oetiker
-2014-06-12 10:08:17 +0200   - bugfix: syntax for non recursive snapshots fixed -- hadfl
-2014-06-10 16:26:15 +0200   - call time() only once -- hadfl
-2014-06-11 10:46:08 +0200   0.5.2 -- Tobias Oetiker
-2014-06-11 00:19:21 +0200   - bugfix: recursive was always on due to wrong evaluation of property -- hadfl
-2014-06-10 20:26:04 +0200  (v0.5.1)  prep 0.5.1 -- Tobias Oetiker
-2014-06-10 14:13:33 +0200   - syslog message if snapshot already exists -- hadfl
-2014-06-10 13:35:45 +0200   - snapshot creation is now localtime based -- hadfl
-2014-06-07 17:09:22 +0200   - man page correction -- hadfl
-2014-06-07 14:16:51 +0200   lets have some more fun while running configure -- Tobias Oetiker
-2014-06-07 10:34:44 +0200   - znapzendztatz now prints statistics during collection -- hadfl
-2014-06-06 16:33:19 +0200  (v0.5.0)  ready for 0.5.0 -- Tobias Oetiker
-2014-06-05 23:22:01 +0200   - progress fixed... -- hadfl
-2014-06-05 19:36:46 +0200   - hope this works now... -- hadfl
-2014-06-06 10:29:26 +0200   - man and pod added -- hadfl
-2014-06-05 16:52:19 +0200   - man page -- hadfl
-2014-06-05 16:47:28 +0200   - and the makefile... -- hadfl
-2014-06-05 16:39:10 +0200   - persistent typo... -.- -- hadfl
-2014-06-05 16:29:50 +0200   - one to make tobi happy -- hadfl
-2014-06-05 16:16:59 +0200   - typo... -- hadfl
-2014-06-05 16:12:53 +0200   - znapzendztats included in travis.yml -- hadfl
-2014-06-05 15:57:46 +0200   - znapzendztats - znapzend statistics utility added -- hadfl
-2014-06-04 00:07:17 +0200   - replace \t with \s+ within regex -- hadfl
-2014-06-03 20:19:14 +0200   - fun does *not* save you from making mistakes -.- -- hadfl
-2014-06-03 20:17:27 +0200   - life's too short not to have a bit of fun from time to time... -- hadfl
-2014-06-03 15:10:23 +0200  (v0.4.1)  ready for 0.4.1 -- Tobias Oetiker
-2014-06-03 15:10:07 +0200   ready for 0.4.1 -- Tobias Oetiker
-2014-06-03 14:04:50 +0200   - only one 'zpool status' method -- hadfl
-2014-06-03 13:48:41 +0200   - language fix, according to 'pull/11#issuecomment-44950985' by tobi. -- hadfl
-2014-06-03 10:27:35 +0200   - info written to syslog is now more detailed -- hadfl
-2014-06-03 13:14:19 +0200   - merge2... -- hadfl
-2014-06-03 13:13:27 +0200   - merge -- hadfl
-2014-06-03 13:11:31 +0200   - read only properties with source==local, so no need to check for it anymore -- hadfl
-2014-06-03 12:30:06 +0200   - method to get timestamp of last completed scrub added - feed method w/ 'zpool status' output as parameter -- hadfl
-2014-06-03 11:19:02 +0200  (v0.4.0)  two missing pushes -- Tobias Oetiker
-2014-06-03 11:16:26 +0200   ready for 0.4.0 -- Tobias Oetiker
-2014-06-02 23:19:55 +0200   make sure ZFS.pm finds the system commands -- Tobias Oetiker
-2014-06-02 23:11:39 +0200   improve test of README -- Tobias Oetiker
-2014-06-02 23:02:03 +0200   make shell code non commented -- Tobias Oetiker
-2014-06-02 22:58:51 +0200   switch README to Markdown so that we can see build status -- Tobias Oetiker
-2014-06-02 22:56:39 +0200   does this work in plain files too ? -- Tobias Oetiker
-2014-06-02 22:52:04 +0200   do not try to run make test -- Tobias Oetiker
-2014-06-02 22:48:20 +0200   almost there with cover support -- Tobias Oetiker
-2014-06-02 22:44:10 +0200   trying to get coverage work -- Tobias Oetiker
-2014-06-02 22:40:06 +0200   trying to get coverage reports -- Tobias Oetiker
-2014-06-02 22:32:05 +0200   test coveralls -- Tobias Oetiker
-2014-06-02 22:22:21 +0200   sync changes -- Tobias Oetiker
-2014-06-02 17:34:52 +0200   - typo... -- hadfl
-2014-06-02 17:26:18 +0200   - another correction -- hadfl
-2014-06-02 17:25:09 +0200   - corrected wrong merge -- hadfl
-2014-06-02 17:14:22 +0200   - check b4 zet: create and edit show an overview of the new backup set to be applied -- hadfl
-2014-06-02 14:12:51 +0200   - 'zpool' functionality added: list, start/stop scrub, scrubActive -- hadfl
-2014-06-02 12:12:43 +0200   - cleanup for recursive source datasets implemented -- hadfl
-2014-06-02 11:35:15 +0200   accept -r and --recursive -- Tobias Oetiker
-2014-06-02 09:38:13 +0200   - pod corrections -- hadfl
-2014-06-02 06:20:23 +0200   the build machanics are those of a C program -- Tobias Oetiker
-2014-06-02 06:14:02 +0200   sync manpage -- Tobias Oetiker
-2014-06-02 00:02:35 +0200   - pod: filesystem -> dataset -- hadfl
-2014-06-02 06:09:47 +0200   remove more .pl -- Tobias Oetiker
-2014-06-01 23:46:06 +0200   remove the .pl -- Tobias Oetiker
-2014-06-01 23:42:54 +0200   have real pod files -- Tobias Oetiker
-2014-06-01 22:12:46 +0200   allow more shortcuts -- Tobias Oetiker
-2014-06-01 22:11:39 +0200   better documentation -- Tobias Oetiker
-2014-06-01 21:17:53 +0200   the zetup tool is called znapzendzetup and not znapzendzetup.pl -- Tobias Oetiker
-2014-06-01 21:09:56 +0200  (v0.3.0)  5.20 not supported in travis yet -- Tobias Oetiker
-2014-06-01 21:07:08 +0200   get ready for 0.3.0 -- Tobias Oetiker
-2014-06-01 21:05:16 +0200   pod files for the benefit of github ... maybe -- Tobias Oetiker
-2014-06-01 19:30:02 +0200   - cleanup -- hadfl
-2014-06-01 19:20:54 +0200   - znapzend: multi destination backup implemented -- hadfl
-2014-06-01 20:42:38 +0200   lets have some testing -- Tobias Oetiker
-2014-06-01 13:14:27 +0200   added some more documentation -- Tobias Oetiker
-2014-06-01 08:00:53 +0200  (v0.2.0)  version 0.2.0 -- Tobias Oetiker
-2014-06-01 08:00:09 +0200   re-arranged documentation -- Tobias Oetiker
-2014-06-01 02:31:42 +0200   - typo corrected -- hadfl
-2014-06-01 02:26:57 +0200   - znapzendzetup edit implemented - tobi's wish is my command... -- hadfl
-2014-05-31 23:57:57 +0200  (v0.1.0)  got a new version -- Tobias Oetiker
-2014-05-31 23:57:40 +0200   as requested by dominik ... $1 eq '1' -- Tobias Oetiker
-2014-05-31 18:39:46 +0200   add main function and remove eval since the __DIE__ handler takes care of this -- Tobias Oetiker
-2014-05-31 13:56:23 +0200   - recursive cleanup on destination fixed -- hadfl
-2014-05-31 12:12:54 +0200   - corrected typo in ZnapZend.pm -- hadfl
-2014-05-31 11:50:50 +0200   - implemented recursive send/recv - some minor corrections in pods -- hadfl
-2014-05-31 18:08:47 +0200   - bugfix: singular/plural check for backup set list -- hadfl
-2014-05-30 17:31:57 +0200  (v0.0.5)  sync manpage -- Tobias Oetiker
-2014-05-30 17:31:02 +0200   fixed nameing -- Tobias Oetiker
-2014-05-30 17:30:13 +0200   added new --daemonize and --pidfile options -- Tobias Oetiker
-2014-05-30 16:57:33 +0200   put man pages into their own directory -- Tobias Oetiker
-2014-05-30 16:52:10 +0200   added documentation -- Tobias Oetiker
-2014-05-30 16:11:46 +0200   sync generated files -- Tobias Oetiker
-2014-05-30 16:06:01 +0200   we have no POD files -- Tobias Oetiker
-2014-05-30 16:02:57 +0200   our module builder is called build-thirdparty.sh -- Tobias Oetiker
-2014-05-30 15:37:12 +0200  (v0.0.4)  make sure perl is properly 'replaced' upon installation -- Tobias Oetiker
-2014-05-30 15:18:56 +0200  (v0.0.3)  ignore some more files -- Tobias Oetiker
-2014-05-30 15:18:27 +0200   go to 0.0.3 -- Tobias Oetiker
-2014-05-30 15:17:42 +0200   some more readme -- Tobias Oetiker
-2014-05-30 15:07:08 +0200  (v0.0.2)  fix regression from renaming ZnapZend::Worker to ZnapZend -- Tobias Oetiker
-2014-05-30 15:04:16 +0200   support PERL5LIB settings -- Tobias Oetiker
-2014-05-30 15:04:02 +0200   domnik did 99% of the programming, so he should be first -- Tobias Oetiker
-2014-05-30 15:00:59 +0200  (v0.0.1)  boom ... znapzend is real. thank you dominik! -- Tobias Oetiker
-2013-12-19 09:23:20 +0100   work in progress -- Tobias Oetiker
-2013-09-22 09:39:58 -0700   Initial commit -- Tobias Oetiker
+commit bf31398480f30612ca212b249b7d19ce478b2351
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Sep 17 14:33:39 2014 +0200
+
+    - typo
+
+commit bc1aa52ef4e1f73c76fa7365fc777eafd82d0e99
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Sep 17 14:10:57 2014 +0200
+
+    - line wrap
+
+commit ac8ff269eac6bf68ab16a842f816ee465505c82d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Sep 17 11:50:18 2014 +0200
+
+    - connectTimeout can be set as option
+
+commit 25e581265ccd4ea189146758fd01ae08d19f0ef1
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Sep 2 10:50:17 2014 +0200
+
+    - increase ssh timeout
+
+commit f7338cb8d342719c4c5a370a18c810d5967a4cde
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Sep 1 08:31:30 2014 +0200
+
+    - term signal handler
+
+commit a97b7ba59563fb75e1f69e6e65a869de433473f1
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Aug 27 11:10:39 2014 +0200
+
+    - make network mode more reliable
+
+commit d21a07790a97ac72f2e79b7c95d2c6a81c642f20
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 26 14:32:19 2014 +0200
+
+    - SIGHUP implemented: reloads znapzend config
+    - signal handler improved
+
+commit 056aacba49ab3b5891c3b35ba15b081fd992ec4f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 21 17:51:55 2014 +0200
+
+    prepare for 0.12.3
+
+commit f60f6c3b9c0b9ddfaddc8c6330c549e5b22a66a5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 21 17:50:35 2014 +0200
+
+    must import 'blessed' when using it.
+
+commit 90207541ca793d01305bde1efa02752c08838d8d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 23:31:24 2014 +0200
+
+    tag CHANGES
+
+commit 86aabf6a0a960bb27911b143d48a0dd23e6d81ba
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 23:28:22 2014 +0200
+
+    0.12.2
+
+commit a7cee83bfca6ef11fe24b25db5839f1eca5fd57a
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Aug 19 22:31:54 2014 +0200
+
+    - exception handling improved
+
+commit d767612287672dfb446e81b276f7618ee18b1e9e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 14:38:56 2014 +0200
+
+    actually include Sys::Syslog in setup script
+
+commit df00808cdb69f5b9342be12dae2c634747547631
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 14:28:39 2014 +0200
+
+    improve changelog look
+
+commit f593204e7b48035df2ba5b53cd91acd58f70e956
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 14:20:34 2014 +0200
+
+    get ready for 0.12.0
+
+commit c13ab4d856a24b3c55d08c5b64e6bdd33760bf03
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 14:20:31 2014 +0200
+
+    get ready for 0.12.0
+
+commit 34380ec888c8fa15bbff1948747886c69d0d17b6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 19 14:06:09 2014 +0200
+
+    explain new oracleMode
+
+commit 847934b62c8c0b7d99997518064fad57ccdcc26e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 19 11:57:03 2014 +0200
+
+    - upgrading to ForkCall 0.14
+
+commit 0bd57edeba0677503a03b6b1f128a3da869a1a3e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 19 11:07:52 2014 +0200
+
+    - oracle zfs handling improved
+
+commit 58cde7f28d6ac50d01849b8e15b56ad0075eaa4d
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Aug 13 13:00:39 2014 +0200
+
+    - don't clean up source if send fails
+
+commit 7d04aa28ec53405453534ef77bedc7092aa717f9
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 12 14:16:41 2014 +0200
+
+    - exception handling: log only message
+
+commit bc8af018b6dc746e1a202b01cefba06ca039f63c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Aug 11 14:32:18 2014 +0200
+
+    non released 0.11.4
+
+commit bfff0463413b2811516eabe59ba6eecbcccc1f1e
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sun Aug 10 15:49:26 2014 +0200
+
+    - one to make tobi happy
+
+commit 5c803a174b83744d53eea42377dc7ed22a2173ff
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sun Aug 10 10:15:55 2014 +0200
+
+    - exception handling improved for send/recv
+
+commit 7377a687b244d41270546343e0f3733e1598eea3
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Thu Aug 7 21:47:44 2014 +0200
+
+    - pod
+
+commit b99292ec74e64361f70d89e185495134458aefb9
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Aug 7 14:30:39 2014 +0200
+
+    - recvu feature added
+
+commit 5550c2c0e235f2981781136e4257c79226c5501c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Aug 10 15:16:49 2014 +0200
+
+    tracking changes in source files
+
+commit 2a50ebd3b69946cf712e9ae348c630978b09dd2e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Aug 8 10:08:29 2014 +0200
+
+    - show last snapshot time in ztatz
+
+commit 391ce2451264743f6a676ae39a758f81d5a7c368
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Aug 10 15:16:15 2014 +0200
+
+    use the latest syslog module
+
+commit 8a2ca517824e61fed4667ec0c41ba7c903a4729e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 7 13:46:20 2014 +0200
+
+    do NOT replace 5.10.1 in the README.md
+
+commit 2ea8050f336e5181d0649892b848146a97df8458
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 7 11:50:47 2014 +0200
+
+    0.11.2
+
+commit 5212406bd93c4de9af8e49688c7d5275976ecc6a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 7 11:49:51 2014 +0200
+
+    remove more spaces
+
+commit 248941c4997b141700221f8fca4de4bc73216a04
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 7 11:47:31 2014 +0200
+
+    remove extra spaces
+
+commit 0788270141392b6d96b0bed23667a4ca228bfe21
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Aug 6 16:41:46 2014 +0200
+
+    - fixing pid file handling
+    - mbuffer network mode only if sending to remote host
+    - test case for network mode
+
+commit 552346f8c68efe434afe78d864c95a5fccb5adbe
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Aug 7 11:12:41 2014 +0200
+
+    0.11.1
+
+commit 4350ad920542171355dfda1fb1ff35f7dd7220fe
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 18:04:58 2014 +0200
+
+    timeout connections after 3 seconds
+
+commit 493024230517f0fc9c7df0c6c1dd6e2bee03ba7a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 16:29:55 2014 +0200
+
+    - log message order corrected
+
+commit b87d3fcbee09b5e2bc4e2b9ecb3c908752173996
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 14:50:09 2014 +0200
+
+    - pidfile defaults to '/var/run/znapzend.pid' when using --daemonize
+
+commit 60fb5dea0aa54c40efa31bbfc1cd5b21e1c54d12
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 13:55:27 2014 +0200
+
+    prebuild -> prebuilt
+
+commit e2646934fe128bb7c4aaeaececace3ddfe613808
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 13:47:49 2014 +0200
+
+    update pods
+
+commit e3c52ce7c8b031820057998d4fc74fa70fe1e7c5
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 10:58:22 2014 +0200
+
+    - typo
+
+commit 4f75c93afafb6401983d306270dfcd62305c511e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 10:55:11 2014 +0200
+
+    - line wrap
+
+commit 171f2e349dadfbd647ea0c0143c30d363d4d4502
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 10:48:10 2014 +0200
+
+    - docu...
+
+commit 87052bdda56d8ec514be65fd0c884dbce4420443
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 09:58:34 2014 +0200
+
+    - unencrypted datastream handling improved
+
+commit 87ecde3c624a4f5771d5c0256855e9f5bf66c313
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Mon Aug 4 20:30:24 2014 +0200
+
+    - send/receive w/o encryption
+
+commit 9f8f61c86ac6c728e583302db20e484718f44275
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Aug 4 11:52:21 2014 +0200
+
+    - networkMode testing release
+
+commit e153dd73c4b755e2014a21602e4cce76e550a813
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Aug 5 13:19:28 2014 +0200
+
+    - bugfix: log
+
+commit 8558e5be9de85022cf17a51539ebdbcfc6a9e218
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 13:41:14 2014 +0200
+
+    0.11.0
+
+commit 049fdfb17f80fa2229bd52bcee0d09f36289ac2b
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Aug 4 09:30:05 2014 +0200
+
+    - improve pid file handling
+
+commit 3a023e4db452c010687958c6d59e4f96e1fc2405
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 09:59:03 2014 +0200
+
+    optimized log messages ... be less chatty at log level info
+
+commit b1239c167b224577b43ae5b5af0fb1762ea80841
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Aug 5 10:10:32 2014 +0200
+
+    0.10.1
+
+commit 23e2728c43c75634ab7afd29a5a40c9581fc9b55
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sun Aug 3 13:10:46 2014 +0200
+
+    - check if feature is supported
+
+commit 42620a733e20b244ea85f56473449a84fbd384bd
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 18:27:01 2014 +0200
+
+    - send to destinations in alphabetic order
+
+commit e5a7c6a810a54ee95c07b97bc4ec995806e708ac
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Aug 2 17:49:27 2014 +0200
+
+    add ,... to feature list
+
+commit ff8b189605e2e02c65f1431f0090e7f51b4a0b30
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Aug 2 17:37:34 2014 +0200
+
+    prep for 0.10.0
+
+commit cfb675ac2945ba63cc3bcabc58a67a1a37b00a57
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 15:17:24 2014 +0200
+
+    - pod correction
+
+commit bca80b29e366bd776ab2abd2047ade567411fe0f
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 15:10:51 2014 +0200
+
+    - combinedDestroy as a feature not per default
+
+commit f7776d1a7d61c89d0026c99c362a887dc0d88049
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 12:06:13 2014 +0200
+
+    - fixing pod
+
+commit a091071f52cbd7e905e43e3003ea4553626302b7
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 11:54:27 2014 +0200
+
+    - znapzendzetup edit - testing
+
+commit fbfcaa73692eced1c8b5f5477b6e6445ddec4273
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Aug 2 11:46:33 2014 +0200
+
+    - znapzendzetup edit
+
+commit f7543026f112d13951c5cb0af3e99f8964781b7a
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Aug 1 12:50:20 2014 +0200
+
+    - delete temp file
+
+commit 4b3ce6b977ec6f626461ebf8195bf411467bcd6a
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Aug 1 12:26:53 2014 +0200
+
+    - calling znapzendzetup edit <src_dataset> will now open an editor
+
+commit 614e426bf0060e58c793b09198fa9f74daa80482
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Aug 2 10:31:17 2014 +0200
+
+    updated readme
+
+commit a9b962bdf05b052e5bd110f11e7d90838b5a88e9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Aug 1 13:05:18 2014 +0200
+
+    fix manpage building
+
+commit 272b32b48e3dc48e5353c58e1fbf64e655bee91b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Aug 1 11:32:59 2014 +0200
+
+    try to make the irc link work
+
+commit 232a023e4d3e3d0b2f81c28c8300e7e7f691f247
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Aug 1 11:19:40 2014 +0200
+
+    0.9.0
+
+commit 8bc9acbef3213d78bfc3e7393074e08d56643c11
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Aug 1 11:15:30 2014 +0200
+
+    add link to freenode
+
+commit d2ff1f4def962d3279bd61cac5e78561ab76f96d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Aug 1 11:12:25 2014 +0200
+
+    change wording on freenode
+
+commit 39362e6f56e58c5dc343b224b2ce2f90c8a93ab0
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Aug 1 11:00:15 2014 +0200
+
+    - checking tsformat improved
+
+commit 5fffd85d7853fa55158bc09c4b024907684997e6
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Aug 1 10:43:35 2014 +0200
+
+    - documentation
+
+commit 13b7c4ad9c760e01cdb7937bafdc77d261f05fb8
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Aug 1 10:35:53 2014 +0200
+
+    - UTC support implemented
+
+commit e24a1bff26cced54b174409cddf14abb3dd621eb
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 17:32:14 2014 +0200
+
+    better wording
+
+commit f4f20b50fc0122008fabe6d846e66e011cd96ff6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 16:08:47 2014 +0200
+
+    need to integrated that new Makefile.am too
+
+commit 737f0b8b72a6a5d81300a67229e592bb236f1c79
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 16:03:00 2014 +0200
+
+    need to integrated that new Makefile.am too
+
+commit c9834125cc8f2e9f61b5180b69283a4c369b077e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:55:02 2014 +0200
+
+    allow configuration of perl module install path using --libdir configure option
+
+commit b45d60e37cc993a1bb56cc16e30a59a6adf3ae35
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Thu Jul 31 00:55:51 2014 +0200
+
+    - export/import coverage
+
+commit c9a3c9e6832e709a59141763f14eff89811a3a87
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:30:46 2014 +0200
+
+    better wording
+
+commit cddf6591e43d1f9bb7cc4ee098f44644deaa3957
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:24:28 2014 +0200
+
+    better wording
+
+commit 0ddd015ccf97047e0f705d3c709d82ee1a50d42b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:23:57 2014 +0200
+
+    better wording
+
+commit 58fbfc4f50ff55160d232113a43d781b4c767e1e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Jul 31 14:49:32 2014 +0200
+
+    - bugfix: ':' character in snapshot name does now work
+
+commit 510c86c9e3e8be2058b06fd72e46e1f988e8dc3a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:23:06 2014 +0200
+
+    more README
+
+commit fc9dae2cb81796a4637c8bf4fe055dc7850d2cf9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:14:21 2014 +0200
+
+    remove stray oep/
+
+commit 4a9cd118af47a09b89f46ef17ec22e654dbc0464
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 15:11:45 2014 +0200
+
+    new configure option --enable-svcinstall=DIR install svc manifest into given directory
+
+commit 9f23bfab7c21952809b20a3c7b039b71165e6ab0
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 10:55:18 2014 +0200
+
+    update wording
+
+commit f44bc75a3c6c459730752d56c26faeb76b23d835
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 10:52:25 2014 +0200
+
+    update
+
+commit 1c904fc95e7f23e5e0e95ab87dbcb6765c9c8577
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 09:12:42 2014 +0200
+
+    * only try tu run pod2man when it was found
+    * do not rebuild the manpages on install
+
+commit 47242d0a0ba9491355db3dcd0d018e586e7aa760
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jul 31 00:09:05 2014 +0200
+
+    prep for 0.8.8
+
+commit e81e7564696a41b3a322f169e4c68a8eceeb9e70
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Jul 30 19:26:24 2014 +0200
+
+    - import: override properties by CLI does now work
+
+commit 9d25e4dcdaa88c7af2b75874ecad57b474fc71fc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 18:00:29 2014 +0200
+
+    more documentation
+
+commit f83f46f7dc68bca3c8eeb5f0988448848f508cfe
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 17:53:44 2014 +0200
+
+    better service description
+
+commit 13dc1c33d01d86731cf5ec0c8a86aa7ade32013f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Jul 30 16:36:05 2014 +0200
+
+    - export/import function added
+
+commit aeb8c36b7391bff924f7f01f935677e391a2e60b
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Jul 30 16:56:13 2014 +0200
+
+    - remove 'M' for backup plans
+
+commit 1c6a129749cc54f8202359f10b50f924916b75f1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 15:34:05 2014 +0200
+
+    disable dependeny install
+
+commit 30d60f8c9221890ec4ffdf62bf585ab282785ccd
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 15:24:17 2014 +0200
+
+    disable dependeny install
+
+commit e2373e1712fefd576b947e96cddd1c1bd527c4ff
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 15:16:27 2014 +0200
+
+    disable dependeny install
+
+commit 4ba97391c602e704f3a23102770369f34cd4790e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 15:07:56 2014 +0200
+
+    re-activate the build matrix using env
+
+commit 6d9bac22003cae136fe72accbf88f1e8feeeeb50
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 14:56:17 2014 +0200
+
+    re-activate the build matrix
+
+commit 455d4e5baaa153ce0c41e492e49eee313425fe4b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 14:47:49 2014 +0200
+
+    build on perl 5.10 too
+
+commit fc5b5658901a1e1d55be815cbd7afafba41cd618
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 14:46:14 2014 +0200
+
+    mojo wants perl 5.10.1 (still)
+
+commit fcb7a7ca70de46f035e27b19ade737ded6af19e6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 14:43:03 2014 +0200
+
+    mojo wants perl 5.12.1
+
+commit 04ca10fe2cbc6c5b0c81b8d522b97e72a7e52b5b
+Author: Manuel Oetiker <manuel@oetiker.ch>
+Date:   Wed Jul 30 12:15:38 2014 +0200
+
+    Update znapzendzetup
+
+commit 8c2282d4b0aae393bda2bad415bedc13a958d4c8
+Author: Manuel Oetiker <manuel@oetiker.ch>
+Date:   Wed Jul 30 11:34:41 2014 +0200
+
+    Update znapzendzetup.pod
+
+commit e891ceb54d0432f93778c995dff89e6ae1a81d38
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 14:35:31 2014 +0200
+
+    only recent perls allow keys on scalars containing hashpointers
+
+commit 32b05ecc9a3a2be203374b089a6db158b0a56f5c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 12:17:48 2014 +0200
+
+    further streamline install ...
+
+commit 984d0ce4e484712a2e1c75fcef77be0052a63f69
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 11:32:02 2014 +0200
+
+    make sure pod and man do NOT get rebuilt -> 0.8.6
+
+commit f3ebbad2b0804168f98d321ae205dccc7e9ae342
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 11:10:17 2014 +0200
+
+    updated README
+
+commit 3f95707b4833a2361bc5e69fcec21517f8a87282
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 11:05:01 2014 +0200
+
+    include the POD files into 0.8.5 distro
+
+commit 62301ef4873439601a44421ea8b76829917a72bc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 10:56:53 2014 +0200
+
+    prep 0.8.4
+
+commit 3002c5ceebab4c8e834eafff6bfb4bff6065168e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 10:52:27 2014 +0200
+
+    explain SRC and DST
+
+commit 85ed485e868f9a8b0e840f89dc6f90f234e8411c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 08:33:00 2014 +0200
+
+    prep for v0.8.3
+
+commit d334389919cd2db48fefdcbfa93422294db16228
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jul 30 08:31:12 2014 +0200
+
+    removed AC_USE_SYSTEM_EXTENSIONS from configure thus NOT triggering the whole 'find the C compiler' stuff
+
+commit 555613b02e8f9947619beb973144bb6637f06afc
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 29 23:58:22 2014 +0200
+
+    - regex bugfix
+
+commit 1b494eacaf462c7b56e94c2f1c1e604382c1a3eb
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 16:29:21 2014 +0200
+
+    freeze versions
+
+commit 9fab5c3b7ac8727241c5da5aacea9af9dddb74a7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 16:09:18 2014 +0200
+
+    release 0.8.2
+
+commit 1585356262372c60d4fad2fbca95837bdcf220d7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 15:46:37 2014 +0200
+
+    better documentation
+
+commit cabf0129399348138c27781aab0cbd4795ef7e11
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Jul 29 14:18:57 2014 +0200
+
+    - daemon as default syslog facility
+
+commit 7b9dfde2b9dcf5e6561800adbb8943b367a8296b
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Jul 29 14:13:11 2014 +0200
+
+    - log messages on fork and once fork terminated
+
+commit 99e1bad48ef5a90283e18d7c09ed58d039adbaa9
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Jul 29 11:53:27 2014 +0200
+
+    - shell quoter improved
+
+commit b6e88c8ad7c23f75a8a89e795a9af1fc9171105e
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Jul 29 11:27:29 2014 +0200
+
+    - documentation corrections
+
+commit 74f6b1d697be1a64ea3c143d7517a062b5a3d60e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 15:02:27 2014 +0200
+
+    sync docu
+
+commit 79c4f89ccae53887fb96519ad2629f2dd9b943b7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 15:02:14 2014 +0200
+
+    no need to escape / and @
+
+commit 54b3fc6f0571ca2c86ca882202a5d2b130896d28
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 10:56:41 2014 +0200
+
+    loglevels are syslogstyle
+
+commit dd97a19158ffbfa937a1a65dc6b4331a7ca892f2
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 10:42:37 2014 +0200
+
+    sync generated files
+
+commit c05dc74262f4a9a65b3eade37a80c55e288eac4b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 10:42:26 2014 +0200
+
+    improved documentation
+
+commit 22cda7b692390e4a61042f4ce4888e1674c83635
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 10:42:01 2014 +0200
+
+    add smv manifest
+
+commit f9de249115d36fc83b49aefbba5bc4c819cea1d0
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jul 29 06:07:31 2014 +0200
+
+    release 0.8.1
+
+commit f4d165bc14850fa24d2fd4e5198cc1247f7499ca
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 29 00:08:04 2014 +0200
+
+    - increase coverage...
+
+commit 023b41ef3ac934ea7715da29ca6eee0056834634
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Mon Jul 28 19:55:37 2014 +0200
+
+    - snapshot creation optimised...
+
+commit 020c14611880f04cf74e7e949c17e867596f3309
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jul 28 16:19:33 2014 +0200
+
+    - check if $dataSet is set
+
+commit abfc6f7b2e6563dbcbcc46c034e6045f7fd07502
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jul 28 16:19:33 2014 +0200
+
+    - check if $dataSet is set
+
+commit c00900a194b216fb7c9b9ed58f6c2eeea04636ec
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jul 28 16:18:05 2014 +0200
+
+    - speedup znapzendztatz
+
+commit 2d5aad2a3fa3001b1615449db555eb7d5e14a91f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Jul 28 14:10:46 2014 +0200
+
+    - typo and cleanup in ZFS.pm
+
+commit b3dc01ac8cc8ada4f104aa86b4ff1ea75f878330
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jul 28 14:25:30 2014 +0200
+
+    more detailed runtime instructions
+
+commit 6163773762f9421e4534eb2b4fc9e68754c8a3e1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jul 28 13:50:49 2014 +0200
+
+    more detailed README
+
+commit e725205de8144e804b9f42b3724732551a4d305b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jul 28 13:50:08 2014 +0200
+
+    more detailed README
+
+commit 10d91443f6a9d8b82a01b1c08f5c374d4562a4cb
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jul 28 13:41:16 2014 +0200
+
+    more detailed README
+
+commit 7ea1f03d04874585b7a5c97889f5043351493acf
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jul 28 13:39:15 2014 +0200
+
+    more detailed README
+
+commit d61a6999271325478d51e5d4e4a2c34e41d08bd9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Jul 26 21:22:06 2014 +0200
+
+    prepare for 0.8 release
+
+commit 82bb0ea28b053873f69b8ce8f0b2f2cf69211af5
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Jul 26 20:45:59 2014 +0200
+
+    - sort snapshots creation and not name based
+
+commit 3181ca781931bab558027cafcfab954b57e20ef5
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Jul 25 15:27:26 2014 +0200
+
+    - ready for 0.8
+
+commit f38e9ee73088db4002ab3e2f909e90c7567f839e
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Jul 25 12:35:48 2014 +0200
+
+    - cleanup
+
+commit 840d10a464c4016f4180a7aa2016c53dcbe0e2dd
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Jul 25 11:54:48 2014 +0200
+
+    - getting ready for ForkCall error events
+
+commit f0aa1d1d7d30471e8094dd3334ee6a7f656a7e67
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Jul 25 11:09:31 2014 +0200
+
+    - changed API for ForkCall 0.12
+
+commit 27a8cafddfe5e17f892b0ac00928c3c622aeb99a
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Thu Jul 24 23:07:09 2014 +0200
+
+    - terminate flag added
+
+commit 27b261fe7c00f4ef43e31574dbacf9cc5f5594e4
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Thu Jul 24 22:52:46 2014 +0200
+
+    - znapzendztatz: do not print header option
+
+commit b9100302aa83067ef57ceaf171f8e65f99a4a44d
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Thu Jul 24 22:26:16 2014 +0200
+
+    - add date/time and log level if logging to STDERR
+
+commit fcc3852b5ad088dbacc17aa7092ba454c97490b7
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Jul 24 13:29:59 2014 +0200
+
+    - warn if there is a problem w/ the fork
+
+commit cd451e2965f5e2bc796177c3a64be283653faf46
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Jul 24 11:09:49 2014 +0200
+
+    - tell which send/receive process is still running
+
+commit 25d641a9cfabe2616a8e017fc1d94fe8b3095c10
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Jul 24 10:36:02 2014 +0200
+
+    - znapzend now checks if pre and post snapshot commands can be executed (at least in theory ;) )
+
+commit 57a2e71b78ca37d0a38aca85a6078419b3b89c78
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Jul 23 20:54:06 2014 +0200
+
+    - hurray, got an e-mail address today :D
+
+commit a7c42f6674aca6e1431178aa3882f0d5accd7e45
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Jul 23 20:18:39 2014 +0200
+
+    - pre and post snapshot commands added to test scripts
+
+commit 2421b490b3c7604a2ce16ba7ea6671354fb7cae7
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Jul 23 20:05:44 2014 +0200
+
+    - final cleanup
+
+commit 0a733e826d4184e45f2822ed136bf52fc02668ef
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Wed Jul 23 16:56:19 2014 +0200
+
+    - time jumps schould now be handled properly...
+
+commit d5dd467ec1b9d7794279d4b5a1325d873331af40
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 22 23:56:57 2014 +0200
+
+    - DST change bugfix
+
+commit 4ee42667c732e10bb6bd0c80ea9adf942bf280aa
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 22 23:39:03 2014 +0200
+
+    - coverage workaround...
+
+commit 3f80bf0cfed9b0b8cfb25311a5e99ed514071674
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 22 21:49:57 2014 +0200
+
+    - a little bit of cleanup
+
+commit 38576c6a3bca3aa67693ad2419044fdd944af927
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 22 21:18:18 2014 +0200
+
+    - pre and post snapshot scripts implemented
+
+commit 43b2b02e888b57fc6fe85e68656530a620c514c6
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 22 16:56:08 2014 +0200
+
+    - wip...
+
+commit 765acaf0f3c108ba183c5eab4d98e3e2830a2089
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Mon Jul 21 23:25:33 2014 +0200
+
+    - we might need this module...
+
+commit 444574d040b1aa52b06ed8489b15264e448ad149
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sat Jul 19 17:12:45 2014 +0200
+
+    - WIP: pre and post snapshot commands/scripts
+
+commit 2a4ae56f47d0b7bc99f6579ab16d92ffd64a4116
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sun Jul 20 18:30:03 2014 +0200
+
+    - one to make tobi happy
+
+commit 8dea9bff9fe1e9dc394bf2b542df66d58b8c0cd5
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Sun Jul 20 12:58:46 2014 +0200
+
+    - WIP: znapzend supports now levels and logging to file
+
+commit a6033f16feefb0886799b4438692bf69c5986416
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Tue Jul 15 23:03:22 2014 +0200
+
+    - we called it ZnapZend::Worker but that was a long, long time ago...
+
+commit 8612623f45a89f696c499b85129192fe7318a204
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Jul 12 07:11:32 2014 +0200
+
+    0.7.2
+
+commit 835821b6f119eb58436d24db3766fc450c873df6
+Author: Dominik Hassler <hadfl.oss@gmail.com>
+Date:   Fri Jul 11 11:59:00 2014 +0200
+
+    - improved handling if no common snapshot exists on source/destination
+
+commit 830b8f1ef4c73647b2ee58cf9d670e0e5af8e171
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 8 14:00:53 2014 +0200
+
+    - enhance regexes
+
+commit 05edf21670cbaac0ae55563429145a03fee03208
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jul 7 22:43:49 2014 +0200
+
+    - singular fix
+
+commit 4f2dd8f4a1d6bf193c86d73f525cb353ea7a9a93
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jul 7 18:04:35 2014 +0200
+
+    - destination handling improved
+
+commit 4be96845586c70f0369b119e81d3f1638182fe0c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jul 7 09:30:06 2014 +0200
+
+    - backup config keeps being valid now if source dataset is renamed
+    - allow more characters for time format
+
+commit b59fe74ba52f34bf9f8efb67915bd13d6b16a2f8
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jul 6 21:50:02 2014 +0200
+
+    0.7.0
+
+commit 26e73dc1b93f2b0e4f04cf5c1a543af0e4e3afbb
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat Jul 5 14:03:21 2014 +0200
+
+    - some more testing of zetup parameters
+    - remove destination plan if destination is not given
+
+commit a94fc4322c98672b4717dbba850f21672b632430
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jul 4 17:55:35 2014 +0200
+
+    - improved znapzendzetup argument parsing
+    - Time.pm bugfix if run w/ --runonce switch and timing is not accurate
+
+commit 0c4f79e2a43e67dc63fa71e812e300f0c35b7164
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jul 4 17:55:35 2014 +0200
+
+    - runonce switch implemented
+
+commit fa6b5eaf50b4d7b431c34323b75e43ce4cd2e671
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jul 4 13:01:22 2014 +0200
+
+    - mbuffer size can now be set via znapzendzetup
+
+commit a599c166d93e9530cd07999136142a4eb624fc9b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jul 4 11:10:12 2014 +0200
+
+    - testing switch implemented
+
+commit bc4298c05d1ff8325ac30cb6462bd49ff0b9cac5
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jul 3 16:23:50 2014 +0200
+
+    - remove duplicate code in Config.pm
+
+commit 8ea012a6881b6e5a6e721e5ab5859fc2460295ee
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jul 3 14:39:31 2014 +0200
+
+    - vertical alignment
+
+commit 12aee3ba033c8171da5e840f7d4ab32243bc441d
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jul 3 13:57:48 2014 +0200
+
+    -  test scripts for travis/coverall implemented
+
+commit 7ecd7e746f5115ac3b0d4a4c818c8491f9c614a0
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 15:24:37 2014 +0200
+
+    - wait for cleanup process to be terminated
+
+commit 51728c7899007c1037948121995b3c4efcbf98c5
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 15:05:16 2014 +0200
+
+    - --daemonize option added to coverage
+
+commit 2de9c9df94cb8c01b6766e8fea153df8ee0101a1
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 14:54:29 2014 +0200
+
+    - znapzend coverage added
+
+commit c38ae831fbae2e061219b7b3fbb8e8f9ed9598a7
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 12:03:03 2014 +0200
+
+    - coverage for znapzendztatz
+
+commit 0cf839dfca0d1e5c0c4ce494e2e4b43507270c3b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 11:48:02 2014 +0200
+
+    - 'help' option explicitly added to znapzendzetup
+
+commit 11ddcc73c6fd58ea2899a3b5194c478ef862f545
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 11:39:04 2014 +0200
+
+    - try to include private methods to coverage
+
+commit bc9d0aeb12ec14743591cd58b8a2822212da847b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jul 2 00:42:43 2014 +0200
+
+    - remove dependencies...
+
+commit 3b34f74316bdce87d67c750ebcb9289785829699
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 23:47:11 2014 +0200
+
+    - znapzend coverage added
+
+commit 0ee84239dd9efe17a17a05a5681aacc9cd2ba0b0
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 23:22:46 2014 +0200
+
+    - make it simple...
+
+commit 34c616e5c0a18636a200b0f468d04845d071e148
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 23:02:28 2014 +0200
+
+    - another coverage
+
+commit 5fc7b7e4d8a4db75141f7eed90a44d376bd8b84e
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 22:48:33 2014 +0200
+
+    - remove dependencies from coverage
+
+commit 80ae5f6af46f3b182abe5b25ea28b2aaddeab87e
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 22:17:30 2014 +0200
+
+    - adding option 'donotask' for znapzendzetup create/edit
+
+commit 56ddcf3f893478149615add7ace3264b99dac331
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 21:46:25 2014 +0200
+
+    - another try...
+
+commit 25d336f0a189c3b7b0c74de64189750099627406
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 20:10:44 2014 +0200
+
+    - one more...
+
+commit 02639e83d44371ff6144d1b1722eb42627aa58a7
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 20:00:08 2014 +0200
+
+    - and another try...
+
+commit 522fdf67eb280a0c046fa02369f0c05bd334fe29
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 19:52:01 2014 +0200
+
+    - make travis work again
+
+commit 7843a567789e70c4ba65ed7fcbf73f9085b45256
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 19:47:09 2014 +0200
+
+    - znapzendzetup.t added
+
+commit 7d28d2c01cf892f6ee163720934f0151fc060415
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 18:56:55 2014 +0200
+
+    - increase coverage
+
+commit f0c2ad8b9f27840d9aaf93a1d58a7701c9285a0c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 16:59:26 2014 +0200
+
+    - typo
+
+commit ea6e47561a8205f9c5eac316b7e98e33fd86cd48
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 16:57:02 2014 +0200
+
+    - wip
+
+commit 1bd5016d67c990c9b8d02c92cb758309d0045087
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 12:59:45 2014 +0200
+
+    - remove dependency of Time::Local
+
+commit f94f87c0171691129ca64dcdc95e1d13e8224b2b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 10:39:09 2014 +0200
+
+    - fixed missing ;
+
+commit d3791c2fb8cf2757422eccc942cfb9454a234560
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 10:36:09 2014 +0200
+
+    - remove some more unneccessary brackets
+
+commit 376f28b6d47a34e59cea91ff38fb521e624be8d2
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 10:33:21 2014 +0200
+
+    - this should be the last one...
+
+commit aae1f22d90755e614708845016e2bb5950137e1f
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 10:24:29 2014 +0200
+
+    - backup plan value > 0
+
+commit 5883723bfa3dd3bea670bb72af534994a4cd24bc
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 00:26:47 2014 +0200
+
+    - time to go to bed...
+
+commit f9a9bc68c2bec1f1090fffaf8f769fa96bb5c00b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jul 1 00:14:37 2014 +0200
+
+    - save some unneccessary brackets as we might need them later
+    - cange postfix if into a better form where appropriate
+
+commit 777eddfe4c12b619c714f4d5572301886bb20a2b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 23:34:01 2014 +0200
+
+    - remove postfix if
+
+commit 6a08391037e818e8ad426dfe6ac7c4e7754da216
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 23:30:42 2014 +0200
+
+    - break it down...
+
+commit e554618d8eba5486c7a7f9e4713907f3a00dcb4e
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 21:24:49 2014 +0200
+
+    - one more to store...
+
+commit 68cdde1e808af17ced3e119222c699dcfcdf8111
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 21:10:49 2014 +0200
+
+    - eliminated the last bit of c... what happened to me...
+
+commit 5be4f3dbba3c459d9f0146129ed1c9fc15d32e11
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 20:06:06 2014 +0200
+
+    - another one to make tobi happy :)
+
+commit cfcbcfd5a89ab3b4ff5f4325efa3a67a134a841b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 17:32:01 2014 +0200
+
+    - code cleanup
+
+commit 0dafb99b8f7852687b8ed07416a410dc1e67bd5c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 14:35:09 2014 +0200
+
+    - code cleanup
+
+commit 2b2581c00eff270522c04119412a5d06f8696a20
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 30 13:08:23 2014 +0200
+
+    - code cleanup
+
+commit 4d0a8e501800be38f2028b87735a31706f7cdbfe
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 29 22:54:26 2014 +0200
+
+    fix manpage version number
+
+commit ffe3808096954ea4fb49f617519078ba28bb741b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 29 22:02:43 2014 +0200
+
+    0.6.0
+
+commit e022ab5ddeb8b6beabbdd14396434c98ed297678
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 19:09:25 2014 +0200
+
+    - make ZFS.pm more generic
+
+commit 65ffdb9be31643ff68fd27e975800f745bd7a081
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 18:13:08 2014 +0200
+
+    - adding a little extra 'safety' to regex (i.e. make sure snapshot is 'parseable')
+
+commit 722a0cac16f34b7df8118ff7f8498a879030e33c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 18:07:42 2014 +0200
+
+    - typo
+
+commit 193224efcd6bf78b4b250cbdd807c0085f2f1028
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 17:39:02 2014 +0200
+
+    - make znapzendztatz work again
+
+commit 72acab3a45e85b66662cbea5ac5a86bfd75d5317
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 17:16:07 2014 +0200
+
+    - typo corrected
+
+commit 6e99d5b9ec915d275ced09bc52a88d70cec62bc2
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 17:13:27 2014 +0200
+
+    - initialise $state to prevent checking if initialised
+
+commit ede9e45a3d71dcee96b5547983e600f3da3232ec
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 17:08:47 2014 +0200
+
+    - typo
+
+commit 5ecb1e1f83a6f631c6474080e8cb5a8fa6940418
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 29 17:01:00 2014 +0200
+
+    - flexible snapshot time format support added
+
+commit 0a6d50c397e9debb2c42352909d8541d3af0549e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jun 13 07:52:30 2014 +0200
+
+    0.5.4
+
+commit e5ae81bf940d2b28920861cc2dba055ba4252677
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jun 13 00:23:31 2014 +0200
+
+    - another non-recursive bugfix
+
+commit 1cdaeb4d38257c327bf48feeaf6e3ae7bd9a5896
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jun 12 10:52:37 2014 +0200
+
+    release 0.5.3
+
+commit 84b74d7ba8ecae2c93b9f4327d7963fd78971b2d
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 12 10:08:17 2014 +0200
+
+    - bugfix: syntax for non recursive snapshots fixed
+
+commit c24c16ac8fd000fab504178855b7667bb3bddcf4
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 10 16:26:15 2014 +0200
+
+    - call time() only once
+
+commit c64a28bdd6ad0e7cb4beb211780afd3d1b680644
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jun 11 10:46:08 2014 +0200
+
+    0.5.2
+
+commit cfd54f732a9f325ba18157d0c1c00a0908415258
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jun 11 00:19:21 2014 +0200
+
+    - bugfix: recursive was always on due to wrong evaluation of property
+
+commit f6fedc4bbe63e6291d22363abc20f8b660d59135
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 10 20:26:04 2014 +0200
+
+    prep 0.5.1
+
+commit 89f100169e8460d7e31ab4f53c0a7e3b76a2d0de
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 10 14:13:33 2014 +0200
+
+    - syslog message if snapshot already exists
+
+commit 5003f86ce98f831e1d5f8e3e228debb39da7e81c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 10 13:35:45 2014 +0200
+
+    - snapshot creation is now localtime based
+
+commit a444c4f4c99e48086ddd3003d3ed50c10b81627f
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat Jun 7 17:09:22 2014 +0200
+
+    - man page correction
+
+commit 8f60b08773a56ae5163c84237b1d3817a711341f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Jun 7 14:16:51 2014 +0200
+
+    lets have some more fun while running configure
+
+commit 9094412211919d30952950cdcb7de151bc1859c6
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat Jun 7 10:34:44 2014 +0200
+
+    - znapzendztatz now prints statistics during collection
+
+commit 67d2f5728042951d615c092d7bcb774ce6aa657b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jun 6 16:33:19 2014 +0200
+
+    ready for 0.5.0
+
+commit 971261e8e9f16648f0059a6a772de97e695117fe
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 23:22:01 2014 +0200
+
+    - progress fixed...
+
+commit 165842dee0194d10ec63f11b615ba275fee5d4ad
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 19:36:46 2014 +0200
+
+    - hope this works now...
+
+commit 4cd38da99c6109b0291a0bb54c9e846ca39908c3
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Fri Jun 6 10:29:26 2014 +0200
+
+    - man and pod added
+
+commit d19032a3994079e7accb452087058070623bd5ce
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:52:19 2014 +0200
+
+    - man page
+
+commit ed86a649161d78652718254cf0a49fd0c2a7e1d0
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:47:28 2014 +0200
+
+    - and the makefile...
+
+commit 4ae86814f9ebe518126fc75e29812435b111ccae
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:39:10 2014 +0200
+
+    - persistent typo... -.-
+
+commit bc479094add4773cb4954576cea323087aa474bb
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:29:50 2014 +0200
+
+    - one to make tobi happy
+
+commit c920f160b3abbae476c20f46befbaa1492c184f3
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:16:59 2014 +0200
+
+    - typo...
+
+commit 2566a8c2fdd941cf2b57206217d4441ab2bdeff4
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 16:12:53 2014 +0200
+
+    - znapzendztats included in travis.yml
+
+commit a6b8409e93c4dee3c14baf4225654dcb95fd4cdb
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Thu Jun 5 15:57:46 2014 +0200
+
+    - znapzendztats - znapzend statistics utility added
+
+commit 06161d16e39d9d5b23d0311fed95e268cc6acb64
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Wed Jun 4 00:07:17 2014 +0200
+
+    - replace \t with \s+ within regex
+
+commit 2ca80625ac0228c93aa3a8efe2205be0db5ff776
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 20:19:14 2014 +0200
+
+    - fun does *not* save you from making mistakes -.-
+
+commit 978901c10615eda118bbf2efb3d42b33e871fdef
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 20:17:27 2014 +0200
+
+    - life's too short not to have a bit of fun from time to time...
+
+commit 39cbb09a45f5282ec562dae3119f42f72d022272
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 3 15:10:23 2014 +0200
+
+    ready for 0.4.1
+
+commit a9fa8f0b2ac1973ad83382be19807a98b23bd153
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 3 15:10:07 2014 +0200
+
+    ready for 0.4.1
+
+commit 152a9124869669dec4316841ee1d7122e401a88f
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 14:04:50 2014 +0200
+
+    - only one 'zpool status' method
+
+commit c9275cb1878b16f7352e90b34ad7dd3719ab2fac
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 13:48:41 2014 +0200
+
+    - language fix, according to 'pull/11#issuecomment-44950985' by tobi.
+
+commit 433eca4d6e2605e2e04778b26908cfff83b2663c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 10:27:35 2014 +0200
+
+    - info written to syslog is now more detailed
+
+commit 0ae79dfee969a90f706cc6d8feaf62fde3138e63
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 13:14:19 2014 +0200
+
+    - merge2...
+
+commit 4aa0d72aec11914eff27b92cd4693b366175ee5b
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 13:13:27 2014 +0200
+
+    - merge
+
+commit 617508145c48a3f1201142f0d91d398bf074b7da
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 13:11:31 2014 +0200
+
+    - read only properties with source==local, so no need to check for it anymore
+
+commit 25408bb741ae49d0d6fdfbf171f2142056d870b3
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Tue Jun 3 12:30:06 2014 +0200
+
+    - method to get timestamp of last completed scrub added
+    - feed method w/ 'zpool status' output as parameter
+
+commit 8d1284cc951f964f7907acbba9fb89a1b5912323
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 3 11:19:02 2014 +0200
+
+    two missing pushes
+
+commit 42feb2d1eda3fa00b71e7ee38297f6103c4a6dc1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 3 11:16:26 2014 +0200
+
+    ready for 0.4.0
+
+commit be28b83641ae33e4f418da9268ad556c0c8d08b4
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 23:19:55 2014 +0200
+
+    make sure ZFS.pm finds the system commands
+
+commit 7441587620c61f9a056abb743e5a804398d2bf1e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 23:11:39 2014 +0200
+
+    improve test of README
+
+commit df4c0ac73eec50de53e0bed01c9e2492a4161d88
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 23:02:03 2014 +0200
+
+    make shell code non commented
+
+commit 546edb686b8d403c64095bf7e82b37f5dde74af8
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:58:51 2014 +0200
+
+    switch README to Markdown so that we can see build status
+
+commit b8bf0301dc5ae5312c9c40edede62d65d41aaff6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:56:39 2014 +0200
+
+    does this work in plain files too ?
+
+commit 63a766048fdeb6bbcb4cfd5e37372273ffd18dc4
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:52:04 2014 +0200
+
+    do not try to run make test
+
+commit 69bc85d03153fd7b8894cafeccaeb92df79116dc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:48:20 2014 +0200
+
+    almost there with cover support
+
+commit c028b46c533990c94c75077bcc5586fe2e2ef952
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:44:10 2014 +0200
+
+    trying to get coverage work
+
+commit f7b1e64952802ee399cf4cca2e514713c8492935
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:40:06 2014 +0200
+
+    trying to get coverage reports
+
+commit 05ae9aa68fd28ecd4b4aaec15cfa132dc9fe36ab
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:32:05 2014 +0200
+
+    test coveralls
+
+commit e769cace6159415b8125c75631b3daf4d05a5144
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 22:22:21 2014 +0200
+
+    sync changes
+
+commit 2e3265a254c00c2c963abb8ed95955659cd6eae0
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 17:34:52 2014 +0200
+
+    - typo...
+
+commit 956da6f1f7f3aa2788ba3cd789bd337f6ca123da
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 17:26:18 2014 +0200
+
+    - another correction
+
+commit a853c11fc0462e581879b6d933b85299e0a21e32
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 17:25:09 2014 +0200
+
+    - corrected wrong merge
+
+commit eda036bf46e7361cbfc9f5e25ad1cef28b00bd9d
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 17:14:22 2014 +0200
+
+    - check b4 zet: create and edit show an overview of the new backup set to be applied
+
+commit de8e8d7d3f9a7235e213bb98779673cdec9bc3b6
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 14:12:51 2014 +0200
+
+    - 'zpool' functionality added: list, start/stop scrub, scrubActive
+
+commit 67a3429489220dcac89f670bf717352674aad941
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 12:12:43 2014 +0200
+
+    - cleanup for recursive source datasets implemented
+
+commit 7a4dc921d50600a3b9ddcf09b3e008647cab1b15
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 11:35:15 2014 +0200
+
+    accept -r and --recursive
+
+commit 3751624496423c2b4dd9d47ceeb63e479a81ff88
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 09:38:13 2014 +0200
+
+    - pod corrections
+
+commit 1358489070965075528886e0d024d0a8f7dc5f1f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 06:20:23 2014 +0200
+
+    the build machanics are those of a C program
+
+commit ebf3200a905d9a4acecd8a4b403d5acea46adfd3
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 06:14:02 2014 +0200
+
+    sync manpage
+
+commit ac7be0e05048c46ca0895709d0ad51778c2c6fbb
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Mon Jun 2 00:02:35 2014 +0200
+
+    - pod: filesystem -> dataset
+
+commit 0b576fc9cd8f0ebf006145cb728fd1f7aaa3927a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 2 06:09:47 2014 +0200
+
+    remove more .pl
+
+commit 2a79eca0d9310b0a26618f86f266daccb6203e3a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 23:46:06 2014 +0200
+
+    remove the .pl
+
+commit 2625cd60c55b2e7f8df98aa75a7c79a023b6f338
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 23:42:54 2014 +0200
+
+    have real pod files
+
+commit f6e196e2f220e6389250e79f80970429691af9cf
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 22:12:46 2014 +0200
+
+    allow more shortcuts
+
+commit 1d123d77b1cf0412f852fbed9a03e7cbb0423643
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 22:11:39 2014 +0200
+
+    better documentation
+
+commit 4174a486fe32639088cfa3bedbf06fc9a3e79b8d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 21:17:53 2014 +0200
+
+    the zetup tool is called znapzendzetup and not znapzendzetup.pl
+
+commit ed2d2bc276750c1adb103dee9b6c28fedd78da13
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 21:09:56 2014 +0200
+
+    5.20 not supported in travis yet
+
+commit 7fc2497d45081feb6de67ecd655790af5d556426
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 21:07:08 2014 +0200
+
+    get ready for 0.3.0
+
+commit 16dfed76cd442c764e172afb3ef945fffe135f07
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 21:05:16 2014 +0200
+
+    pod files for the benefit of github ... maybe
+
+commit 3352ab14378bef618c802c1fdadb2750f7b5ae8e
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 1 19:30:02 2014 +0200
+
+    - cleanup
+
+commit 3734d971ba7c0a29cdff902460378dca45338ba9
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 1 19:20:54 2014 +0200
+
+    - znapzend: multi destination backup implemented
+
+commit f63724264940a69be5634cd793ba98a0905bb807
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 20:42:38 2014 +0200
+
+    lets have some testing
+
+commit 13ed15ce48b70cc0204f4779f9367efc1af5b8c3
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 13:14:27 2014 +0200
+
+    added some more documentation
+
+commit d62610330f5794399cc1e1d7b57392bd221af3a5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 08:00:53 2014 +0200
+
+    version 0.2.0
+
+commit 729518ae2fd3592e96ff7dd5e7051e4374b79005
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jun 1 08:00:09 2014 +0200
+
+    re-arranged documentation
+
+commit 1a847bad6e8a096382f42459b682dd7fddc440e4
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 1 02:31:42 2014 +0200
+
+    - typo corrected
+
+commit 4b51d37271950ad8098a664c4cb45197f458fd9c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sun Jun 1 02:26:57 2014 +0200
+
+    - znapzendzetup edit implemented - tobi's wish is my command...
+
+commit 3fa3ac6008ad07c7fb031cbc4272da5d26bdaa0e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat May 31 23:57:57 2014 +0200
+
+    got a new version
+
+commit e36e5049257ea87824a6b1da99bee3785e8f06a1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat May 31 23:57:40 2014 +0200
+
+    as requested by dominik ... $1 eq '1'
+
+commit 99b2861013968a57bcafdd8a3b8f25a8c1fd21f3
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat May 31 18:39:46 2014 +0200
+
+    add main function and remove eval since the __DIE__ handler takes care of this
+
+commit 34fd8177634cbae1ff6bff9dc3b45dd3670cd992
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat May 31 13:56:23 2014 +0200
+
+    - recursive cleanup on destination fixed
+
+commit 4553ec587bd35e7c6a1c281edac390bbd827c60c
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat May 31 12:12:54 2014 +0200
+
+    - corrected typo in ZnapZend.pm
+
+commit f01bde024547308e676044b69acb3dadc04e91c2
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat May 31 11:50:50 2014 +0200
+
+    - implemented recursive send/recv
+    - some minor corrections in pods
+
+commit a3fd6f69bd402feedad83d531016a2d95a5098b4
+Author: hadfl <hadfl@users.noreply.github.com>
+Date:   Sat May 31 18:08:47 2014 +0200
+
+    - bugfix: singular/plural check for backup set list
+
+commit fffcdbef4cf9c3bb7da4015d6b30781942c671fe
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 17:31:57 2014 +0200
+
+    sync manpage
+
+commit 29e9fd3b8a9357b8d7a33fed11ad21fe7b7841bd
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 17:31:02 2014 +0200
+
+    fixed nameing
+
+commit fe05ed8eba26d87955340492fe4f33d94ebe9790
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 17:30:13 2014 +0200
+
+    added new --daemonize and --pidfile options
+
+commit 1d3bd767bf5829812c5dfaa19e5ceafe13fd4cab
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 16:57:33 2014 +0200
+
+    put man pages into their own directory
+
+commit 0c681ff4f5a8be01285b5d86810b7118025539f6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 16:52:10 2014 +0200
+
+    added documentation
+
+commit b141082177b821b9142ad11290bbba8b0db4b5dc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 16:11:46 2014 +0200
+
+    sync generated files
+
+commit fed0a57b0157a6ae4e7dee486b3b459c59769317
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 16:06:01 2014 +0200
+
+    we have no POD files
+
+commit a83988bd5993ac9b5d5521d1d6f6c7ae48a650b5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 16:02:57 2014 +0200
+
+    our module builder is called build-thirdparty.sh
+
+commit efbdc1d047d53c58e459a1b0d5c6dea8b4de22d1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:37:12 2014 +0200
+
+    make sure perl is properly 'replaced' upon installation
+
+commit 90cd9cad57b8ab8edec4b544d7a8a02031fff5e7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:18:56 2014 +0200
+
+    ignore some more files
+
+commit 7d5091a33068b2d2caddb3ce5478e514a9217aeb
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:18:27 2014 +0200
+
+    go to 0.0.3
+
+commit 2d1c74dbab5ca453b6c6419ef7a325657b096fa5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:17:42 2014 +0200
+
+    some more readme
+
+commit a6196b3ce5235c58aea898d7b05af96ba76976c0
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:07:08 2014 +0200
+
+    fix regression from renaming ZnapZend::Worker to ZnapZend
+
+commit 573d8d29b6499716fe6d5acdd36b8f93415ecf5a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:04:16 2014 +0200
+
+    support PERL5LIB settings
+
+commit f9206187e7e6d7991cc00e5daba2b31bccaed44a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:04:02 2014 +0200
+
+    domnik did 99% of the programming, so he should be first
+
+commit 16467ee623bae2fbd373dc7b38d7918992e38114
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 30 15:00:59 2014 +0200
+
+    boom ... znapzend is real. thank you dominik!
+
+commit 647a03586cd96454b737159ae4ed30cccd9d0135
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Dec 19 09:23:20 2013 +0100
+
+    work in progress
+
+commit c5ed01702e64d400100ffde59fd828f3460629bd
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Sep 22 09:39:58 2013 -0700
+
+    Initial commit
