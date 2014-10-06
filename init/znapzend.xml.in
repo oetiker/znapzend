@@ -28,13 +28,13 @@
         <exec_method 
                 type="method" 
                 name="start" 
-                exec="@prefix@/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" 
+                exec="@exec_prefix@/bin/znapzend --daemonize --pidfile=/dev/null"
                 timeout_seconds="170" />
 
         <exec_method
                 type="method"
                 name="stop"
-                exec="/usr/bin/kill `cat /var/run/znapzend.pid`"
+                exec=":kill"
                 timeout_seconds="60" />
 
 
@@ -48,9 +48,9 @@
                 </loctext>
             </common_name>
             <documentation>
-                <manpage title="znapzend" section="1" manpath="@prefix@/share/man" />
-                <manpage title="znapzendzetup" section="1" manpath="@prefix@/share/man" />
-                <manpage title="znapzendztatz" section="1" manpath="@prefix@/share/man" />
+                <manpage title="znapzend" section="1" manpath="@mandir@" />
+                <manpage title="znapzendzetup" section="1" manpath="@mandir@" />
+                <manpage title="znapzendztatz" section="1" manpath="@mandir@" />
             </documentation>
         </template>
 </service>
