@@ -28,13 +28,13 @@
         <exec_method 
                 type="method" 
                 name="start" 
-                exec="@prefix@/bin/znapzend --daemonize --pidfile=/var/run/znapzend.pid" 
+                exec="@prefix@/bin/znapzend --daemonize --pidfile=/dev/null"
                 timeout_seconds="170" />
 
         <exec_method
                 type="method"
                 name="stop"
-                exec="/usr/bin/kill `cat /var/run/znapzend.pid`"
+                exec=":kill"
                 timeout_seconds="60" />
 
 
