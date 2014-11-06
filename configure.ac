@@ -24,7 +24,7 @@ if test x$exec_prefix = xNONE; then
     exec_prefix=$actual_prefix
 fi
 
-if x$datarootdir=x'${prefix}/share'; then
+if test x$datarootdir=x'${prefix}/share'; then
     datarootdir=$actual_prefix/share
 fi
 
