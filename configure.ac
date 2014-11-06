@@ -20,7 +20,18 @@ if test x$actual_prefix = xNONE; then
     actual_prefix=$ac_default_prefix
 fi
 
+if test x$exec_prefix = xNONE; then
+    exec_prefix=$actual_prefix
+fi
 
+if x$datarootdir='${prefix}/share'; then
+    datarootdir=$actual_prefix/share
+fi
+
+if test x$mandir='x${datarootdir}/man'; then
+    mandir=$datarootdir/man
+fi
+            
 AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no-perl-found,$actual_prefix/thirdparty/bin:$PATH)
 AC_PATH_PROG(POD2MAN, pod2man, no)
