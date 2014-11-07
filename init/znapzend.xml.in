@@ -5,7 +5,7 @@
 <service 
         name="oep/znapzend" 
         type="service" 
-        version="3">
+        version="4">
 
         <create_default_instance 
                 enabled="false" />
@@ -29,14 +29,19 @@
                 type="method" 
                 name="start" 
                 exec="@exec_prefix@/bin/znapzend --daemonize --pidfile=/dev/null"
-                timeout_seconds="170" />
+                timeout_seconds="180" />
 
         <exec_method
                 type="method"
                 name="stop"
                 exec=":kill"
-                timeout_seconds="60" />
+                timeout_seconds="180" />
 
+        <exec_method 
+                type="method" 
+                name="refresh" 
+                exec="/usr/bin/kill -HUP $(/usr/bin/cat /var/run/znapzend.pid)"
+                timeout_seconds="180" />
 
         <stability 
                 value="Unstable" />
