@@ -40,7 +40,7 @@
         <exec_method 
                 type="method" 
                 name="refresh" 
-                exec="/usr/bin/kill -HUP $(/usr/bin/cat /var/run/znapzend.pid)"
+                exec=":kill -HUP"
                 timeout_seconds="180" />
 
         <stability 
