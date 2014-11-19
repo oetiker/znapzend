@@ -164,6 +164,9 @@ my $sendRecvCleanup = sub {
     my $backupSet = shift;
     my $timeStamp = shift;
 
+    #no HUP handler in child
+    $SIG{HUP} = 'IGNORE';
+
     my @snapshots;
     my $toDestroy;
     my $sendFailed = 0;
@@ -269,6 +272,9 @@ my $createSnapshot = sub {
     my $self = shift;
     my $backupSet = shift;
     my $timeStamp = shift;
+
+    #no HUP handler in child
+    $SIG{HUP} = 'IGNORE';
  
     if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
         $self->zLog->info("running pre snapshot command on $backupSet->{src}");
