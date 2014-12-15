@@ -27,6 +27,8 @@ has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
+has pfexec          => sub { 0 };
+has sudo            => sub { 0 };
 has connectTimeout  => sub { 30 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
@@ -48,6 +50,7 @@ has zZfs => sub {
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
+        pfexec => $self->pfexec, sudo => $self->sudo,
         zLog => $self->zLog);
         
 };

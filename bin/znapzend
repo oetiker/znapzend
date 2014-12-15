@@ -11,7 +11,7 @@ use Pod::Usage;
 use ZnapZend;
 
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(oracleMode recvu);
+my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
@@ -153,6 +153,14 @@ can destroy. Logging an error about the problem
 
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
+
+=item pfexec
+
+use 'pfexec' for zfs commands (e.g. when running znapzend as non-priviledged user)
+
+=item sudo
+
+use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
 
 =back
 
