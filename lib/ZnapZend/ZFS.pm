@@ -66,7 +66,7 @@ my $scrubZpool = sub {
     my $remote;
     
     ($remote, $zpool) = $splitHostDataSet->($zpool);
-    my @cmd = $startstop ? qw(zpool scrub) : qw(zpool scrub -s);
+    my @cmd = (@{$self->priv}, ($startstop ? qw(zpool scrub) : qw(zpool scrub -s)));
 
     my @ssh = $self->$buildRemote($remote, [@cmd, $zpool]);
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
@@ -494,7 +494,7 @@ sub fileExistsAndExec {
     my $remote;
 
     ($remote, $filePath) = $splitHostDataSet->($filePath);
-    my @ssh = $self->$buildRemote($remote, [qw(test -x), $filePath]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(test -x), $filePath]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     return !system(@ssh);
@@ -504,7 +504,7 @@ sub listPools {
     my $self = shift;
     my $remote = shift;
 
-    my @ssh = $self->$buildRemote($remote, [qw(zpool list -H -o name)]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zpool list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $zPools, '-|', @ssh
@@ -537,7 +537,7 @@ sub zpoolStatus {
 
     ($remote, $zpool) = $splitHostDataSet->($zpool);
     my @ssh = $self->$buildRemote($remote,
-        [qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $zpool]);
+        [qw(env LC_MESSAGES=C LC_DATE=C), @{$self->priv}, qw(zpool status -v), $zpool]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $zpoolStatus, '-|', @ssh or Mojo::Exception->throw("ERROR: cannot get status of $zpool");
