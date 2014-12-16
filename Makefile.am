@@ -77,7 +77,7 @@ dist-hook: $(POD) $(MAN) CHANGES
 
 get-thirdparty-modules:
 	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || mkdir -p $(THIRDPARTY_DIR)/bin && wget --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm
-	cat PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
+	echo $(PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
 
 test:
 	$(PERL) "-MExtUtils::Command::MM" "-e" "test_harness(1, 'lib','thirdparty/lib/perl5')" t/*.t

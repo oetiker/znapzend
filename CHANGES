@@ -1,3 +1,27 @@
+commit c7ca45dd1a8f920690aa4986dbb86c4f57a15522
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 20:35:43 2014 +0100
+
+    fixing travis ... argh
+
+commit 8f5ba765dc3def681cfd003a41bdc1a79a94b819
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 20:03:34 2014 +0100
+
+    to properly build this we need it all
+
+commit cb53c4aa0e97d8470ff384fc090e935bbac4d76d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 17:49:52 2014 +0100
+
+    update-travis
+
+commit b4391e87214e2a67c85c3bbf72ba0d85599bc870
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 17:36:19 2014 +0100
+
+    fix install rule for thirdparty
+
 commit 49479950c847c7d3adacfa913dc40f0b19bc9c01
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Tue Dec 16 17:29:07 2014 +0100

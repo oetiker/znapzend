@@ -138,7 +138,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" \
-	"$(DESTDIR)$(tdatadir)" "$(DESTDIR)$(svcdir)"
+	"$(DESTDIR)$(thirdpartydir)" "$(DESTDIR)$(svcdir)"
 SCRIPTS = $(dist_bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -169,7 +169,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-DATA = $(iman_DATA) $(nobase_tdata_DATA) $(svc_DATA)
+DATA = $(iman_DATA) $(nobase_thirdparty_DATA) $(svc_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -275,6 +275,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PERL5LIB = @PERL5LIB@
+PERL_MODULES = @PERL_MODULES@
 POD2MAN = @POD2MAN@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -336,8 +337,8 @@ YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
 @ENABLE_SVCINSTALL_TRUE@svcdir = @SVCINSTALLDIR@
 @ENABLE_SVCINSTALL_TRUE@svc_DATA = init/znapzend.xml
-tdatadir = $(prefix)
-nobase_tdata_DATA = $(THIRDPARTY)
+thirdpartydir = $(prefix)
+nobase_thirdparty_DATA = $(THIRDPARTY)
 dist_bin_SCRIPTS = $(BIN)
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)
@@ -437,12 +438,12 @@ uninstall-imanDATA:
 	@list='$(iman_DATA)'; test -n "$(imandir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(imandir)'; $(am__uninstall_files_from_dir)
-install-nobase_tdataDATA: $(nobase_tdata_DATA)
+install-nobase_thirdpartyDATA: $(nobase_thirdparty_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(nobase_tdata_DATA)'; test -n "$(tdatadir)" || list=; \
+	@list='$(nobase_thirdparty_DATA)'; test -n "$(thirdpartydir)" || list=; \
 	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(tdatadir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(tdatadir)" || exit 1; \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(thirdpartydir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(thirdpartydir)" || exit 1; \
 	fi; \
 	$(am__nobase_list) | while read dir files; do \
 	  xfiles=; for file in $$files; do \
@@ -450,17 +451,17 @@ install-nobase_tdataDATA: $(nobase_tdata_DATA)
 	    else xfiles="$$xfiles $(srcdir)/$$file"; fi; done; \
 	  test -z "$$xfiles" || { \
 	    test "x$$dir" = x. || { \
-	      echo " $(MKDIR_P) '$(DESTDIR)$(tdatadir)/$$dir'"; \
-	      $(MKDIR_P) "$(DESTDIR)$(tdatadir)/$$dir"; }; \
-	    echo " $(INSTALL_DATA) $$xfiles '$(DESTDIR)$(tdatadir)/$$dir'"; \
-	    $(INSTALL_DATA) $$xfiles "$(DESTDIR)$(tdatadir)/$$dir" || exit $$?; }; \
+	      echo " $(MKDIR_P) '$(DESTDIR)$(thirdpartydir)/$$dir'"; \
+	      $(MKDIR_P) "$(DESTDIR)$(thirdpartydir)/$$dir"; }; \
+	    echo " $(INSTALL_DATA) $$xfiles '$(DESTDIR)$(thirdpartydir)/$$dir'"; \
+	    $(INSTALL_DATA) $$xfiles "$(DESTDIR)$(thirdpartydir)/$$dir" || exit $$?; }; \
 	done
 
-uninstall-nobase_tdataDATA:
+uninstall-nobase_thirdpartyDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(nobase_tdata_DATA)'; test -n "$(tdatadir)" || list=; \
+	@list='$(nobase_thirdparty_DATA)'; test -n "$(thirdpartydir)" || list=; \
 	$(am__nobase_strip_setup); files=`$(am__nobase_strip)`; \
-	dir='$(DESTDIR)$(tdatadir)'; $(am__uninstall_files_from_dir)
+	dir='$(DESTDIR)$(thirdpartydir)'; $(am__uninstall_files_from_dir)
 install-svcDATA: $(svc_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(svc_DATA)'; test -n "$(svcdir)" || list=; \
@@ -785,7 +786,7 @@ check: check-recursive
 all-am: Makefile $(SCRIPTS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(tdatadir)" "$(DESTDIR)$(svcdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(imandir)" "$(DESTDIR)$(thirdpartydir)" "$(DESTDIR)$(svcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -839,7 +840,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-imanDATA install-nobase_tdataDATA \
+install-data-am: install-imanDATA install-nobase_thirdpartyDATA \
 	install-svcDATA
 
 install-dvi: install-dvi-recursive
@@ -888,7 +889,7 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
-	uninstall-nobase_tdataDATA uninstall-svcDATA
+	uninstall-nobase_thirdpartyDATA uninstall-svcDATA
 
 .MAKE: $(am__recursive_targets) install-am install-exec-am \
 	install-strip
@@ -903,14 +904,14 @@ uninstall-am: uninstall-dist_binSCRIPTS uninstall-imanDATA \
 	install-data-am install-dist_binSCRIPTS install-dvi \
 	install-dvi-am install-exec install-exec-am install-exec-hook \
 	install-html install-html-am install-imanDATA install-info \
-	install-info-am install-man install-nobase_tdataDATA \
+	install-info-am install-man install-nobase_thirdpartyDATA \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip install-svcDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
 	pdf-am ps ps-am tags tags-am uninstall uninstall-am \
 	uninstall-dist_binSCRIPTS uninstall-imanDATA \
-	uninstall-nobase_tdataDATA uninstall-svcDATA
+	uninstall-nobase_thirdpartyDATA uninstall-svcDATA
 
 
 doc/%.pod: bin/% configure
@@ -935,7 +936,7 @@ dist-hook: $(POD) $(MAN) CHANGES
 
 get-thirdparty-modules:
 	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || mkdir -p $(THIRDPARTY_DIR)/bin && wget --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm
-	cat PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
+	echo $(PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
 
 test:
 	$(PERL) "-MExtUtils::Command::MM" "-e" "test_harness(1, 'lib','thirdparty/lib/perl5')" t/*.t

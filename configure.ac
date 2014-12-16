@@ -99,6 +99,9 @@ if test "$enable_pkgonly" != yes; then
    done
 fi
 
+PERL_MODULES="m4_esyscmd([tr '\n' ' ' < PERL_MODULES])"
+
+AC_SUBST(PERL_MODULES)
                                                                                                                        
 AC_CONFIG_FILES([
 	Makefile

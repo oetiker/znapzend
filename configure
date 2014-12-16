@@ -587,6 +587,7 @@ PACKAGE_URL=''
 ac_default_prefix=/opt/$PACKAGE_NAME-$PACKAGE_VERSION
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PERL_MODULES
 PERL5LIB
 ENABLE_SVCINSTALL_FALSE
 ENABLE_SVCINSTALL_TRUE
@@ -2759,6 +2760,9 @@ $as_echo "Failed" >&6; }
      fi
    done
 fi
+
+PERL_MODULES="Mojolicious@5.69 Mojo::IOLoop::ForkCall@0.15 "
+
 
 
 ac_config_files="$ac_config_files Makefile lib/Makefile init/znapzend.xml"
