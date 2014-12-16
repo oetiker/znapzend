@@ -27,8 +27,15 @@ PM :=  $(shell find lib/ -name "*.pm")
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 
+THIRDPARTY_DIR := $(shell pwd)/thirdparty
+
+
+THIRDPARTY := $(shell test -d thirdparty && find thirdparty/lib/perl5 -type f)
+
+
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS setup/build-thirdparty.sh setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer t/zfs t/znapzendzetup.t t/zpool
+
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -39,6 +46,8 @@ svcdir = @SVCINSTALLDIR@
 svc_DATA = init/znapzend.xml
 
 endif
+
+nobase_data_DATA = $(THIRDPARTY)
 
 dist_bin_SCRIPTS = $(BIN)
 
@@ -65,6 +74,13 @@ dist-hook: $(POD) $(MAN) CHANGES
 	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
 	$(GMAKE) $(MAN)
 
+get-thirdparty-modules:
+	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || mkdir -p $(THIRDPARTY_DIR)/bin && wget --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm
+	cat PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
+
+test:
+	$(PERL) "-MExtUtils::Command::MM" "-e" "test_harness(1, 'lib','thirdparty/lib/perl5')" t/*.t
+                        
 prebuilt:
 	$(GMAKE) dist
 	tar xvf znapzend-$(PACKAGE_VERSION).tar.gz
