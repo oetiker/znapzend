@@ -105,6 +105,7 @@ sub main {
 
     defined $mainOpt or pod2usage(1);
 
+    Getopt::Long::Configure(qw(posix_default no_ignore_case pass_through));
     GetOptions($opts, qw(pfexec sudo)) or exit 1;
     Getopt::Long::Configure(qw(posix_default no_ignore_case));
     my $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
@@ -168,7 +169,7 @@ sub main {
     };
     /^edit$/ && do {
         #only dataset given so we use the editor based edit mode
-        if ($#ARGV == 0){
+        if ($#ARGV == grep { /^--(?:sudo|pfexec)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
         
             my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
