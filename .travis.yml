@@ -16,7 +16,7 @@ before_script:
   - ./setup/build-devel.sh $HOME/znapzend/thirdparty
 
 script:
-  - ./configure --prefix=$HOME/znapzend
+  - ./configure --prefix=$HOME/znapzend || true
   - make get-thirdparty-modules
   - make install
   - perl -I$HOME/znapzend/thirdparty/lib/perl5
