@@ -8,6 +8,8 @@ B<znapzendztatz> [I<options>...] [src_dataset]
 
  -H             do not print headers
  -r,--recursive show statistics for dataset and sub datasets
+ --pfexec       use 'pfexec' for commands
+ --sudo         use 'sudo' for commands
  --man          show man-page and exit
  -h,--help      display this help and exit
 

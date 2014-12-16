@@ -105,6 +105,14 @@ can destroy. Logging an error about the problem
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
 
+=item pfexec
+
+use 'pfexec' for zfs commands (e.g. when running znapzend as non-priviledged user)
+
+=item sudo
+
+use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
+
 =back
 
 =item B<--connectTimeout>=I<timeout>

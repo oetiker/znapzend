@@ -1,3 +1,9 @@
+commit 3cdad5ed0bab8c99da972a18fbc122bb8520e6db
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 23:47:24 2014 +0100
+
+    get ready for 0.14.0 release
+
 commit e01f921eebae630a3d97c23f4274e6ca209b0c5d
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Tue Dec 16 21:24:26 2014 +0100
