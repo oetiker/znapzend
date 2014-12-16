@@ -54,7 +54,7 @@ sub runCommand {
     main($mainOpt);
 }
 
-use Test::More tests => 15;
+use Test::More;
 
 use_ok 'ZnapZend';
 
@@ -96,6 +96,8 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
 
 is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
 is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
+
+done_testing;
 
 1;
 

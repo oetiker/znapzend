@@ -53,7 +53,7 @@ sub runCommand {
     main();
 }
 
-use Test::More tests => 5;
+use Test::More;
 
 use_ok 'ZnapZend';
 
@@ -69,6 +69,8 @@ is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
 
 is (runCommand(qw(--daemonize --debug --features=oracleMode,recvu),
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
+
+done_testing;
  
 1;
 

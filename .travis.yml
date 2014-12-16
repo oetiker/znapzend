@@ -1,6 +1,7 @@
 language: perl
 
 perl:
+  - "5.20"
   - "5.18"
   - "5.16"
   - "5.14"
@@ -12,11 +13,11 @@ install:
   - true
 
 before_script:
-  - ./setup/build-thirdparty.sh $HOME/znapzend/thirdparty
   - ./setup/build-devel.sh $HOME/znapzend/thirdparty
 
 script:
-  - ./configure --prefix=$HOME/znapzend
+  - ./configure --prefix=$HOME/znapzend || true
+  - make get-thirdparty-modules
   - make install
   - perl -I$HOME/znapzend/thirdparty/lib/perl5
         -MDevel::Cover=+ignore,thirdparty ./t/znapzend.t $HOME/znapzend || test $? == 1 

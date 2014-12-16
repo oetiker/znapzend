@@ -50,7 +50,7 @@ sub runCommand {
     main();
 }
 
-use Test::More tests => 3;
+use Test::More;
 
 use_ok 'ZnapZend';
 
@@ -61,6 +61,8 @@ do 'znapzendztatz' or die "ERROR: loading program znapzendztatz\n";
 is (runCommand('--help'), 1, 'znapzendztatz help');
  
 is (runCommand(), 1, 'znapzendztatz');
+
+done_testing;
 
 1;
 

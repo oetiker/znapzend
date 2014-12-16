@@ -43,10 +43,10 @@ cd znapzend-0.13.0
 if configure complains about missing perl modules, run
 
 ```sh
-./setup/build-thirdparty.sh /opt/znapzend-0.13.0/thirdparty
+make get-thirdparty-modules
 ```
 
-to install the missing modules into the specified directry. This will NOT messup your local perl installation!
+to install the missing modules. NOTE: This will NOT messup your local perl installation!
 
 Now you can run configure again and then
 

@@ -88,40 +88,21 @@ AC_SUBST(PERL5LIB)
 
 mod_ok=1
 if test "$enable_pkgonly" != yes; then
-   for module in \
-     Mojolicious \
-     Mojo::IOLoop::ForkCall
-   do 
+   for module in m4_esyscmd([tr '\n' ' ' < PERL_MODULES | sed 's/\@[^ ]*//g']); do
      AC_MSG_CHECKING([checking for perl module '$module'])
-     if ${PERL} -e 'use lib qw('$actual_prefix/thirdparty/lib/perl5'); use '$module 2>/dev/null ; then
+     if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])
      else
          AC_MSG_RESULT([Failed])
          mod_ok=0
      fi
    done
-   if test x$mod_ok = x0; then
-        cat <<NOTES
-
-** Aborting Configure ******************************
-   
-   If you know where perl can find the missing modules, set
-   the PERL5LIB environment variable accordingly.
-
-   FIRST though, make sure that 'perl' starts the perl
-   binary you want to use.
-
-   You can install local copies of the missing modules 
-   by running
-
-     ./setup/build-thirdparty.sh ${actual_prefix}/thirdparty
-
-NOTES
-      exit 1
- fi
-
 fi
-                                                                                                                        
+
+PERL_MODULES="m4_esyscmd([tr '\n' ' ' < PERL_MODULES])"
+
+AC_SUBST(PERL_MODULES)
+                                                                                                                       
 AC_CONFIG_FILES([
 	Makefile
 	lib/Makefile
@@ -131,6 +112,25 @@ AC_CONFIG_FILES([
 AC_SUBST(VERSION)
 
 AC_OUTPUT
+
+if test x$mod_ok = x0; then
+    cat <<NOTES
+
+** SOME PERL MODULES ARE MISSING ******************************
+
+If you know where perl can find the missing modules, set
+the PERL5LIB environment variable accordingly.
+
+You can also install a local copy of the Perl modules by running
+
+   $GMAKE get-thirdparty-modules
+
+You may want to run configure again after that to make sure
+all modules are installed
+   
+NOTES
+exit 1
+fi
 
 cat <<NOTES
 

@@ -1,3 +1,141 @@
+commit c7ca45dd1a8f920690aa4986dbb86c4f57a15522
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 20:35:43 2014 +0100
+
+    fixing travis ... argh
+
+commit 8f5ba765dc3def681cfd003a41bdc1a79a94b819
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 20:03:34 2014 +0100
+
+    to properly build this we need it all
+
+commit cb53c4aa0e97d8470ff384fc090e935bbac4d76d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 17:49:52 2014 +0100
+
+    update-travis
+
+commit b4391e87214e2a67c85c3bbf72ba0d85599bc870
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 17:36:19 2014 +0100
+
+    fix install rule for thirdparty
+
+commit 49479950c847c7d3adacfa913dc40f0b19bc9c01
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 17:29:07 2014 +0100
+
+    modified install procedure to be fully integrated into makefile
+
+commit eef0b607e90e73dfeba3f8a4d655ba2f6c33d5ca
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 16 10:26:07 2014 +0100
+
+    - zetup edit bugfix
+
+commit 0253a1c1c07af454b2595ec42ea16f0479adcbbd
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 16 10:12:58 2014 +0100
+
+    - pfexec/sudo support for zetup and ztatz
+
+commit 76be23417a80c9c0391be3d40f41aef6c722058b
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Dec 16 09:21:57 2014 +0100
+
+    - pfexec/sudo for test and zpool commands
+
+commit ec92ab9e2d18e26b392f9c31ae55bbe2747f15f7
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 23:29:06 2014 +0100
+
+    - pfexec and sudo features added
+
+commit f52b69ac361945146e5c52489feb941705a4e2dd
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Dec 15 16:02:33 2014 +0100
+
+    - mbuffer timeout: 60 sec
+
+commit b98581a9e631b8a31f97ceb168f3a25ade3ac309
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Nov 19 08:53:09 2014 +0100
+
+    - no HUP handler in child processes
+
+commit 6ccc0a35cf6a039c24512ea062f52348e2c14dc6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat Nov 8 09:33:52 2014 +0100
+
+    - manifest refresh method
+
+commit 8201b70a5cde188b268d5677a60f0a70af4e9862
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Nov 7 15:52:06 2014 +0100
+
+    - refresh method added
+
+commit cd42eed9e28762a9256398ee858b100ab94f0878
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 15:55:52 2014 +0100
+
+    fix datarootdir replacement
+
+commit 233ab2594c89e947be5e42620cfbd79caa7d63e5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 15:55:13 2014 +0100
+
+    fix datarootdir replacement
+
+commit 7fde52292484637cba5ea55e6e0b5e2eb9cc36e6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 6 14:47:33 2014 +0100
+
+    make sure smf fixing works
+
+commit e93efbf63e89d9f5dddd6ced1d317acf1414494f
+Author: Lauri Tirkkonen <lotheac@iki.fi>
+Date:   Mon Oct 6 17:20:10 2014 +0300
+
+    fix mandir and binary path in svc manifest
+
+commit 52d46bc23ac5e28e8fb8639db85ec88d8965f470
+Author: Lauri Tirkkonen <lotheac@iki.fi>
+Date:   Mon Oct 6 16:06:10 2014 +0300
+
+    let smf manage pids instead of using a pidfile
+
+commit cc5c3af5efa1eae1b87dd17705d05a47f4121923
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Sep 18 15:21:25 2014 +0200
+
+    and one at the end
+
+commit ae6494dbd933a3792615094517641e7f5a2333b3
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Sep 18 15:20:34 2014 +0200
+
+    the string needs another space at the beginning for a match
+
+commit b6de7b3d142fba2ccac5d5ec7764d3385ccf8324
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Sep 18 15:11:57 2014 +0200
+
+    - if no snapshots extist yet, still output something sensible still
+
+commit b402e7dddf1298c63c90f4bb47ceecf8963b5d96
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Oct 1 08:11:40 2014 +0200
+
+    added note on :
+
+commit 6a4ab4b6585b629454c4d84c4d722b787d9f0e0c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Sep 18 08:21:00 2014 +0200
+
+    prepare for 0.13.0
+
 commit bf31398480f30612ca212b249b7d19ce478b2351
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Wed Sep 17 14:33:39 2014 +0200
