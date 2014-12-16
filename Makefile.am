@@ -47,7 +47,8 @@ svc_DATA = init/znapzend.xml
 
 endif
 
-nobase_data_DATA = $(THIRDPARTY)
+thirdpartydir = $(prefix)
+nobase_thirdparty_DATA = $(THIRDPARTY)
 
 dist_bin_SCRIPTS = $(BIN)
 
