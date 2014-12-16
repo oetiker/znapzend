@@ -1,3 +1,9 @@
+commit e01f921eebae630a3d97c23f4274e6ca209b0c5d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 21:24:26 2014 +0100
+
+    integrate PERL_MODULES content into Makefiles
+
 commit c7ca45dd1a8f920690aa4986dbb86c4f57a15522
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Tue Dec 16 20:35:43 2014 +0100
