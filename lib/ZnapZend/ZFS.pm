@@ -126,7 +126,7 @@ sub listDataSets {
     my $self = shift;
     my $remote = shift;
 
-    my @ssh = $self->$buildRemote($remote, @{$self->priv}, [qw(zfs list -H -o name)]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name)]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
@@ -537,7 +537,7 @@ sub zpoolStatus {
 
     ($remote, $zpool) = $splitHostDataSet->($zpool);
     my @ssh = $self->$buildRemote($remote,
-        [qw(env LC_MESSAGES=C LC_DATE=C), @{$self->priv}, qw(zpool status -v), $zpool]);
+        [@{$self->priv}, qw(env LC_MESSAGES=C LC_DATE=C zpool status -v), $zpool]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $zpoolStatus, '-|', @ssh or Mojo::Exception->throw("ERROR: cannot get status of $zpool");
