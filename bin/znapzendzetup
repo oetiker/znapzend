@@ -5,7 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 use lib "$FindBin::Bin/../thirdparty/lib/perl5";
 
-use Getopt::Long qw(:config posix_default no_ignore_case);
+use Getopt::Long qw(:config posix_default no_ignore_case pass_through);
 use Pod::Usage;
 use File::Temp qw(tempfile);
 use Scalar::Util qw(blessed);
@@ -96,7 +96,6 @@ sub parseArguments {
 
 sub main {
     my $mainOpt = shift;
-    my $zConfig = ZnapZend::Config->new();
     my $opts = {};
     my %cfg;
     my $ZNAPZEND_TESTING = 0;
@@ -106,10 +105,15 @@ sub main {
 
     defined $mainOpt or pod2usage(1);
 
+    Getopt::Long::Configure(qw(posix_default no_ignore_case pass_through));
+    GetOptions($opts, qw(pfexec sudo)) or exit 1;
+    Getopt::Long::Configure(qw(posix_default no_ignore_case));
+    my $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
+
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, (qw(recursive|r donotask mbuffer=s mbuffersize=s),
+        GetOptions($opts, (qw(recursive|r donotask pfexec sudo mbuffer=s mbuffersize=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s))) or exit 1;
 
         $cfg{enabled}       = 'on';
@@ -148,7 +152,7 @@ sub main {
         last;
     };
     /^delete$/ && do {
-        GetOptions($opts, qw(dst=s)) or exit 1;
+        GetOptions($opts, qw(pfexec sudo dst=s)) or exit 1;
 
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
@@ -165,7 +169,7 @@ sub main {
     };
     /^edit$/ && do {
         #only dataset given so we use the editor based edit mode
-        if ($#ARGV == 0){
+        if ($#ARGV == grep { /^--(?:sudo|pfexec)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
         
             my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
@@ -206,7 +210,7 @@ sub main {
             last;
         }
 
-        GetOptions($opts, (qw(donotask recursive=s mbuffer=s mbuffersize=s),
+        GetOptions($opts, (qw(donotask pfexec sudo recursive=s mbuffer=s mbuffersize=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
@@ -291,7 +295,7 @@ sub main {
         my @props;
         my $fh;
 
-        GetOptions($opts, 'write|w', 'prop=s' => \@props) or exit 1;
+        GetOptions($opts, qw(pfexec sudo write|w), 'prop=s' => \@props) or exit 1;
 
         if ($#ARGV){
             my $filename = pop @ARGV;
@@ -376,34 +380,36 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
-           [--pre-snap-command=<command>] \
-           [--post-snap-command=<command>] \
-           [--tsformat=<format>] --donotask \
-           SRC plan dataset \
-           [ DST[:key] plan [[user@]host:]dataset ]
+    create  [--pfexec|sudo] \
+            [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
+            [--pre-snap-command=<command>] \
+            [--post-snap-command=<command>] \
+            [--tsformat=<format>] --donotask \
+            SRC plan dataset \
+            [ DST[:key] plan [[user@]host:]dataset ]
 
-    delete [--dst=key] <src_dataset>
+    delete  [--pfexec|sudo] [--dst=key] <src_dataset>
 
-    edit   [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
-           [--pre-snap-command=<command>|off] \
-           [--post-snap-command=<command>|off] \
-           [--tsformat=<format>] --donotask \
-           SRC [plan] dataset \
-           [ DST:key [plan] [dataset] ]
+    edit    [--pfexec|sudo]
+            [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
+            [--pre-snap-command=<command>|off] \
+            [--post-snap-command=<command>|off] \
+            [--tsformat=<format>] --donotask \
+            SRC [plan] dataset \
+            [ DST:key [plan] [dataset] ]
 
-    edit <src_dataset>
+    edit    [--pfexec|sudo] <src_dataset>
 
-    enable <src_dataset>
+    enable  [--pfexec|sudo] <src_dataset>
 
-    disable <src_dataset>
+    disable [--pfexec|sudo] <src_dataset>
 
-    list [src_dataset]
+    list    [--pfexec|sudo] [src_dataset]
 
-    export <src_dataset>
+    export  [--pfexec|sudo] <src_dataset>
 
-    import [--write] [--prop <property>=<value>, [--prop ...] ...]
-           <src_dataset> [<prop_dump_file>]
+    import  [--pfexec|sudo] [--write] [--prop <property>=<value>, [--prop ...] ...]
+            <src_dataset> [<prop_dump_file>]
 
     help
 
