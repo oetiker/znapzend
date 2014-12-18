@@ -25,7 +25,7 @@ sub dumpProperties {
             #print warning if destination does not exist, print property otherwise
             if (my ($dst) = $opt =~ /^(dst_[^_]+)_valid$/){
                 $backupSet->{$opt} || do {
-                    print "*** WARNING: destination '$backupSet->{$dst}'"
+                    warn "*** WARNING: destination '$backupSet->{$dst}'"
                         . " does not exist, will be ignored! ***\n\n";
                 }
             }

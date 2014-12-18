@@ -146,8 +146,6 @@ my $refreshBackupPlans = sub {
             if (!$backupSet->{"dst_$key" . '_valid'}){
                 $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                     . "' does not exist. ignoring it...");
-                print STDERR "\n# WARNING: destination '" . $backupSet->{"dst_$key"}
-                    . "' does not exist. ignoring it...\n\n" if $self->debug;
 
                 delete $backupSet->{"dst_$key"};
                 next;
