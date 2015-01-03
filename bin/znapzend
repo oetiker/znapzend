@@ -18,11 +18,13 @@ sub main {
         qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s)) or exit 1;
 
     #split all features into individual options
-    for my $feature (split /,/, $opts->{features}){
-        $featureMap{$feature} or die "ERROR: feature '$feature' not supported\n";
-        $opts->{$feature} = 1;
+    if ($opts->{features}){
+        for my $feature (split /,/, $opts->{features}){
+            $featureMap{$feature} or die "ERROR: feature '$feature' not supported\n";
+            $opts->{$feature} = 1;
+        }
+        delete $opts->{features};
     }
-    delete $opts->{features};
     
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
