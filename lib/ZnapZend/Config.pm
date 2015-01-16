@@ -188,6 +188,9 @@ sub setBackupSet {
     #main program should check backup set prior to set it. anyway, check again just to be sure
     $self->checkBackupSet($cfg);
 
+    #delete existing backup set in case some settings have been removed
+    $self->deleteBackupSet($self->backupSets->[0]->{src});
+
     $self->zfs->setDataSetProperties($self->backupSets->[0]->{src}, $self->backupSets->[0]);
 
     return 1;
