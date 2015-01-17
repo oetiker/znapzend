@@ -276,6 +276,13 @@ my $createSnapshot = sub {
 
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
+
+    my $snapshotName = $backupSet->{src} . '@'
+        . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+    #set env variables for pre and post scripts use
+    local $ENV{ZNAP_NAME} = $snapshotName;
+    local $ENV{ZNAP_TIME} = $timeStamp;
  
     if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
         $self->zLog->info("running pre snapshot command on $backupSet->{src}");
@@ -287,9 +294,6 @@ my $createSnapshot = sub {
     $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
         . 'snapshot on ' . $backupSet->{src});
 
-    my $snapshotName = $backupSet->{src} . '@'
-        . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
-
     $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
         or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
 
@@ -299,6 +303,10 @@ my $createSnapshot = sub {
         system($backupSet->{post_znap_cmd})
             && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
     }
+
+    #clean up env variables
+    delete $ENV{ZNAP_NAME};
+    delete $ENV{ZNAP_TIME};
 
     return 1;
 };
