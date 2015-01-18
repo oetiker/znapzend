@@ -24,11 +24,11 @@ if test x$exec_prefix = xNONE; then
     exec_prefix=$actual_prefix
 fi
 
-if test x$datarootdir=x'${prefix}/share'; then
+if test x$datarootdir = x'${prefix}/share'; then
     datarootdir=$actual_prefix/share
 fi
 
-if test x$mandir=x'${datarootdir}/man'; then
+if test x$mandir = x'${datarootdir}/man'; then
     mandir=$datarootdir/man
 fi
             
