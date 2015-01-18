@@ -1,3 +1,45 @@
+commit 890a7500693ac895d7ade73e37ed2418f16a1bfa
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jan 18 14:26:05 2015 +0100
+
+    we need spaces around the equal signs
+
+commit 6f0a1c1ebebe40b4f981f708b36d041a141c00a6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat Jan 17 15:52:58 2015 +0100
+
+    - env variables for pre and post znap scripts use added
+
+commit 5b0b32b3f40f0c64219cacb901b7b6678801e24f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 16 14:32:42 2015 +0100
+
+    - clear properties before set
+
+commit 2e58ef0731dd98d97ce09b97c7d7fb56a66fac82
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat Jan 3 18:31:03 2015 +0100
+
+    - only process features if not empty
+
+commit d3b20b7327036bf5e826c28943eeca9e10855677
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Thu Dec 18 13:45:51 2014 +0100
+
+    - warn instead of print
+
+commit a3c588bc2fd0825656707816ab9d0a2a57ec23b9
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Wed Dec 17 12:09:01 2014 +0100
+
+    - warn instead of die if mbuffer is not present
+
+commit 3d2c470cb38a60fe21001db0b9f0b5ef246d2c98
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Dec 16 23:48:06 2014 +0100
+
+    ready for 0.14.0
+
 commit 3cdad5ed0bab8c99da972a18fbc122bb8520e6db
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Tue Dec 16 23:47:24 2014 +0100
