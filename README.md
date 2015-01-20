@@ -40,17 +40,13 @@ tar zxvf znapzend-0.14.0.tar.gz
 cd znapzend-0.14.0
 ./configure --prefix=/opt/znapzend-0.14.0
 ```
-if configure complains about missing perl modules, run
+
+If configure finds anything noteworthy, it will tell you about it.  If any
+perl modules are found to be missing, they get installed locally into the znapzend
+installation. Your perl installation will not get modified!
 
 ```sh
-make get-thirdparty-modules
-```
-
-to install the missing modules. NOTE: This will NOT messup your local perl installation!
-
-Now you can run configure again and then
-
-```sh
+make
 make install
 ```
 

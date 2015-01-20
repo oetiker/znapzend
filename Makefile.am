@@ -30,9 +30,6 @@ POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 
-THIRDPARTY := $(shell test -d thirdparty && find thirdparty/lib/perl5 -type f)
-
-
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES setup/sdbs.inc $(BIN) $(PM) $(GENERATED_EXTRADIST) init/znapzend.xml.in t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer t/zfs t/znapzendzetup.t t/zpool
 
@@ -46,9 +43,6 @@ svcdir = @SVCINSTALLDIR@
 svc_DATA = init/znapzend.xml
 
 endif
-
-thirdpartydir = $(prefix)
-nobase_thirdparty_DATA = $(THIRDPARTY)
 
 dist_bin_SCRIPTS = $(BIN)
 
@@ -66,18 +60,25 @@ README.md COPYRIGHT: configure
 
 CHANGES: configure
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
-	
-install-exec-hook:
+
+all-local:
+	[ "$(MISSING_PERL_MODULES)" != "" ] && $(GMAKE) get-thirdparty-modules
+        
+install-exec-hook:        
 	$(AM_V_GEN)[ "$(PERL5LIB)" != "" ] && cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
+	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN) || true
 	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
+	$(AM_V_GEN)cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
 
 dist-hook: $(POD) $(MAN) CHANGES
-	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)
+	$(AM_V_GEN)cd $(distdir) && $(PERL) -i -p -e '"$(PACKAGE_VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/ and $$v = sprintf("%d.%03d%03d",$$1,$$2,$$3) and s/^\$$VERSION\s+=\s+".+?"/\$$VERSION = "$$d"/;'  $(BIN)	
 	$(GMAKE) $(MAN)
 
 get-thirdparty-modules:
-	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || mkdir -p $(THIRDPARTY_DIR)/bin && wget --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm
-	echo $(PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
+	[ -d $(THIRDPARTY_DIR)/bin ] || mkdir -p $(THIRDPARTY_DIR)/bin
+	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(CURL) ]  && $(CURL) --location --insecure https://cpanmin.us > $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
+	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(WGET) ]  && $(WGET) --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm https://cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
+	echo $(MISSING_PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
 
 test:
 	$(PERL) "-MExtUtils::Command::MM" "-e" "test_harness(1, 'lib','thirdparty/lib/perl5')" t/*.t

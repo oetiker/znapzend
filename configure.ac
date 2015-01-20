@@ -35,6 +35,8 @@ fi
 AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no-perl-found,$actual_prefix/thirdparty/bin:$PATH)
 AC_PATH_PROG(POD2MAN, pod2man, no)
+AC_PATH_PROG(CURL, curl, no)
+AC_PATH_PROG(WGET, wget, no)
 
 ac_perl_version="5.10.1"
 
@@ -87,21 +89,22 @@ AC_SUBST(PERL5LIB)
 # Check the necessary Perl modules
 
 mod_ok=1
+MISSING_PERL_MODULES=""
 if test "$enable_pkgonly" != yes; then
-   for module in m4_esyscmd([tr '\n' ' ' < PERL_MODULES | sed 's/\@[^ ]*//g']); do
+   for module in m4_esyscmd([tr '\n' ' ' < PERL_MODULES]); do
      AC_MSG_CHECKING([checking for perl module '$module'])
-     if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$module 2>/dev/null ; then
+     pure_module=`echo $module|sed 's/\@[^ ]*//g'`
+     if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$pure_module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])
      else
+         MISSING_PERL_MODULES="${MISSING_PERL_MODULES} $module"
          AC_MSG_RESULT([Failed])
          mod_ok=0
      fi
    done
 fi
 
-PERL_MODULES="m4_esyscmd([tr '\n' ' ' < PERL_MODULES])"
-
-AC_SUBST(PERL_MODULES)
+AC_SUBST(MISSING_PERL_MODULES)
                                                                                                                        
 AC_CONFIG_FILES([
 	Makefile
@@ -116,30 +119,26 @@ AC_OUTPUT
 if test x$mod_ok = x0; then
     cat <<NOTES
 
-** SOME PERL MODULES ARE MISSING ******************************
+** SOME PERL MODULES ARE MISSING ****************************
 
 If you know where perl can find the missing modules, set
-the PERL5LIB environment variable accordingly.
+the PERL5LIB environment variable accordingly and run
+configure again. Otherwise the missing modules will be built
+automatically.
 
-You can also install a local copy of the Perl modules by running
-
-   $GMAKE get-thirdparty-modules
-
-You may want to run configure again after that to make sure
-all modules are installed
-   
 NOTES
-exit 1
+
 fi
 
 cat <<NOTES
 
-** Ready to install **************************************
+** Ready to install *****************************************
    
    Settings:
 
      PERL5LIB = ${PERL5LIB:-"not set"}
      PERL = $PERL
+     MISSING_MODULES = $MISSING_PERL_MODULES
      SVCINSTALLDIR = $SVCINSTALLDIR
      
    Note that the Makefiles uses GNU make functionality.
