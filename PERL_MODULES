@@ -1,2 +1,3 @@
-Mojolicious@5.69
-Mojo::IOLoop::ForkCall@0.15
+Mojolicious@5.72
+Mojo::IOLoop::ForkCall@0.16
+
