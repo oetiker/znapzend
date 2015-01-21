@@ -12,12 +12,8 @@ perl:
 install:
   - true
 
-before_script:
-  - ./setup/build-devel.sh $HOME/znapzend/thirdparty
-
 script:
-  - ./configure --prefix=$HOME/znapzend || true
-  - make get-thirdparty-modules
+  - ./configure --prefix=$HOME/znapzend
   - make install
   - perl -I$HOME/znapzend/thirdparty/lib/perl5
         -MDevel::Cover=+ignore,thirdparty ./t/znapzend.t $HOME/znapzend || test $? == 1 
