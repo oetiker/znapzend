@@ -15,13 +15,14 @@ install:
 script:
   - ./configure --prefix=$HOME/znapzend
   - make install
-  - perl -I$HOME/znapzend/thirdparty/lib/perl5
-        -MDevel::Cover=+ignore,thirdparty ./t/znapzend.t $HOME/znapzend || test $? == 1 
-  - perl -I$HOME/znapzend/thirdparty/lib/perl5
-        -MDevel::Cover=+ignore,thirdparty ./t/znapzendzetup.t $HOME/znapzend || test $? == 1 
-  - perl -I$HOME/znapzend/thirdparty/lib/perl5
-        -MDevel::Cover=+ignore,thirdparty ./t/znapzendztatz.t $HOME/znapzend || test $? == 1 
-  - perl -I$HOME/znapzend/thirdparty/lib/perl5
-        -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t $HOME/znapzend || test $? == 1 
-  - env PERL5LIB=$HOME/znapzend/thirdparty/lib/perl5  $HOME/znapzend/thirdparty/bin/cover -report coveralls
+  - sudo cpanm install Devel::Cover
+  - perl -I./thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzend.t ./bin/znapzend || test $? == 1 
+  - perl -I./thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzendzetup.t ./bin/znapzend || test $? == 1 
+  - perl -I./thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/znapzendztatz.t ./bin/znapzend || test $? == 1 
+  - perl -I./thirdparty/lib/perl5
+        -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t ./bin/znapzend || test $? == 1 
+  - cover -report coveralls
 
