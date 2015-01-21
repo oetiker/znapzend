@@ -92,8 +92,8 @@ mod_ok=1
 MISSING_PERL_MODULES=""
 if test "$enable_pkgonly" != yes; then
    for module in m4_esyscmd([tr '\n' ' ' < PERL_MODULES]); do
+     pure_module=`echo $module|sed 's/@.*//'`
      AC_MSG_CHECKING([checking for perl module '$module'])
-     pure_module=`echo $module|sed 's/\@[^ ]*//g'`
      if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -I$actual_prefix/thirdparty/lib/perl5 -e 'use '$pure_module 2>/dev/null ; then
          AC_MSG_RESULT([Ok])
      else
