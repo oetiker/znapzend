@@ -148,8 +148,7 @@ my $refreshBackupPlans = sub {
                     = $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
-                        . "' does not exist or is offline. ignoring it for this round...");
-                    next;
+                        . "' does not exist or is offline. will be rechecked every run...");
                 };
             }
             $backupSet->{"dst$key" . 'PlanHash'}
@@ -183,6 +182,17 @@ my $sendRecvCleanup = sub {
     #loop through all destinations
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
+
+        #recheck non valid dst as t might be online, now 
+        if (!$backupSet->{$dst . '_valid'}){
+            $backupSet->{$dst. '_valid'}
+                = $self->zZfs->dataSetExists($backupSet->{$dst}) or do {
+
+                $self->zLog->warn("destination '" . $backupSet->{$dst}
+                    . "' does not exist or is offline. ignoring it for this round...");
+                next;
+            };
+        }
 
         #loop through all subdatasets
         for my $srcDataSet (@$srcSubDataSets){
