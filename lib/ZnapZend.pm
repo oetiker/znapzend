@@ -145,7 +145,7 @@ my $refreshBackupPlans = sub {
             #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now 
             if (!$backupSet->{"dst_$key" . '_valid'}){
                 $backupSet->{"dst_$key" . '_valid'}
-                    = $self->zfs->dataSetExists($backupSet->{"dst_$key"}) or do {
+                    = $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
