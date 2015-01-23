@@ -142,13 +142,15 @@ my $refreshBackupPlans = sub {
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_plan$/ or next;
 
-            #check if destination exists (i.e. is valid) otherwise remove it
+            #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now 
             if (!$backupSet->{"dst_$key" . '_valid'}){
-                $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
-                    . "' does not exist. ignoring it...");
+                $backupSet->{"dst_$key" . '_valid'}
+                    = $self->zfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                delete $backupSet->{"dst_$key"};
-                next;
+                    $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
+                        . "' does not exist or is offline. ignoring it for this round...");
+                    next;
+                };
             }
             $backupSet->{"dst$key" . 'PlanHash'}
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
