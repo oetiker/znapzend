@@ -32,6 +32,7 @@ for ($command){
                 print $ARGV[-1] . "\n";
                 exit;
             }
+            exit 1 if !exists $dataSets{$ARGV[-1]};
             my $snapCount = ($dataSets{$ARGV[-1]} eq 'src') ? 60 : 58;
             #get timestamp rounded to minutes
             my $time = localtime(int(time / 60) * 60 - 3600);
@@ -60,6 +61,10 @@ for ($command){
     };
 
     /^get$/ && do {
+        if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
+            print "10G\n";
+            exit;
+        }
         exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src'); 
         print <<"ZFS_GET_END";
 org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
