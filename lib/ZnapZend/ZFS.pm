@@ -125,6 +125,7 @@ sub snapshotExists {
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
+    my @dataSets;
 
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name)]);
 
@@ -133,8 +134,12 @@ sub listDataSets {
         or Mojo::Exception->throw('ERROR: cannot get datasets'
             . ($remote ? " on $remote" : ''));
 
-    my @dataSets = <$dataSets>;
-    chomp(@dataSets);
+    while (<$dataSets>){
+        chomp;
+        #ignore snapshots in case listsnapshots zpool property is on
+        next if /@/;
+        push @dataSets, $_;
+    }
 
     return \@dataSets;
 }
@@ -180,6 +185,8 @@ sub listSubDataSets {
     while (<$dataSets>){
         chomp;
         next if !/^\Q$dataSet\E/;
+        #ignore snapshots in case listsnapshots zpool property is on
+        next if /@/;
         push @dataSets, $_;
     }
 
