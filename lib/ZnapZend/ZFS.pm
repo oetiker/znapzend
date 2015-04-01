@@ -86,7 +86,7 @@ sub dataSetExists {
     return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name), $dataSet]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name -t), 'filesystem,volume', $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
@@ -109,7 +109,7 @@ sub snapshotExists {
 
     ($remote, $snapshot) = $splitHostDataSet->($snapshot);
     my @ssh = $self->$buildRemote($remote,
-        [@{$self->priv}, qw(zfs list -H -o name -t snapshot -d 1), $snapshot]);
+        [@{$self->priv}, qw(zfs list -H -o name -t snapshot), $snapshot]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $snapshots, '-|', @ssh
@@ -125,21 +125,16 @@ sub snapshotExists {
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
-    my @dataSets;
 
-    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name)]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name -t), 'filesystem,volume']);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
         or Mojo::Exception->throw('ERROR: cannot get datasets'
             . ($remote ? " on $remote" : ''));
 
-    while (<$dataSets>){
-        chomp;
-        #ignore snapshots in case listsnapshots zpool property is on
-        next if /@/;
-        push @dataSets, $_;
-    }
+    my @dataSets = <$dataSets>;
+    chomp(@dataSets);
 
     return \@dataSets;
 }
@@ -176,7 +171,7 @@ sub listSubDataSets {
     my @dataSets;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -r -o name), $dataSet]);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -r -o name -t), 'filesystem,volume', $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
@@ -185,8 +180,6 @@ sub listSubDataSets {
     while (<$dataSets>){
         chomp;
         next if !/^\Q$dataSet\E/;
-        #ignore snapshots in case listsnapshots zpool property is on
-        next if /@/;
         push @dataSets, $_;
     }
 
