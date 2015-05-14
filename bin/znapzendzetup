@@ -344,7 +344,12 @@ sub main {
     };
         #main argument invalid
         pod2usage(1);
+        return;
     }
+    print STDERR <<NOTE;
+NOTE: if you have modified your configuration, send a HUP signal
+(pkill -HUP znapzend) to your znapzend daemon for it to notice the change.
+NOTE
     return 1;
 }
 
@@ -416,7 +421,12 @@ where 'command' is one of the following:
 =head1 DESCRIPTION
 
 Use znapzendsetup to configure your backup tasks. The cli is modled after
-the zfs commandline. Below a few notes on main commands.
+the zfs commandline.
+
+After modifying the configuration, send a HUP signal to your znapzend daemon
+for it to re-read the configuration.
+
+Below a few notes on main commands.
 
 =head2 B<create>
 
