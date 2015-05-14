@@ -344,7 +344,6 @@ sub main {
     };
         #main argument invalid
         pod2usage(1);
-        return;
     }
     print STDERR <<NOTE;
 NOTE: if you have modified your configuration, send a HUP signal
