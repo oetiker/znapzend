@@ -61,7 +61,7 @@ sub parseArguments {
             next;
         };
         #keyword DST detected. start setting up destination filesystem and plan
-        /^DST(?::([a-z0-9_]+))?/ && do {
+        /^DST(?::([-\.\w]+))?/ && do {
             $state = 'dst';
             $key = $1 // $key++;
             next;
