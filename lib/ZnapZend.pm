@@ -62,44 +62,33 @@ has zLog => sub {
 
     #check if we are logging to syslog
     my ($syslog) = $self->logto =~ /^syslog::(\w+)$/;
+    # logging defaults to syslog::daemon (STDERR if runonce)
+    $syslog = 'daemon' if !$self->logto && !$self->runonce;
 
     #make level mojo conform
     my ($level) = grep { $logLevels{$_} eq $self->loglevel } keys %logLevels
         or die "ERROR: only log levels '" . join("', '", values %logLevels)
             . "' are supported\n";
 
-    my $log = Mojo::Log->new(path => $syslog ? '/dev/null'
-        : $self->logto, level => $level);
+    my $log = Mojo::Log->new(
+        path  => $syslog                         ? '/dev/null'
+               : $self->runonce && !$self->logto ? undef
+               :                                   $self->logto,
+        level => $level
+    );
 
-    #default logging to STDERR if runonce
-    $self->runonce && !$self->logto && do {
-        $log->unsubscribe('message');
-        #log to STDERR
-        $log->on(
-            message => sub {
-                my ($log, $level, @lines) = @_;
-                print STDERR '[' . localtime . '] ['
-                    . $level . '] ' . join(' ', @lines) . "\n";
-            }
-        );
-
-        return $log;
-    };
-    #default logging to syslog
-    ($syslog || !$self->logto) && do {
+    $syslog && do {
         $log->unsubscribe('message');
         #add syslog handler if either syslog is explicitly specified or no logfile is given
-        openlog(basename($0), 'cons,pid', $syslog || 'daemon');
+        openlog(basename($0), 'cons,pid', $syslog);
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
                 syslog($logLevels{$level}, @lines);
             }
         );
-
-        return $log;
     };
-    #logging to file
+
     return $log;
 };
 
