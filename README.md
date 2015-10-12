@@ -14,9 +14,8 @@ itself.
 Zetup Inztructionz
 ------------------
 
-On the other hand if you are the proud owner of a properly setup unix box
-with all the tools and trimmings for building stuff, follow these zimple
-inztructionz below to get a custom made copy of znapzend.
+Follow these zimple inztructionz below to get a custom made copy of
+znapzend. Yes you need a compiler and stuff for this to work.
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.14.1/znapzend-0.14.1.tar.gz
