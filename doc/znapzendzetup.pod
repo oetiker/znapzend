@@ -46,7 +46,12 @@ where 'command' is one of the following:
 =head1 DESCRIPTION
 
 Use znapzendsetup to configure your backup tasks. The cli is modled after
-the zfs commandline. Below a few notes on main commands.
+the zfs commandline.
+
+After modifying the configuration, send a HUP signal to your znapzend daemon
+for it to re-read the configuration.
+
+Below a few notes on main commands.
 
 =head2 B<create>
 
@@ -82,9 +87,7 @@ To keep one copy every two days for 10 years:
 In a minimal setup, you just specify a plan for the B<SRC> fileset. This
 will cause snapshots to be taken and destroyed according to the plan. You
 can then add one or several destinations (B<DST>) both local (preferably on
-a different pool) or remote. Please be aware that only lower-case-letters 
-are allowed for the (B<DST>) names (eg. in case you want to name the (B<DST>)
-like a mixed-case named pool you might have).
+a different pool) or remote.
 
 When adding multiple B<DST> entries, each will get labled for later
 identification, optionally you can specify your own label.
