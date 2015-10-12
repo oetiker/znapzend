@@ -1,3 +1,134 @@
+commit 3b6e05081fe9fbf184de23201599fe257bac2940
+Author: JMoVS <JMoVS@users.noreply.github.com>
+Date:   Sun Aug 23 11:33:54 2015 +0200
+
+    Include note on lower-case requirement for DST fields
+    
+    - Added a little sentence to clarify that DST names can only contain lower-case letters
+
+commit 84a472a61fa5868670c9a62e2b229a32b7992b2a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon May 18 10:37:53 2015 +0200
+
+    - don't override log message event handler as this will ignore minimal log level
+
+commit ff94c5a39debd6b53d8ce82778670c7c49dae035
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat May 16 16:58:29 2015 +0200
+
+    - replace \w in regexp
+
+commit 9bbdeb915d1c8586230139728fd73974e18433a6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Sat May 16 10:30:43 2015 +0200
+
+    - allow '.' and '-' for zfs user properties
+
+commit 230fd13e7f4e776fa7082ac68ba78920e58c4d5d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu May 14 14:27:34 2015 +0200
+
+    return is not necessary
+
+commit b7979b1ec42f4abb2ee4ca0f75162429b821555e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu May 14 14:26:22 2015 +0200
+
+    added a note on HUP
+
+commit 79672d45ac3debd20c5864afe1d260940d46abb6
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Mar 16 13:25:37 2015 +0100
+
+    - use option '-t filesystem,volume' to get datasets
+
+commit c6bc39579eb202bb4f220a50fae4f260ef426fec
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Mon Mar 16 11:48:41 2015 +0100
+
+    - fix 'zfs list' if listsnapshots zpool property is on
+
+commit 502209ca62b739fe6b8e238dd23a7c2f8bfad6a1
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 23 16:32:58 2015 +0100
+
+    - recheck every run
+
+commit 3db59230000ab91d3f010ec13c66957fdbbc539a
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 23 15:55:48 2015 +0100
+
+    - zfs fix for testing
+
+commit 09309d360228f6e89dcf6ba93994aa73aeac89c2
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 23 14:56:49 2015 +0100
+
+    - typo
+
+commit ba18b2fb838ec03127304821bb3efd849feb2346
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Jan 23 14:50:19 2015 +0100
+
+    - recheck if destination has been offline
+
+commit 1830bceb63a70f716d88bcccb63eed869ee0605c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 09:17:17 2015 +0100
+
+    install the right coveralls module
+
+commit 3e28074e958957edb16529e2af9e8067f9c51d2e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 09:11:35 2015 +0100
+
+    find cover script
+
+commit 453581c640c890c63b2a0883c86d31e554f0d6fc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 09:11:27 2015 +0100
+
+    latest perl version
+
+commit f25a95dcafee7b41a86ef429139d0966d25b3418
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 08:58:49 2015 +0100
+
+    yet another try
+
+commit 69189ddb4f85f9d6a746bccd0ba85228b11c815b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 08:38:44 2015 +0100
+
+    another try at getting travis happy again
+
+commit 9806a0a4aac32a061049cd27e029c0837f42f8c1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 08:31:16 2015 +0100
+
+    more bits to make travis work with the new settings
+
+commit 3f46a0eb8ca22c3585501c9907d432487cba59af
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 08:19:55 2015 +0100
+
+    update to new build system
+
+commit 75857808ab5fc1030ac294c4e3634d4b5ef323c9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jan 21 00:45:41 2015 +0100
+
+    make configure make approach more standards conform
+    * no thirdparty dir in install tree
+    * build missing perl modules automatically
+    * no FindBin in installed version of the program
+
+commit 4cdbcdeea15a1ea35ad9ab218b28393d0ee60882
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Jan 18 14:27:41 2015 +0100
+
+    sync configure
+
 commit 890a7500693ac895d7ade73e37ed2418f16a1bfa
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Sun Jan 18 14:26:05 2015 +0100
