@@ -114,7 +114,7 @@ my $checkBackupSets = sub {
                 my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
                 my $file = ($remote ? "$remote:" : '') . $mbuffer;
                 $self->zfs->fileExistsAndExec($file)
-                    or warn "*** WARNING: executable '$mbuffer' does not exist on $remote\n\n";
+                    or warn "*** WARNING: executable '$mbuffer' does not exist" . ($remote ? " on $remote\n\n" : "\n\n");
 
                 #check if mbuffer size is valid
                 $backupSet->{mbuffer_size} =~ /^\d+[bkMG%]?$/
