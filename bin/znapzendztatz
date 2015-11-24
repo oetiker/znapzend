@@ -10,7 +10,7 @@ use Mojo::Base -strict;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 
-my $zConfig = ZnapZend::Config->new();
+my $zConfig;
 my $zZfs;
 my $zTime   = ZnapZend::Time->new();
 
@@ -42,6 +42,7 @@ sub main {
     GetOptions($opts, qw(H help|h recursive|r pfexec sudo man)) or exit 1;
 
     $zZfs = ZnapZend::ZFS->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
+    $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
