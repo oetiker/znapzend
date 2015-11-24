@@ -42,7 +42,8 @@ has backupSets       => sub { [] };
 
 has zConfig => sub {
     my $self = shift;
-    ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction);
+    ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
+                          pfexec => $self->pfexec, sudo => $self->sudo);
 };
 
 has zZfs => sub {
