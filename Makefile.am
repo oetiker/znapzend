@@ -62,10 +62,10 @@ CHANGES: VERSION
 	git log --simplify-merges --full-history --no-merges --pretty=format:'%ai %d  %s -- %an' > CHANGES
 
 all-local:
-	$(AM_V_GEN)[ "$(MISSING_PERL_MODULES)" == "" ] || $(GMAKE) get-thirdparty-modules 
+	$(AM_V_GEN)[ "$(MISSING_PERL_MODULES)" = "" ] || $(GMAKE) get-thirdparty-modules
         
 install-exec-hook:        
-	$(AM_V_GEN)[ "$(PERL5LIB)" == "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN)
+	$(AM_V_GEN)[ "$(PERL5LIB)" = "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN)
 	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
 	$(AM_V_GEN)cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN) 
 	$(AM_V_GEN)[ -d $(THIRDPARTY_DIR)/lib/perl5 ] && cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir) || true
