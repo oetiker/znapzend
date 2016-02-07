@@ -914,8 +914,8 @@ dist-hook: $(POD) $(MAN) CHANGES
 
 get-thirdparty-modules:
 	[ -d $(THIRDPARTY_DIR)/bin ] || mkdir -p $(THIRDPARTY_DIR)/bin
-	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(CURL) ]  && $(CURL) --location --insecure https://cpanmin.us > $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
-	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(WGET) ]  && $(WGET) --no-check-certificate -O $(THIRDPARTY_DIR)/bin/cpanm https://cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
+	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(CURL) ]  && $(CURL) --location https://cpanmin.us > $(THIRDPARTY_DIR)/bin/cpanm cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
+	[ -x $(THIRDPARTY_DIR)/bin/cpanm ] || ( [ -x $(WGET) ]  && $(WGET) -O $(THIRDPARTY_DIR)/bin/cpanm https://cpanmin.us && chmod 755 $(THIRDPARTY_DIR)/bin/cpanm )
 	echo $(MISSING_PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL_CPANM_OPT="--notest --local-lib $(THIRDPARTY_DIR)" xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm
 
 test:
