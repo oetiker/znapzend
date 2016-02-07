@@ -33,6 +33,13 @@ make
 make install
 ```
 
+Optionally (but recommended) put symbolic links to the installed binaries in the
+system PATH.
+
+```sh
+for x in /opt/znapzend-0.14.1/bin/*; do ln -s $x /usr/local/bin; done
+```
+
 Configuration
 -------------
 
