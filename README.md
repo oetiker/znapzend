@@ -33,6 +33,13 @@ make
 make install
 ```
 
+Optionally (but recommended) put symbolic links to the installed binaries in the
+system PATH.
+
+```sh
+for x in /opt/znapzend-0.14.1/bin/*; do ln -s $x /usr/local/bin; done
+```
+
 Configuration
 -------------
 
@@ -47,19 +54,19 @@ The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backu
 To see if your configuration is any good, run znapzend in noaction mode first.
 
 ```sh
-/opt/znapzend-0.14.1/bin/znapzend --noaction --debug
+znapzend --noaction --debug
 ```
 
 If you don't want to wait for the scheduler to actually schedule work, you can also force immediate action by calling
 
 ```sh
-/opt/znapzend-0.14.1/bin/znapzend --noaction --debug --runonce=<src_dataset>
+znapzend --noaction --debug --runonce=<src_dataset>
 ``` 
 
 then when you are happy with what you got, start it in daemon mode.
 
 ```sh
-/opt/znapzend-0.14.1/bin/znapzend --daemonize
+znapzend --daemonize
 ```
  
 Best is to integrate znapzend into your system startup sequence, but you can also

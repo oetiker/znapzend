@@ -21,7 +21,7 @@ svcadm enable oep/znapzend
 ```
 ## Systemd
 
-For systemd based systems, you can copy ```znapzend.service``` to ```/lib/systemd/system/``` and then enable and start the daemon.
+For systemd based systems, you can copy ```znapzend.service``` to ```/etc/systemd/system/``` and then enable and start the daemon.
 
 ```sh
 systemctl enable znapzend.service
