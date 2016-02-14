@@ -34,7 +34,7 @@ endif
 
 datadir = $(prefix)
 
-README.md COPYRIGHT:
+README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/[0-4]\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
 
 README: README.md
