@@ -1,3 +1,15 @@
+commit c18ba0e90e88bd73affaff36aa977db4b63eab13
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 22:25:50 2016 +0100
+
+    fix build script
+
+commit a9975bfcc66c494a08df5f9643e287aa2fe4bd5d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 18:31:32 2016 +0100
+
+    0.15.0
+
 commit 75dc7f6b4b3e6953cb76a732afc35de6fbba8a54
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Sun Feb 14 18:12:14 2016 +0100
