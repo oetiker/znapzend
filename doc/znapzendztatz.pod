@@ -47,4 +47,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 2014-06-05 had Initial Version
 
 =cut
-

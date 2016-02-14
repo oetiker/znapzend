@@ -7,7 +7,7 @@ znapzend - znapzend daemon
 B<znapzend> [I<options>...]
 
  --man              show man-page and exit
- -h,--help          display this help and exit 
+ -h,--help          display this help and exit
  -d,--debug         print debug messages to STDERR
  -n,--noaction      run in simulation mode. does no changes to the filesystem
  --nodestroy        does all changes to the filesystem except destroy
@@ -48,7 +48,7 @@ send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when runing daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
-Examples: 
+Examples:
 
  --logto=/var/log/znapzend.log
  --logto=syslog::daemon
@@ -161,4 +161,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
  2014-05-30 had Initial Version
 
 =cut
-

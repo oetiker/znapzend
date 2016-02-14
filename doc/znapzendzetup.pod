@@ -77,7 +77,7 @@ to the following table:
  year|y
 
 To keep one copy every 30 minutes for one week, specify:
- 
+
  1week=>30min
 
 To keep one copy every two days for 10 years:
@@ -183,7 +183,7 @@ can be edited in an editor.
 =head2 B<export>
 
 dumps the backup configuration of a dataset
- 
+
  znapzendzetup export I<dataset>
 
 =head2 B<import>
@@ -251,4 +251,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 2014-05-30 had Initial Version
 
 =cut
-

@@ -18,5 +18,7 @@ pm_to_blib
 autom4te.cache/
 config.log
 config.status
-thirdparty/
+thirdparty/*
+!thirdparty/Makefile.am
+!thirdparty/Makefile.in
 *.tar.gz

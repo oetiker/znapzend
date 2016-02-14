@@ -14,21 +14,8 @@
 
 @SET_MAKE@
 
-# Copyright (C) 2014 Tobias Oetiker
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+# Author: Tobi Oetiker <tobi@oetiker.ch>
+# License: Public Domain
 
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
@@ -167,6 +154,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 GMAKE = @GMAKE@
+GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -194,6 +182,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 SVCINSTALLDIR = @SVCINSTALLDIR@
+URL_CAT = @URL_CAT@
 VERSION = @VERSION@
 WGET = @WGET@
 abs_builddir = @abs_builddir@
@@ -236,7 +225,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-PM := $(shell find ./ -name "*.pm")
+PM := $(shell find . -name "*.pm")
 nobase_data_DATA = $(PM)
 all: all-am
 

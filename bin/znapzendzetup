@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# PERL5LIB
+use lib qw(); # PERL5LIB
 use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
 
 use Getopt::Long qw(:config posix_default no_ignore_case pass_through);
@@ -9,17 +9,17 @@ use File::Temp qw(tempfile);
 use Scalar::Util qw(blessed);
 use Mojo::Base -strict;
 use ZnapZend::Config;
-
+my $VERSION = '0.dev'; #VERSION
 sub dumpProperties {
     my $props = shift;
 
     for my $backupSet (@$props){
         print "*** backup plan: $backupSet->{src} ***\n";
-        for my $opt (sort keys %$backupSet){ 
+        for my $opt (sort keys %$backupSet){
             #singular plural check on backup plans. if value is 1, remove trailing 's'
             $opt =~ /^(?:src|dst_[^_]+)_plan$/
                 && $backupSet->{$opt} =~ s/(\d+)([a-z]+)s/$1 eq '1' ? "$1$2" : "$1$2s"/eg;
-            
+
             #print warning if destination does not exist, print property otherwise
             if (my ($dst) = $opt =~ /^(dst_[^_]+)_valid$/){
                 $backupSet->{$opt} || do {
@@ -38,7 +38,7 @@ sub dumpProperties {
 sub dumpPropertiesRaw {
     my $backupSet = shift;
     my @dump;
-        
+
     for my $prop (sort keys %$backupSet){
         #don't export valid flag for destinations as this will be evaluated on demand
         next if $prop =~ /^dst_[^_]+_valid/;
@@ -117,7 +117,7 @@ sub main {
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
         $cfg{mbuffer}       = $opts->{mbuffer}             || 'off';
-        $cfg{mbuffer_size}  = $opts->{mbuffersize}         || '1G'; 
+        $cfg{mbuffer_size}  = $opts->{mbuffersize}         || '1G';
         $cfg{tsformat}      = $opts->{tsformat}            || '%Y-%m-%d-%H%M%S';
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
@@ -129,7 +129,7 @@ sub main {
         }
 
         $zConfig->checkBackupSet(\%cfg);
-        
+
         dumpProperties([\%cfg]);
         #ask user if backup plan shall be stored unless option 'donotask' is passed
         if (!$opts->{donotask}){
@@ -169,7 +169,7 @@ sub main {
         #only dataset given so we use the editor based edit mode
         if ($#ARGV == grep { /^--(?:sudo|pfexec)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
-        
+
             my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
                 or die "ERROR: cannot get backup config\n";
 
@@ -216,7 +216,7 @@ sub main {
         $backupSet->{recursive}     = $opts->{recursive}
             if $opts->{recursive} && $opts->{recursive} =~ /^(?:on|off)$/;
         $backupSet->{mbuffer}       = $opts->{mbuffer}             if $opts->{mbuffer};
-        $backupSet->{mbuffer_size}  = $opts->{mbuffersize}         if $opts->{mbuffersize};  
+        $backupSet->{mbuffer_size}  = $opts->{mbuffersize}         if $opts->{mbuffersize};
         $backupSet->{tsformat}      = $opts->{tsformat}            if $opts->{tsformat};
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
@@ -232,7 +232,7 @@ sub main {
         }
         #check new backup set
         $zConfig->checkBackupSet(\%cfg);
-        
+
         dumpProperties([\%cfg]);
         #ask user if backup plan shall be stored
         if (!$opts->{donotask}){
@@ -451,7 +451,7 @@ to the following table:
  year|y
 
 To keep one copy every 30 minutes for one week, specify:
- 
+
  1week=>30min
 
 To keep one copy every two days for 10 years:
@@ -557,7 +557,7 @@ can be edited in an editor.
 =head2 B<export>
 
 dumps the backup configuration of a dataset
- 
+
  znapzendzetup export I<dataset>
 
 =head2 B<import>
@@ -625,4 +625,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 2014-05-30 had Initial Version
 
 =cut
-

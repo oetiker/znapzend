@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 
-# PERL5LIB
+use lib qw(); # PERL5LIB
 use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
 
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
 
 use ZnapZend;
-
+my $VERSION = '0.dev'; #VERSION
 my $opts = {};
 my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
@@ -23,7 +23,7 @@ sub main {
         }
         delete $opts->{features};
     }
-    
+
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
 
@@ -56,7 +56,7 @@ znapzend - znapzend daemon
 B<znapzend> [I<options>...]
 
  --man              show man-page and exit
- -h,--help          display this help and exit 
+ -h,--help          display this help and exit
  -d,--debug         print debug messages to STDERR
  -n,--noaction      run in simulation mode. does no changes to the filesystem
  --nodestroy        does all changes to the filesystem except destroy
@@ -97,7 +97,7 @@ send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when runing daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
-Examples: 
+Examples:
 
  --logto=/var/log/znapzend.log
  --logto=syslog::daemon
@@ -210,4 +210,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
  2014-05-30 had Initial Version
 
 =cut
-

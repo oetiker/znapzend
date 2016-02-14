@@ -1,3 +1,146 @@
+commit 89632f3191ad5e0f8c858832b3ba4e033ee5c3b6
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 15:53:34 2016 +0100
+
+    get-thirdparty-modules: do check certificates
+
+commit aaaf12cfb25ca18b6d0c28419cc263d2faab5ca8
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 16:08:30 2016 +0100
+
+    Drop Alias line from systemd service unit
+    
+    Specifying the same name as the service file's actual filename is
+    redundant, and also causes problems such as
+    
+        Failed to execute operation: Invalid argument
+    
+    when enabling the service.
+
+commit 5d7941357ef804cb268614965d3d1c65712f9fc6
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 16:05:55 2016 +0100
+
+    Adjust ExecStart line to closer match real scenarios
+    
+    /usr/bin belongs to system packages, so znapzend is unlikely to be
+    installed there at the moment.
+    
+    syslog::daemon is the default logging destination, so specifying it only
+    adds clutter to the command line.
+
+commit 07cd9b0dc50c70acc2a8a018633722a9914af183
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 16:13:07 2016 +0100
+
+    Drop full path from znapzend command line
+    
+    Assuming suitable symbolic links were created as described in section
+    "Zetup Inztructionz", the full path is not necessary.
+
+commit 5165c82202f9b24292ba82256aa2e8ff4e1700ce
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 16:05:33 2016 +0100
+
+    Advise creating symbolic links after installation
+
+commit ece7c6f533833f7f255ba9582ad893afe3463347
+Author: Anton Eliasson <devel@antoneliasson.se>
+Date:   Sun Feb 7 15:55:17 2016 +0100
+
+    Advise putting systemd service file into /etc
+    
+    /lib/systemd/system is for installed *packages*. /etc/systemd/system is
+    for local configuration.
+
+commit ca80b0f9b6eca3537cdec5d70f6db04190713b4c
+Author: Sebastian Wiedenroth <wiedi@frubar.net>
+Date:   Sat Jan 16 12:27:28 2016 +0100
+
+    Comparing with == is a bashism
+
+commit 94258f94a91ab1d57a460535768c4d81dfe04d10
+Author: morph027 <morphsen@gmx.com>
+Date:   Mon Nov 30 18:55:56 2015 +0100
+
+    added README for init scripts
+
+commit 7b06c28e9a18cbae25abb5ce5f8e4134567b35cf
+Author: morph027 <morphsen@gmx.com>
+Date:   Mon Nov 30 15:44:41 2015 +0100
+
+    added systemd unit file
+
+commit 58c87714e63448588dcc62a28e4e6de5487ce84f
+Author: morph027 <morphsen@gmx.com>
+Date:   Mon Nov 23 19:00:40 2015 +0100
+
+    moving checkinstall README into subfolder
+
+commit cd5330c97d9b024fc8b5af32f2435d757a254c52
+Author: morph027 <morphsen@gmx.com>
+Date:   Fri Nov 20 16:33:11 2015 +0100
+
+    added subdir
+
+commit 8cc6641d8f9e59291933ae6b475b2e69b4d15a5e
+Author: morph027 <morphsen@gmx.com>
+Date:   Fri Nov 20 15:10:23 2015 +0100
+
+    added script to create packages
+
+commit e59b5d660153b3629c1bbfe096ab2d4586ae2cfb
+Author: Sebastian Wiedenroth <wiedi@frubar.net>
+Date:   Thu Nov 26 00:48:04 2015 +0100
+
+    Extra slash confuses OSX, makes it forget to install lib/ZnapZend.pm
+
+commit 4b8b81a5c80f293da4583d19f82cf3b384e5d82a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Nov 27 08:12:15 2015 +0100
+
+    don't try to install perl stuff if there is none fix for #178
+
+commit 734d42f757b5fbde4b7b8a337268a323a5329571
+Author: James Marsh <mail@jamesmarsh.net>
+Date:   Tue Nov 24 15:15:47 2015 +0000
+
+    Fix sudo/pfexec use when initialising ZnapZend::Config.
+
+commit 35665b2d792413773e3b10db7c11308cc8a36273
+Author: James Marsh <mail@jamesmarsh.net>
+Date:   Tue Nov 24 13:12:21 2015 +0000
+
+    Fix sudo/pfexec use when querying config.
+    
+    refreshBackupPlans calls $self->zConfig->getBackupSetEnabled($dataSet)
+    but zConfig was not initialised with sudo/pfexec features and hence
+    there were errors calling the zfs command.
+
+commit 18003d7427773b0962590786dac39a9f98da7835
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Nov 19 14:40:30 2015 +0100
+
+    multi line error messages are bad news
+
+commit e1ef500dc9366408c243101776e395740ce018fd
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Oct 13 07:41:15 2015 +0200
+
+    - fix uninitialized string if executable is on localhost
+
+commit e69cbd38564bd45ee0b8834a34a9790102a3ae18
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Oct 12 09:01:13 2015 +0200
+
+    improve first sentence
+
+commit bc2eaa02889e3680054d7206cda79bc33615d754
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Oct 12 08:53:47 2015 +0200
+
+    update changes
+
 commit 55f64968158ebd80c5541a29486174acaa2ce814
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Mon Oct 12 08:50:53 2015 +0200

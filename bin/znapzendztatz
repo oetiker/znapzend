@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-# PERL5LIB  
+use lib qw(); # PERL5LIB
 use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
 
 use Getopt::Long qw(:config posix_default no_ignore_case);
@@ -9,7 +9,7 @@ use Pod::Usage;
 use Mojo::Base -strict;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
-
+my $VERSION = '0.dev'; #VERSION
 my $zConfig;
 my $zZfs;
 my $zTime   = ZnapZend::Time->new();
@@ -59,7 +59,7 @@ sub main {
 
     #check if there is at least one valid backup set
     @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
-    
+
     my $dummyTime = $zTime->createSnapshotTime(time, $backupSets->[0]->{tsformat});
 
     #print header
@@ -91,7 +91,7 @@ sub main {
                     dumpStats(collectData($dstDataSet, $snapFilter));
                 }
             }
-              
+
         }
     }
     return 1;
@@ -152,4 +152,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 2014-06-05 had Initial Version
 
 =cut
-

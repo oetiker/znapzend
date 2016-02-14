@@ -49,7 +49,7 @@ Make sure to configure password free login for ssh to the backup target host.
 Running
 -------
 
-The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups. 
+The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups.
 
 To see if your configuration is any good, run znapzend in noaction mode first.
 
@@ -61,14 +61,14 @@ If you don't want to wait for the scheduler to actually schedule work, you can a
 
 ```sh
 znapzend --noaction --debug --runonce=<src_dataset>
-``` 
+```
 
 then when you are happy with what you got, start it in daemon mode.
 
 ```sh
 znapzend --daemonize
 ```
- 
+
 Best is to integrate znapzend into your system startup sequence, but you can also
 run it by hand.
 
@@ -84,7 +84,7 @@ svccfg validate /var/svc/manifest/site/znapzend.xml
 svccfg import /var/svc/manifest/site/znapzend.xml
 ```
 
-and then enable the service 
+and then enable the service
 
 ```sh
 svcadm enable oep/znapzend

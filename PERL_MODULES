@@ -1,3 +1,4 @@
-Mojolicious@5.72
+Mojolicious@6.46
 Mojo::IOLoop::ForkCall@0.17
-
+Test::Harness
+TAP::Parser
