@@ -1,3 +1,28 @@
+commit 75dc7f6b4b3e6953cb76a732afc35de6fbba8a54
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 18:12:14 2016 +0100
+
+    rebuild doc every time
+
+commit 3a4b87c58da206e6043881c266bcecb97c9c1a25
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 18:12:05 2016 +0100
+
+    rebuild doc every time
+
+commit 1216daf8d7cadb626f56cf554e8fca35626611b8
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 18:11:25 2016 +0100
+
+    rebuild documentation
+
+commit 73af9cdb8c43be3529d7fb9581ba3f854f5c5f16
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 18:08:56 2016 +0100
+
+    switch to new automake setup. include mini cpan locally
+    this allows to build znapzend without internet access.
+
 commit 89632f3191ad5e0f8c858832b3ba4e033ee5c3b6
 Author: Anton Eliasson <devel@antoneliasson.se>
 Date:   Sun Feb 7 15:53:34 2016 +0100
