@@ -1,3 +1,15 @@
+commit 8f6280d4d7609da6cfd3c77d95c7173cda9fd06f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 15 16:52:00 2016 +0100
+
+    add init files to distribution and update README.md
+
+commit 454c67d424b64ec6d3391a8bc57ae70eb54c7d58
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Feb 14 23:09:16 2016 +0100
+
+    respinn to align tag with tar
+
 commit c18ba0e90e88bd73affaff36aa977db4b63eab13
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Sun Feb 14 22:25:50 2016 +0100
