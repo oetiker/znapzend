@@ -70,7 +70,7 @@ znapzend --daemonize
 ```
 
 Best is to integrate znapzend into your system startup sequence, but you can also
-run it by hand. See the init/README.md for some inspiration. on how todo this
+run it by hand. See the init/README.md for some inspiration.
 
 Statistics
 ----------
