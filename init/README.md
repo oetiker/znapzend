@@ -14,11 +14,12 @@ svccfg validate /var/svc/manifest/site/znapzend.xml
 svccfg import /var/svc/manifest/site/znapzend.xml
 ```
 
-and then enable the service 
+and then enable the service
 
 ```sh
 svcadm enable oep/znapzend
 ```
+
 ## Systemd
 
 For systemd based systems, you can copy ```znapzend.service``` to ```/etc/systemd/system/``` and then enable and start the daemon.

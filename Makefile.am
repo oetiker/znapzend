@@ -16,7 +16,8 @@ THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 GENERATED_EXTRADIST = $(MAN)
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(BIN) $(PM) \
-	$(GENERATED_EXTRADIST) init/znapzend.xml.in t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
+	$(GENERATED_EXTRADIST) init/znapzend.xml.in init/znapzend.service init/README.md \
+	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
 	t/zfs t/znapzendzetup.t t/zpool
 
 CHANGES:
