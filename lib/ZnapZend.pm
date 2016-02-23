@@ -96,7 +96,7 @@ has zLog => sub {
 my $killThemAll  = sub {
     my $self = shift;
 
-    $self->zLog->info('terminating znapzend...');
+    $self->zLog->info("terminating znapzend (PID=$$) ...");
     #set termination flag
     $self->terminate(1);
 
@@ -113,6 +113,8 @@ my $killThemAll  = sub {
         waitpid($backupSet->{send_pid}, WNOHANG)
             || kill(SIGKILL, $backupSet->{send_pid}) if $backupSet->{send_pid};
     }
+
+    $self->zLog->info("znapzend (PID=$$) terminated.");
     exit 0;
 };
 
@@ -523,12 +525,16 @@ my $daemonize = sub {
 sub start {
     my $self = shift;
 
+    $self->zLog->info("znapzend (PID=$$) starting up ...");
+
     $self->$daemonize if $self->daemonize;
 
     # set signal handlers
-    $SIG{INT}  = sub { $self->$killThemAll; };
-    $SIG{TERM} = sub { $self->$killThemAll; };
+    $SIG{INT}  = sub { $self->zLog->debug('SIGINT received.'); $self->$killThemAll; };
+    $SIG{TERM} = sub { $self->zLog->debug('SIGTERM received.'); $self->$killThemAll; };
     $SIG{HUP}  = sub {
+        $self->zLog->debug('SIGHUP received.');
+
         #remove active timers from ioloop
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
@@ -540,6 +546,8 @@ sub start {
     $self->$refreshBackupPlans($self->runonce);
 
     $self->$createWorkers;
+
+    $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
     #start eventloop
     Mojo::IOLoop->start;
