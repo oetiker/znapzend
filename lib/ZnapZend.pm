@@ -113,6 +113,7 @@ my $killThemAll  = sub {
         waitpid($backupSet->{send_pid}, WNOHANG)
             || kill(SIGKILL, $backupSet->{send_pid}) if $backupSet->{send_pid};
     }
+    $self->zLog->info('Done.');
     exit 0;
 };
 
@@ -520,21 +521,42 @@ my $daemonize = sub {
     }
 };
 
+my $keepalive = sub {
+    my $self = shift;
+
+    my $fc = Mojo::IOLoop::ForkCall->new;
+    $fc->run(
+        sub {
+           $self->zLog->debug('Keepalive started.');
+
+           # workaround for https://github.com/oetiker/znapzend/issues/168
+           sleep
+        }
+    );
+
+};
+
 sub start {
     my $self = shift;
 
     $self->$daemonize if $self->daemonize;
 
+    # workaround for https://github.com/oetiker/znapzend/issues/168
+    $self->$keepalive;
+
     # set signal handlers
-    $SIG{INT}  = sub { $self->$killThemAll; };
-    $SIG{TERM} = sub { $self->$killThemAll; };
+    $SIG{INT}  = sub { $self->zLog->debug('SIGINT received.'); $self->$killThemAll; };
+    $SIG{TERM} = sub { $self->zLog->debug('SIGTERM received.'); $self->$killThemAll; };
     $SIG{HUP}  = sub {
+        $self->zLog->debug('SIGHUP received.');
+
         #remove active timers from ioloop
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
         $self->$refreshBackupPlans($self->runonce);
         $self->$createWorkers;
+        $self->$keepalive;
     };
 
     $self->$refreshBackupPlans($self->runonce);
