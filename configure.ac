@@ -88,26 +88,6 @@ AC_MSG_RESULT(way to expensive!)
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
 
-# Check the necessary Perl modules
-
-mod_ok=1
-MISSING_PERL_MODULES=""
-if test "$enable_pkgonly" != yes; then
-   for module in m4_esyscmd([tr '\n' ' ' < PERL_MODULES]); do
-     AC_MSG_CHECKING([for perl module '$module'])
-     if ${PERL} -I`dirname $0`/thirdparty/lib/perl5 -e 'my($m,$v) = split /\@/, q{'$module'};eval "use $m"; exit 1 if $@; exit 1 if not $v or eval(q{$}.$m.q{::VERSION}) ne $v' ; then
-         AC_MSG_RESULT([Ok])
-     else
-         MISSING_PERL_MODULES="${MISSING_PERL_MODULES} $module"
-         AC_MSG_RESULT([Auto Install])
-         mod_ok=0
-     fi
-   done
-fi
-
-AC_SUBST(MISSING_PERL_MODULES)
-
-
 AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile
@@ -140,7 +120,6 @@ Settings:
 
   PERL5LIB = ${PERL5LIB:-"not set"}
   PERL = $PERL
-  MODULES = ${MISSING_PERL_MODULES:-"All modules present"}
   SVCINSTALLDIR = $SVCINSTALLDIR
 
 The Makefiles use GNU make functionality.
