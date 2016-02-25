@@ -10,7 +10,7 @@ THIRDPARTY_DIST := $(shell test -d CPAN && find CPAN -type d -name ".??*" -prune
 EXTRA_DIST = $(THIRDPARTY_DIST) $(wildcard bin/cpanm)
 
 all-local:
-	$(AM_V_GEN)[ "$(MISSING_PERL_MODULES)" == "" ] || $(GMAKE) touch
+	$(AM_V_GEN)[ "$(MISSING_PERL_MODULES)" = "" ] || $(GMAKE) touch
 
 touch: CPAN/touch ../config.status
 	$(AM_V_GEN)echo $(MISSING_PERL_MODULES) | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
