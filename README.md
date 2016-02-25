@@ -1,4 +1,4 @@
-ZnapZend 0.15.1
+ZnapZend 0.15.3
 ===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -18,10 +18,10 @@ Follow these zimple inztructionz below to get a custom made copy of
 znapzend. Yes you need a compiler and stuff for this to work.
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.15.1/znapzend-0.15.1.tar.gz
-tar zxvf znapzend-0.15.1.tar.gz
-cd znapzend-0.15.1
-./configure --prefix=/opt/znapzend-0.15.1
+wget https://github.com/oetiker/znapzend/releases/download/v0.15.3/znapzend-0.15.3.tar.gz
+tar zxvf znapzend-0.15.3.tar.gz
+cd znapzend-0.15.3
+./configure --prefix=/opt/znapzend-0.15.3
 ```
 
 If configure finds anything noteworthy, it will tell you about it.  If any
@@ -37,7 +37,7 @@ Optionally (but recommended) put symbolic links to the installed binaries in the
 system PATH.
 
 ```sh
-for x in /opt/znapzend-0.15.1/bin/*; do ln -s $x /usr/local/bin; done
+for x in /opt/znapzend-0.15.3/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
 Configuration
@@ -89,4 +89,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2016-02-14
+2016-02-25
