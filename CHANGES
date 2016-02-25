@@ -1,3 +1,39 @@
+commit 547476e6bdb97ecf4fba3cf9f9c3b26e0397006e
+Author: martin-rueegg <martin.rueegg@metaworx.ch>
+Date:   Tue Feb 23 10:08:46 2016 +0100
+
+    additional [info] and [debug] messages
+
+commit d6f65c4e1ae3e2ff244671690a64da90e1752bbf
+Author: Sebastian Wiedenroth <wiedi@frubar.net>
+Date:   Wed Feb 24 22:30:24 2016 +0100
+
+    fix bashism introduced in thirdparty makefile (comparing with ==)
+
+commit fd824808b3ee86dcd213811ddec97c1b583e3457
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Feb 25 14:58:48 2016 +0100
+
+    simplifie module setup
+
+commit 48e22271edc1184effec296e0a3d2027b506db19
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 15 17:02:29 2016 +0100
+
+    fix wording
+
+commit d07418b2887d35c6bcb0e4eb1d8f1f013c6e44b1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 15 17:00:51 2016 +0100
+
+    fix readme again
+
+commit d16fd713038665dc966b6b4d3fbea27290ca78dd
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 15 16:53:04 2016 +0100
+
+    0.15.2
+
 commit 8f6280d4d7609da6cfd3c77d95c7173cda9fd06f
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Mon Feb 15 16:52:00 2016 +0100
