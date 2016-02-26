@@ -542,13 +542,17 @@ sub start {
         $self->$refreshBackupPlans($self->runonce);
         $self->$createWorkers;
     };
-
+    # if Mojo is running with EV, signals will not be received if the IO loop
+    # is sleeping so lets activate it periodically    
+    Mojo::IOLoop->recurring(1 => sub { });
+    
     $self->$refreshBackupPlans($self->runonce);
 
     $self->$createWorkers;
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
+    
     #start eventloop
     Mojo::IOLoop->start;
 
