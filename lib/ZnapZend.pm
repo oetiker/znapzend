@@ -519,6 +519,7 @@ my $daemonize = sub {
         # send warnings and die messages to log
         $SIG{__WARN__} = sub { $self->zLog->warn(shift) };
         $SIG{__DIE__}  = sub { return if $^S; $self->zLog->error(shift); exit 1 };
+
     }
 };
 
@@ -542,9 +543,6 @@ sub start {
         $self->$refreshBackupPlans($self->runonce);
         $self->$createWorkers;
     };
-    # if Mojo is running with EV, signals will not be received if the IO loop
-    # is sleeping so lets activate it periodically    
-    Mojo::IOLoop->recurring(1 => sub { });
     
     $self->$refreshBackupPlans($self->runonce);
 
@@ -552,6 +550,12 @@ sub start {
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
+    # if Mojo is running with EV, signals will not be received if the IO loop
+    # is sleeping so lets activate it periodically    
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  if (1) {
+    Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce and $self->daemonize;
+### RM_COMM_4_TEST ###  }
     
     #start eventloop
     Mojo::IOLoop->start;
