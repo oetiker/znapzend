@@ -553,7 +553,7 @@ sub start {
     # if Mojo is running with EV, signals will not be received if the IO loop
     # is sleeping so lets activate it periodically    
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
-### RM_COMM_4_TEST ###  if (1) {
+### RM_COMM_4_TEST ###  if (0) {
     Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce;
 ### RM_COMM_4_TEST ###  }
     
