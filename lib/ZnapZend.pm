@@ -554,7 +554,7 @@ sub start {
     # is sleeping so lets activate it periodically    
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  if (1) {
-    Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce and $self->daemonize;
+    Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce;
 ### RM_COMM_4_TEST ###  }
     
     #start eventloop
