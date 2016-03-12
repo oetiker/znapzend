@@ -653,6 +653,10 @@ checks if the dataset exists on localhost or a remote host
 
 checks if the snapshot exists on localhost or a remote host
 
+=head2 createDataSet
+
+creates a dataset on localhost or a remote host
+
 =head2 listDataSets
 
 lists datasets on (remote-)host
