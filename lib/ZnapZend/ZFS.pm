@@ -128,23 +128,18 @@ sub createDataSet {
     my $dataSet = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
-    return 0 if !$dataSet;
-
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote,
         [@{$self->priv}, qw(zfs create), $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
 
-    #return if 'noaction' or snapshot creation successful
+    $self->zLog->info("create new dataset ($dataSet) on destination ($remote)");
+
+    #return if 'noaction' or dataset creation successful
     return 1 if $self->noaction || !system(@ssh);
 
-    #check if snapshot already exists and therefore creation failed
-    return 0 if $self->dataSetExists($dataSet);
-
-    #creation failed and snapshot does not exist, throw an exception
-    Mojo::Exception->throw("ERROR: cannot create dataSet $dataSet");
+    Mojo::Exception->throw("ERROR: failed to create new dataset ($dataSet)");
 }
 
 sub listDataSets {
