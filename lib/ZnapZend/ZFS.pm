@@ -19,6 +19,7 @@ has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o
     qw(Cipher=arcfour -o batchMode=yes -o), 'ConnectTimeout=' . shift->connectTimeout] };
 has mbufferParam    => sub { [qw(-q -s 128k -W 60 -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
+has autoCreation    => sub { 0 };
 
 has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 has priv            => sub { my $self = shift; [$self->pfexec ? qw(pfexec) : $self->sudo ? qw(sudo) : ()] };
@@ -120,6 +121,30 @@ sub snapshotExists {
     chomp(@snapshots);
 
     return grep { $snapshot eq $_ } @snapshots;
+}
+
+sub createDataSet {
+    my $self = shift;
+    my $dataSet = shift;
+    my $remote;
+
+    #just in case if someone aks to check '';
+    return 0 if !$dataSet;
+
+    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+    my @ssh = $self->$buildRemote($remote,
+        [@{$self->priv}, qw(zfs create), $dataSet]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+
+    #return if 'noaction' or snapshot creation successful
+    return 1 if $self->noaction || !system(@ssh);
+
+    #check if snapshot already exists and therefore creation failed
+    return 0 if $self->dataSetExists($dataSet);
+
+    #creation failed and snapshot does not exist, throw an exception
+    Mojo::Exception->throw("ERROR: cannot create dataSet $dataSet");
 }
 
 sub listDataSets {
@@ -289,6 +314,15 @@ sub sendRecvSnapshots {
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
     my $mbufferPort;
+    my $dstDataSetExists = $self->dataSetExists($dstDataSet);
+
+    #attemp a creation of the dataset when it doesn't exist
+    $dstDataSetExists = $self->createDataSet($dstDataSet) if $self->autoCreation && !$dstDataSetExists;
+
+    #check if the dstDataSet exist on the destination (maybe after a creation)
+    !$dstDataSetExists
+        and Mojo::Exception->throw('ERROR: dstDataSet does not exist on dest host');
+
     my ($lastSnapshot, $lastCommon)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
