@@ -314,9 +314,13 @@ sub sendRecvSnapshots {
     #attemp a creation of the dataset when it doesn't exist
     $dstDataSetExists = $self->createDataSet($dstDataSet) if $self->autoCreation && !$dstDataSetExists;
 
+    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
+
     #check if the dstDataSet exist on the destination (maybe after a creation)
     !$dstDataSetExists
-        and Mojo::Exception->throw('ERROR: dstDataSet does not exist on dest host');
+        and Mojo::Exception->throw("ERROR: dataset ($dstDataSet) does not exist on "
+	    . "destination ($remote), use --autoCreation to "
+	    . "let ZnapZend auto create datasets");
 
     my ($lastSnapshot, $lastCommon)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
@@ -331,7 +335,6 @@ sub sendRecvSnapshots {
             . "found on source and destination "
             . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
 
-    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
     my @cmd;
