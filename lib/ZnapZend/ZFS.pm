@@ -318,9 +318,9 @@ sub sendRecvSnapshots {
 
     #check if the dstDataSet exist on the destination (maybe after a creation)
     !$dstDataSetExists
-        and Mojo::Exception->throw("ERROR: dataset ($dstDataSet) does not exist on "
-	    . "destination ($remote), use --autoCreation to "
-	    . "let ZnapZend auto create datasets");
+        and Mojo::Exception->throw("ERROR: dataset ($dstDataSet) does not exist"
+	    .  ($remote ? " on destination ($remote)" : '') .", use --autoCreation "
+	    . "to let ZnapZend auto create datasets");
 
     my ($lastSnapshot, $lastCommon)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
