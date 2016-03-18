@@ -19,6 +19,7 @@ has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o
     qw(Cipher=arcfour -o batchMode=yes -o), 'ConnectTimeout=' . shift->connectTimeout] };
 has mbufferParam    => sub { [qw(-q -s 128k -W 60 -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
+has autoCreation    => sub { 0 };
 
 has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 has priv            => sub { my $self = shift; [$self->pfexec ? qw(pfexec) : $self->sudo ? qw(sudo) : ()] };
@@ -120,6 +121,25 @@ sub snapshotExists {
     chomp(@snapshots);
 
     return grep { $snapshot eq $_ } @snapshots;
+}
+
+sub createDataSet {
+    my $self = shift;
+    my $dataSet = shift;
+    my $remote;
+
+    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+    my @ssh = $self->$buildRemote($remote,
+        [@{$self->priv}, qw(zfs create), $dataSet]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+
+    $self->zLog->info("create new dataset ($dataSet) on destination ($remote)");
+
+    #return if 'noaction' or dataset creation successful
+    return 1 if $self->noaction || !system(@ssh);
+
+    Mojo::Exception->throw("ERROR: failed to create new dataset ($dataSet)");
 }
 
 sub listDataSets {
@@ -289,6 +309,19 @@ sub sendRecvSnapshots {
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
     my $mbufferPort;
+    my $dstDataSetExists = $self->dataSetExists($dstDataSet);
+
+    #attemp a creation of the dataset when it doesn't exist
+    $dstDataSetExists = $self->createDataSet($dstDataSet) if $self->autoCreation && !$dstDataSetExists;
+
+    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
+
+    #check if the dstDataSet exist on the destination (maybe after a creation)
+    !$dstDataSetExists
+        and Mojo::Exception->throw("ERROR: dataset ($dstDataSet) does not exist"
+	    .  ($remote ? " on destination ($remote)" : '') .", use --autoCreation "
+	    . "to let ZnapZend auto create datasets");
+
     my ($lastSnapshot, $lastCommon)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
@@ -302,7 +335,6 @@ sub sendRecvSnapshots {
             . "found on source and destination "
             . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
 
-    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
     my @cmd;
@@ -620,6 +652,10 @@ checks if the dataset exists on localhost or a remote host
 =head2 snapshotExists
 
 checks if the snapshot exists on localhost or a remote host
+
+=head2 createDataSet
+
+creates a dataset on localhost or a remote host
 
 =head2 listDataSets
 

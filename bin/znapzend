@@ -13,7 +13,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -67,6 +67,7 @@ B<znapzend> [I<options>...]
  --runonce=x        run one round on source dataset x
  --features=x       comma separated list of features to be enabled
  --connectTimeout=x sets the ConnectTimeout for ssh commands
+ --autoCreation     automatically create dataset on dest if it not exists
 
 =head1 DESCRIPTION
 
@@ -167,6 +168,10 @@ use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
 =item B<--connectTimeout>=I<timeout>
 
 sets the ssh connection timeout (in seconds)
+
+=item B<--autoCreation>
+
+Automatically create a dataset on a destination host if it's not there yet.
 
 =back
 
