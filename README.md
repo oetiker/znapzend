@@ -5,7 +5,7 @@ ZnapZend 0.15.3
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 
 ZnapZend is a ZFS centric backup tool. It relies on snapshot, send and
-receive todo its work. It has the built-in ability to to manage both local
+receive todo its work. It has the built-in ability to manage both local
 snapshots as well as remote copies by thining them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
