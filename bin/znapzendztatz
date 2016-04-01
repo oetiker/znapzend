@@ -39,7 +39,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r pfexec sudo man)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo man)) or exit 1;
 
     $zZfs = ZnapZend::ZFS->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
     $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
@@ -54,7 +54,8 @@ sub main {
     };
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
-    my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+    # MAYBE make $enabledOnly parameter public in Config.pm
+    my $backupSets = ($opts->{"only-enabled"} ? $zConfig->getBackupSetEnabled(pop @ARGV) : $zConfig->getBackupSet(pop @ARGV))
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set
@@ -113,6 +114,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
 
  -H             do not print headers
  -r,--recursive show statistics for dataset and sub datasets
+ --only-enabled only show statistics for enabled datasets
  --pfexec       use 'pfexec' for commands
  --sudo         use 'sudo' for commands
  --man          show man-page and exit
