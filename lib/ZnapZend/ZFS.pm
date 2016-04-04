@@ -310,15 +310,16 @@ sub sendRecvSnapshots {
     my $remote;
     my $mbufferPort;
     my $dstDataSetExists = $self->dataSetExists($dstDataSet);
+    my $dstDataSetPath;
 
     #attemp a creation of the dataset when it doesn't exist
     $dstDataSetExists = $self->createDataSet($dstDataSet) if $self->autoCreation && !$dstDataSetExists;
 
-    ($remote, $dstDataSet) = $splitHostDataSet->($dstDataSet);
+    ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
     #check if the dstDataSet exist on the destination (maybe after a creation)
     !$dstDataSetExists
-        and Mojo::Exception->throw("ERROR: dataset ($dstDataSet) does not exist"
+        and Mojo::Exception->throw("ERROR: dataset ($dstDataSetPath) does not exist"
 	    .  ($remote ? " on destination ($remote)" : '') .", use --autoCreation "
 	    . "to let ZnapZend auto create datasets");
 
@@ -417,14 +418,14 @@ sub sendRecvSnapshots {
     }
     else{
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-        my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSet];
+        my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
 
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
         print STDERR "# $cmd\n" if $self->debug; 
 
-        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
+        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
             . ($remote ? " on $remote" : '')) if !$self->noaction;
     }
     
