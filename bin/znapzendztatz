@@ -16,10 +16,16 @@ my $zTime   = ZnapZend::Time->new();
 
 sub dumpStats {
     my $stats = shift;
+    my $tabs = shift;
 
-    print ' ' x (5 - length($stats->{usage})) . $stats->{usage};
-    print "   $stats->{last_snap}";
-    print "   $stats->{dataset}\n";
+    if (! $tabs) {
+       print ' ' x (5 - length($stats->{usage}));
+    }
+    print $stats->{usage};
+    print ($tabs ? "\t" : "   ");
+    print "$stats->{last_snap}";
+    print ($tabs ? "\t" : "   ");
+    print "$stats->{dataset}\n";
 }
 
 sub collectData {
@@ -75,7 +81,7 @@ sub main {
 
         #source dataset
         for my $dataset (@$datasets){
-            dumpStats(collectData($dataset, $snapFilter));
+            dumpStats(collectData($dataset, $snapFilter), $opts->{H});
 
             #destination datasets
             for (keys %$backupSet){
@@ -89,7 +95,7 @@ sub main {
                 else{
                     my $dstDataSet = $dataset;
                     $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                    dumpStats(collectData($dstDataSet, $snapFilter));
+                    dumpStats(collectData($dstDataSet, $snapFilter), $opts->{H});
                 }
             }
 
@@ -112,7 +118,8 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
- -H             do not print headers
+ -H             do not print headers and separate fields by a single tab
+                instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
  --only-enabled only show statistics for enabled datasets
  --pfexec       use 'pfexec' for commands
