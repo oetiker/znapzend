@@ -15,7 +15,15 @@ Zetup Inztructionz
 ------------------
 
 Follow these zimple inztructionz below to get a custom made copy of
-znapzend. Yes you need a compiler and stuff for this to work.
+znapzend. 
+
+If you're running a redhat like system, be sure to have Perl's core modules installed :
+
+```sh
+yum install perl-core
+```
+
+Yes you need a compiler and stuff for this to work.
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.15.3/znapzend-0.15.3.tar.gz
