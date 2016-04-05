@@ -1,3 +1,117 @@
+commit 06ddae478277fba10feed6fc2eeabba686e6688a
+Author: RageLtMan <rageltman [at] sempervictus>
+Date:   Mon Apr 4 00:23:24 2016 -0400
+
+    sendRecvSnapshots - don't cut dstDataSet in-place
+    
+    The current code in sendRecvSnapshots splits the dstDataSet var
+    early on in the execution chain to provide logging output and the
+    remote variable contents. This removes the remote information from
+    dstDataSet which is then passed to listSnapshots without the
+    remote data and the attempt to list the last snapshot occurs on the
+    local host, not over SSH on the remote target.
+    
+    Address the issue by creating a dstDataSetPath variable to hold the
+    stripped target path while retaining the original dstDataSet with
+    the remote information attached for lastAndCommonSnapshots to use
+    in listSnapshots.
+    
+    -----
+    
+    Testing:
+      4 hosts with waterfall replication topologies in debug mode
+
+commit 2e905cbbd753956f373a3bd318794f8e25e11818
+Author: sylvain-ilm <sylvain@ilm-informatique.fr>
+Date:   Mon Apr 4 12:22:35 2016 +0200
+
+    Separate fields by tabs when using -H
+
+commit 7555b59dbf7d87dc6a909495e50b6a7d2661cb96
+Author: sylvain-ilm <sylvain@ilm-informatique.fr>
+Date:   Fri Apr 1 18:24:07 2016 +0200
+
+    added --only-enabled option in znapzendztatz to filter out disabled datasets
+
+commit 8ec92aec894d508c00d0cd0cb58a67b2e16c6939
+Author: tisc0 <tiscarabee@gmail.com>
+Date:   Tue Mar 22 15:58:18 2016 +0100
+
+    Update README.md
+    
+    Simple typo. Thanks for that project guyz !
+
+commit 175b4e93c1cd4b2ed329f0e0f93ac2146e45fd4b
+Author: Wouter van Os <wouter0100@gmail.com>
+Date:   Thu Mar 17 21:52:40 2016 +0100
+
+    Updated exception to exclude remote when local
+
+commit c46e0fe0df8a75040b2fccd7b147748b2f00b10f
+Author: Wouter van Os <wouter0100@gmail.com>
+Date:   Sat Mar 12 17:50:33 2016 +0100
+
+    Added documentation about the new --autoCreation and createDataSet
+
+commit 1345311ea4e37e743f3c3beec9380f1677dd9e44
+Author: Wouter van Os <wouter0100@gmail.com>
+Date:   Sat Mar 12 15:36:20 2016 +0100
+
+    Made an exception message more clear with extra data and info
+
+commit edef36a5486e93e08971420b018846a201be1828
+Author: Wouter van Os <wouter0100@gmail.com>
+Date:   Sat Mar 12 15:28:05 2016 +0100
+
+    Improved logs for the createDataSet sub and removed null-check
+
+commit 4cd300427ab49322339dbdd1fc4b0ddf1e70ab2b
+Author: Wouter van Os <wouter0100@gmail.com>
+Date:   Sat Mar 12 12:48:41 2016 +0100
+
+    Create datasets on dst when it doesn't exist
+    
+    It checks f the `$dstDataSet` exists, if not,
+    it attempts to create it. When creation is succes,
+    the script continues. When it fails, the script
+    stops and continues to the next dataset.
+
+commit 3494e80e37a1ce70f02e27a34d69e9bdc9f6af69
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Mar 4 14:22:48 2016 +0100
+
+    actually disable the code in testmode!
+
+commit e50d481d9900ba2a16ce1338ae5ed7b18cad1278
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Mar 4 13:33:18 2016 +0100
+
+    we should add the recurring trick even when not daemonized ...
+
+commit 5bc7cc5bfdfe80de984493f42233e95dde1c5868
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 29 14:09:55 2016 +0100
+
+    our test scripts do not like the recurring event to enable signal handling in connection with EV
+
+commit b32074bf044eb915b42c87bb00bfc2166a48a18a
+Author: Martin Rueegg <martin.rueegg@metaworx.ch>
+Date:   Fri Feb 26 14:51:30 2016 +0100
+
+    wake the io loop periodically to make sure signals get processed even when running with EV
+
+commit da82e77790423ee7bf347d26230edaad1e073149
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Feb 25 15:05:18 2016 +0100
+
+    updated for release
+
+commit 56ee5792ff201286802aee58ea3480605d40f519
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Feb 25 15:00:38 2016 +0100
+
+    release 0.15.3
+
 commit 547476e6bdb97ecf4fba3cf9f9c3b26e0397006e
 Author: martin-rueegg <martin.rueegg@metaworx.ch>
 Date:   Tue Feb 23 10:08:46 2016 +0100

@@ -17,6 +17,21 @@ Zetup Inztructionz
 Follow these zimple inztructionz below to get a custom made copy of
 znapzend. Yes you need a compiler and stuff for this to work.
 
+On RedHat you get the necessaries with:
+
+    yum install perl-core
+
+On Ubuntu / Debian with:
+
+    apt-get install perl
+
+On Solaris you may need the c compiler from Solaris Studio and gnu-make
+since the installed perl version is probably very old.
+
+On OmniOS/SmartOS you will need perl and gnu-make
+
+with that in place you can now utter:
+
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.15.3/znapzend-0.15.3.tar.gz
 tar zxvf znapzend-0.15.3.tar.gz

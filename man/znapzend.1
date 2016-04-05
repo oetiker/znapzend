@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2016-02-14" "0.15.3" "znapzend"
+.TH ZNAPZEND 1 "2016-04-02" "0.15.4" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -144,7 +144,7 @@ znapzend \- znapzend daemon
 .IX Header "SYNOPSIS"
 \&\fBznapzend\fR [\fIoptions\fR...]
 .PP
-.Vb 12
+.Vb 10
 \& \-\-man              show man\-page and exit
 \& \-h,\-\-help          display this help and exit
 \& \-d,\-\-debug         print debug messages to STDERR
@@ -157,6 +157,7 @@ znapzend \- znapzend daemon
 \& \-\-runonce=x        run one round on source dataset x
 \& \-\-features=x       comma separated list of features to be enabled
 \& \-\-connectTimeout=x sets the ConnectTimeout for ssh commands
+\& \-\-autoCreation     automatically create dataset on dest if it not exists
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -239,6 +240,9 @@ use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
 .IP "\fB\-\-connectTimeout\fR=\fItimeout\fR" 4
 .IX Item "--connectTimeout=timeout"
 sets the ssh connection timeout (in seconds)
+.IP "\fB\-\-autoCreation\fR" 4
+.IX Item "--autoCreation"
+Automatically create a dataset on a destination host if it's not there yet.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 To test a new config

@@ -60,6 +60,31 @@ else
   AC_MSG_ERROR(could not find perl)
 fi
 
+
+AC_MSG_CHECKING(is perl reasonably complete)
+if $PERL -MExtUtils::MakeMaker -e '' 2>/dev/null; then
+  AC_MSG_RESULT(yes. ExtUtils::MakeMaker is available);
+else
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([a complete perl ('perl-core' in the redhat world) installation is required])
+fi
+
+AC_MSG_CHECKING([if require a c compiler to get perl modules compiled])
+if $PERL -MIO::Socket::IP -e 'exit($IO::Socket::IP::VERSION < 0.37)' 2>/dev/null; then
+    AC_MSG_RESULT(no)
+else
+    AC_MSG_RESULT(yes)
+    perl_cc=`$PERL -MConfig -e 'print $Config{cc}'`
+    AC_PATH_PROG(PERL_CC_PATH, $perl_cc, no)
+    AC_MSG_CHECKING(is perls favorite c compiler ($perl_cc) available)
+    if test x$PERL_CC_PATH = xno; then
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([perl needs the '$perl_cc' compiler package to build dependencies])
+    else
+        AC_MSG_RESULT(yes)
+    fi
+fi
+
 AC_PROG_GREP
 
 AC_ARG_VAR(GMAKE,   [Path to local GNU Make binary])
