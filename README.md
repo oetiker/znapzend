@@ -1,4 +1,4 @@
-ZnapZend 0.15.3
+ZnapZend 0.15.4
 ===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -33,10 +33,10 @@ On OmniOS/SmartOS you will need perl and gnu-make
 with that in place you can now utter:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.15.3/znapzend-0.15.3.tar.gz
-tar zxvf znapzend-0.15.3.tar.gz
-cd znapzend-0.15.3
-./configure --prefix=/opt/znapzend-0.15.3
+wget https://github.com/oetiker/znapzend/releases/download/v0.15.4/znapzend-0.15.4.tar.gz
+tar zxvf znapzend-0.15.4.tar.gz
+cd znapzend-0.15.4
+./configure --prefix=/opt/znapzend-0.15.4
 ```
 
 If configure finds anything noteworthy, it will tell you about it.  If any
@@ -52,7 +52,7 @@ Optionally (but recommended) put symbolic links to the installed binaries in the
 system PATH.
 
 ```sh
-for x in /opt/znapzend-0.15.3/bin/*; do ln -s $x /usr/local/bin; done
+for x in /opt/znapzend-0.15.4/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
 Configuration
@@ -104,4 +104,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2016-02-25
+2016-04-05

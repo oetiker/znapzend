@@ -6,8 +6,10 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
- -H             do not print headers
+ -H             do not print headers and separate fields by a single tab
+                instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
+ --only-enabled only show statistics for enabled datasets
  --pfexec       use 'pfexec' for commands
  --sudo         use 'sudo' for commands
  --man          show man-page and exit
