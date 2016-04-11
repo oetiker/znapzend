@@ -1,3 +1,27 @@
+commit a054a4b72da1a6369df4d61bf2c43913c3eaf184
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Apr 11 08:25:31 2016 +0200
+
+    fix regression from autoCreate feature in mbuffer mode
+
+commit 85a7dc95d1ecce55d2976d27be00c34d72455ee1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Apr 5 19:35:23 2016 +0200
+
+    0.15.4
+
+commit 648a016ebbad8a04a13da9fe3dcb522e46c5019f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Apr 5 18:56:52 2016 +0200
+
+    0.15.4
+
+commit 44ed50a8dd67cb4dc5489a5474bc21e4fbcf7121
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Apr 5 18:56:18 2016 +0200
+
+    be more careful in testing the environment
+
 commit 06ddae478277fba10feed6fc2eeabba686e6688a
 Author: RageLtMan <rageltman [at] sempervictus>
 Date:   Mon Apr 4 00:23:24 2016 -0400
