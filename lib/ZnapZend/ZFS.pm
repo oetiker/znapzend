@@ -65,7 +65,7 @@ my $scrubZpool = sub {
     my $startstop = shift;
     my $zpool = shift;
     my $remote;
-    
+
     ($remote, $zpool) = $splitHostDataSet->($zpool);
     my @cmd = (@{$self->priv}, ($startstop ? qw(zpool scrub) : qw(zpool scrub -s)));
 
@@ -283,7 +283,7 @@ sub lastAndCommonSnapshots {
     my $dstDataSet = shift;
     my $snapshotFilter = $_[0] || qr/.*/;
 
-    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter); 
+    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
 
     return (undef, undef) if !@$srcSnapshots;
@@ -304,7 +304,7 @@ sub sendRecvSnapshots {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $mbuffer = shift;
-    my $mbufferSize = shift; 
+    my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
@@ -351,7 +351,7 @@ sub sendRecvSnapshots {
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', $recvOpt, $dstDataSet]);
+            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', $recvOpt, $dstDataSetPath]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -377,7 +377,7 @@ sub sendRecvSnapshots {
                 Mojo::Exception->throw($err) if $err;
             }
         );
-        #spawn event 
+        #spawn event
         $fc->on(
             spawn => sub {
                 my ($fc, $pid) = @_;
@@ -401,7 +401,7 @@ sub sendRecvSnapshots {
                     sleep $self->sendDelay;
                     system($cmd) || last;
                 }
-        
+
                 $retryCounter <= 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
                     . ($remote ? " on $remote" : ''));
             }
@@ -423,12 +423,12 @@ sub sendRecvSnapshots {
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
-        print STDERR "# $cmd\n" if $self->debug; 
+        print STDERR "# $cmd\n" if $self->debug;
 
-        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
+        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
             . ($remote ? " on $remote" : '')) if !$self->noaction;
     }
-    
+
     return 1;
 }
 
@@ -439,7 +439,7 @@ sub getDataSetProperties {
     my $propertyPrefix = $self->propertyPrefix;
 
     my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
-    
+
     for my $listElem (@$list){
         my %properties;
         my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
@@ -508,7 +508,7 @@ sub deleteBackupDestination {
     my $dst = $self->propertyPrefix . ':' . $_[0];
 
     return 0 if !$self->dataSetExists($dataSet);
-    
+
     my @cmd = (@{$self->priv}, qw(zfs inherit), $dst, $dataSet);
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     system(@cmd)
@@ -584,7 +584,7 @@ sub zpoolStatus {
 sub scrubActive {
     my $self = shift;
     #zpool is second argument
-     
+
     my $scrubProgress = $self->scrubInProgress;
 
     return grep { /$scrubProgress/ } @{$self->zpoolStatus(@_)};
