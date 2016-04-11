@@ -425,7 +425,7 @@ sub sendRecvSnapshots {
         my $cmd = $shellQuote->(@cmd);
         print STDERR "# $cmd\n" if $self->debug;
 
-        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
+        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
             . ($remote ? " on $remote" : '')) if !$self->noaction;
     }
 
