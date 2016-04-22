@@ -1,6 +1,8 @@
 ZnapZend 0.15.5
 ===============
 
+[![Join the chat at https://gitter.im/oetiker/znapzend](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 
