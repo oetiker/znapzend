@@ -3,6 +3,8 @@ ZnapZend 0.15.5
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
+[![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badg
+e)
 
 ZnapZend is a ZFS centric backup tool. It relies on snapshot, send and
 receive todo its work. It has the built-in ability to manage both local
