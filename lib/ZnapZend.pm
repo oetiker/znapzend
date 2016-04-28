@@ -37,6 +37,7 @@ has logto           => sub { q{} };
 has pidfile         => sub { q{} };
 has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
 has terminate       => sub { 0 };
+has autoCreation    => sub { 0 };
 
 has backupSets       => sub { [] };
 
@@ -52,7 +53,7 @@ has zZfs => sub {
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         pfexec => $self->pfexec, sudo => $self->sudo,
-        zLog => $self->zLog);
+        zLog => $self->zLog,autoCreation => $self->autoCreation);
         
 };
 

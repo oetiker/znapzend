@@ -19,6 +19,7 @@ has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o
     qw(Cipher=arcfour -o batchMode=yes -o), 'ConnectTimeout=' . shift->connectTimeout] };
 has mbufferParam    => sub { [qw(-q -s 128k -W 60 -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
+has autoCreation    => sub { 0 };
 
 has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 has priv            => sub { my $self = shift; [$self->pfexec ? qw(pfexec) : $self->sudo ? qw(sudo) : ()] };
