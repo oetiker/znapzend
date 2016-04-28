@@ -13,7 +13,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s autoCreation)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
