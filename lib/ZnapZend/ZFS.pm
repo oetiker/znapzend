@@ -156,9 +156,9 @@ sub listSnapshots {
         or Mojo::Exception->throw("ERROR: cannot get snapshots on $dataSet");
 
     while (my $snap = <$snapshots>){
-        chomp;
+        chomp $snap;
         next if $snap !~ /^\Q$dataSet\E\@$snapshotFilter$/;
-        push @snapshots, $_;
+        push @snapshots, $snap;
     }
 
     @snapshots = map { ($remote ? "$remote:" : '') . $_ } @snapshots;
@@ -178,9 +178,9 @@ sub listSubDataSets {
         or Mojo::Exception->throw("ERROR: cannot get sub datasets on $dataSet");
 
     while (my $task = <$dataSets>){
-        chomp;
+        chomp $task;
         next if $task !~ /^\Q$dataSet\E/;
-        push @dataSets, $_;
+        push @dataSets, $task;
     }
 
     my @subDataSets = map { ($remote ? "$remote:" : '') . $_ } @dataSets;
@@ -394,7 +394,7 @@ sub sendRecvSnapshots {
         #start forkcall event loop
         $fc->ioloop->start if !$fc->ioloop->is_running;
     }
-    else{
+    else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
         my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
 
@@ -424,7 +424,7 @@ sub getDataSetProperties {
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
         while (my $prop = <$props>){
-            chomp;
+            chomp $prop;
             my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
             $properties{$key} = $value;
         }
