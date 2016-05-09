@@ -694,7 +694,7 @@ lists zpools on localhost or a remote host
 
 =head2 startScrub
 
-stats scrub on a zpool
+starts scrub on a zpool
 
 =head2 stopScrub
 
