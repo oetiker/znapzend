@@ -53,7 +53,8 @@ has zZfs => sub {
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         pfexec => $self->pfexec, sudo => $self->sudo,
-        zLog => $self->zLog, autoCreation => $self->autoCreation);
+        zLog => $self->zLog,autoCreation => $self->autoCreation);
+        
 };
 
 has zTime => sub { ZnapZend::Time->new() };
@@ -136,10 +137,16 @@ my $refreshBackupPlans = sub {
 
             #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now 
             if (!$backupSet->{"dst_$key" . '_valid'}){
+                my $dstPath = $backupSet->{"dst_$key"};
+                if ($self->autoCreation) {
+                    # in auto create mode we are happy if
+                    # the pool exists
+                    $dstPath =~ s{/.+}{};
+                }
                 $backupSet->{"dst_$key" . '_valid'}
-                    = $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
+                    = $self->zZfs->dataSetExists($dstPath) or do {
 
-                    $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
+                    $self->zLog->warn("destination '" . $dstPath
                         . "' does not exist or is offline. will be rechecked every run...");
                 };
             }
@@ -177,10 +184,17 @@ my $sendRecvCleanup = sub {
 
         #recheck non valid dst as t might be online, now 
         if (!$backupSet->{$dst . '_valid'}){
+            my $dstPath = $backupSet->{"$dst"};
+            if ($self->autoCreation) {
+                # in auto create mode we are happy if
+                # the pool exists
+                $dstPath =~ s{/.+}{};
+            }
+            
             $backupSet->{$dst. '_valid'}
-                = $self->zZfs->dataSetExists($backupSet->{$dst}) or do {
+                = $self->zZfs->dataSetExists($dstPath) or do {
 
-                $self->zLog->warn("destination '" . $backupSet->{$dst}
+                $self->zLog->warn("destination '" . $dstPath
                     . "' does not exist or is offline. ignoring it for this round...");
                 next;
             };

@@ -1,3 +1,27 @@
+commit f81f973f73681700920c2e0402a75aaf28be7105
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Apr 22 13:52:53 2016 +0200
+
+    go gitter
+
+commit 8600ee9818b09a715b67b0a91ef1d47b72808d80
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Apr 11 08:28:50 2016 +0200
+
+    rerelease
+
+commit 12d917d1d4c5d2dfec876eab13ecf0ee9ad25129
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Apr 11 08:28:32 2016 +0200
+
+    revert error message fix
+
+commit 6efd70f911f724724044119f17bf7040b49f0554
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Apr 11 08:26:06 2016 +0200
+
+    prep for 0.15.5
+
 commit a054a4b72da1a6369df4d61bf2c43913c3eaf184
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Mon Apr 11 08:25:31 2016 +0200

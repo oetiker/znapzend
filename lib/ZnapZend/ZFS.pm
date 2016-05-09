@@ -123,25 +123,6 @@ sub snapshotExists {
     return grep { $snapshot eq $_ } @snapshots;
 }
 
-sub createDataSet {
-    my $self = shift;
-    my $dataSet = shift;
-    my $remote;
-
-    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
-    my @ssh = $self->$buildRemote($remote,
-        [@{$self->priv}, qw(zfs create), $dataSet]);
-
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-
-    $self->zLog->info("create new dataset ($dataSet) on destination ($remote)");
-
-    #return if 'noaction' or dataset creation successful
-    return 1 if $self->noaction || !system(@ssh);
-
-    Mojo::Exception->throw("ERROR: failed to create new dataset ($dataSet)");
-}
-
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
@@ -174,10 +155,10 @@ sub listSnapshots {
     open my $snapshots, '-|', @ssh
         or Mojo::Exception->throw("ERROR: cannot get snapshots on $dataSet");
 
-    while (<$snapshots>){
-        chomp;
-        next if !/^\Q$dataSet\E\@$snapshotFilter$/;
-        push @snapshots, $_;
+    while (my $snap = <$snapshots>){
+        chomp $snap;
+        next if $snap !~ /^\Q$dataSet\E\@$snapshotFilter$/;
+        push @snapshots, $snap;
     }
 
     @snapshots = map { ($remote ? "$remote:" : '') . $_ } @snapshots;
@@ -186,35 +167,34 @@ sub listSnapshots {
 
 sub listSubDataSets {
     my $self = shift;
-    my $dataSet = shift;
-    my $remote;
+    my $hostAndDataSet = shift;
     my @dataSets;
 
-    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+    my ($remote, $dataSet) = $splitHostDataSet->($hostAndDataSet);
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -r -o name -t), 'filesystem,volume', $dataSet]);
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
         or Mojo::Exception->throw("ERROR: cannot get sub datasets on $dataSet");
 
-    while (<$dataSets>){
-        chomp;
-        next if !/^\Q$dataSet\E/;
-        push @dataSets, $_;
+    while (my $task = <$dataSets>){
+        chomp $task;
+        next if $task !~ /^\Q$dataSet\E/;
+        push @dataSets, $task;
     }
 
-    @dataSets = map { ($remote ? "$remote:" : '') . $_ } @dataSets;
+    my @subDataSets = map { ($remote ? "$remote:" : '') . $_ } @dataSets;
 
-    return \@dataSets;
+    return \@subDataSets;
 }
 
 sub createSnapshot {
     my $self = shift;
-    my $dataSet = shift;
+    my $hostAndDataSet = shift;
     my @recursive = $_[0] ? ('-r') : ();
-    my $remote;
 
-    ($remote, $dataSet) = $splitHostDataSet->($dataSet);
+
+    my ($remote, $dataSet) = $splitHostDataSet->($hostAndDataSet);
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs snapshot), @recursive, $dataSet]);
 
     print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
@@ -239,8 +219,8 @@ sub destroySnapshots {
     #oracleMode: destroy each snapshot individually
     if ($self->oracleMode){
         my $destroyError = '';
-        for (@toDestroy){
-            ($remote, $dataSet) = $splitHostDataSet->($_);
+        for my $task (@toDestroy){
+            my ($remote, $dataSet) = $splitHostDataSet->($task);
             my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), $dataSet]);
 
             print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
@@ -255,13 +235,13 @@ sub destroySnapshots {
     }
 
     #combinedDestroy
-    for (@toDestroy){
-        ($remote, $dataSet) = $splitHostDataSet->($_);
-        ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSet);
+    for my $task (@toDestroy){
+        my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
+        my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
         #tag local snapshots as 'local' so we have a key to build the hash
         $remote = $remote || 'local';
         exists $toDestroy{$remote} or $toDestroy{$remote} = [];
-        push @{$toDestroy{$remote}}, @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot";
+        push @{$toDestroy{$remote}}, scalar @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot" ;
     }
 
     for $remote (keys %toDestroy){
@@ -286,7 +266,7 @@ sub lastAndCommonSnapshots {
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
 
-    return (undef, undef) if !@$srcSnapshots;
+    return (undef, undef, undef) if ! scalar @$srcSnapshots;
 
     my ($i, $snapTime);
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
@@ -296,7 +276,7 @@ sub lastAndCommonSnapshots {
     }
 
     return (${$srcSnapshots}[-1], (grep { /$snapTime/ } @$dstSnapshots)
-        ? ${$srcSnapshots}[$i] : undef);
+        ? ${$srcSnapshots}[$i] : undef,scalar @$dstSnapshots);
 }
 
 sub sendRecvSnapshots {
@@ -309,21 +289,19 @@ sub sendRecvSnapshots {
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
     my $mbufferPort;
+
     my $dstDataSetExists = $self->dataSetExists($dstDataSet);
     my $dstDataSetPath;
-
-    #attemp a creation of the dataset when it doesn't exist
-    $dstDataSetExists = $self->createDataSet($dstDataSet) if $self->autoCreation && !$dstDataSetExists;
 
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
     #check if the dstDataSet exist on the destination (maybe after a creation)
-    !$dstDataSetExists
+    !$dstDataSetExists && !$self->autoCreation
         and Mojo::Exception->throw("ERROR: dataset ($dstDataSetPath) does not exist"
 	    .  ($remote ? " on destination ($remote)" : '') .", use --autoCreation "
 	    . "to let ZnapZend auto create datasets");
 
-    my ($lastSnapshot, $lastCommon)
+    my ($lastSnapshot, $lastCommon,$dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
@@ -331,7 +309,7 @@ sub sendRecvSnapshots {
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
-    !$lastCommon && @{$self->listSnapshots($dstDataSet)}
+    !$lastCommon and $dstSnapCount
         and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
             . "found on source and destination "
             . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
@@ -416,7 +394,7 @@ sub sendRecvSnapshots {
         #start forkcall event loop
         $fc->ioloop->start if !$fc->ioloop->is_running;
     }
-    else{
+    else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
         my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
 
@@ -445,9 +423,9 @@ sub getDataSetProperties {
         my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
-        while (<$props>){
-            chomp;
-            my ($key, $value) = /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+        while (my $prop = <$props>){
+            chomp $prop;
+            my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
             $properties{$key} = $value;
         }
         if (%properties){
@@ -680,7 +658,7 @@ destroys a single snapshot or a list of snapshots on localhost or a remote host
 
 =head2 lastAndCommonSnapshots
 
-lists the last snapshot on source and the last common snapshot an source and destination
+lists the last snapshot on source and the last common snapshot an source and destination and the number of snapshots found on the destination host
 
 =head2 sendRecvSnapshots
 

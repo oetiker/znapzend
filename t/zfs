@@ -52,7 +52,7 @@ for ($command){
         }
         exit;
     };
-    
+
     /^destroy$/ && do {
         if ($ARGV[0] eq '-nv'){
             print "would reclaim 1337G\n";
@@ -65,7 +65,7 @@ for ($command){
             print "10G\n";
             exit;
         }
-        exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src'); 
+        exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
         print <<"ZFS_GET_END";
 org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
 org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
@@ -91,4 +91,3 @@ ZFS_GET_END
 }
 
 1;
-
