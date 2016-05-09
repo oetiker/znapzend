@@ -99,7 +99,8 @@ Support and Contributions
 -------------------------
 If you find a problem with znapzend, please open an Issue on GitHub.
 
-If you like to get in touch, you can find Dominik and Tobi on the IRC-Channel [#znapzend on irc.freenode.net](irc://irc.freenode.net/#znapzend)
+If you like to get in touch, come to [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badg
+e).
 
 And if you have a contribution, please send a pull request.
 
