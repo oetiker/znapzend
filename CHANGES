@@ -1,3 +1,41 @@
+commit 5533b20687e33eee25e4c63885b02334a24bf0d1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 6 10:57:49 2016 +0200
+
+    * add autocreation support to main code
+    * fix some mor $_ instances
+
+commit 93130b6116b6c20539ae8def9ae89cad6b709a0f
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon May 2 15:34:49 2016 +0200
+
+    do not try to be smart about compression and encryption let the user set this on his own in .ssh/config
+
+commit 56fe85ed02123ac99978e2008283f9d4680c949d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri May 6 08:46:40 2016 +0200
+
+    * fix variable re-assignements
+    * better test for nonexisting destination snapshots.
+
+commit 83b16d2651a4e5b22b05a4e6ddae491f27a5d836
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Apr 28 15:36:50 2016 +0200
+
+    add option back to cli
+
+commit efd5b697f9be925b71bfb2e22843351102fe0a65
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Apr 28 15:35:36 2016 +0200
+
+    must keep the option in
+
+commit 48514f86d29144e4563babc212a114718ceef50d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Apr 28 15:27:27 2016 +0200
+
+    attempt a fix for autocreation
+
 commit f81f973f73681700920c2e0402a75aaf28be7105
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Fri Apr 22 13:52:53 2016 +0200
