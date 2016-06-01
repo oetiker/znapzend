@@ -529,10 +529,12 @@ e.g. for database locking/flushing (pre) and unlocking (post).
 
 If you deal with a mariadb/mysql database, you can use 
 
-  pre-snap-command  = mysql --execute "set autocommit=0;flush tables with read lock;"
-  post-snap-command = mysql --execute "unlock tables;"
+  pre-snap-command  = mysql --execute "set autocommit=0;flush tables with read lock;system /bin/sleep 60"&
+  post-snap-command = mysql --execute /usr/bin/pkill -u root -f "set autocommit=0;flush tables"
 
-to make sure that the on-disk data is consistant when snapshotting.
+to make sure that the on-disk data is consistant when snapshotting. Since the
+lock stays only in place for the duration of the connection to mysql
+we need to employ
 
 =back
 
