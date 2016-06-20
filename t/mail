@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# Set the field separator to a newline.
+IFS="
+"
+
+# Set default program options.
+opt_subject=''
+opt_message=''
+
+print_usage ()
+{
+  echo "Usage: $0 [-s subject] ...
+  -s, --subject      Specify subject on command line (only the first argument after the -s flag is used as a subject; be careful to quote subjects containing spaces).
+  -h, --help         Print this usage message.
+"
+}
+
+GETOPT=$(getopt \
+  --longoptions=subject: \
+  --longoptions=help \
+  --options=s:h \
+  -- "$@" ) \
+  || exit 128
+
+eval set -- "$GETOPT"
+
+while [ "$#" -gt '0' ]
+do
+  case "$1" in
+    (-s|--subject)
+      opt_subject="$2"
+      shift 2
+      ;;
+    (-h|--help)
+      print_usage
+      exit 0
+      ;;
+    (--)
+      shift 1
+      break
+      ;;
+  esac
+done
+
+if [ "$#" -eq '0' ]
+then
+  echo "Error: The argument list is empty."
+  exit 133
+fi
+
+opt_message="$(cat </dev/stdin)"
+
+cat << EOF >> mail.log
+|-------------------------- $(date -u '+%Y-%m-%d %H:%M:%S') UTC --------------------------|
+To: $@
+Subject: ${opt_subject}
+
+${opt_message}
+|-----------------------------------------------------------------------------|
+EOF
+
+exit 0
+

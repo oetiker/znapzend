@@ -33,13 +33,15 @@ has connectTimeout  => sub { 30 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
 has loglevel        => sub { q{debug} };
-has logto           => sub { q{} };
+has logto           => sub { [] };
 has pidfile         => sub { q{} };
 has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
 has terminate       => sub { 0 };
 has autoCreation    => sub { 0 };
 
-has backupSets       => sub { [] };
+has logBuffer       => sub { [] };
+has logPipes        => sub { [] };
+has backupSets      => sub { [] };
 
 has zConfig => sub {
     my $self = shift;
@@ -61,11 +63,35 @@ has zTime => sub { ZnapZend::Time->new() };
 
 has zLog => sub {
     my $self = shift;
+    my ($file, $syslog);
 
-    #check if we are logging to syslog
-    my ($syslog) = $self->logto =~ /^syslog::(\w+)$/;
-    # logging defaults to syslog::daemon (STDERR if runonce)
-    $syslog = 'daemon' if !$self->logto && !$self->runonce;
+    if (@{$self->logto}){
+        #log to user-defined logger(s)
+        for (@{$self->logto}){
+          /^file::(.+)/ && do {
+              $file = $1;
+              next;
+          };
+
+          /^syslog::(\w+)$/ && do {
+              $syslog = $1;
+              next;
+          };
+
+          /^pipe::(.+)/ && do {
+              push @{$self->logPipes}, $1;
+              next;
+          };
+
+          $file = $_;
+        }
+    }
+    
+    if (!$syslog && !$file && !$self->runonce){
+        #we may log to STDERR if runonce is true, but otherwise we may not
+        #because we should always log somewhere, default to syslog::daemon
+        $syslog = 'daemon';
+    }
 
     #make level mojo conform
     my ($level) = grep { $logLevels{$_} eq $self->loglevel } keys %logLevels
@@ -73,9 +99,9 @@ has zLog => sub {
             . "' are supported\n";
 
     my $log = Mojo::Log->new(
-        path  => $syslog                         ? '/dev/null'
-               : $self->runonce && !$self->logto ? undef
-               :                                   $self->logto,
+        path  => $file   ? $file 
+               : $syslog ? '/dev/null' 
+               :           undef,
         level => $level
     );
 
@@ -91,7 +117,33 @@ has zLog => sub {
         );
     };
 
+    @{$self->logPipes} && do {
+        $log->on(
+            message => sub {
+                my ($log, $level, @lines) = @_;
+                if ($level eq 'warn' || $level eq 'err'){
+                  push @{$self->logBuffer}, @lines;
+                }
+            }
+        );
+    };
+
     return $log;
+};
+
+my $pipeLogs = sub {
+    my $self = shift;
+
+    if (@{$self->logBuffer} && @{$self->logPipes}){
+        my $log = join "\n", @{$self->logBuffer};
+        for my $pipeTo (@{$self->logPipes}){
+            open (my $fh, '|-', $pipeTo);
+            print $fh $log;
+            close $fh;
+        }
+    }
+
+    $self->logBuffer([]);
 };
 
 my $killThemAll  = sub {
@@ -568,13 +620,22 @@ sub start {
     # is sleeping so lets activate it periodically    
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  if (0) {
+    Mojo::IOLoop->timer(60 => $self->$pipeLogs) if not $self->runonce;
     Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce;
 ### RM_COMM_4_TEST ###  }
-    
+### RM_COMM_4_TEST ### $self->zLog->warn("WARN");
+### RM_COMM_4_TEST ### $self->$pipeLogs;
+
     #start eventloop
     Mojo::IOLoop->start;
 
     return 1;
+}
+
+sub DESTROY {
+    my $self = shift;
+
+    $self->$pipeLogs;
 }
 
 1;

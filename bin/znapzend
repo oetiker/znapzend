@@ -13,7 +13,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s autoCreation)) or exit 1;
+        qw(daemonize pidfile=s logto=s@ loglevel=s runonce=s connectTimeout=s autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -60,7 +60,7 @@ B<znapzend> [I<options>...]
  -d,--debug         print debug messages to STDERR
  -n,--noaction      run in simulation mode. does no changes to the filesystem
  --nodestroy        does all changes to the filesystem except destroy
- --logto=x          select where to log to (syslog::<facility> or <filepath>)
+ --logto=x          where to log to (syslog::<facility> or file::<path>, and/or pipe::<program>)
  --loglevel=x       define the log level when logging to file
  --pidfile=x        write a pid file when running in daemon mode
  --daemonize        fork into the background
@@ -92,16 +92,20 @@ configurations together with B<--debug>
 
 do all changes to the filesystem except destroy old snapshots
 
-=item B<--logto>={B<syslog::>I<facility>|I<filepath>}
+=item B<--logto>={B<syslog::>I<facility>|B<file::>I<path>|B<pipe::>I<program>}
 
 send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when runing daemonized. When running in debug mode, the
-logs will go to STDERR by default.
+logs will go to STDERR by default. Logs can also be piped to a program of
+your choice, which will be done in batch every 60 seconds; you may specify
+multipe pipes that will be used in conjunction with either syslog or logfile.
 
 Examples:
 
- --logto=/var/log/znapzend.log
  --logto=syslog::daemon
+ --logto=file::/var/log/znapzend.log
+ --logto="pipe::mail -s 'ZnapZend Error' you@domain.com" --logto="pipe::mylinereader"
+ --logto=file::/var/log/znapzend.log --logto="pipe::mail -s 'ZnapZend Error' you@domain.com"
 
 =item B<--loglevel>={B<debug>|B<info>|B<warning>|B<err>|B<alert>}
 
