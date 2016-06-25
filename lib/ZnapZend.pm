@@ -620,8 +620,10 @@ sub start {
     # is sleeping so lets activate it periodically    
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  if (0) {
-    Mojo::IOLoop->timer(60 => $self->$pipeLogs) if not $self->runonce;
-    Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce;
+    if (!$self->runonce){
+        Mojo::IOLoop->timer(60 => $self->$pipeLogs) if @{$self->logPipes};
+        Mojo::IOLoop->recurring(1 => sub { });
+    }
 ### RM_COMM_4_TEST ###  }
 ### RM_COMM_4_TEST ### $self->zLog->warn("WARN");
 ### RM_COMM_4_TEST ### $self->$pipeLogs;
