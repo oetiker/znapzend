@@ -1,7 +1,7 @@
 package ZnapZend;
 
 use Mojo::Base -base;
-use Mojo::IOLoop::ForkCall;
+use Mojo::IOLoop::ReadWriteFork;
 use Mojo::Util qw(slurp);
 use Mojo::Log;
 use ZnapZend::Config;
@@ -391,15 +391,25 @@ my $sendWorker = sub {
 ### RM_COMM_4_TEST ###  return;
 
     #send/receive fork
-    my $fc = Mojo::IOLoop::ForkCall->new;
-    $fc->run(
+    my $rwf = Mojo::IOLoop::ReadWriteFork->new;
+    $rwf->run(
         #send/receive worker
         $sendRecvCleanup,
         #send/receive worker arguments
         [$self, $backupSet, $timeStamp],
         #send/receive worker callback
         sub {
-            my ($fc, $err) = @_;
+            my ($rwf, $err) = @_;
+
+            $self->zLog->on(
+                message => sub {
+                    my ($log, $level, @lines) = @_;
+                    for (@lines){
+                        print STDERR "$level $_\n";
+                    }
+                }
+            );
+            $self->zLog->warn('WARN FROM CHILD FORK!!');
 
             $self->zLog->warn('send/receive for ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err;
@@ -412,9 +422,9 @@ my $sendWorker = sub {
     );
 
     #spawn event
-    $fc->on(
+    $rwf->on(
         spawn => sub {
-            my ($fc, $pid) = @_;
+            my ($rwf, $pid) = @_;
         
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
@@ -422,10 +432,26 @@ my $sendWorker = sub {
         }
     );
 
+    # read child output
+    my $buffer = '';
+    $rwf->on(
+        read => sub {
+            my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
+            $buffer .= $chunk;
+            while (my ($line) = $buffer =~ s/(.+)\n//){
+                for ($line){
+                   /error/i && do { $self->zLog->error($line); next; };
+                   /warn/i && do { $self->zLog->warn($line); next; };
+                   $self->zLog->notice($line);
+                }
+            }
+        }
+    );
+
     #error event
-    $fc->on(
+    $rwf->on(
         error => sub {
-            my ($fc, $err) = @_;
+            my ($rwf, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
         }
@@ -443,16 +469,26 @@ my $snapWorker = sub {
 ### RM_COMM_4_TEST ###  return;
 
     #snapshot fork
-    my $fc = Mojo::IOLoop::ForkCall->new;
-    $fc->run(
+    my $rwf = Mojo::IOLoop::ReadWriteFork->new;
+    $rwf->run(
         #snapshot worker
         $createSnapshot,
         #snapshot worker arguments
         [$self, $backupSet, $timeStamp],
         #snapshot worker callback
         sub {
-            my ($fc, $err) = @_;
+            my ($rwf, $err) = @_;
             
+            $self->zLog->on(
+                message => sub {
+                    my ($log, $level, @lines) = @_;
+                    for (@lines){
+                        print STDERR "$level $_\n";
+                    }
+                }
+            );
+            $self->zLog->warn('WARN FROM CHILD FORK!!');
+
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err;
 
@@ -472,9 +508,9 @@ my $snapWorker = sub {
     );
 
     #spawn event
-    $fc->on(
+    $rwf->on(
         spawn => sub {
-            my ($fc, $pid) = @_;
+            my ($rwf, $pid) = @_;
         
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
@@ -482,10 +518,26 @@ my $snapWorker = sub {
         }
     );
 
+    # read child output
+    my $buffer = '';
+    $rwf->on(
+        read => sub {
+            my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
+            $buffer .= $chunk;
+            while (my ($line) = $buffer =~ s/(.+)\n//){
+                for ($line){
+                   /error/i && do { $self->zLog->error($line); next; };
+                   /warn/i && do { $self->zLog->warn($line); next; };
+                   $self->zLog->notice($line);
+                }
+            }
+        }
+    );
+
     #error event
-    $fc->on(
+    $rwf->on(
         error => sub {
-            my ($fc, $err) = @_;
+            my ($rwf, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
         }
