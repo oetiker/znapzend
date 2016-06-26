@@ -418,9 +418,11 @@ my $sendWorker = sub {
         conduit => 'pipe',
     );
 
-    $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-        . " spawned (" . $rwf->pid . ")");
-    $backupSet->{send_pid} = $rwf->pid;
+    $rwf->ioloop->timer(0 => sub { 
+        $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+            . " spawned (" . $rwf->pid . ")");
+        $backupSet->{send_pid} = $rwf->pid;
+    });
 
     # read child output
     my $buffer = '';
@@ -429,10 +431,11 @@ my $sendWorker = sub {
             my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
             $buffer .= $chunk;
             while (my ($line) = $buffer =~ s/(.+)\n//){
+                $line = "[".$rwf->pid."] ".$line;
                 for ($line){
-                   /error/i && do { $self->zLog->error($line); next; };
-                   /warn/i && do { $self->zLog->warn($line); next; };
-                   $self->zLog->notice($line);
+                    /error/i && do { $self->zLog->error($line); next; };
+                    /warn/i && do { $self->zLog->warn($line); next; };
+                    $self->zLog->notice($line);
                 }
             }
         }
@@ -455,7 +458,8 @@ my $sendWorker = sub {
 
             my($rwf, $exit_value, $signal) = @_;
 
-            $self->log->error("dbSlave quit with $exit_value and signal $signal");
+            $self->log->error("child fork quit with $exit_value and signal $signal")
+                if ($exit_value + $signal);
 
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " done ($backupSet->{send_pid})");
@@ -483,9 +487,11 @@ my $snapWorker = sub {
         conduit => 'pipe',
     );
 
-    $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
-        . " spawned (" . $rwf->pid . ")");
-    $backupSet->{snap_pid} = $rwf->pid;
+    $rwf->ioloop->timer(0 => sub { 
+        $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+            . " spawned (" . $rwf->pid . ")");
+        $backupSet->{snap_pid} = $rwf->pid;
+    });
 
     # read child output
     my $buffer = '';
@@ -494,10 +500,11 @@ my $snapWorker = sub {
             my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
             $buffer .= $chunk;
             while (my ($line) = $buffer =~ s/(.+)\n//){
+                $line = "[".$rwf->pid."] ".$line;
                 for ($line){
-                   /error/i && do { $self->zLog->error($line); next; };
-                   /warn/i && do { $self->zLog->warn($line); next; };
-                   $self->zLog->notice($line);
+                    /error/i && do { $self->zLog->error($line); next; };
+                    /warn/i && do { $self->zLog->warn($line); next; };
+                    $self->zLog->notice($line);
                 }
             }
         }
@@ -516,7 +523,8 @@ my $snapWorker = sub {
         close => sub {
             my($rwf, $exit_value, $signal) = @_;
 
-            $self->log->error("dbSlave quit with $exit_value and signal $signal");
+            $self->log->error("child fork quit with $exit_value and signal $signal")
+                if ($exit_value + $signal);
 
             #$self->zLog->warn('taking snapshot on ' . $backupSet->{src}
             #    . ' failed: ' . $err) if $err;
