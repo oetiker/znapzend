@@ -2,7 +2,7 @@ package ZnapZend::ZFS;
 
 use Mojo::Base -base;
 use Mojo::Exception;
-use Mojo::IOLoop::ReadWriteFork;
+use Mojo::IOLoop::ForkCall;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -333,8 +333,8 @@ sub sendRecvSnapshots {
 
         my $cmd = $shellQuote->(@recvCmd);
 
-        my $rwf = Mojo::IOLoop::ReadWriteFork->new;
-        $rwf->run(
+        my $fc = Mojo::IOLoop::ForkCall->new;
+        $fc->run(
             #receive worker fork
             sub {
                 my $cmd = shift;
@@ -350,15 +350,15 @@ sub sendRecvSnapshots {
             [$cmd, $self->debug, $self->noaction],
             #callback
             sub {
-                my ($rwf, $err) = @_;
+                my ($fc, $err) = @_;
                 $self->zLog->debug("receive process on $remote done ($recvPid)");
                 Mojo::Exception->throw($err) if $err;
             }
         );
         #spawn event
-        $rwf->on(
+        $fc->on(
             spawn => sub {
-                my ($rwf, $pid) = @_;
+                my ($fc, $pid) = @_;
 
                 $recvPid = $pid;
 
@@ -385,14 +385,14 @@ sub sendRecvSnapshots {
             }
         );
         #error event
-        $rwf->on(
+        $fc->on(
             error => sub {
-                my ($rwf, $err) = @_;
+                my ($fc, $err) = @_;
                 die $err;
             }
         );
         #start forkcall event loop
-        $rwf->ioloop->start if !$rwf->ioloop->is_running;
+        $fc->ioloop->start if !$fc->ioloop->is_running;
     }
     else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;

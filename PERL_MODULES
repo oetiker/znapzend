@@ -1,4 +1,5 @@
 Mojolicious@6.46
+Mojo::IOLoop::ForkCall@0.17
 Mojo::IOLoop::ReadWriteFork@0.21
 Scalar::Util@1.45
 Test::Harness
