@@ -220,7 +220,7 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    $self->zLog->on(
+    $self->zLog->unsubscribe('message')->on(
         message => sub {
             my ($log, $level, @lines) = @_;
             for (@lines){
@@ -357,7 +357,7 @@ my $createSnapshot = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    $self->zLog->on(
+    $self->zLog->unsubscribe('message')->on(
         message => sub {
             my ($log, $level, @lines) = @_;
             for (@lines){
@@ -430,7 +430,7 @@ my $sendWorker = sub {
         read => sub {
             my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
             $buffer .= $chunk;
-            while (my ($line) = $buffer =~ s/(.+)\n//){
+            while (my ($line) = $buffer =~ s/^(.*)[\n\r]+//){
                 $line = "[".$rwf->pid."] ".$line;
                 for ($line){
                     /error/i && do { $self->zLog->error($line); next; };
@@ -486,7 +486,8 @@ my $snapWorker = sub {
         program => $createSnapshot,
         conduit => 'pipe',
     );
-
+    
+    # wait to get child fork pid
     $rwf->ioloop->timer(0 => sub { 
         $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
             . " spawned (" . $rwf->pid . ")");
@@ -499,7 +500,7 @@ my $snapWorker = sub {
         read => sub {
             my ($rwf, $chunk) = @_; # $buffer = both STDERR and STDOUT
             $buffer .= $chunk;
-            while (my ($line) = $buffer =~ s/(.+)\n//){
+            while (my ($line) = $buffer =~ s/^(.+)[\n\r]+//){
                 $line = "[".$rwf->pid."] ".$line;
                 for ($line){
                     /error/i && do { $self->zLog->error($line); next; };
