@@ -220,6 +220,20 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
+    $self->zLog->on(
+        message => sub {
+            my ($log, $level, @lines) = @_;
+            for (@lines){
+                print STDERR "$level $_\n";
+            }
+        }
+    );
+    $self->zLog->warn('WARN FROM CHILD FORK!!');
+
+    $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+        . " spawned ($self->pid)");
+    $backupSet->{send_pid} = $self->pid;
+
     my @snapshots;
     my $toDestroy;
     my $sendFailed = 0;
@@ -347,6 +361,20 @@ my $createSnapshot = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
+    $self->zLog->on(
+        message => sub {
+            my ($log, $level, @lines) = @_;
+            for (@lines){
+                print STDERR "$level $_\n";
+            }
+        }
+    );
+    $self->zLog->warn('WARN FROM CHILD FORK!!');
+
+    $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+        . " spawned ($self->pid)");
+    $backupSet->{snap_pid} = $self->pid;
+
     my $snapshotName = $backupSet->{src} . '@'
         . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
 
@@ -392,44 +420,10 @@ my $sendWorker = sub {
 
     #send/receive fork
     my $rwf = Mojo::IOLoop::ReadWriteFork->new;
-    $rwf->run(
-        #send/receive worker
-        $sendRecvCleanup,
-        #send/receive worker arguments
-        [$self, $backupSet, $timeStamp],
-        #send/receive worker callback
-        sub {
-            my ($rwf, $err) = @_;
-
-            $self->zLog->on(
-                message => sub {
-                    my ($log, $level, @lines) = @_;
-                    for (@lines){
-                        print STDERR "$level $_\n";
-                    }
-                }
-            );
-            $self->zLog->warn('WARN FROM CHILD FORK!!');
-
-            $self->zLog->warn('send/receive for ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err;
-
-            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-                . " done ($backupSet->{send_pid})");
-            #send/receive process finished, clear pid from backup set
-            $backupSet->{send_pid} = 0;
-        }
-    );
-
-    #spawn event
-    $rwf->on(
-        spawn => sub {
-            my ($rwf, $pid) = @_;
-        
-            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-                . " spawned ($pid)");
-            $backupSet->{send_pid} = $pid;
-        }
+    $rwf->start(
+        program_args => [$self, $backupSet, $timeStamp],
+        program => $sendRecvCleanup,
+        conduit => 'pipe',
     );
 
     # read child output
@@ -454,6 +448,23 @@ my $sendWorker = sub {
             my ($rwf, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
+        }
+    );
+
+    $rwf->on(
+        close => sub {
+            #my ($rwf, $err) = @_;
+            #$self->zLog->warn('send/receive for ' . $backupSet->{src}
+            #    . ' failed: ' . $err) if $err;
+
+            my($rwf, $exit_value, $signal) = @_;
+
+            $self->log->error("dbSlave quit with $exit_value and signal $signal");
+
+            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+                . " done ($backupSet->{send_pid})");
+            #send/receive process finished, clear pid from backup set
+            $backupSet->{send_pid} = 0;
         }
     );
 };
@@ -470,52 +481,10 @@ my $snapWorker = sub {
 
     #snapshot fork
     my $rwf = Mojo::IOLoop::ReadWriteFork->new;
-    $rwf->run(
-        #snapshot worker
-        $createSnapshot,
-        #snapshot worker arguments
-        [$self, $backupSet, $timeStamp],
-        #snapshot worker callback
-        sub {
-            my ($rwf, $err) = @_;
-            
-            $self->zLog->on(
-                message => sub {
-                    my ($log, $level, @lines) = @_;
-                    for (@lines){
-                        print STDERR "$level $_\n";
-                    }
-                }
-            );
-            $self->zLog->warn('WARN FROM CHILD FORK!!');
-
-            $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err;
-
-            $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
-                . " done ($backupSet->{snap_pid})");
-            #snapshot process finished, clear pid from backup set
-            $backupSet->{snap_pid} = 0;
-
-            if ($backupSet->{send_pid}){
-                $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
-                    . ' still running! skipping this round...');
-            }
-            else{
-                $self->$sendWorker($backupSet, $timeStamp);
-            }
-        }
-    );
-
-    #spawn event
-    $rwf->on(
-        spawn => sub {
-            my ($rwf, $pid) = @_;
-        
-            $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
-                . " spawned ($pid)");
-            $backupSet->{snap_pid} = $pid;
-        }
+    $rwf->start(
+        program_args => [$self, $backupSet, $timeStamp],
+        program => $createSnapshot,
+        conduit => 'pipe',
     );
 
     # read child output
@@ -540,6 +509,30 @@ my $snapWorker = sub {
             my ($rwf, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
+        }
+    );
+
+    $rwf->on(
+        close => sub {
+            my($rwf, $exit_value, $signal) = @_;
+
+            $self->log->error("dbSlave quit with $exit_value and signal $signal");
+
+            #$self->zLog->warn('taking snapshot on ' . $backupSet->{src}
+            #    . ' failed: ' . $err) if $err;
+
+            $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+                . " done ($backupSet->{snap_pid})");
+            #snapshot process finished, clear pid from backup set
+            $backupSet->{snap_pid} = 0;
+
+            if ($backupSet->{send_pid}){
+                $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
+                    . ' still running! skipping this round...');
+            }
+            else{
+                $self->$sendWorker($backupSet, $timeStamp);
+            }
         }
     );
 };
