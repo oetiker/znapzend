@@ -62,13 +62,8 @@ sub runCommand {
     main();
 }
 
-sub fileLogContainsWarn {
-    open my $fh, '<', 'file.log';
-    return ((grep /WARN/, <$fh>) != 0);
-}
-
-sub pipeLogContainsWarn {
-    open my $fh, '<', 'mail.log';
+sub logContainsWarn {
+    open my $fh, '<', shift;
     return ((grep /WARN/, <$fh>) != 0);
 }
 
@@ -90,8 +85,8 @@ is (runCommand('--logto=file::./file.log',
     '--logto=pipe::./mail -s "1st" a@a.com',
     '--logto=pipe::./mail -s "2nd" b@b.com'),
     1, 'znapzend logto file and pipes');
-is (fileLogContainsWarn(), 1, 'znapzend file log contains warn');
-is (pipeLogContainsWarn(), 1, 'znapzend pipe log contains warn');
+is (logContainsWarn('file.log'), 1, 'znapzend file log contains warn');
+is (logContainsWarn('mail.log'), 1, 'znapzend pipe log contains warn');
 
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
