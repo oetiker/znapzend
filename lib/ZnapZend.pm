@@ -230,10 +230,6 @@ my $sendRecvCleanup = sub {
     );
     $self->zLog->warn('WARN FROM CHILD FORK!!');
 
-    $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-        . " spawned ($self->pid)");
-    $backupSet->{send_pid} = $self->pid;
-
     my @snapshots;
     my $toDestroy;
     my $sendFailed = 0;
@@ -371,10 +367,6 @@ my $createSnapshot = sub {
     );
     $self->zLog->warn('WARN FROM CHILD FORK!!');
 
-    $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
-        . " spawned ($self->pid)");
-    $backupSet->{snap_pid} = $self->pid;
-
     my $snapshotName = $backupSet->{src} . '@'
         . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
 
@@ -425,6 +417,10 @@ my $sendWorker = sub {
         program => $sendRecvCleanup,
         conduit => 'pipe',
     );
+
+    $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+        . " spawned (" . $rwf->pid . ")");
+    $backupSet->{send_pid} = $rwf->pid;
 
     # read child output
     my $buffer = '';
@@ -486,6 +482,10 @@ my $snapWorker = sub {
         program => $createSnapshot,
         conduit => 'pipe',
     );
+
+    $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
+        . " spawned (" . $rwf->pid . ")");
+    $backupSet->{snap_pid} = $rwf->pid;
 
     # read child output
     my $buffer = '';
