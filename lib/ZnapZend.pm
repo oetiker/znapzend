@@ -168,6 +168,12 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
+    if ($backupSet->{zend_delay} and $backupSet->{zend_delay} > 0){
+        $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
+        sleep $backupSet->{zend_delay};
+        $self->zLog->info("resume sending action on backupSet $backupSet->{src}");
+    }
+
     my @snapshots;
     my $toDestroy;
     my $sendFailed = 0;
