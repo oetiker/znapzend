@@ -14,7 +14,7 @@ has recvu           => sub { 0 };
 has sendDelay       => sub { 3 };
 has sendRetry       => sub { 10 };
 has propertyPrefix  => sub { q{org.znapzend} };
-has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o ConnectTimeout=30)] };
+has sshCmdArray     => sub { [qw(ssh -o Compression=yes -o CompressionLevel=1 -o Cipher=arcfour -o batchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=30)] };
 has mbufferParam    => sub { [qw(-q -s 128k -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
 
