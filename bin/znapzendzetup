@@ -112,7 +112,7 @@ sub main {
 
     /^create$/ && do {
         GetOptions($opts, (qw(recursive|r donotask pfexec sudo mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
@@ -121,6 +121,7 @@ sub main {
         $cfg{tsformat}      = $opts->{tsformat}            || '%Y-%m-%d-%H%M%S';
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
+        $cfg{zend_delay}    = $opts->{'send-delay'}        || 0;
 
         my $backupSet = parseArguments(\@ARGV);
         #merge arguments to our cfg
@@ -209,7 +210,7 @@ sub main {
         }
 
         GetOptions($opts, (qw(donotask pfexec sudo recursive=s mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
 
@@ -220,6 +221,7 @@ sub main {
         $backupSet->{tsformat}      = $opts->{tsformat}            if $opts->{tsformat};
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
+        $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
@@ -387,6 +389,7 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
             SRC plan dataset \
             [ DST[:key] plan [[user@]host:]dataset ]
 
@@ -397,6 +400,7 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
             SRC [plan] dataset \
             [ DST:key [plan] [dataset] ]
 
@@ -536,6 +540,10 @@ to make sure that the on-disk data is consistant when snapshotting. Since the
 lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
+
+=item B<--send-delay>
+
+Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
 
 =back
 
