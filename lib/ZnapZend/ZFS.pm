@@ -279,12 +279,105 @@ sub lastAndCommonSnapshots {
         ? ${$srcSnapshots}[$i] : undef,scalar @$dstSnapshots);
 }
 
+sub buildSendInstructionArray {
+    my $self = shift;
+    my $srcDataSet = shift;
+    my $dstDataSet = shift;
+    my $strictIncrementalSend = shift;
+    my $snapshotFilter = $_[0] || qr/.*/;
+    my @cmdList;
+
+    my $srcSnapshots = $self->listSnapshots($srcDataSet);
+    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
+  
+    return [] if ! scalar @$srcSnapshots;
+
+    my ($i, $snapTime, $lastSnapshot);
+    for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+        ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
+    
+        !$lastSnapshot && $snapTime and $lastSnapshot = ${$srcSnapshots}[$i];
+        not $snapTime and next;
+        last if grep { /$snapTime/ } @$dstSnapshots;
+    }
+
+    my $lastCommon = (grep { /$snapTime/ } @$dstSnapshots)  ? ${$srcSnapshots}[$i] : undef;
+
+    #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
+    return [] if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
+    
+    #check if snapshots exist on destination if there is no common snapshot
+    #as this will cause zfs send/recv to fail
+    !$lastCommon and scalar @$dstSnapshots
+        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
+            . "found on source and destination "
+            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
+
+    not $lastCommon and return [[@{$self->priv}, 'zfs', 'send', $lastSnapshot]];
+
+    if ($strictIncrementalSend ne 'on'){
+        # send only one command with -I, taking all snapshots between last snap and common snap
+        push @cmdList, [@{$self->priv}, 'zfs', 'send', '-I', $lastCommon, $lastSnapshot];
+    }
+    else {
+        # send all snapshots with different commands (using -i and -I)
+        # does not send snapshots not matching given filter
+        my @validConsecutiveSnaps = ();
+        my ($lastValidSnap, $isLastSnapSkipped);
+
+        for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+            ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
+
+            if (not $snapTime){ 
+                # this snapshot does not match filter, we will skip it
+                # send consecutive previous valid snaps in one shot (if more than one)
+                if (@validConsecutiveSnaps and scalar(@validConsecutiveSnaps) > 1) {
+                    push @cmdList, [ @{$self->priv}, 'zfs', 'send', '-I', $validConsecutiveSnaps[-1], $validConsecutiveSnaps[0] ];
+                }
+                
+                @validConsecutiveSnaps = ();
+                $isLastSnapSkipped = 1;
+            }
+            elsif (grep { /$snapTime/ } @$dstSnapshots){
+                # this is last common snapshot      
+                # Check that we have something to send
+                not $lastValidSnap and last;
+                my ($incrementalMode, $lastSnap);
+
+                if ($isLastSnapSkipped) {
+                    # one or more previous snaps are skipped, we send increment snap between last valid snap and current snap
+                    $incrementalMode = '-i';
+                    $lastSnap = $lastValidSnap;
+                } else {
+                    $incrementalMode = '-I';
+                    $lastSnap = $validConsecutiveSnaps[0];
+                }
+                push @cmdList, [ @{$self->priv}, 'zfs', 'send', $incrementalMode, ${$srcSnapshots}[$i], $lastSnap ];
+                last;
+            } else {
+                # this snapshot matches filter 
+                if ($isLastSnapSkipped) {
+                    # one or more previous snaps are skipped, we send increment snap between last snap (if exists) and current snap
+                    $lastValidSnap and push @cmdList, [ @{$self->priv}, 'zfs', 'send', '-i', ${$srcSnapshots}[$i], $lastValidSnap ];
+                }
+                
+                $lastValidSnap = ${$srcSnapshots}[$i];
+                push @validConsecutiveSnaps, ${$srcSnapshots}[$i];
+                
+                $isLastSnapSkipped = 0;
+            }
+        }
+    } 
+    return \@cmdList;
+}
+
 sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $mbuffer = shift;
     my $mbufferSize = shift;
+    my $strictIncrementalSend = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $remote;
@@ -301,110 +394,99 @@ sub sendRecvSnapshots {
 	    .  ($remote ? " on destination ($remote)" : '') .", use --autoCreation "
 	    . "to let ZnapZend auto create datasets");
 
-    my ($lastSnapshot, $lastCommon,$dstSnapCount)
-        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
-
-    #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
-    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
-
-    #check if snapshots exist on destination if there is no common snapshot
-    #as this will cause zfs send/recv to fail
-    !$lastCommon and $dstSnapCount
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
-            . "found on source and destination "
-            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
-
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
+    
+    my @sendCmdList = @{ $self->buildSendInstructionArray($srcDataSet, $dstDataSet,
+        $strictIncrementalSend, $snapFilter) };
 
-    my @cmd;
-    if ($lastCommon){
-        @cmd = ([@{$self->priv}, 'zfs', 'send', '-I', $lastCommon, $lastSnapshot]);
-    }
-    else{
-        @cmd = ([@{$self->priv}, 'zfs', 'send', $lastSnapshot]);
-    }
+    return 1 if (scalar @sendCmdList == 0);
+    
+    my $i;
+    for ($i = (scalar @sendCmdList) -1; $i >=0; $i--){
+        my @sendCmd = ( $sendCmdList[$i] );
+       
+        #if mbuffer port is set, run in 'network mode'
+        if ($remote && $mbufferPort && $mbuffer ne 'off'){
+            my $recvPid;
 
-    #if mbuffer port is set, run in 'network mode'
-    if ($remote && $mbufferPort && $mbuffer ne 'off'){
-        my $recvPid;
+            my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
+                $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', $recvOpt, $dstDataSetPath]);
 
-        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', $recvOpt, $dstDataSetPath]);
+            my $cmd = $shellQuote->(@recvCmd);
 
-        my $cmd = $shellQuote->(@recvCmd);
+            my $fc = Mojo::IOLoop::ForkCall->new;
+            $fc->run(
+                #receive worker fork
+                sub {
+                    my $cmd = shift;
+                    my $debug = shift;
+                    my $noaction = shift;
 
-        my $fc = Mojo::IOLoop::ForkCall->new;
-        $fc->run(
-            #receive worker fork
-            sub {
-                my $cmd = shift;
-                my $debug = shift;
-                my $noaction = shift;
+                    print STDERR "# $cmd\n" if $debug;
 
-                print STDERR "# $cmd\n" if $debug;
-
-                system($cmd)
-                    && Mojo::Exception->throw('ERROR: executing receive process') if !$noaction;
-            },
-            #arguments
-            [$cmd, $self->debug, $self->noaction],
-            #callback
-            sub {
-                my ($fc, $err) = @_;
-                $self->zLog->debug("receive process on $remote done ($recvPid)");
-                Mojo::Exception->throw($err) if $err;
-            }
-        );
-        #spawn event
-        $fc->on(
-            spawn => sub {
-                my ($fc, $pid) = @_;
-
-                $recvPid = $pid;
-
-                $remote =~ s/^[^@]+\@//; #remove username if given
-                $self->zLog->debug("receive process on $remote spawned ($pid)");
-
-                push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-                    '-O', "$remote:$mbufferPort"];
-
-                $cmd = $shellQuote->(@cmd);
-
-                print STDERR "# $cmd\n" if $self->debug;
-                return if $self->noaction;
-
-                my $retryCounter = int($self->connectTimeout / $self->sendDelay) + 1;
-                while ($retryCounter--){
-                    #wait so remote mbuffer has enough time to start listening
-                    sleep $self->sendDelay;
-                    system($cmd) || last;
+                    system($cmd)
+                        && Mojo::Exception->throw('ERROR: executing receive process') if !$noaction;
+                },
+                #arguments
+                [$cmd, $self->debug, $self->noaction],
+                #callback
+                sub {
+                    my ($fc, $err) = @_;
+                    $self->zLog->debug("receive process on $remote done ($recvPid)");
+                    Mojo::Exception->throw($err) if $err;
                 }
+            );
+            #spawn event
+            $fc->on(
+                spawn => sub {
+                    my ($fc, $pid) = @_;
 
-                $retryCounter <= 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
-                    . ($remote ? " on $remote" : ''));
-            }
-        );
-        #error event
-        $fc->on(
-            error => sub {
-                my ($fc, $err) = @_;
-                die $err;
-            }
-        );
-        #start forkcall event loop
-        $fc->ioloop->start if !$fc->ioloop->is_running;
-    }
-    else {
-        my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-        my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
+                    $recvPid = $pid;
 
-        push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+                    $remote =~ s/^[^@]+\@//; #remove username if given
+                    $self->zLog->debug("receive process on $remote spawned ($pid)");
 
-        my $cmd = $shellQuote->(@cmd);
-        print STDERR "# $cmd\n" if $self->debug;
+                    push @sendCmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
+                        '-O', "$remote:$mbufferPort"];
 
-        system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
-            . ($remote ? " on $remote" : '')) if !$self->noaction;
+                    $cmd = $shellQuote->(@sendCmd);
+
+                    print STDERR "# $cmd\n" if $self->debug;
+                    return if $self->noaction;
+
+                    my $retryCounter = int($self->connectTimeout / $self->sendDelay) + 1;
+                    while ($retryCounter--){
+                        #wait so remote mbuffer has enough time to start listening
+                        sleep $self->sendDelay;
+                        system($cmd) || last;
+                    }
+
+                    $retryCounter <= 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
+                        . ($remote ? " on $remote" : ''));
+                }
+            );
+            #error event
+            $fc->on(
+                error => sub {
+                    my ($fc, $err) = @_;
+                    die $err;
+                }
+            );
+            #start forkcall event loop
+            $fc->ioloop->start if !$fc->ioloop->is_running;
+        }
+        else {
+            my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
+            my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
+
+            push @sendCmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+
+            my $cmd = $shellQuote->(@sendCmd);
+            print STDERR "# $cmd\n" if $self->debug;
+
+            system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
+                . ($remote ? " on $remote" : '')) if !$self->noaction;
+        }
     }
 
     return 1;
@@ -659,6 +741,10 @@ destroys a single snapshot or a list of snapshots on localhost or a remote host
 =head2 lastAndCommonSnapshots
 
 lists the last snapshot on source and the last common snapshot an source and destination and the number of snapshots found on the destination host
+
+=head2 buildSendInstructionArray
+
+builds send commands 
 
 =head2 sendRecvSnapshots
 

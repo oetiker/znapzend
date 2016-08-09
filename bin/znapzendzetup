@@ -112,7 +112,7 @@ sub main {
 
     /^create$/ && do {
         GetOptions($opts, (qw(recursive|r donotask pfexec sudo mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i strict-send))) or exit 1;
 
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
@@ -122,6 +122,7 @@ sub main {
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
         $cfg{zend_delay}    = $opts->{'send-delay'}        || 0;
+        $cfg{strict_zend}   = $opts->{'strict-send'}        ? 'on' : 'off'; 
 
         my $backupSet = parseArguments(\@ARGV);
         #merge arguments to our cfg
@@ -210,7 +211,7 @@ sub main {
         }
 
         GetOptions($opts, (qw(donotask pfexec sudo recursive=s mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i strict-send=s))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
 
@@ -222,6 +223,8 @@ sub main {
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
+        $backupSet->{strict_zend}   = $opts->{'strict-send'}
+            if $opts->{'strict-send'} && $opts->{'strict-send'} =~ /^(?:on|off)$/;
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
@@ -389,6 +392,7 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
+            [--strict-send] \
             [--send-delay=<time>] \
             SRC plan dataset \
             [ DST[:key] plan [[user@]host:]dataset ]
@@ -400,6 +404,7 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
+            [--strict-send=on|off] \
             [--send-delay=<time>] \
             SRC [plan] dataset \
             [ DST:key [plan] [dataset] ]
@@ -496,6 +501,20 @@ If B<--tsformat> string is suffixed by a 'Z', times will be in UTC. E.g.:
 NOTE: that windoz will probably not like the C<:> characters. So if you
 intend to browse the snapshots with windoz, you may want to use a different
 separator.
+
+=item B<--strict-send>
+
+If you are creating snapshots from other tools (or by yourself) than znapzend,
+and using znapzend to send your snapshots to a remote backup, it may happen that
+you find on destination some snapshots you did not want to receive, even if they
+are not matching tsformat (because znapzend is using send -I, more information 
+here : http://docs.oracle.com/cd/E19253-01/819-5461/gfwqb/index.html).
+
+Use option B<--strict-send> to solve this issue. It will make znapzend send snapshots
+matching tsformat, and only those.
+
+If you are not creating any extra snapshot out of znapzend, this option does not need to 
+be activated.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 

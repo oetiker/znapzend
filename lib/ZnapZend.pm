@@ -217,7 +217,8 @@ my $sendRecvCleanup = sub {
                 eval {
                     local $SIG{__DIE__};
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, 
+                        $backupSet->{strict_zend}, $backupSet->{snapFilter});
                 };
                 if ($@){
                     $sendFailed = 1;
