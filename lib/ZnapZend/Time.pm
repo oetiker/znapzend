@@ -101,6 +101,9 @@ sub backupPlanToHash {
             or die "ERROR: backup plan $backupPlan is not valid\n";
 
         my $key = $self->$timeToTimestamp($value, $unit);
+        exists $backupPlan{$key}
+            and die "ERROR: retention time '$value$unit' already specified\n";
+
         ($value, $unit) = $planValues[1] =~ /^(\d+)([a-z]+)$/;
         $value && exists $self->unitFactors->{$unit}
             or die "ERROR: backup plan $backupPlan ist not valid\n";

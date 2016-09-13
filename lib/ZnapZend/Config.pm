@@ -56,6 +56,9 @@ my $checkBackupPlan = sub {
     # remove trailing comma
     $returnBackupPlan =~ s/,$//;
 
+    # check if backup plan hash can be built
+    $self->time->backupPlanToHash($returnBackupPlan);
+
     return $returnBackupPlan;
 };
 
