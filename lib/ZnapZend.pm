@@ -131,6 +131,19 @@ my $refreshBackupPlans = sub {
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
+        #check destination for remote pre-command
+        for (keys %$backupSet){
+            my ($key) = /^dst_([^_]+)_precmd$/ or next;
+
+            #perform destination remote pre-command if any
+            $self->zLog->info("running pre-command for " . $backupSet->{"dst_$key"});
+            system($backupSet->{"dst_$key" . '_precmd'})
+            && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+        }
+    }
+
+    for my $backupSet (@{$self->backupSets}){
+        $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #create backup hashes for all destinations
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_plan$/ or next;
@@ -157,6 +170,18 @@ my $refreshBackupPlans = sub {
         $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
         $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
+    }
+    for my $backupSet (@{$self->backupSets}){
+        $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
+        #check destination for remote post-command
+        for (keys %$backupSet){
+            my ($key) = /^dst_([^_]+)_pstcmd$/ or next;
+
+            #perform destination remote post-command if any
+            $self->zLog->info("running post-command for " . $backupSet->{"dst_$key"});
+            system($backupSet->{"dst_$key" . '_pstcmd'})
+            && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+        }
     }
 };
 
@@ -187,6 +212,13 @@ my $sendRecvCleanup = sub {
     #loop through all destinations
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
+
+        #check destination for remote pre-command
+        if ($backupSet->{$dst . '_precmd'}){
+            $self->zLog->info("running pre-command for " . $backupSet->{$dst});
+            system($backupSet->{$dst . '_precmd'})
+            && $self->zLog->warn("command \'" . $backupSet->{$dst . '_precmd'} . "\' failed");
+        }
 
         #recheck non valid dst as t might be online, now 
         if (!$backupSet->{$dst . '_valid'}){
@@ -255,6 +287,13 @@ my $sendRecvCleanup = sub {
                     }
                 }
             }
+        }
+
+        #check destination for remote post-command
+        if ($backupSet->{$dst . '_pstcmd'}){
+            $self->zLog->info("running post-command for " . $backupSet->{$dst});
+            system($backupSet->{$dst . '_pstcmd'})
+            && $self->zLog->warn("command \'" . $backupSet->{$dst . '_pstcmd'} . "\' failed");
         }
     }
 
