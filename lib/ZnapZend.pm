@@ -687,6 +687,7 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
+2016-09-23 ron Destination pre and post send/receive commands
 2014-07-22 had Pre and post snapshot commands
 2014-06-29 had Flexible snapshot time format
 2014-06-10 had localtime implementation
