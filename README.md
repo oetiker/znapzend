@@ -57,6 +57,12 @@ system PATH.
 for x in /opt/znapzend-0.15.7/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
+Debian packages
+---------------
+
+Debian control files, guide on using them and experimental debian packages can be found at https://github.com/Gregy/znapzend-debian
+
+
 Configuration
 -------------
 
