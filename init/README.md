@@ -28,3 +28,9 @@ For systemd based systems, you can copy ```znapzend.service``` to ```/etc/system
 systemctl enable znapzend.service
 systemctl start znapzend.service
 ```
+
+## Upstart
+For systems using upstart, you can copy ```znapzend.conf``` to ```/etc/init/``` and start the service.
+```sh
+service znapzend start
+```
