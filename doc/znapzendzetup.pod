@@ -13,8 +13,9 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
             SRC plan dataset \
-            [ DST[:key] plan [[user@]host:]dataset ]
+            [ DST[:key] plan [[user@]host:]dataset [dest_pre_command] [dest_post_command] ]
 
     delete  [--pfexec|sudo] [--dst=key] <src_dataset>
 
@@ -23,8 +24,9 @@ where 'command' is one of the following:
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] ]
+            [ DST:key [plan] [dataset] [dest_pre_command] [dest_post_command] ]
 
     edit    [--pfexec|sudo] <src_dataset>
 
@@ -115,8 +117,8 @@ If B<--tsformat> string is suffixed by a 'Z', times will be in UTC. E.g.:
 
  --tsformat='%Y-%m-%dT%H:%M:%SZ'
 
-NOTE: that windows will probably not like the C<:> characters. So if you
-intend to browse the snapshots with windos, you may want to use a different
+NOTE: that windoz will probably not like the C<:> characters. So if you
+intend to browse the snapshots with windoz, you may want to use a different
 separator.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer>
@@ -152,6 +154,20 @@ intended it to be.
 
 Run commands/scripts before and after snapshots are taken on source.
 e.g. for database locking/flushing (pre) and unlocking (post).
+
+If you deal with a mariadb/mysql database, you can use 
+
+  pre-snap-command  = /opt/oep/mariadb/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! /bin/sleep 600" &  /usr/bin/echo $! > /tmp/mariadblock.pid ; sleep 10
+  post-snap-command = /usr/bin/kill `/usr/bin/cat /tmp/mariadblock.pid`;/usr/bin/rm /tmp/mariadblock.pid
+  
+to make sure that the on-disk data is consistant when snapshotting. Since the
+lock stays only in place for the duration of the connection to mysql
+we need to employ. For this to work, add the root password of your mariadb/mysql db
+setup into ~root/.my.cnf and make sure the file permissions are tight ...
+
+=item B<--send-delay>
+
+Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
 
 =back
 
@@ -213,7 +229,8 @@ create a complex backup task
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
-       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/home/znapzend/dst_b_online.sh" "/home/znapzend/dst_b_offline.sh"
+
 
 copy the setup from one fileset to another
 
@@ -245,6 +262,7 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
+2016-09-23 ron Destination pre and post send/receive commands
 2014-07-22 had Pre and post snapshot commands
 2014-06-29 had Flexible snapshot time format
 2014-06-01 had Multi destination backup
