@@ -21,5 +21,17 @@ make
 
 # Create the package
 ln -s packaging/checkinstall/*-pak .
-sudo checkinstall --install=no --pkgname=znapzend --pkgversion=$(git describe --abbrev=0 --tags | sed 's,^v,,') --pkglicense=GPL --pkgrelease=1 --pkgsource="https://github.com/oetiker/znapzend" --requires="${zfsutilsdep},mbuffer" --provides=znapzend --nodoc --backup=no
+sudo checkinstall -y -D\
+--maintainer="morph027" \
+--install=no \
+--pkgname=znapzend \
+--pkgversion=$(git describe --abbrev=0 --tags | sed 's,^v,,') \
+--pkglicense=GPL \
+--pkgrelease=1 \
+--pkgsource="https://github.com/oetiker/znapzend" \
+--requires="${zfsutilsdep},mbuffer" \
+--provides=znapzend \
+--nodoc \
+--backup=no \
+--exclude='/home'
 rm -f *-pak
