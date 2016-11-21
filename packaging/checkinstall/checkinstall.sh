@@ -3,6 +3,13 @@
 # Exit when encountering an undefined variable
 set -u
 
+_checkinstall() {
+if [[ $EUID -ne 0 ]]; then
+  checkinstall_cmd="sudo checkinstall"
+else
+  checkinstall_cmd="checkinstall"
+fi
+
 # Determine the Ubuntu version we are running on. Versions before
 # 16.04 had a package called zfsutils, from 16.04 onwards the package
 # is called zfsutils-linux
@@ -21,7 +28,7 @@ make
 
 # Create the package
 ln -s packaging/checkinstall/*-pak .
-sudo checkinstall -y -D\
+$checkinstall_cmd -y -D \
 --maintainer="morph027" \
 --install=no \
 --pkgname=znapzend \
@@ -35,3 +42,11 @@ sudo checkinstall -y -D\
 --backup=no \
 --exclude='/home'
 rm -f *-pak
+}
+
+if type checkinstall > /dev/null 2>&1 ; then
+  _checkinstall
+else
+  echo "please install checkinstall"
+  exit 1
+fi
