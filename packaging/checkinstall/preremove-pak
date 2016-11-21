@@ -1,7 +1,3 @@
 #!/bin/sh
 
-service zfs-znapzend status >/dev/null
-
-if [ $? -eq 0 ]; then
-  service zfs-znapzend stop
-fi
+service zfs-znapzend stop

@@ -1,7 +1,3 @@
 #!/bin/sh
 
-service zfs-znapzend status >/dev/null
-
-if [ $? -eq 0 ]; then
-  service zfs-znapzend restart
-fi
+service zfs-znapzend restart
