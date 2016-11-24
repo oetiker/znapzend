@@ -62,7 +62,7 @@ __znapzendzetup_complete()
     fi
 
     case "${cmd}" in
-        create|delete|edit|enable|disable|export)
+        create|delete|edit|enable|disable|export|list)
                 COMPREPLY=($(compgen -W "$(__znapzendzetup_list_datasets)" -- "$cur"))
         ;;
         import)
