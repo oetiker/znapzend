@@ -36,7 +36,7 @@ talk a lot while running. Sends debug messages to stderr.
 
 =item B<-n>, B<--noaction>
 
-don't do any actions which have lasting effect. Ideal to try our new new
+don't do any actions which have lasting effect. Ideal to try our new
 configurations together with B<--debug>
 
 =item B<--nodestroy>
@@ -46,7 +46,7 @@ do all changes to the filesystem except destroy old snapshots
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
 send logs out to either syslog or a logfile. Default is to send logs to
-B<syslog::daemon> when runing daemonized. When running in debug mode, the
+B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
 Examples:
@@ -97,7 +97,7 @@ them individually.
 
 Sometimes a snapshot can not be destroyed because of some oracle zfs bug.
 Only a reeboot seems to be able to fix this. So we just destroy the ones we
-can destroy. Logging an error about the problem
+can destroy. Log an error about the problem
 
 =back
 
