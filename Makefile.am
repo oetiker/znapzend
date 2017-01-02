@@ -20,8 +20,8 @@ EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(
 	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
 	t/zfs t/znapzendzetup.t t/zpool
 
-CHANGES:
-	git log --full-history --simplify-merges --dense --no-merges > CHANGES
+CHANGES: VERSION
+	git log --full-history --simplify-merges --dense --no-merges > $@
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -63,5 +63,5 @@ install-exec-hook:
 	mkdir -p $(DESTDIR)$(libdir)
 	[ ! -d $(THIRDPARTY_DIR)/lib/perl5 ] || cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
 
-test:
+check:
 	$(PERL) -Ithirdparty/lib/perl5 "-MExtUtils::Command::MM" "-e" "test_harness(0, 'lib','thirdparty/lib/perl5')" t/*.t

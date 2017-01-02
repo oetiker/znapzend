@@ -1,3 +1,130 @@
+commit 979bcf07a51caa2ea04847faf1a51256e9d4aa47
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Nov 8 06:25:00 2016 +0100
+
+    - autocreation fixed
+
+commit 1ff27b83565e01dc6d7bc211d193676fbbb17c2b
+Author: Phil Kauffman <kauffman@cs.uchicago.edu>
+Date:   Thu Nov 3 18:17:14 2016 -0500
+
+    Addition of upstart init script.
+
+commit 0280c2c2f5a1e6b1c58b38ad647761449d09c3e0
+Author: Petr Gregor <gregy@gregy.cz>
+Date:   Thu Oct 13 11:34:25 2016 +0200
+
+    adds link to debian packaging files to readme (#235)
+    
+    Debian packaging files are in separate repository to ease the work of potential official maintainer.
+
+commit d5be8eb868858092fbc48b718fa64f04b4ecce4d
+Author: Ron van den Dungen <ron@dse.nl>
+Date:   Tue Sep 27 10:54:28 2016 +0200
+
+    Added destination pre and post send/receive commands. (#233)
+    
+    * Added destination pre and post send/receive commands.
+
+commit e1e8fa3c16eb9cdd887f32c29c21e6ec33cdf51f
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Tue Sep 13 12:31:26 2016 +0200
+
+    - prevent the same retention time more than once in a backup plan
+
+commit 476630b2bea773111c39b4bb6e568027cc7fda3e
+Author: Edouard Renard <renard.edouard@free.fr>
+Date:   Tue Jul 26 15:58:23 2016 +0200
+
+    add possibility to specify delay before sending snaps
+    
+    precise backupSet src name in log when waiting before sending
+
+commit 9fe397a226ab9719719d8172626a9338e30cc1b5
+Author: Joel Kuzmarski <leoj3n@gmail.com>
+Date:   Sat Jun 11 16:31:25 2016 -0500
+
+    windoz
+    
+    fix typo
+
+commit 16c31a8d31c8822ea992954ab6aac9fd2a9a5fb1
+Author: L.C. Karssen <l.c.karssen@polyomica.com>
+Date:   Sun Jun 12 16:17:33 2016 +0200
+
+    Fix issue #220, detection of zfsutils package in Ubuntu
+    
+    This fixes issue #220. Previously, the script automatically added
+    `zfsutils` as dependecy. In Ubuntu 16.04 the package is called
+    zfsutils-linux. This commit runs `lsb_release -r` to get the release
+    number and then checks if it is running on 16.04 or greater to set the
+    correct zfsutils dependency.
+    
+    Note, this commit was only tested on an Ubuntu machine. It may need
+    editing for Debian or other distros.
+
+commit fdb0880a40a827dfa04448652bf7559c44198c27
+Author: Lennart C. Karssen <lckarssen@users.noreply.github.com>
+Date:   Sun Jun 12 15:49:03 2016 +0200
+
+    Add missing step to checkinstall README
+    
+    After cloning the Git repo, the clone is located in the `znapzend` directory, so the user should first `cd` into it before running the checkinstall script.
+
+commit 98481c98ede965d1fca1da694d52b8b223b72f73
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 6 08:36:08 2016 +0200
+
+    locking again
+
+commit a2f950d526e84436b7ddf5158f73ec96579b896c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Thu Jun 2 08:38:19 2016 +0200
+
+    better locking
+
+commit afd360795a47de00e5b8150e7268c7bb9bf44535
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jun 1 15:32:41 2016 +0200
+
+    table lock gets lost when the connection ends
+
+commit 1c7c6488127bc505dbbb92727e3348c35d5947cd
+Author: morph027 <morphsen@gmx.com>
+Date:   Fri May 20 10:41:37 2016 +0200
+
+    update checkinstall README
+
+commit 1915c307060f27e977b3d1ab5fc1d08ea3252ab2
+Author: morph027 <morphsen@gmx.com>
+Date:   Fri May 20 10:40:15 2016 +0200
+
+    added install hooks
+
+commit 024de29243298095463606ad759ed11363bac4f5
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jun 1 15:05:56 2016 +0200
+
+    added mysql example
+
+commit 18a64b6041f163403c9ea01ba02bd78517735f77
+Author: Elmar Pruesse <epruesse@users.noreply.github.com>
+Date:   Thu May 5 13:18:42 2016 -0600
+
+    fix spelling typo
+
+commit 019819439faecf5e414987b317bec16fb77144ec
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon May 9 11:35:54 2016 +0200
+
+    add gitter
+
+commit 30664d638081199a256b8a6db06007ff5d51321a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon May 9 11:31:00 2016 +0200
+
+    prep for 0.15.7
+
 commit 5533b20687e33eee25e4c63885b02334a24bf0d1
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Fri May 6 10:57:49 2016 +0200

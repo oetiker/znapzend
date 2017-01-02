@@ -1,4 +1,4 @@
-ZnapZend 0.15.7
+ZnapZend 0.16.0
 ===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -7,8 +7,8 @@ ZnapZend 0.15.7
 e)
 
 ZnapZend is a ZFS centric backup tool. It relies on snapshot, send and
-receive todo its work. It has the built-in ability to manage both local
-snapshots as well as remote copies by thining them out as time progresses.
+receive to do its work. It has the built-in ability to manage both local
+snapshots as well as remote copies by thinning them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
@@ -35,10 +35,10 @@ On OmniOS/SmartOS you will need perl and gnu-make
 with that in place you can now utter:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.15.7/znapzend-0.15.7.tar.gz
-tar zxvf znapzend-0.15.7.tar.gz
-cd znapzend-0.15.7
-./configure --prefix=/opt/znapzend-0.15.7
+wget https://github.com/oetiker/znapzend/releases/download/v0.16.0/znapzend-0.16.0.tar.gz
+tar zxvf znapzend-0.16.0.tar.gz
+cd znapzend-0.16.0
+./configure --prefix=/opt/znapzend-0.16.0
 ```
 
 If configure finds anything noteworthy, it will tell you about it.  If any
@@ -54,8 +54,14 @@ Optionally (but recommended) put symbolic links to the installed binaries in the
 system PATH.
 
 ```sh
-for x in /opt/znapzend-0.15.7/bin/*; do ln -s $x /usr/local/bin; done
+for x in /opt/znapzend-0.16.0/bin/*; do ln -s $x /usr/local/bin; done
 ```
+
+Debian packages
+---------------
+
+Debian control files, guide on using them and experimental debian packages can be found at https://github.com/Gregy/znapzend-debian
+
 
 Configuration
 -------------
@@ -107,4 +113,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2016-05-09
+2016-11-08
