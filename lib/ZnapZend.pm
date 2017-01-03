@@ -135,10 +135,17 @@ my $refreshBackupPlans = sub {
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_precmd$/ or next;
 
-            #perform destination remote pre-command if any
-            $self->zLog->info("running pre-command for " . $backupSet->{"dst_$key"});
-            system($backupSet->{"dst_$key" . '_precmd'})
-            && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+            #perform pre-send-command if any
+            if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
+                # set env var for script to use
+                local $ENV{WORKER} = "dst_$key" . '-refresh';
+                $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
+
+                system($backupSet->{"dst_$key" . '_precmd'})
+                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+                # clean up env var
+                delete $ENV{WORKER};
+            }
         }
     }
 
@@ -184,10 +191,17 @@ my $refreshBackupPlans = sub {
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_pstcmd$/ or next;
 
-            #perform destination remote post-command if any
-            $self->zLog->info("running post-command for " . $backupSet->{"dst_$key"});
-            system($backupSet->{"dst_$key" . '_pstcmd'})
-            && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+            #perform post-send-command if any
+            if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
+                # set env var for script to use
+                local $ENV{WORKER} = "dst_$key" . '-refresh';
+                $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
+
+                system($backupSet->{"dst_$key" . '_pstcmd'})
+                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+                # clean up env var
+                delete $ENV{WORKER};
+            }
         }
     }
 };
@@ -220,11 +234,14 @@ my $sendRecvCleanup = sub {
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
 
-        #check destination for remote pre-command
-        if ($backupSet->{$dst . '_precmd'}){
-            $self->zLog->info("running pre-command for " . $backupSet->{$dst});
-            system($backupSet->{$dst . '_precmd'})
-            && $self->zLog->warn("command \'" . $backupSet->{$dst . '_precmd'} . "\' failed");
+        #check destination for pre-send-command
+        if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
+            local $ENV{WORKER} = "dst_$key";
+            $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
+
+            system($backupSet->{"dst_$key" . '_precmd'})
+                && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+            delete $ENV{WORKER};
         }
 
         #recheck non valid dst as it might be online, now 
@@ -302,11 +319,14 @@ my $sendRecvCleanup = sub {
             }
         }
 
-        #check destination for remote post-command
-        if ($backupSet->{$dst . '_pstcmd'}){
-            $self->zLog->info("running post-command for " . $backupSet->{$dst});
-            system($backupSet->{$dst . '_pstcmd'})
-            && $self->zLog->warn("command \'" . $backupSet->{$dst . '_pstcmd'} . "\' failed");
+        #check destination for remote post-send-command
+        if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
+            local $ENV{WORKER} = "dst_$key";
+            $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
+
+            system($backupSet->{"dst_$key" . '_pstcmd'})
+                && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+            delete $ENV{WORKER};
         }
     }
 
