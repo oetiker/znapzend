@@ -558,7 +558,7 @@ setup into ~root/.my.cnf and make sure the file permissions are tight ...
 
 Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
 
-=item B<pre-sebd-command> <post-send-command>
+=item B<pre-send-command post-send-command>
 
 Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on the destination, e.g. to bring up a backup disk or server. Or to bring a zpool online/offline: "ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
 
