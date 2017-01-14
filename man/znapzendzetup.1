@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2017-01-04" "perl v5.20.3" "User Contributed Perl Documentation"
+.TH ZNAPZENDZETUP 1 "2017-01-14" "perl v5.20.3" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -369,7 +369,7 @@ create a complex backup task
 \&       \-\-post\-snap\-command="/bin/sh /usr/local/bin/unlock_db.sh" \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
-\&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b off"
+\&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b pool off"
 .Ve
 .PP
 copy the setup from one fileset to another
