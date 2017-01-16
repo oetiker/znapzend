@@ -127,7 +127,7 @@ my $refreshBackupPlans = sub {
     $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
 
     @{$self->backupSets}
-        or die "ERROR: no backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
+        or $self->zLog->warn("No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend");
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
