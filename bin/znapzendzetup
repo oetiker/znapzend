@@ -560,7 +560,10 @@ Specify delay (in seconds) before sending snaps to the destination. May be usefu
 
 =item B<pre-send-command post-send-command>
 
-Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on the destination, e.g. to bring up a backup disk or server. Or to bring a zpool online/offline: "ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
+Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on
+the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
+
+"ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
 
 =back
 
