@@ -138,7 +138,7 @@ my $refreshBackupPlans = sub {
             #perform pre-send-command if any
             if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
                 # set env var for script to use
-                local $ENV{WORKER} = "dst_$key" . '-refresh';
+                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
                 $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
 
                 system($backupSet->{"dst_$key" . '_precmd'})
@@ -194,7 +194,7 @@ my $refreshBackupPlans = sub {
             #perform post-send-command if any
             if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
                 # set env var for script to use
-                local $ENV{WORKER} = "dst_$key" . '-refresh';
+                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
                 $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
 
                 system($backupSet->{"dst_$key" . '_pstcmd'})
@@ -236,7 +236,7 @@ my $sendRecvCleanup = sub {
 
         #check destination for pre-send-command
         if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
-            local $ENV{WORKER} = "dst_$key";
+            local $ENV{WORKER} = $backupSet->{"dst_$key"};
             $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
 
             system($backupSet->{"dst_$key" . '_precmd'})
@@ -321,7 +321,7 @@ my $sendRecvCleanup = sub {
 
         #check destination for remote post-send-command
         if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
-            local $ENV{WORKER} = "dst_$key";
+            local $ENV{WORKER} = $backupSet->{"dst_$key"};
             $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
 
             system($backupSet->{"dst_$key" . '_pstcmd'})

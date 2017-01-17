@@ -415,7 +415,7 @@ where 'command' is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] [pre-send-command] [post-send-command] ]
+            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
 
     edit    [--pfexec|sudo] <src_dataset>
 
@@ -560,7 +560,10 @@ Specify delay (in seconds) before sending snaps to the destination. May be usefu
 
 =item B<pre-send-command post-send-command>
 
-Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on the destination, e.g. to bring up a backup disk or server. Or to bring a zpool online/offline: "ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
+Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on
+the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
+
+"ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
 
 =back
 
@@ -622,7 +625,7 @@ create a complex backup task
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
-       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b off"
+       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b pool off"
 
 
 copy the setup from one fileset to another
