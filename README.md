@@ -94,6 +94,19 @@ znapzend --daemonize
 Best is to integrate znapzend into your system startup sequence, but you can also
 run it by hand. See the init/README.md for some inspiration.
 
+
+Restore
+-------
+
+For local file recovery: 
+- For ZFS filesets, in each directory targeted by a SRC directive there will be a hidden directory `.zfs`.  This directory typically will not show up with `ls -la`, but you can `cd` into it.  Inside the `.zfs` directory will be a `snapshots` directory, and in there is a directory for each snapshot.  You can restore files from there locally.
+- For ZVols, you will have to clone the snapshot since you cannot access a ZVol snapshot directly.
+
+For remote file recovery:
+- For ZFS filesets, while the directory structure will mirror your SRC, the directories will appear empty.  In each directory targeted by a DST directive there will be a hidden directory `.zfs`.  This directory typically will not show up with `ls -la`, but you can `cd` into it.  Inside the `.zfs` directory will be a `snapshots` directory, and in there is a directory for each snapshot by date and time.  You can restore files from there by `cp`ing or `scp`ing them, or use a zfs send/recv to recover the fileset to another host.  Verify the ZFS properties after you send/recv.
+- For ZVols, you will have to clone the snapshot since you cannot access a ZVol snapshot directly.
+
+
 Statistics
 ----------
 
