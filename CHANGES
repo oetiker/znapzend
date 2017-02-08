@@ -1,3 +1,85 @@
+commit 8188a79cbaec2dea4dfb0d52e6bea755e8e9a520
+Author: Ron van den Dungen <ron@dse.nl>
+Date:   Tue Jan 17 08:35:20 2017 +0100
+
+    pre/post send/receive command fixes (#254)
+    
+    * Added destination pre and post send/receive commands.
+    
+    * corrected "sign" in history
+    
+    * update for new  pre and post send/receive commands
+    
+    * correct sign in history
+    
+    * Added WORKER environment variable for use by pre/post-send-scripts
+    
+    * Renamed feature to be consistent with pre/post-snap-command, added documentation and example.
+    
+    * some typo's in man page
+    
+    * corrected value of WORKER
+    
+    * minor omission in example
+    
+    * inserted suggested line breaks
+
+commit ad0c1dfb6f097d29f044b38f299254c5fc8352bb
+Author: Petr Gregor <gregy@gregy.cz>
+Date:   Mon Jan 16 10:01:04 2017 +0100
+
+    Makes daemon continue even if there are no enabled backup sets
+
+commit 84ec22a863711095519a4bab3005c7cef6e236a8
+Author: Justin Scholz <git@justinscholz.de>
+Date:   Fri Jan 6 20:41:02 2017 +0100
+
+    cleanup gitter link from referral url source param
+    
+    The URL previosuly contained referrer parameters. I cleaned it up so it doesn’t contain that anymore.
+    
+    Signed-off-by: Justin Scholz <git@justinscholz.de>
+
+commit 341d087063147302b1af42eab055efbade6d9fa7
+Author: Ron van den Dungen <ron@dse.nl>
+Date:   Fri Jan 6 15:02:28 2017 +0100
+
+    per destination pre/post-send-command improvements (#251)
+    
+    * Added destination pre and post send/receive commands.
+    
+    * corrected "sign" in history
+    
+    * update for new  pre and post send/receive commands
+    
+    * correct sign in history
+    
+    * Added WORKER environment variable for use by pre/post-send-scripts
+    
+    * Renamed feature to be consistent with pre/post-snap-command, added documentation and example.
+    
+    * some typo's in man page
+
+commit 1cb71ddf61c402ed12cd3b4ab40043b805ce1491
+Author: Chris Ridd <chrisridd@mac.com>
+Date:   Mon Dec 19 15:55:34 2016 +0000
+
+    Fix trivial typos
+
+commit 3d41cdd8871053ce183209ee7f8f0fbd1e3e4db7
+Author: Дмитрий Глушенок <dglushenok@yandex.ru>
+Date:   Thu Dec 1 15:15:18 2016 +0300
+
+    Changed SMF dependency to multi-user
+    
+    znapzend starts too early in case of ZFS over iSCSI with delayed zpool import.
+
+commit 3b9d56702dd63310d765e8b12dad0f3a7354ddf6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Nov 8 08:10:07 2016 +0100
+
+    prep for 0.16.0
+
 commit 979bcf07a51caa2ea04847faf1a51256e9d4aa47
 Author: Dominik Hassler <hadfl@cpan.org>
 Date:   Tue Nov 8 06:25:00 2016 +0100

@@ -15,7 +15,7 @@ where 'command' is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC plan dataset \
-            [ DST[:key] plan [[user@]host:]dataset [dest_pre_command] [dest_post_command] ]
+            [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
 
     delete  [--pfexec|sudo] [--dst=key] <src_dataset>
 
@@ -26,7 +26,7 @@ where 'command' is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] [dest_pre_command] [dest_post_command] ]
+            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
 
     edit    [--pfexec|sudo] <src_dataset>
 
@@ -47,7 +47,7 @@ where 'command' is one of the following:
 
 =head1 DESCRIPTION
 
-Use znapzendsetup to configure your backup tasks. The cli is modeled after
+Use znapzendsetup to configure your backup tasks. The cli is modled after
 the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
@@ -61,7 +61,7 @@ The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
 
-The plan consists of a series of retention periods to interval
+The plan consists of a series of retention periodes to interval
 associations:
 
   retA=>intA,retB=>intB,...
@@ -91,7 +91,7 @@ will cause snapshots to be taken and destroyed according to the plan. You
 can then add one or several destinations (B<DST>) both local (preferably on
 a different pool) or remote.
 
-When adding multiple B<DST> entries, each will get labeled for later
+When adding multiple B<DST> entries, each will get labled for later
 identification, optionally you can specify your own label.
 
 =over
@@ -127,9 +127,9 @@ Specify the path to your copy of the mbuffer utility.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
-Specify the path to your copy of the mbuffer utility and the port used
+Specifiy the path to your copy of the mbuffer utility and the port used
 on the destination. Caution: znapzend will send the data directly
-from source mbuffer to destination mbuffer, this data stream is B<not>
+from source mbuffer to destination mbuffer, thus data stream is B<not>
 encrypted.
 
 =item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
@@ -160,7 +160,7 @@ If you deal with a mariadb/mysql database, you can use
   pre-snap-command  = /opt/oep/mariadb/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! /bin/sleep 600" &  /usr/bin/echo $! > /tmp/mariadblock.pid ; sleep 10
   post-snap-command = /usr/bin/kill `/usr/bin/cat /tmp/mariadblock.pid`;/usr/bin/rm /tmp/mariadblock.pid
   
-to make sure that the on-disk data is consistent when snapshotting. Since the
+to make sure that the on-disk data is consistant when snapshotting. Since the
 lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
@@ -168,6 +168,13 @@ setup into ~root/.my.cnf and make sure the file permissions are tight ...
 =item B<--send-delay>
 
 Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
+
+=item B<pre-send-command post-send-command>
+
+Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on
+the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
+
+"ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
 
 =back
 
@@ -183,14 +190,14 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destination. Use the
+to only remove a destination, specify the key of the destionation. Use the
 B<list> function to see the keys.
 
 =back
 
 =head2 B<edit>
 
-modify the configuration of a dataset. See the descriptions in the B<create>
+modify the configuration of a dataset. see the descriptions in the B<create>
 function for details.
 
 If B<edit> is used with a source dataset as single argument, properties
@@ -204,7 +211,7 @@ dumps the backup configuration of a dataset
 
 =head2 B<import>
 
-reads configuration data from a file or STDIN and prints its content
+reads configuration data from a file or STDIN and prints it content
 
 =over
 
@@ -229,7 +236,7 @@ create a complex backup task
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
-       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/home/znapzend/dst_b_online.sh" "/home/znapzend/dst_b_offline.sh"
+       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b pool off"
 
 
 copy the setup from one fileset to another
