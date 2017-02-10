@@ -243,6 +243,9 @@ sub getSnapshotFilter {
     $timeFormat =~ s/%[mdHMS]/\\d{2}/g;
     $timeFormat =~ s/%Y/\\d{4}/g;
 
+    # escape dot ('.') character
+    $timeFormat =~ s/\./\\./g;
+
     return $timeFormat;
 }
 
