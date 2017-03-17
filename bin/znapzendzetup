@@ -150,7 +150,7 @@ sub main {
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
-            chomp ($check);
+            chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
                     or die "ERROR: cannot create backup config for $cfg{src}\n";
@@ -200,6 +200,7 @@ sub main {
             open $fh, "<$filename" or die "ERROR: cannot open temp file $filename\n";
             while (my $prop = <$fh>){
                 chomp $prop;
+                $prop =~ s/\r$//;
                 my ($key, $value) = split /=/, $prop, 2;
                 $cfg{$key} = $value;
             }
@@ -213,7 +214,7 @@ sub main {
 
             print "Do you want to save this backup set [y/N]? ";
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
-            chomp ($check);
+            chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
                     or die "ERROR: cannot create backup config for $cfg{src}\n";
@@ -254,7 +255,7 @@ sub main {
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
-            chomp ($check);
+            chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
                     or die "ERROR: cannot create backup config for $cfg{src}\n";
@@ -320,6 +321,7 @@ sub main {
 
         while (my $prop = <$fh>){
             chomp $prop;
+            $prop =~ s/\r$//;
             my ($key, $value) = split /=/, $prop, 2;
             $cfg{$key} = $value;
         }
