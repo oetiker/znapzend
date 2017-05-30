@@ -12,7 +12,7 @@ use ZnapZend::ZFS;
 my $VERSION = '0.dev'; #VERSION
 my $zConfig;
 my $zZfs;
-my $zTime   = ZnapZend::Time->new();
+my $zTime = ZnapZend::Time->new();
 
 sub dumpStats {
     my $stats = shift;
@@ -45,10 +45,10 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo man)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo man timeWarp=i)) or exit 1;
 
     $zZfs = ZnapZend::ZFS->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
-    $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo});
+    $zConfig = ZnapZend::Config->new(pfexec => $opts->{pfexec}, sudo => $opts->{sudo}, timeWarp=> $opts->{timeWarp});
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -67,7 +67,7 @@ sub main {
     #check if there is at least one valid backup set
     @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
 
-    my $dummyTime = $zTime->createSnapshotTime(time, $backupSets->[0]->{tsformat});
+    my $dummyTime = $zTime->createSnapshotTime(time + ($opts->{timeWarp} // 0), $backupSets->[0]->{tsformat});
 
     #print header
     print 'USED    LAST SNAPSHOT' . ' ' x (24 - length($dummyTime))
@@ -124,6 +124,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
  --only-enabled only show statistics for enabled datasets
  --pfexec       use 'pfexec' for commands
  --sudo         use 'sudo' for commands
+ --timeWarp=x   act as if you were shifted by x seconds into the future
  --man          show man-page and exit
  -h,--help      display this help and exit
 
