@@ -38,13 +38,13 @@ has pidfile         => sub { q{} };
 has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
 has terminate       => sub { 0 };
 has autoCreation    => sub { 0 };
-
-has backupSets       => sub { [] };
+has timeWarp        => sub { undef };
+has backupSets      => sub { [] };
 
 has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
-                          pfexec => $self->pfexec, sudo => $self->sudo);
+                          pfexec => $self->pfexec, sudo => $self->sudo, timeWarp => $self->timeWarp);
 };
 
 has zZfs => sub {
@@ -57,7 +57,7 @@ has zZfs => sub {
         
 };
 
-has zTime => sub { ZnapZend::Time->new() };
+has zTime => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp) };
 
 has zLog => sub {
     my $self = shift;

@@ -13,7 +13,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s autoCreation)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -68,7 +68,8 @@ B<znapzend> [I<options>...]
  --features=x       comma separated list of features to be enabled
  --connectTimeout=x sets the ConnectTimeout for ssh commands
  --autoCreation     automatically create dataset on dest if it not exists
-
+ --timeWarp=x       shift znapzends sens of NOW into the future by x seconds
+ 
 =head1 DESCRIPTION
 
 ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
@@ -175,11 +176,25 @@ Automatically create a dataset on a destination host if it's not there yet.
 
 =back
 
+=item B<--timeWarp>=x
+
+Shift ZnapZends sense of time into the future by x seconds.
+
+The practical application if this function is to determine what will happen at some future point in time.
+This can be useful for testing but also when running in noaction and debug mode to determine which
+snapshots would be created and removed at some future point in time.
+
+=back
+
 =head1 EXAMPLE
 
 To test a new config
 
  znapzend --debug --noaction --runonce=tank/test
+
+To see what is going to happen in one hour
+
+ znapzend --debug --noaction --timeWarp=3600 --runonce=tank/test
 
 To run as a daemon
 

@@ -2,6 +2,7 @@ package ZnapZend::Time;
 
 use Mojo::Base -base;
 use Time::Piece;
+use Time::Seconds;
 
 ### attributes ###
 has configUnits => sub {
@@ -42,6 +43,7 @@ has unitFactors => sub {
 has scrubFilter     => sub { qr/scrub repaired/ };
 has scrubTimeFilter => sub { qr/[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\d{4}/ };
 has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
+has timeWarp        => sub { undef };
 
 my $intervalToTimestamp = sub {
     my $time = shift;
@@ -213,7 +215,9 @@ sub getTimestamp {
     my $self = shift;
     #useUTC flag set?
     my $time = $_[0] ? gmtime : localtime;
-
+    if ($self->timeWarp){
+        $time = $time + Time::Seconds->new($self->timeWarp);
+    }
     #need to call method seconds as addition will return a Time::Seconds object
     return ($time->epoch + $time->tzoffset)->seconds;
 }
