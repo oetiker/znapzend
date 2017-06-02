@@ -556,6 +556,8 @@ lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
 
+The pre and post snapshot commands can find the name and time of the snapshot in the environment variables ZNAP_NAME and ZNAP_TIME
+
 =item B<--send-delay>
 
 Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
