@@ -10,6 +10,7 @@ has debug    => sub { 0 };
 has noaction => sub { 0 };
 has pfexec   => sub { 0 };
 has sudo     => sub { 0 };
+has timeWarp => sub { undef };
 
 #mandatory properties
 has mandProperties => sub {
@@ -25,7 +26,7 @@ has mandProperties => sub {
 };
 
 has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(pfexec => $self->pfexec, sudo => $self->sudo); };
-has time => sub { ZnapZend::Time->new(); };
+has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };
 
