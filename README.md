@@ -59,7 +59,7 @@ for x in /opt/znapzend-0.17.0/bin/*; do ln -s $x /usr/local/bin; done
 Debian packages
 ---------------
 
-Debian control files, guide on using them and experimental debian packages can be found at https://github.com/Gregy/znapzend-debian
+Debian control files, guide on using them and experimental debian packages can be found at https://github.com/Gregy/znapzend-debian. You can also build packages yourself with instructions inside _packaging/checkinstall_ directory.
 
 
 Configuration
