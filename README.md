@@ -24,7 +24,7 @@ On RedHat you get the necessaries with:
 
 On Ubuntu / Debian with:
 
-    apt-get install perl
+    apt-get install perl unzip
 
 On Solaris you may need the c compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old.
