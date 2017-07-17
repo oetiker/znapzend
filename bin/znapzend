@@ -9,7 +9,7 @@ use Pod::Usage;
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo);
+my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compression);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
@@ -164,6 +164,15 @@ use 'pfexec' for zfs commands (e.g. when running znapzend as non-priviledged use
 
 use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
 
+=item compression
+
+use 'compression' to add options -Lce to the zfs send command
+If a source and destination volume are both using compression, zfs send will, by
+default, uncompress the data before sending. Zfs recv will then compress it again before 
+writing it to disk. Using -c will skip the unnecessary uncompress-compress stages.
+This decreases CPU load on both source and destination as well as reduce network
+bandwidth. The -L and -e options were thrown in for good measure.
+
 =back
 
 =item B<--connectTimeout>=I<timeout>
@@ -173,8 +182,6 @@ sets the ssh connection timeout (in seconds)
 =item B<--autoCreation>
 
 Automatically create a dataset on a destination host if it's not there yet.
-
-=back
 
 =item B<--timeWarp>=x
 
