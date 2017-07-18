@@ -10,7 +10,7 @@ has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
-has compression     => sub { 0 };
+has compressed      => sub { 0 };
 has pfexec          => sub { 0 };
 has sudo            => sub { 0 };
 has sendDelay       => sub { 3 };
@@ -311,7 +311,7 @@ sub sendRecvSnapshots {
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my $recvOpt = $self->recvu ? '-uF' : '-F';
-    my $sendOpt = $self->compression ? '-Lce' : '';
+    my $sendOpt = $self->compressed ? '-Lce' : '';
 
     my $remote;
     my $mbufferPort;
