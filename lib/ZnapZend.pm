@@ -11,6 +11,11 @@ use POSIX qw(setsid SIGTERM SIGKILL WNOHANG);
 use Scalar::Util qw(blessed);
 use Sys::Syslog;
 use File::Basename;
+use IPC::SysV qw(IPC_CREAT IPC_EXCL SEM_UNDO);
+use IPC::Semaphore;
+
+#our starting pid is the unique key for an instance of semaphore for limiting number of active workers
+my $semaphoreKey = $$;
 
 ### loglevels ###
 my %logLevels = (
@@ -40,6 +45,7 @@ has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
 has terminate       => sub { 0 };
 has autoCreation    => sub { 0 };
 has timeWarp        => sub { undef };
+has maxParallelism  => sub { 20 };
 has backupSets      => sub { [] };
 
 has zConfig => sub {
@@ -94,6 +100,23 @@ has zLog => sub {
 
     return $log;
 };
+
+
+#Creates or obtains existing semaphore for concurrency controll
+my $getSemaphore = sub {
+    my $self = shift;
+    #first we try to create it
+    my $sem = IPC::Semaphore->new($semaphoreKey, 1, 0666 | IPC_CREAT | IPC_EXCL);
+    if ($sem) {
+        $sem->setall($self->maxParallelism);
+    } else {
+        #else we get the existing semaphore
+        $sem = IPC::Semaphore->new($semaphoreKey, 1, 0666 | IPC_CREAT);
+        die "Unable to obtain semaphore! semget: $!" unless $sem;
+    }
+    return $sem;
+};
+
 
 my $killThemAll  = sub {
     my $self = shift;
@@ -225,6 +248,13 @@ my $sendRecvCleanup = sub {
     my $toDestroy;
     my $sendFailed = 0;
     my $startTime = time;
+
+    #lockdown if there is too many processes
+    $self->zLog->debug('sendRecvCleanup: pushing semaphore down... pid=' . $$);
+    my $sem = $self->$getSemaphore();
+    $sem->op(0, -1, SEM_UNDO);
+    $self->zLog->debug('sendRecvCleanup: semaphore is down. Val=' . $sem->getval(0) . ', pid=' . $$);
+
     $self->zLog->info('starting work on backupSet ' . $backupSet->{src});
     
     #get all sub datasets of source filesystem; need to send them all individually if recursive
@@ -363,6 +393,12 @@ my $sendRecvCleanup = sub {
     $self->zLog->info('done with backupset ' . $backupSet->{src} . ' in '
         . (time - $startTime) . ' seconds');
 
+    #here ends code with limits on concurrency
+    $self->zLog->debug('sendRecvCleanup: lifting semaphore up... pid=' . $$);
+    $sem = $self->$getSemaphore();
+    $sem->op(0, 1, SEM_UNDO);
+    $self->zLog->debug('sendRecvCleanup: semaphore is up. Val=' . $sem->getval(0) . ', pid=' . $$);
+
     return 1;
 };
 
@@ -376,6 +412,12 @@ my $createSnapshot = sub {
 
     my $snapshotName = $backupSet->{src} . '@'
         . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+
+    #lockdown if there is too many processes
+    $self->zLog->debug('createSnapshot: pushing semaphore down... pid=' . $$);
+    my $sem = $self->$getSemaphore();
+    $sem->op(0, -1, SEM_UNDO);
+    $self->zLog->debug('createSnapshot: semaphore is down. Val=' . $sem->getval(0) . ', pid=' . $$);
 
     #set env variables for pre and post scripts use
     local $ENV{ZNAP_NAME} = $snapshotName;
@@ -400,6 +442,12 @@ my $createSnapshot = sub {
         system($backupSet->{post_znap_cmd})
             && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
     }
+
+    #here ends code with limits on concurrency
+    $self->zLog->debug('createSnapshot: lifting semaphore up... pid=' . $$);
+    $sem = $self->$getSemaphore();
+    $sem->op(0, 1, SEM_UNDO);
+    $self->zLog->debug('createSnapshot: semaphore is up. Val=' . $sem->getval(0) . ', pid=' . $$);
 
     #clean up env variables
     delete $ENV{ZNAP_NAME};
