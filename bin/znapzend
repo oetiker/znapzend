@@ -1,4 +1,13 @@
 #!/usr/bin/env perl
+#
+# This is a custom modification of znapzend that was rejected from upstream
+# for using perl core module IPC::SysV and IPC::Semaphore.
+# It adds parameter --maxParallelism=<default 2> for limiting worker processes.
+# The default value was set so low on purpose -- we need it that way and anyone
+# can use their own value.
+#
+# pmares@sic.cz, https://github.com/pmar5303/znapzend
+#
 
 use lib qw(); # PERL5LIB
 use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
@@ -13,7 +22,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
+        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s timeWarp=i maxParallelism=i autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -69,6 +78,7 @@ B<znapzend> [I<options>...]
  --connectTimeout=x sets the ConnectTimeout for ssh commands
  --autoCreation     automatically create dataset on dest if it not exists
  --timeWarp=x       shift znapzends sens of NOW into the future by x seconds
+ --maxParallelism=x limit the number of active workers to x; default is 2
  
 =head1 DESCRIPTION
 
@@ -190,6 +200,16 @@ Shift ZnapZends sense of time into the future by x seconds.
 The practical application if this function is to determine what will happen at some future point in time.
 This can be useful for testing but also when running in noaction and debug mode to determine which
 snapshots would be created and removed at some future point in time.
+
+=back
+
+=item B<--maxParallelism>=x
+
+Limits the number of active worker processes to x.
+
+Both snapshotting and sending snapshots to destination creates a separate process for every backup set.
+Using maxParallelism you can set the maximal number of active processes to prevent overload of the server
+running znapzend. Default limit is 2.
 
 =back
 

@@ -6,11 +6,12 @@ use ZnapZend::Time;
 use Text::ParseWords qw(shellwords);
 
 ### attributes ###
-has debug    => sub { 0 };
-has noaction => sub { 0 };
-has pfexec   => sub { 0 };
-has sudo     => sub { 0 };
-has timeWarp => sub { undef };
+has debug          => sub { 0 };
+has noaction       => sub { 0 };
+has pfexec         => sub { 0 };
+has sudo           => sub { 0 };
+has timeWarp       => sub { undef };
+has maxParallelism => sub { 2 };
 
 #mandatory properties
 has mandProperties => sub {
