@@ -11,7 +11,7 @@ has noaction       => sub { 0 };
 has pfexec         => sub { 0 };
 has sudo           => sub { 0 };
 has timeWarp       => sub { undef };
-has maxParallelism => sub { 20 };
+has maxParallelism => sub { 2 };
 
 #mandatory properties
 has mandProperties => sub {

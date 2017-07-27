@@ -1,4 +1,13 @@
 #!/usr/bin/env perl
+#
+# This is a custom modification of znapzend that was rejected from upstream
+# for using perl core module IPC::SysV and IPC::Semaphore.
+# It adds parameter --maxParallelism=<default 2> for limiting worker processes.
+# The default value was set so low on purpose -- we need it that way and anyone
+# can use their own value.
+#
+# pmares@sic.cz, https://github.com/pmar5303/znapzend
+#
 
 use lib qw(); # PERL5LIB
 use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
@@ -69,7 +78,7 @@ B<znapzend> [I<options>...]
  --connectTimeout=x sets the ConnectTimeout for ssh commands
  --autoCreation     automatically create dataset on dest if it not exists
  --timeWarp=x       shift znapzends sens of NOW into the future by x seconds
- --maxParallelism=x limit the number of active workers to x; default is 20
+ --maxParallelism=x limit the number of active workers to x; default is 2
  
 =head1 DESCRIPTION
 
@@ -200,7 +209,7 @@ Limits the number of active worker processes to x.
 
 Both snapshotting and sending snapshots to destination creates a separate process for every backup set.
 Using maxParallelism you can set the maximal number of active processes to prevent overload of the server
-running znapzend. Default limit is 20.
+running znapzend. Default limit is 2.
 
 =back
 

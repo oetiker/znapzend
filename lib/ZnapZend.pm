@@ -45,7 +45,7 @@ has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
 has terminate       => sub { 0 };
 has autoCreation    => sub { 0 };
 has timeWarp        => sub { undef };
-has maxParallelism  => sub { 20 };
+has maxParallelism  => sub { 2 };
 has backupSets      => sub { [] };
 
 has zConfig => sub {
