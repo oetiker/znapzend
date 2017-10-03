@@ -12,17 +12,20 @@ my $opts = {};
 my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
 
 sub main {
-    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s sudo pfexec),
-        qw(daemonize pidfile=s logto=s loglevel=s runonce=s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
+    GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
+        qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
+        qw(runonce=s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
         for my $feature (split /,/, $opts->{features}){
             $featureMap{$feature} or die "ERROR: feature '$feature' not supported\n";
             if ($feature eq "pfexec" or $feature eq "sudo") {
-                warn "--features=" . $feature . " is deprecated. Use --" . $feature . " instead\n"
+                warn "--features=" . $feature . " is deprecated. Use --rootExec=" . $feature . " instead\n";
+                $opts->{rootExec} = $feature;
+            } else {
+                $opts->{$feature} = 1;
             }
-            $opts->{$feature} = 1;
         }
         delete $opts->{features};
     }
@@ -56,7 +59,7 @@ znapzend - znapzend daemon
 
 =head1 SYNOPSIS
 
-B<znapzend> [I<options>...] [--sudo|pfexec]
+B<znapzend> [I<options>...]
 
  --man              show man-page and exit
  -h,--help          display this help and exit
@@ -69,12 +72,11 @@ B<znapzend> [I<options>...] [--sudo|pfexec]
  --daemonize        fork into the background
  --runonce=x        run one round on source dataset x
  --features=x       comma separated list of features to be enabled
- --pfexec           use 'pfexec' for zfs commands
- --sudo             use 'sudo' for zfs commands
+ --rootExec=x       exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x sets the ConnectTimeout for ssh commands
  --autoCreation     automatically create dataset on dest if it not exists
  --timeWarp=x       shift znapzends sens of NOW into the future by x seconds
- 
+
 =head1 DESCRIPTION
 
 ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
@@ -172,13 +174,17 @@ bandwidth. The -L option is for large block support and -e is for embedded data 
 
 =back
 
-=item B<--pfexec>
+=item B<--rootExec>={sudo|pfexec}
 
-use 'pfexec' for zfs commands (e.g. when running znapzend as non-priviledged user)
+Execute zfs with this command, 'sudo' or 'pfexec', to
+obtain root privileges. This is often necessary when running znapzend as a
+non-privileged user with a zfs install that doesn't support finer permission
+controls. This also applies to the zfs commands ran on remote servers over ssh.
 
-=item B<--sudo>
-
-use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
+For sudo, the /etc/sudoers file will need to be modified to allow for
+passwordless access to zfs commands if znapzend is to be ran as a daemon or
+the system will be used as a remote. Many ZFS installations include an
+/etc/sudoers.d/zfs file as an example.
 
 =item B<--connectTimeout>=I<timeout>
 

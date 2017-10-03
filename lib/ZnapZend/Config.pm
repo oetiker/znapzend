@@ -8,8 +8,7 @@ use Text::ParseWords qw(shellwords);
 ### attributes ###
 has debug    => sub { 0 };
 has noaction => sub { 0 };
-has pfexec   => sub { 0 };
-has sudo     => sub { 0 };
+has rootExec => sub { q{} };
 has timeWarp => sub { undef };
 
 #mandatory properties
@@ -25,7 +24,7 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(pfexec => $self->pfexec, sudo => $self->sudo); };
+has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec); };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };

@@ -11,8 +11,7 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
-has pfexec          => sub { 0 };
-has sudo            => sub { 0 };
+has rootExec        => sub { q{} };
 has sendDelay       => sub { 3 };
 has connectTimeout  => sub { 30 };
 has propertyPrefix  => sub { q{org.znapzend} };
@@ -22,7 +21,7 @@ has mbufferParam    => sub { [qw(-q -s 128k -W 60 -m)] }; #don't remove the -m a
 has scrubInProgress => sub { qr/scrub in progress/ };
 
 has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
-has priv            => sub { my $self = shift; [$self->pfexec ? qw(pfexec) : $self->sudo ? qw(sudo) : ()] };
+has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $self->rootExec) : ()] };
 
 ### private functions ###
 my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
