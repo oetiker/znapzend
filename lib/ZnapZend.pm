@@ -28,8 +28,7 @@ has nodestroy       => sub { 0 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
-has pfexec          => sub { 0 };
-has sudo            => sub { 0 };
+has rootExec        => sub { q{} };
 has connectTimeout  => sub { 30 };
 has runonce         => sub { q{} };
 has daemonize       => sub { 0 };
@@ -45,7 +44,7 @@ has backupSets      => sub { [] };
 has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
-                          pfexec => $self->pfexec, sudo => $self->sudo, timeWarp => $self->timeWarp);
+                          rootExec => $self->rootExec, timeWarp => $self->timeWarp);
 };
 
 has zZfs => sub {
@@ -53,9 +52,8 @@ has zZfs => sub {
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
-        pfexec => $self->pfexec, sudo => $self->sudo,
+        rootExec => $self->rootExec,
         zLog => $self->zLog, compressed => $self->compressed);
-        
 };
 
 has zTime => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp) };
