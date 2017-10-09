@@ -30,7 +30,8 @@ has recvu           => sub { 0 };
 has compressed      => sub { 0 };
 has rootExec        => sub { q{} };
 has connectTimeout  => sub { 30 };
-has runonce         => sub { q{} };
+has runonce         => sub { 0 };
+has dataset         => sub { q{} };
 has daemonize       => sub { 0 };
 has loglevel        => sub { q{debug} };
 has logto           => sub { q{} };
@@ -631,11 +632,11 @@ sub start {
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
-        $self->$refreshBackupPlans($self->runonce);
+        $self->$refreshBackupPlans($self->dataset);
         $self->$createWorkers;
     };
     
-    $self->$refreshBackupPlans($self->runonce);
+    $self->$refreshBackupPlans($self->dataset);
 
     $self->$createWorkers;
 
