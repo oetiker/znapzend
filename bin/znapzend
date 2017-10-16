@@ -14,7 +14,7 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
-        qw(runonce=s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
+        qw(runonce:s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -28,6 +28,11 @@ sub main {
             }
         }
         delete $opts->{features};
+    }
+
+    if ($opts->{runonce}) {
+        $opts->{dataset} = $opts->{runonce};
+        $opts->{runonce} = 1;
     }
 
     $opts->{help} && do {
@@ -70,7 +75,7 @@ B<znapzend> [I<options>...]
  --loglevel=x       define the log level when logging to file
  --pidfile=x        write a pid file when running in daemon mode
  --daemonize        fork into the background
- --runonce=x        run one round on source dataset x
+ --runonce=[x]      run one round on the optionally provided dataset
  --features=x       comma separated list of features to be enabled
  --rootExec=x       exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x sets the ConnectTimeout for ssh commands
@@ -124,11 +129,11 @@ B<pidfile> defaults to I</var/run/znapzend.pid> if no pidfile is given
 
 Fork into the background.
 
-=item B<--runonce>=I<fileset>
+=item B<--runonce>=[I<dataset>]
 
-run one round on source I<fileset>. This is very useful for testing.
-Use it in connection with B<--noaction> and B<--debug> while
-testing your new configuration
+run one round on source I<dataset> or on all datasets if empty.
+This is very useful for testing. Use it in connection with B<--noaction> and
+B<--debug> while testing your new configuration
 
 =item B<--features>=I<feature1>,I<feature2>,...
 
