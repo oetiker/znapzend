@@ -30,7 +30,7 @@ sub main {
         delete $opts->{features};
     }
 
-    if ($opts->{runonce}) {
+    if (defined($opts->{runonce})) {
         $opts->{dataset} = $opts->{runonce};
         $opts->{runonce} = 1;
     }
