@@ -27,6 +27,7 @@ has noaction        => sub { 0 };
 has nodestroy       => sub { 0 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
+has resume          => sub { 0 };
 has compressed      => sub { 0 };
 has rootExec        => sub { q{} };
 has connectTimeout  => sub { 30 };
@@ -52,7 +53,7 @@ has zZfs => sub {
     my $self = shift;
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
-        recvu => $self->recvu, connectTimeout => $self->connectTimeout,
+        recvu => $self->recvu, resume => $self->resume, connectTimeout => $self->connectTimeout,
         rootExec => $self->rootExec,
         zLog => $self->zLog, compressed => $self->compressed);
 };
