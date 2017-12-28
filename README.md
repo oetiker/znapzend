@@ -5,18 +5,16 @@ ZnapZend 0.17.0
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend)
 
-ZnapZend is a ZFS centric backup tool. It relies on snapshot, send and
-receive to do its work. It has the built-in ability to manage both local
+ZnapZend is a ZFS centric backup tool to create snapshots and send them to backup locations. It relies on the ZFS tools snapshot, send and receive to do its work. It has the built-in ability to manage both local
 snapshots as well as remote copies by thinning them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
 
-Zetup Inztructionz
+Compilation Instructions
 ------------------
 
-Follow these zimple inztructionz below to get a custom made copy of
-znapzend. Yes you need a compiler and stuff for this to work.
+You need a compiler and stuff for this to work.
 
 On RedHat you get the necessaries with:
 
@@ -65,8 +63,19 @@ Debian control files, guide on using them and experimental debian packages can b
 Configuration
 -------------
 
-Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings. For remote backup, znapzend uses ssh.
-Make sure to configure password free login for ssh to the backup target host.
+For remote backups, znapzend uses ssh. So make sure to configure key based (passwordless) ssh login to the backup target host, so that znapzend is able to connect.
+
+Use `znapzendzetup`to create the desired backup properties within your ZFS pool.
+
+Example:
+
+    znapzendzetup create --recursive\
+       --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
+       --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
+       SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
+       DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home 
+
+See the [znapzendzetup manual](doc/znapzendzetup.pod) for the full configuration options.
 
 Running
 -------
