@@ -65,7 +65,7 @@ Configuration
 
 For remote backups, znapzend uses ssh. So make sure to configure key based (passwordless) ssh login to the backup target host, so that znapzend is able to connect.
 
-Use `znapzendzetup`to create the desired backup properties within your ZFS pool.
+Use `znapzendzetup` to create the desired backup properties within your ZFS pool.
 
 Example:
 
