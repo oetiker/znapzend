@@ -335,7 +335,7 @@ sub sendRecvSnapshots {
 
     my @cmd;
     if ($lastCommon){
-        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, '-I', $lastCommon, $lastSnapshot]);
+        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, '-i', $lastCommon, $lastSnapshot]);
     }
     else{
         @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $lastSnapshot]);
