@@ -14,8 +14,13 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
-        qw(runonce:s connectTimeout=s timeWarp=i autoCreation skipOnPreSnapCmdFail),
-        qw(skipOnPreSendCmdFail)) or exit 1;
+        qw(runonce:s connectTimeout=s timeWarp=i autoCreation version),
+        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail)) or exit 1;
+
+    $opts->{version} && do {
+        print "znapzend version $VERSION\n";
+        exit;
+    };
 
     #split all features into individual options
     if ($opts->{features}){
@@ -68,6 +73,7 @@ znapzend - znapzend daemon
 B<znapzend> [I<options>...]
 
  --man                  show man-page and exit
+ --version              print version and exit
  -h,--help              display this help and exit
  -d,--debug             print debug messages to STDERR
  -n,--noaction          run in simulation mode. does no changes to the filesystem
