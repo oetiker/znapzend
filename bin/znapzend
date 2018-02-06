@@ -14,7 +14,8 @@ my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
-        qw(runonce:s connectTimeout=s timeWarp=i autoCreation)) or exit 1;
+        qw(runonce:s connectTimeout=s timeWarp=i autoCreation skipOnPreSnapCmdFail),
+        qw(skipOnPreSendCmdFail)) or exit 1;
 
     #split all features into individual options
     if ($opts->{features}){
@@ -66,21 +67,23 @@ znapzend - znapzend daemon
 
 B<znapzend> [I<options>...]
 
- --man              show man-page and exit
- -h,--help          display this help and exit
- -d,--debug         print debug messages to STDERR
- -n,--noaction      run in simulation mode. does no changes to the filesystem
- --nodestroy        does all changes to the filesystem except destroy
- --logto=x          select where to log to (syslog::<facility> or <filepath>)
- --loglevel=x       define the log level when logging to file
- --pidfile=x        write a pid file when running in daemon mode
- --daemonize        fork into the background
- --runonce=[x]      run one round on the optionally provided dataset
- --features=x       comma separated list of features to be enabled
- --rootExec=x       exec zfs with this command to obtain root privileges (sudo or pfexec)
- --connectTimeout=x sets the ConnectTimeout for ssh commands
- --autoCreation     automatically create dataset on dest if it not exists
- --timeWarp=x       shift znapzends sens of NOW into the future by x seconds
+ --man                  show man-page and exit
+ -h,--help              display this help and exit
+ -d,--debug             print debug messages to STDERR
+ -n,--noaction          run in simulation mode. does no changes to the filesystem
+ --nodestroy            does all changes to the filesystem except destroy
+ --logto=x              select where to log to (syslog::<facility> or <filepath>)
+ --loglevel=x           define the log level when logging to file
+ --pidfile=x            write a pid file when running in daemon mode
+ --daemonize            fork into the background
+ --runonce=[x]          run one round on the optionally provided dataset
+ --features=x           comma separated list of features to be enabled
+ --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
+ --connectTimeout=x     sets the ConnectTimeout for ssh commands
+ --autoCreation         automatically create dataset on dest if it not exists
+ --timeWarp=x           shift znapzends sens of NOW into the future by x seconds
+ --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
+ --skipOnPreSendCmdFail skip replication if the pre-send-command fails
 
 =head1 DESCRIPTION
 
@@ -206,6 +209,17 @@ Shift ZnapZends sense of time into the future by x seconds.
 The practical application if this function is to determine what will happen at some future point in time.
 This can be useful for testing but also when running in noaction and debug mode to determine which
 snapshots would be created and removed at some future point in time.
+
+=item B<--skipOnPreSnapCmdFail>
+
+Prevent snapshots of a dataset from being taken when it has a pre-snap-command
+defined and the command returns a non-zero exit code or is killed by a signal.
+
+=item B<--skipOnPreSendCmdFail>
+
+Prevent snapshots of a dataset from being replicated to a destination when it has
+a pre-snap-command defined and the command returns a non-zero exit code or is killed
+by a signal.
 
 =back
 
