@@ -16,7 +16,7 @@ Zetup Inztructionz
 ------------------
 
 Follow these zimple inztructionz below to get a custom made copy of
-znapzend. Yes you need a compiler and stuff for this to work.
+znapzend. Yes, you need a compiler and stuff for this to work.
 
 On RedHat you get the necessaries with:
 
@@ -26,12 +26,12 @@ On Ubuntu / Debian with:
 
     apt-get install perl unzip
 
-On Solaris you may need the c compiler from Solaris Studio and gnu-make
+On Solaris you may need the C compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old.
 
-On OmniOS/SmartOS you will need perl and gnu-make
+On OmniOS/SmartOS you will need perl and gnu-make.
 
-with that in place you can now utter:
+With that in place you can now utter:
 
 ```sh
 wget https://github.com/oetiker/znapzend/releases/download/v0.17.0/znapzend-0.17.0.tar.gz
@@ -71,7 +71,7 @@ Make sure to configure password free login for ssh to the backup target host.
 Running
 -------
 
-The [znapzend](doc/znapzend.pod) demon is responsible for doing the actual backups.
+The [znapzend](doc/znapzend.pod) daemon is responsible for doing the actual backups.
 
 To see if your configuration is any good, run znapzend in noaction mode first.
 
@@ -91,7 +91,7 @@ then when you are happy with what you got, start it in daemon mode.
 znapzend --daemonize
 ```
 
-Best is to integrate znapzend into your system startup sequence, but you can also
+Best practice is to integrate znapzend into your system startup sequence, but you can also
 run it by hand. See the init/README.md for some inspiration.
 
 Statistics
@@ -104,7 +104,7 @@ Support and Contributions
 -------------------------
 If you find a problem with znapzend, please open an Issue on GitHub.
 
-If you like to get in touch, come to [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend).
+If you'd like to get in touch, come to [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend).
 
 And if you have a contribution, please send a pull request.
 
