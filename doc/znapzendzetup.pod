@@ -61,7 +61,7 @@ The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
 
-The plan consists of a series of retention periodes to interval
+The plan consists of a series of retention periods to interval
 associations:
 
   retA=>intA,retB=>intB,...
