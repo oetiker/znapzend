@@ -27,7 +27,8 @@ sub dumpProperties {
             if (my ($dst) = $opt =~ /^(dst_[^_]+)_valid$/){
                 $backupSet->{$opt} || do {
                     warn "*** WARNING: destination '$backupSet->{$dst}'"
-                        . " does not exist, will be ignored! ***\n\n";
+                        . " does not exist, will be ignored! ***\n\n"
+                        if $backupSet->{$dst . '_raw'} ne 'on';
                 }
             }
             else{
@@ -96,6 +97,12 @@ sub parseArguments {
         #catch post-command if any
         $state eq 'pst' && do {
             $backupSet{'dst_' . $key . '_pstcmd'} = $_;
+            $state = 'raw';
+            next;
+        };
+        #catch raw if any
+        $state eq 'raw' && do {
+            $backupSet{'dst_' . $key . '_raw'} = $_;
             $state = '';
             next;
         };
@@ -420,7 +427,7 @@ where 'command' is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC plan dataset \
-            [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
+            [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] [raw] ]
 
     delete  [--rootExec={pfexec|sudo}] [--dst=key] <src_dataset>
 
@@ -431,7 +438,7 @@ where 'command' is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
+            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] [raw] ]
 
     edit    [--rootExec={pfexec|sudo}] <src_dataset>
 
@@ -582,6 +589,12 @@ Run command/script before and after sending the snapshot to the destination. Int
 the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
 
 "ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
+
+=item B<raw>
+
+Perform a 'raw' send if set to 'on' to transmit an encrypted dataset to the destination. This is useful for remote
+backup scenarios to an untrusted destination since data is not decrypted before transmitting. Unlike unencrypted
+datasets, the destination dataset must not exist prior to the initial send.
 
 =back
 

@@ -257,7 +257,8 @@ my $sendRecvCleanup = sub {
         if (!$backupSet->{"dst_$key" . '_valid'}) {
 
             $backupSet->{"dst_$key" . '_valid'} =
-                $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
+                $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or
+                  $backupSet->{"dst_$key" . '_raw'} eq 'on' or do {
 
                 if ($self->autoCreation) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
@@ -270,10 +271,11 @@ my $sendRecvCleanup = sub {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                     };
                 }
-                $backupSet->{"dst_$key" . '_valid'} or
+                $backupSet->{"dst_$key" . '_valid'} or do {
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
-                next;
+                    next;
+                }
             };
         }
 
@@ -288,6 +290,7 @@ my $sendRecvCleanup = sub {
                 eval {
                     local $SIG{__DIE__};
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                        $backupSet->{"dst_$key" . '_raw'},
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
                 };
                 if ($@){

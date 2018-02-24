@@ -306,11 +306,13 @@ sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
+    my $sendRaw = shift;
     my $mbuffer = shift;
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
+    my @sendRawOpt = $sendRaw eq 'on' ? qw(-w) : ();
 
     my $remote;
     my $mbufferPort;
@@ -335,10 +337,10 @@ sub sendRecvSnapshots {
 
     my @cmd;
     if ($lastCommon){
-        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, '-I', $lastCommon, $lastSnapshot]);
+        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendRawOpt, @sendOpt, '-I', $lastCommon, $lastSnapshot]);
     }
     else{
-        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $lastSnapshot]);
+        @cmd = ([@{$self->priv}, 'zfs', 'send', @sendRawOpt, @sendOpt, $lastSnapshot]);
     }
 
     #if mbuffer port is set, run in 'network mode'
