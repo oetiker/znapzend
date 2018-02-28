@@ -508,11 +508,11 @@ constructed.
 
 The syntax is L<strftime>-like. The string must consist of the mandatory
 
- %Y %m %d %H %M %S
+ %Y %m %d %H %M %S %z
 
 Optionally,
 
- - _ . :
+- _ . :
 
 characters as well as any alphanumeric character are allowed.
 
