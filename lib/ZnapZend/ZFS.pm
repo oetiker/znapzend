@@ -122,6 +122,29 @@ sub snapshotExists {
     return grep { $snapshot eq $_ } @snapshots;
 }
 
+sub bookmarkExists {
+    my $self = shift;
+    my $bookmark = shift;
+    my $remote;
+
+    #just in case if someone aks to check '';
+    return 0 if !$bookmark;
+
+    ($remote, $bookmark) = $splitHostDataSet->($bookmark);
+    my @ssh = $self->$buildRemote($remote,
+        [@{$self->priv}, qw(zfs list -H -o name -t bookmark), $bookmark]);
+
+    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    open my $bookmarks, '-|', @ssh
+        or Mojo::Exception->throw('ERROR: cannot get bookmarks'
+            . ($remote ? " on $remote" : ''));
+
+    my @bookmarks = <$bookmarks>;
+    chomp(@bookmarks);
+
+    return grep { $bookmark eq $_ } @bookmarks;
+}
+
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
@@ -233,6 +256,28 @@ sub createSnapshot {
 }
 
 # known limitation: snapshots from subdatasets have to be destroyed individually
+
+sub createBookmark {
+    my $self = shift;
+    my $hostAndDataSetsnapshot = shift;
+    my $hostAndDataSetbookmark = shift; 
+
+
+    my ($remote, $dataSetSnapshot) = $splitHostDataSet->($hostAndDataSet);
+    my ($remote, $dataSetBookmark) = $splitHostDataSet->($hostAndDataSet);
+    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs bookmark), $dataSetSnapshot,  $dataSetBookmark]);
+
+    print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
+
+    #return if 'noaction' or snapshot creation successful
+    return 1 if $self->noaction || !system(@ssh);
+
+    #check if snapshot already exists and therefore creation failed
+    return 0 if $self->snapshotExists($dataSet);
+
+    #creation failed and snapshot does not exist, throw an exception
+    Mojo::Exception->throw("ERROR: cannot create snapshot $dataSet");
+}
 sub destroySnapshots {
     my $self = shift;
     my @toDestroy = ref($_[0]) eq "ARRAY" ? @{$_[0]} : ($_[0]);

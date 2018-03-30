@@ -427,6 +427,36 @@ my $createSnapshot = sub {
     return 1;
 };
 
+my $createBookmark = sub {
+    my $self = shift;
+    my $backupSet = shift;
+    my $timeStamp = shift;
+
+    #no HUP handler in child
+    $SIG{HUP} = 'IGNORE';
+
+    my $bookmarkName = $backupSet->{src} . '#'
+        . $self->zTime->createBookmarkTime($timeStamp, $backupSet->{tsformat});
+    my $bookmarkSnapchotName = $backupSet->{src} . '@'
+        . $self->zTime->createBookmarkTime($timeStamp, $backupSet->{tsformat});
+
+    #set env variables for pre and post scripts use
+    local $ENV{ZNAP_NAME} = $bookmarkName;
+    local $ENV{ZNAP_TIME} = $timeStamp;
+
+    my $skip = 0;
+ 
+    $self->zLog->info('creating ' . 'bookmark on ' . $backupSet->{src});
+
+    $self->zZfs->createBookmark($bookmarkSnapchotName, $bookmarkName);
+
+    #clean up env variables
+    delete $ENV{ZNAP_NAME};
+    delete $ENV{ZNAP_TIME};
+
+    return 1;
+};
+
 my $sendWorker = sub {
     my $self = shift;
     my $backupSet = shift;
@@ -478,6 +508,7 @@ my $sendWorker = sub {
     );
 };
 
+
 my $snapWorker = sub {
     my $self = shift;
     my $backupSet = shift;
@@ -513,6 +544,7 @@ my $snapWorker = sub {
             }
             else{
                 $self->$sendWorker($backupSet, $timeStamp);
+                $createBookmark($backupSet, $timeStamp);
             }
         }
     );
