@@ -275,7 +275,7 @@ my $sendRecvCleanup = sub {
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
                     $sendFailed = 1;
-            };
+                };
                 next;
             };
         }
