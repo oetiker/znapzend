@@ -248,6 +248,7 @@ my $sendRecvCleanup = sub {
                 $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
                 if ($self->skipOnPreSendCmdFail){
                     $self->zLog->warn("skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure");
+                    $sendFailed = 1;
                     next;
                 }
             }
@@ -270,9 +271,11 @@ my $sendRecvCleanup = sub {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                     };
                 }
-                $backupSet->{"dst_$key" . '_valid'} or
+                $backupSet->{"dst_$key" . '_valid'} or do {
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
+                    $sendFailed = 1;
+                };
                 next;
             };
         }
@@ -300,7 +303,11 @@ my $sendRecvCleanup = sub {
                     }
                 }
             }
-        } 
+        }
+
+        # do not destroy data sets on the destination, or run post-send-command, unless all operations have been successful
+        next if ($sendFailed);
+
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
