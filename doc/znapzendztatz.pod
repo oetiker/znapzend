@@ -10,8 +10,8 @@ B<znapzendztatz> [I<options>...] [src_dataset]
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
  --only-enabled only show statistics for enabled datasets
- --pfexec       use 'pfexec' for commands
- --sudo         use 'sudo' for commands
+ --rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
+ --timeWarp=x   act as if you were shifted by x seconds into the future
  --man          show man-page and exit
  -h,--help      display this help and exit
 
