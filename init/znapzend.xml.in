@@ -3,7 +3,7 @@
 <service_bundle type="manifest" name="znapzend">
 
 <service 
-        name="oep/znapzend" 
+        name="@SVCNAME_SMF@" 
         type="service" 
         version="4">
 
