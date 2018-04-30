@@ -132,6 +132,8 @@ AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile
     lib/Makefile
+    init/znapzend.service
+    init/znapzend.upstart
     init/znapzend.xml
 ])
 
