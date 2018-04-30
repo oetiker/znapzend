@@ -22,6 +22,8 @@ AC_PATH_PROG(CURL, curl, no)
 AC_PATH_PROG(WGET, wget, no)
 AC_PATH_PROG(POD2MAN, pod2man, no)
 
+# TODO: with some respect to legacy, split such settings to be named
+# after respective service management framework; code supports several
 AC_ARG_ENABLE(svcinstall,
         AC_HELP_STRING(
                 [--enable-svcinstall=DIR],
@@ -32,6 +34,19 @@ AC_ARG_ENABLE(svcinstall,
 )
 AC_SUBST(SVCINSTALLDIR)
 AM_CONDITIONAL(ENABLE_SVCINSTALL,[test $SVCINSTALLDIR != no])
+
+SVCNAME_SMF="oep/znapzend"
+AC_ARG_WITH(svcname-smf,
+        AC_HELP_STRING(
+                [--with-svcname-smf=SMF_FMRI],
+                [use specified SMF FMRI in manifest (defaults to oep/znapzend)]
+        ),
+        [AC_MSG_CHECKING([user-provided SMF service name of '$withval'])
+         SVCNAME_SMF="`echo "$withval" | sed -e 's,^svc:,,' -e 's,^/*,,' -e 's,:.*$,,'`"
+        ],[AC_MSG_CHECKING([default SMF service name])]
+)
+AC_MSG_RESULT([$SVCNAME_SMF])
+AC_SUBST(SVCNAME_SMF)
 
 URL_CAT="neither curl nor wget found"
 if test -x "$WGET"; then
@@ -117,6 +132,8 @@ AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile
     lib/Makefile
+    init/znapzend.service
+    init/znapzend.upstart
     init/znapzend.xml
 ])
 

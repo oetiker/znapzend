@@ -594,6 +594,7 @@ GMAKE
 GREP
 PERL_CC_PATH
 URL_CAT
+SVCNAME_SMF
 ENABLE_SVCINSTALL_FALSE
 ENABLE_SVCINSTALL_TRUE
 SVCINSTALLDIR
@@ -650,7 +651,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -676,6 +676,7 @@ enable_option_checking
 enable_silent_rules
 enable_maintainer_mode
 enable_svcinstall
+with_svcname_smf
 enable_pkgonly
 '
       ac_precious_vars='build_alias
@@ -722,7 +723,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -975,15 +975,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1121,7 +1112,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1274,7 +1265,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1316,6 +1306,13 @@ Optional Features:
                           sometimes confusing) to the casual installer
   --enable-svcinstall=DIR install svc manifest into given directory
   --enable-pkgonly        Skip all checking
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-svcname-smf=SMF_FMRI
+                          use specified SMF FMRI in manifest (defaults to
+                          oep/znapzend)
 
 Some influential environment variables:
   PERL        Path to local perl binary
@@ -2717,6 +2714,8 @@ fi
 
 
 
+# TODO: with some respect to legacy, split such settings to be named
+# after respective service management framework; code supports several
 # Check whether --enable-svcinstall was given.
 if test "${enable_svcinstall+set}" = set; then :
   enableval=$enable_svcinstall; SVCINSTALLDIR=$enableval
@@ -2733,6 +2732,24 @@ else
   ENABLE_SVCINSTALL_TRUE='#'
   ENABLE_SVCINSTALL_FALSE=
 fi
+
+
+SVCNAME_SMF="oep/znapzend"
+
+# Check whether --with-svcname-smf was given.
+if test "${with_svcname_smf+set}" = set; then :
+  withval=$with_svcname_smf; { $as_echo "$as_me:${as_lineno-$LINENO}: checking user-provided SMF service name of '$withval'" >&5
+$as_echo_n "checking user-provided SMF service name of '$withval'... " >&6; }
+         SVCNAME_SMF="`echo "$withval" | sed -e 's,^svc:,,' -e 's,^/*,,' -e 's,:.*$,,'`"
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking default SMF service name" >&5
+$as_echo_n "checking default SMF service name... " >&6; }
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $SVCNAME_SMF" >&5
+$as_echo "$SVCNAME_SMF" >&6; }
 
 
 URL_CAT="neither curl nor wget found"
@@ -2979,7 +2996,7 @@ $as_echo "way to expensive!" >&6; }
 
 
 
-ac_config_files="$ac_config_files Makefile thirdparty/Makefile lib/Makefile init/znapzend.xml"
+ac_config_files="$ac_config_files Makefile thirdparty/Makefile lib/Makefile init/znapzend.service init/znapzend.upstart init/znapzend.xml"
 
 
 
@@ -3712,6 +3729,8 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "thirdparty/Makefile") CONFIG_FILES="$CONFIG_FILES thirdparty/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
+    "init/znapzend.service") CONFIG_FILES="$CONFIG_FILES init/znapzend.service" ;;
+    "init/znapzend.upstart") CONFIG_FILES="$CONFIG_FILES init/znapzend.upstart" ;;
     "init/znapzend.xml") CONFIG_FILES="$CONFIG_FILES init/znapzend.xml" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
