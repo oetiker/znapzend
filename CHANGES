@@ -1,3 +1,45 @@
+commit 539ba757b32282a824d1ad0b6bc529144cc00adb
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:52:53 2018 +0200
+
+    Regenerated autotools skeleton with bootstrap
+
+commit 515de0d3d0f493ace813d65d54f418c6bcd80430
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:39:47 2018 +0200
+
+    init/README.md : document the updated approach to all-generated manifests
+
+commit 8d92903837301b912297f7b3a9a44d76e03fc53a
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:24:08 2018 +0200
+
+    Make upstart and systemd manifests generatable (also have embedded paths); GitIgnore generated init/znapzend.* files
+
+commit d4e00dff42892de71594283e5fc9e1d837d65caf
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:13:08 2018 +0200
+
+    Make SMF service name configurable
+
+commit b84294ce9761852be235adc254f21e399c3f0614
+Author: Phil! Gold <phil_g@pobox.com>
+Date:   Thu Apr 26 14:25:37 2018 -0400
+
+    The cpanminus installation URL has changed.
+
+commit da88db2cbb6f666a9d60b8d0f277a374704d3c85
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Apr 13 15:59:42 2018 +0200
+
+    test on newer perls
+
+commit 5c78e63c4fe47b1eabedbaeacc3cb112947136f1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Apr 13 15:52:41 2018 +0200
+
+    updated to latest dependent modules
+
 commit 2f32dc5aaaa18092894d3a011293fd23787e9eac
 Author: Tobias Oetiker <tobi@oetiker.ch>
 Date:   Sun Apr 8 16:52:56 2018 +0200
@@ -221,7 +263,7 @@ Date:   Mon Dec 19 15:55:34 2016 +0000
     Fix trivial typos
 
 commit 3d41cdd8871053ce183209ee7f8f0fbd1e3e4db7
-Author: Дмитрий Глушенок <dglushenok@yandex.ru>
+Author: Дмитрий Глушенок <dglushenok@ya <dglushenok@yandex.ru>
 Date:   Thu Dec 1 15:15:18 2016 +0300
 
     Changed SMF dependency to multi-user
