@@ -5,7 +5,7 @@ After=zfs-import-cache.service
 After=zfs-import-scan.service
 
 [Service]
-ExecStart=@exec_prefix@/bin/znapzend
+ExecStart=@BINDIR@/znapzend
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 # might be neccessary on low power systems
