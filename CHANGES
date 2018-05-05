@@ -1,4 +1,66 @@
-commit 539ba757b32282a824d1ad0b6bc529144cc00adb
+commit af533d252c65893c73ec11f8e8d93b7d28b491df
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:38:34 2018 +0200
+
+    znapzendzetup.pod : HUP can be sent via SMF refresh or systemctl/upstart reload keywords
+
+commit 578d0d8c9047d8ab109e59f3565c2020cb34cfee
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:33:10 2018 +0200
+
+    znapzendzetup.pod : typo fix
+
+commit 70cddb5de524570cf0e29b767f58e50047eefad9
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:59 2018 +0200
+
+    znapzendzetup.pod : clarify in help text that SRC and DST are verbatim :)
+
+commit 7d3094df965cc4f71336aaa86b13e35a7f4d9c1f
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:25 2018 +0200
+
+    README.md : add a bit of troubleshooting pointers
+
+commit e8901bbff5a308c7667c5d266e06cf829c89b3c5
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:05 2018 +0200
+
+    README.md : link to init/README.md
+
+commit 1e1814af915c7c23ae6e136059122cd21317db89
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:31:20 2018 +0200
+
+    README.md znapzendzetup.pod : note about 64-bit mbuffer
+
+commit 960469801d8db8579a760ec05b87e1d2610febca
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:30:11 2018 +0200
+
+    README.md : warn about current lack of support for pruning of recursive configurations
+
+commit ba1531645ed0ecf46c6bb4d547505ba3f23a2ac7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:04:56 2018 +0200
+
+    configure.ac
+
+commit eb418c3670c37daf053be72f3a131b6c72446cdd
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Fri May 4 22:18:46 2018 +0200
+
+    Problem : @exec_prefix@ expands to ${prefix} literally
+
+commit b5f44745a66bc10d5af49e129287bd33b2c36bbd
+Author: Nick Hall <nahall@users.noreply.github.com>
+Date:   Tue May 1 15:49:27 2018 -0500
+
+    Increase mbuffer watchdog timeout to 600 seconds
+    
+    mbuffer activates its watchdog under certain circumstances which causes znapzend to abort and get stuck. See https://github.com/oetiker/znapzend/issues/341. This commit increases the timeout to 600 seconds to allow it enough time to complete.
+
+commit 987fdbd51f9e4d81e47d6dbd176bfa36033f2848
 Author: Jim Klimov <jim@jimklimov.com>
 Date:   Mon Apr 30 15:52:53 2018 +0200
 
