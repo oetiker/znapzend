@@ -65,8 +65,24 @@ Debian control files, guide on using them and experimental debian packages can b
 Configuration
 -------------
 
-Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings. For remote backup, znapzend uses ssh.
-Make sure to configure password free login for ssh to the backup target host.
+Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup
+settings. They will be stored directly in dataset properties, and will cover
+both local snapshot schedule and any number of destinations to send snapshots
+to (as well as potentially different retention policies on those destinations).
+You can enable recursive configuration, so the settings would apply to all
+datasets under the one you configured explicitly.
+
+For remote backup, znapzend uses ssh. Make sure to configure password-free
+login (authorized keys) for ssh to the backup target host with an account
+sufficiently privileged to manage its ZFS datasets under a chosen destination
+root.
+
+For local or remote backup, znapzend can use mbuffer to level out the bursty
+nature of ZFS send and ZFS receive features, so it is quite beneficial even
+for local backups into another pool (e.g. on removable media or a NAS volume).
+It is also configured among the options set by znapzendzetup per dataset.
+Note that in order to use larger (multi-gigabyte) buffers you should point
+your configuration to a 64-bit binary of the mbuffer program.
 
 Running
 -------

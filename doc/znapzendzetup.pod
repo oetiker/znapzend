@@ -124,6 +124,8 @@ separator.
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
 Specify the path to your copy of the mbuffer utility.
+If you intend to use large (multi-gigabyte) buffers, be sure to specify
+the path to a 64-bit build of the utility.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
