@@ -82,7 +82,11 @@ nature of ZFS send and ZFS receive features, so it is quite beneficial even
 for local backups into another pool (e.g. on removable media or a NAS volume).
 It is also configured among the options set by znapzendzetup per dataset.
 Note that in order to use larger (multi-gigabyte) buffers you should point
-your configuration to a 64-bit binary of the mbuffer program.
+your configuration to a 64-bit binary of the mbuffer program. Sizing the
+buffer is a practical art, depending on the size and amount of your datasets
+and the I/O speeds of the storage and networking involved. As a rule of thumb,
+let it absorb at least a minute of I/O, so while one side of the ZFS dialog
+is deeply thinking, another can do its work.
 
 Running
 -------
