@@ -45,6 +45,10 @@ where 'command' is one of the following:
 
     man
 
+Note that in commands above, "SRC" and "DST" are verbatim key words, and
+the dst key is a number of destination configuration (e.g. --dst=0) which
+you can see in zfs dataset properties or using the B<list> function.
+
 =head1 DESCRIPTION
 
 Use znapzendsetup to configure your backup tasks. The cli is modled after
