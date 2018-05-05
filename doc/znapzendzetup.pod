@@ -55,7 +55,9 @@ Use znapzendsetup to configure your backup tasks. The cli is modled after
 the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
-for it to re-read the configuration.
+for it to re-read the configuration. If you use a service framework integration
+for znapzend, you can use the appropriate "refresh" or "reload" command for
+managing the service instance, or even "restart" it.
 
 Below a few notes on main commands.
 
