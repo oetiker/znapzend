@@ -92,7 +92,7 @@ znapzend --daemonize
 ```
 
 Best practice is to integrate znapzend into your system startup sequence, but you can also
-run it by hand. See the init/README.md for some inspiration.
+run it by hand. See the [init/README.md](init/README.md) for some inspiration.
 
 Statistics
 ----------
