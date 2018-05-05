@@ -198,7 +198,7 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back
