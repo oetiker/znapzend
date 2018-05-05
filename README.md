@@ -94,6 +94,15 @@ znapzend --daemonize
 Best practice is to integrate znapzend into your system startup sequence, but you can also
 run it by hand. See the [init/README.md](init/README.md) for some inspiration.
 
+Troubleshooting
+---------------
+
+By default a znapzend daemon would log its progress and any problems to
+local syslog as a daemon facility, so if the service misbehaves - that is
+the first place to look. Alternately, you can set up the service manifest
+to start the daemon with other logging configuration (e.g. to a file or
+to stderr) and perhaps with debug level enabled.
+
 Statistics
 ----------
 
