@@ -65,8 +65,28 @@ Debian control files, guide on using them and experimental debian packages can b
 Configuration
 -------------
 
-Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup settings. For remote backup, znapzend uses ssh.
-Make sure to configure password free login for ssh to the backup target host.
+Use the [znapzendzetup](doc/znapzendzetup.pod) program to define your backup
+settings. They will be stored directly in dataset properties, and will cover
+both local snapshot schedule and any number of destinations to send snapshots
+to (as well as potentially different retention policies on those destinations).
+You can enable recursive configuration, so the settings would apply to all
+datasets under the one you configured explicitly.
+
+For remote backup, znapzend uses ssh. Make sure to configure password-free
+login (authorized keys) for ssh to the backup target host with an account
+sufficiently privileged to manage its ZFS datasets under a chosen destination
+root.
+
+For local or remote backup, znapzend can use mbuffer to level out the bursty
+nature of ZFS send and ZFS receive features, so it is quite beneficial even
+for local backups into another pool (e.g. on removable media or a NAS volume).
+It is also configured among the options set by znapzendzetup per dataset.
+Note that in order to use larger (multi-gigabyte) buffers you should point
+your configuration to a 64-bit binary of the mbuffer program. Sizing the
+buffer is a practical art, depending on the size and amount of your datasets
+and the I/O speeds of the storage and networking involved. As a rule of thumb,
+let it absorb at least a minute of I/O, so while one side of the ZFS dialog
+is deeply thinking, another can do its work.
 
 Running
 -------
@@ -92,7 +112,16 @@ znapzend --daemonize
 ```
 
 Best practice is to integrate znapzend into your system startup sequence, but you can also
-run it by hand. See the init/README.md for some inspiration.
+run it by hand. See the [init/README.md](init/README.md) for some inspiration.
+
+Troubleshooting
+---------------
+
+By default a znapzend daemon would log its progress and any problems to
+local syslog as a daemon facility, so if the service misbehaves - that is
+the first place to look. Alternately, you can set up the service manifest
+to start the daemon with other logging configuration (e.g. to a file or
+to stderr) and perhaps with debug level enabled.
 
 Statistics
 ----------
