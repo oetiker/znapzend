@@ -588,6 +588,13 @@ PACKAGE_URL=''
 ac_default_prefix=/opt/$PACKAGE_NAME-$PACKAGE_VERSION
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+LIBDIR
+SBINDIR
+BINDIR
+SYSCONFDIR
+DATADIR
+EXEC_PREFIX
+PREFIX
 PERL5LIB
 enable_pkgonly
 GMAKE
@@ -2993,6 +3000,83 @@ $as_echo_n "checking the price for bergulian eckels... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: way to expensive!" >&5
 $as_echo "way to expensive!" >&6; }
 
+
+
+
+conftemp="${prefix}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+PREFIX=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define PREFIX "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${exec_prefix}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+EXEC_PREFIX=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define EXEC_PREFIX "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${datadir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+DATADIR=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define DATADIR "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${sysconfdir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+SYSCONFDIR=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define SYSCONFDIR "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${bindir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+BINDIR=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define BINDIR "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${sbindir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+SBINDIR=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define SBINDIR "${conftemp}"
+_ACEOF
+
+
+
+conftemp="${libdir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+LIBDIR=${conftemp}
+
+cat >>confdefs.h <<_ACEOF
+#define LIBDIR "${conftemp}"
+_ACEOF
 
 
 

@@ -128,6 +128,64 @@ AC_MSG_RESULT(way to expensive!)
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
 
+dnl Autotools default expansion of path settings results in further $variables
+dnl so for practical use in static configs this yarn has to be fully unrolled:
+dnl expand ${prefix} and write it out
+conftemp="${prefix}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+PREFIX=${conftemp}
+AC_DEFINE_UNQUOTED(PREFIX, "${conftemp}", [Default base path for architecture-independent product files])
+AC_SUBST(PREFIX)
+
+dnl same for exec_prefix
+conftemp="${exec_prefix}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+EXEC_PREFIX=${conftemp}
+AC_DEFINE_UNQUOTED(EXEC_PREFIX, "${conftemp}", [Default base path for architecture-dependent product files])
+AC_SUBST(EXEC_PREFIX)
+
+dnl same for datadir
+conftemp="${datadir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+DATADIR=${conftemp}
+AC_DEFINE_UNQUOTED(DATADIR, "${conftemp}", [Default path for data files])
+AC_SUBST(DATADIR)
+
+dnl same for sysconfdir
+conftemp="${sysconfdir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+SYSCONFDIR=${conftemp}
+AC_DEFINE_UNQUOTED(SYSCONFDIR, "${conftemp}", [Default path for configuration files])
+AC_SUBST(SYSCONFDIR)
+
+dnl same for bindir
+conftemp="${bindir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+BINDIR=${conftemp}
+AC_DEFINE_UNQUOTED(BINDIR, "${conftemp}", [Default path for user executables])
+AC_SUBST(BINDIR)
+
+dnl same for sbindir
+conftemp="${sbindir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+SBINDIR=${conftemp}
+AC_DEFINE_UNQUOTED(SBINDIR, "${conftemp}", [Default path for system executables])
+AC_SUBST(SBINDIR)
+
+dnl same for libdir
+conftemp="${libdir}"
+eval conftemp=\"${conftemp}\"
+eval conftemp=\"${conftemp}\"
+LIBDIR=${conftemp}
+AC_DEFINE_UNQUOTED(LIBDIR, "${conftemp}", [Default path for system libraries])
+AC_SUBST(LIBDIR)
+
 AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile

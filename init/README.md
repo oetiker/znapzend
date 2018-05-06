@@ -10,8 +10,8 @@ Since the service manifests contain the absolute path to the
 prebuilt version.  But you can get a copy from github and roll
 your own by building the project properly or by just manually
 replacing the tags in the corresponding ```.in``` template file
-to match your existing system layout (replace ```@exec_prefix@```
-usually with ```/usr/local``` to match other setup documentation).
+to match your existing system layout (replace ```@BINDIR@``` usually
+with ```/usr/local/bin``` to match other setup documentation).
 
 ## Solaris/Illumos
 
