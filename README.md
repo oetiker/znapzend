@@ -131,6 +131,12 @@ the first place to look. Alternately, you can set up the service manifest
 to start the daemon with other logging configuration (e.g. to a file or
 to stderr) and perhaps with debug level enabled.
 
+In case you tinkered with ZFS attributes that store ZnapZend retention
+policies, or potentially if you have a severe version mismatch of ZnapZend
+(e.g. update from a PoC or very old version), ```znapzendzetup list``` is
+quite useful to non-intrusively discover whatever your current version can
+consider to be discrepancies in your active configuration.
+
 Statistics
 ----------
 
