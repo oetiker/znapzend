@@ -12,6 +12,17 @@ snapshots as well as remote copies by thinning them out as time progresses.
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
 
+Note that while recursive configurations are well supported to set up
+backup and retention policies for a whole dataset subtree under the dataset
+to which you have applied explicit configuration, at this time pruning of
+such trees ("I want every dataset under var except var/tmp") is not supported.
+You probably do not want to enable ZnapZend against the root datasets of your
+pools due to that, but would have to be more fine-grained in your setup.
+This is consistent with (and due to) usage of recursive ZFS snapshots, where
+the command is targeted at one dataset and impacts it and all its children,
+allowing to get a consistent point-in-time set of snapshots across multiple
+datasets.
+
 Zetup Inztructionz
 ------------------
 
@@ -122,6 +133,12 @@ local syslog as a daemon facility, so if the service misbehaves - that is
 the first place to look. Alternately, you can set up the service manifest
 to start the daemon with other logging configuration (e.g. to a file or
 to stderr) and perhaps with debug level enabled.
+
+In case you tinkered with ZFS attributes that store ZnapZend retention
+policies, or potentially if you have a severe version mismatch of ZnapZend
+(e.g. update from a PoC or very old version), ```znapzendzetup list``` is
+quite useful to non-intrusively discover whatever your current version can
+consider to be discrepancies in your active configuration.
 
 Statistics
 ----------

@@ -100,6 +100,13 @@ a different pool) or remote.
 When adding multiple B<DST> entries, each will get labled for later
 identification, optionally you can specify your own label.
 
+Note that while you can specify recursive confgurations, at this time it
+is an all-or-nothing proposition: all datasets under the one you have
+explicitly configured will be recursively handled according to its schedule.
+Currently there is no support for pruning the tree ("I do not want to track
+that sub-sub-dataset") nor for overriding configuration of a parent dataset
+at a deeper leveled child dataset.
+
 =over
 
 =item B<--tsformat>=I<limited-strftime-format>
