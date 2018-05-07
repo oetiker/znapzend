@@ -18,7 +18,10 @@ to which you have applied explicit configuration, at this time pruning of
 such trees ("I want every dataset under var except var/tmp") is not supported.
 You probably do not want to enable ZnapZend against the root datasets of your
 pools due to that, but would have to be more fine-grained in your setup.
-
+This is consistent with (and due to) usage of recursive ZFS snapshots, where
+the command is targeted at one dataset and impacts it and all its children,
+allowing to get a consistent point-in-time set of snapshots across multiple
+datasets.
 
 Zetup Inztructionz
 ------------------
