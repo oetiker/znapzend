@@ -8,7 +8,7 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create  [--pfexec|sudo] \
+    create  [--rootExec={pfexec|sudo}] \
             [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
@@ -17,9 +17,9 @@ where 'command' is one of the following:
             SRC plan dataset \
             [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
 
-    delete  [--pfexec|sudo] [--dst=key] <src_dataset>
+    delete  [--rootExec={pfexec|sudo}] [--dst=key] <src_dataset>
 
-    edit    [--pfexec|sudo]
+    edit    [--rootExec={pfexec|sudo}]
             [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
@@ -28,22 +28,26 @@ where 'command' is one of the following:
             SRC [plan] dataset \
             [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
 
-    edit    [--pfexec|sudo] <src_dataset>
+    edit    [--rootExec={pfexec|sudo}] <src_dataset>
 
-    enable  [--pfexec|sudo] <src_dataset>
+    enable  [--rootExec={pfexec|sudo}] <src_dataset>
 
-    disable [--pfexec|sudo] <src_dataset>
+    disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--pfexec|sudo] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [src_dataset]
 
-    export  [--pfexec|sudo] <src_dataset>
+    export  [--rootExec={pfexec|sudo}] <src_dataset>
 
-    import  [--pfexec|sudo] [--write] [--prop <property>=<value>, [--prop ...] ...]
+    import  [--rootExec={pfexec|sudo}] [--write] [--prop <property>=<value>, [--prop ...] ...]
             <src_dataset> [<prop_dump_file>]
 
     help
 
     man
+
+Note that in commands above, "SRC" and "DST" are verbatim key words, and
+the dst key is a number of destination configuration (e.g. --dst=0) which
+you can see in zfs dataset properties or using the B<list> function.
 
 =head1 DESCRIPTION
 
@@ -51,7 +55,9 @@ Use znapzendsetup to configure your backup tasks. The cli is modled after
 the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
-for it to re-read the configuration.
+for it to re-read the configuration. If you use a service framework integration
+for znapzend, you can use the appropriate "refresh" or "reload" command for
+managing the service instance, or even "restart" it.
 
 Below a few notes on main commands.
 
@@ -94,6 +100,13 @@ a different pool) or remote.
 When adding multiple B<DST> entries, each will get labled for later
 identification, optionally you can specify your own label.
 
+Note that while you can specify recursive confgurations, at this time it
+is an all-or-nothing proposition: all datasets under the one you have
+explicitly configured will be recursively handled according to its schedule.
+Currently there is no support for pruning the tree ("I do not want to track
+that sub-sub-dataset") nor for overriding configuration of a parent dataset
+at a deeper leveled child dataset.
+
 =over
 
 =item B<--tsformat>=I<limited-strftime-format>
@@ -103,11 +116,11 @@ constructed.
 
 The syntax is L<strftime>-like. The string must consist of the mandatory
 
- %Y %m %d %H %M %S
+ %Y %m %d %H %M %S %z
 
 Optionally,
 
- - _ . :
+- _ . :
 
 characters as well as any alphanumeric character are allowed.
 
@@ -124,6 +137,8 @@ separator.
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
 Specify the path to your copy of the mbuffer utility.
+If you intend to use large (multi-gigabyte) buffers, be sure to specify
+the path to a 64-bit build of the utility.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
@@ -165,6 +180,8 @@ lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
 
+The pre and post snapshot commands can find the name and time of the snapshot in the environment variables ZNAP_NAME and ZNAP_TIME
+
 =item B<--send-delay>
 
 Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
@@ -190,7 +207,7 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back

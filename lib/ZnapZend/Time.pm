@@ -226,7 +226,7 @@ sub checkTimeFormat {
     my $self = shift;
     my $timeFormat = shift;
 
-    $timeFormat =~ /^(?:%[YmdHMS]|[\w\-.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
+    $timeFormat =~ /^(?:%[YmdHMSz]|[\w\-.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
 
     #just a made-up timestamp to check if strftime and strptime work
     my $timeToCheck = 1014416542;
@@ -246,6 +246,7 @@ sub getSnapshotFilter {
 
     $timeFormat =~ s/%[mdHMS]/\\d{2}/g;
     $timeFormat =~ s/%Y/\\d{4}/g;
+    $timeFormat =~ s/%z/[-+]\\d{4}/g;
 
     # escape dot ('.') character
     $timeFormat =~ s/\./\\./g;

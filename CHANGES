@@ -1,3 +1,261 @@
+commit af533d252c65893c73ec11f8e8d93b7d28b491df
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:38:34 2018 +0200
+
+    znapzendzetup.pod : HUP can be sent via SMF refresh or systemctl/upstart reload keywords
+
+commit 578d0d8c9047d8ab109e59f3565c2020cb34cfee
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:33:10 2018 +0200
+
+    znapzendzetup.pod : typo fix
+
+commit 70cddb5de524570cf0e29b767f58e50047eefad9
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:59 2018 +0200
+
+    znapzendzetup.pod : clarify in help text that SRC and DST are verbatim :)
+
+commit 7d3094df965cc4f71336aaa86b13e35a7f4d9c1f
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:25 2018 +0200
+
+    README.md : add a bit of troubleshooting pointers
+
+commit e8901bbff5a308c7667c5d266e06cf829c89b3c5
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:05 2018 +0200
+
+    README.md : link to init/README.md
+
+commit 1e1814af915c7c23ae6e136059122cd21317db89
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:31:20 2018 +0200
+
+    README.md znapzendzetup.pod : note about 64-bit mbuffer
+
+commit 960469801d8db8579a760ec05b87e1d2610febca
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:30:11 2018 +0200
+
+    README.md : warn about current lack of support for pruning of recursive configurations
+
+commit ba1531645ed0ecf46c6bb4d547505ba3f23a2ac7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:04:56 2018 +0200
+
+    configure.ac
+
+commit eb418c3670c37daf053be72f3a131b6c72446cdd
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Fri May 4 22:18:46 2018 +0200
+
+    Problem : @exec_prefix@ expands to ${prefix} literally
+
+commit b5f44745a66bc10d5af49e129287bd33b2c36bbd
+Author: Nick Hall <nahall@users.noreply.github.com>
+Date:   Tue May 1 15:49:27 2018 -0500
+
+    Increase mbuffer watchdog timeout to 600 seconds
+    
+    mbuffer activates its watchdog under certain circumstances which causes znapzend to abort and get stuck. See https://github.com/oetiker/znapzend/issues/341. This commit increases the timeout to 600 seconds to allow it enough time to complete.
+
+commit 987fdbd51f9e4d81e47d6dbd176bfa36033f2848
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:52:53 2018 +0200
+
+    Regenerated autotools skeleton with bootstrap
+
+commit 515de0d3d0f493ace813d65d54f418c6bcd80430
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:39:47 2018 +0200
+
+    init/README.md : document the updated approach to all-generated manifests
+
+commit 8d92903837301b912297f7b3a9a44d76e03fc53a
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:24:08 2018 +0200
+
+    Make upstart and systemd manifests generatable (also have embedded paths); GitIgnore generated init/znapzend.* files
+
+commit d4e00dff42892de71594283e5fc9e1d837d65caf
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Apr 30 15:13:08 2018 +0200
+
+    Make SMF service name configurable
+
+commit b84294ce9761852be235adc254f21e399c3f0614
+Author: Phil! Gold <phil_g@pobox.com>
+Date:   Thu Apr 26 14:25:37 2018 -0400
+
+    The cpanminus installation URL has changed.
+
+commit da88db2cbb6f666a9d60b8d0f277a374704d3c85
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Apr 13 15:59:42 2018 +0200
+
+    test on newer perls
+
+commit 5c78e63c4fe47b1eabedbaeacc3cb112947136f1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Apr 13 15:52:41 2018 +0200
+
+    updated to latest dependent modules
+
+commit 2f32dc5aaaa18092894d3a011293fd23787e9eac
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sun Apr 8 16:52:56 2018 +0200
+
+    fix indent
+
+commit 006e9ec3b603f79e691383cdb3b19287042b66dc
+Author: paradox <ben@healthian.org>
+Date:   Tue Feb 20 16:55:56 2018 -0700
+
+    do not destroy snapshots on SRC if any DST is down or any pre-send-command failed
+
+commit 83e9c24887225f841027583041f82c5b2a8308c8
+Author: Adam James <atj@pulsewidth.org.uk>
+Date:   Mon Feb 5 18:34:57 2018 +0000
+
+    Add support for %z specifier in tsformat option
+
+commit 75f6f32765af7c39af8165a7ffa9388cc78f4560
+Author: Grant Wu <grantwwu@gmail.com>
+Date:   Mon Feb 19 04:20:09 2018 -0500
+
+    Some light edits
+
+commit 1095ea8213b340a36b6a1f6abf8dbd7667c381cc
+Author: Grant Wu <grantwwu@gmail.com>
+Date:   Mon Feb 19 03:31:33 2018 -0500
+
+    Fix typo
+
+commit 8c9d33a2992f570afb69c170a6fe9e72ab37686a
+Author: albundy83 <greggbg@gmail.com>
+Date:   Wed Feb 7 22:17:24 2018 +0100
+
+    Added zfsonlinux support
+    
+    Choose or official zfs ubuntu packages or zfsonlinux.
+    Add also `--default` to not have to answer yes to checkinstall command
+
+commit a5f8132348e255eca9021a002e0fadfb55c93f91
+Author: Adam James <atj@pulsewidth.org.uk>
+Date:   Mon Feb 5 19:06:02 2018 +0000
+
+    Add --version command line option
+
+commit 65c1ae30e8f83b9bd8f4551bcf82c41f1518dd69
+Author: Adam James <atj@pulsewidth.org.uk>
+Date:   Tue Feb 6 14:14:03 2018 +0000
+
+    Allow skipping of snap create/send on pre-command failure
+    
+    This commit implements two new boolean command line options:
+    
+    * --skipOnPreSnapCmdFail
+    * --skipOnPreSendCmdFail
+    
+    These options cause znapzend to skip snapshot creation or replication if
+    the respective pre-command returns a non-zero exit code or is killed by
+    a signal.
+
+commit a15ab81197bb018cf1e7f8e894ecf74c808d8b30
+Author: Dylan Powers <dylan.kyle.powers@gmail.com>
+Date:   Mon Oct 16 16:15:23 2017 -0700
+
+    Missed properly validating if runonce option was passed
+
+commit 04e2131d40dec644465c6e23fd02cc105c2a754c
+Author: Dylan Powers <dylan.kyle.powers@gmail.com>
+Date:   Mon Oct 9 16:42:55 2017 -0700
+
+    Allow runonce to run across all datasets
+    
+    The motivation behind this was to run znapzend as a cron job.
+
+commit 357bc3e0a9b28cb8f81008f56e81319167c80f87
+Author: Dylan Powers <dylan.kyle.powers@gmail.com>
+Date:   Wed Oct 4 02:30:43 2017 -0700
+
+    --sudo/pfexec znapzend options for consistency (#292)
+    
+    * --sudo/pfexec znapzend options for consistency
+    
+    I noticed that there is a bit of an inconsistency between the options to znapzend and its utilities which made me briefly confused why znapzend doesn't accept sudo as an option. I then found https://github.com/oetiker/znapzend/issues/166 and realized others have been confused. I've moved these out from the "features" option to their own standalone options. It's still possible to use the old features flag, for backwards compatibility, but there will now be a warning issued to make the switch.
+    
+    * Introduction --rootExec
+
+commit 21d63948943a07edc8b379379384bc24fe4ce0c7
+Author: Steve Hess <shess@illinois.edu>
+Date:   Thu Jul 20 01:11:04 2017 -0500
+
+    Added compression feature to add -Lce options to zfs send. (#280)
+    
+    * Added compression feature to add -Lce options to zfs send.
+    
+    * Added brief description of -L and -e options. Changed the option name to compressed match zfs send option. Also some minor text changes to match zfs documentation.
+    
+    * Added conditional for send options. (bugfix)
+    
+    * Changed sendOpt to array to fix case where there are no send options.
+    
+    * Changed sendOpt to array to fix case where there are no send options.
+
+commit eef167b3c077edc9eba0e8bffe395fc5e3778a62
+Author: Jason Lewis <jason@dickson.st>
+Date:   Mon Jul 3 18:45:12 2017 +1000
+
+    add unzip as a requirement to build (#279)
+    
+    fails to build if you don't have unzip installed
+
+commit 172d4759fe43101ae71f260565c69597d006c98a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Sat Jun 3 16:05:49 2017 +0200
+
+    teach znapzend about going into the future with the new timeWarp option (#272)
+    
+    * teach znapzend about going into the future with the new timeWarp option
+    
+    * add timewarp to znapzendztatz
+
+commit 8102a00239bb9c22b0bcaf91efe24f7f37cf81d8
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jun 2 18:16:36 2017 +0200
+
+    document ZNAP_* environement variables (#277)
+
+commit 830eb9df80a3c372b8a6faa54015532c19045350
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Mar 17 09:10:10 2017 +0100
+
+    allow crfl input (fix for #267) (#268)
+
+commit ff9efe9003da54b3911071489d41f93bd8aa6735
+Author: morph027 <morphsen@gmx.com>
+Date:   Fri Mar 17 08:54:23 2017 +0100
+
+    started basic bash completion (#242)
+    
+    * started basic bash completion
+    
+    * extend bash completion for list
+
+commit 1c72924f8c960ca37958a20cf93260cd92a071d0
+Author: Dominik Hassler <hadfl@cpan.org>
+Date:   Fri Feb 10 17:01:33 2017 +0100
+
+    - escape '.' for snapshot filter
+
+commit f740ff033f0f5e51198f9e997469ca1b388ea263
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Feb 8 08:38:40 2017 +0100
+
+    release 0.17.0
+
 commit 8188a79cbaec2dea4dfb0d52e6bea755e8e9a520
 Author: Ron van den Dungen <ron@dse.nl>
 Date:   Tue Jan 17 08:35:20 2017 +0100
@@ -67,7 +325,7 @@ Date:   Mon Dec 19 15:55:34 2016 +0000
     Fix trivial typos
 
 commit 3d41cdd8871053ce183209ee7f8f0fbd1e3e4db7
-Author: Дмитрий Глушенок <dglushenok@yandex.ru>
+Author: Дмитрий Глушенок <dglushenok@ya <dglushenok@yandex.ru>
 Date:   Thu Dec 1 15:15:18 2016 +0300
 
     Changed SMF dependency to multi-user

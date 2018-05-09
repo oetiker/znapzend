@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2017-02-08" "0.17.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2018-04-13" "0.18.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -147,7 +147,7 @@ znapzendzetup \- znapzend setup utility
 where 'command' is one of the following:
 .PP
 .Vb 8
-\&    create  [\-\-pfexec|sudo] \e
+\&    create  [\-\-rootExec={pfexec|sudo}] \e
 \&            [\-\-recursive] [\-\-mbuffer=<path>[:<port>]] [\-\-mbuffersize=<size>] \e
 \&            [\-\-pre\-snap\-command=<command>] \e
 \&            [\-\-post\-snap\-command=<command>] \e
@@ -156,9 +156,9 @@ where 'command' is one of the following:
 \&            SRC plan dataset \e
 \&            [ DST[:key] plan [[user@]host:]dataset [pre\-send\-command] [post\-send\-command] ]
 \&
-\&    delete  [\-\-pfexec|sudo] [\-\-dst=key] <src_dataset>
+\&    delete  [\-\-rootExec={pfexec|sudo}] [\-\-dst=key] <src_dataset>
 \&
-\&    edit    [\-\-pfexec|sudo]
+\&    edit    [\-\-rootExec={pfexec|sudo}]
 \&            [\-\-recursive=on|off] [\-\-mbuffer=<path>[:<port>]|off] [\-\-mbuffersize=<size>] \e
 \&            [\-\-pre\-snap\-command=<command>|off] \e
 \&            [\-\-post\-snap\-command=<command>|off] \e
@@ -167,17 +167,17 @@ where 'command' is one of the following:
 \&            SRC [plan] dataset \e
 \&            [ DST:key [plan] [dataset] [pre\-send\-command|off] [post\-send\-command|off] ]
 \&
-\&    edit    [\-\-pfexec|sudo] <src_dataset>
+\&    edit    [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
-\&    enable  [\-\-pfexec|sudo] <src_dataset>
+\&    enable  [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
-\&    disable [\-\-pfexec|sudo] <src_dataset>
+\&    disable [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
-\&    list    [\-\-pfexec|sudo] [src_dataset]
+\&    list    [\-\-rootExec={pfexec|sudo}] [src_dataset]
 \&
-\&    export  [\-\-pfexec|sudo] <src_dataset>
+\&    export  [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
-\&    import  [\-\-pfexec|sudo] [\-\-write] [\-\-prop <property>=<value>, [\-\-prop ...] ...]
+\&    import  [\-\-rootExec={pfexec|sudo}] [\-\-write] [\-\-prop <property>=<value>, [\-\-prop ...] ...]
 \&            <src_dataset> [<prop_dump_file>]
 \&
 \&    help
@@ -247,14 +247,12 @@ constructed.
 The syntax is strftime\-like. The string must consist of the mandatory
 .Sp
 .Vb 1
-\& %Y %m %d %H %M %S
+\& %Y %m %d %H %M %S %z
 .Ve
 .Sp
 Optionally,
 .Sp
-.Vb 1
-\& \- _ . :
-.Ve
+\&\- _ . :
 .Sp
 characters as well as any alphanumeric character are allowed.
 .Sp
@@ -314,6 +312,8 @@ to make sure that the on-disk data is consistant when snapshotting. Since the
 lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
+.Sp
+The pre and post snapshot commands can find the name and time of the snapshot in the environment variables \s-1ZNAP_NAME\s0 and \s-1ZNAP_TIME\s0
 .IP "\fB\-\-send\-delay\fR" 4
 .IX Item "--send-delay"
 Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.

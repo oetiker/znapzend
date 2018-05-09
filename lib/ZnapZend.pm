@@ -22,25 +22,27 @@ my %logLevels = (
 );
 
 ### attributes ###
-has debug           => sub { 0 };
-has noaction        => sub { 0 };
-has nodestroy       => sub { 0 };
-has oracleMode      => sub { 0 };
-has recvu           => sub { 0 };
-has compressed      => sub { 0 };
-has rootExec        => sub { q{} };
-has connectTimeout  => sub { 30 };
-has runonce         => sub { 0 };
-has dataset         => sub { q{} };
-has daemonize       => sub { 0 };
-has loglevel        => sub { q{debug} };
-has logto           => sub { q{} };
-has pidfile         => sub { q{} };
-has defaultPidFile  => sub { q{/var/run/znapzend.pid} };
-has terminate       => sub { 0 };
-has autoCreation    => sub { 0 };
-has timeWarp        => sub { undef };
-has backupSets      => sub { [] };
+has debug                   => sub { 0 };
+has noaction                => sub { 0 };
+has nodestroy               => sub { 0 };
+has oracleMode              => sub { 0 };
+has recvu                   => sub { 0 };
+has compressed              => sub { 0 };
+has rootExec                => sub { q{} };
+has connectTimeout          => sub { 30 };
+has runonce                 => sub { 0 };
+has dataset                 => sub { q{} };
+has daemonize               => sub { 0 };
+has loglevel                => sub { q{debug} };
+has logto                   => sub { q{} };
+has pidfile                 => sub { q{} };
+has defaultPidFile          => sub { q{/var/run/znapzend.pid} };
+has terminate               => sub { 0 };
+has autoCreation            => sub { 0 };
+has timeWarp                => sub { undef };
+has skipOnPreSnapCmdFail    => sub { 0 };
+has skipOnPreSendCmdFail    => sub { 0 };
+has backupSets              => sub { [] };
 
 has zConfig => sub {
     my $self = shift;
@@ -239,9 +241,17 @@ my $sendRecvCleanup = sub {
             local $ENV{WORKER} = $backupSet->{"dst_$key"};
             $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
 
-            system($backupSet->{"dst_$key" . '_precmd'})
-                && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+            my $ev  = system($backupSet->{"dst_$key" . '_precmd'});
             delete $ENV{WORKER};
+
+            if ($ev){
+                $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+                if ($self->skipOnPreSendCmdFail){
+                    $self->zLog->warn("skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure");
+                    $sendFailed = 1;
+                    next;
+                }
+            }
         }
 
         #recheck non valid dst as it might be online, now 
@@ -261,9 +271,11 @@ my $sendRecvCleanup = sub {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                     };
                 }
-                $backupSet->{"dst_$key" . '_valid'} or
+                $backupSet->{"dst_$key" . '_valid'} or do {
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
+                    $sendFailed = 1;
+                };
                 next;
             };
         }
@@ -291,7 +303,11 @@ my $sendRecvCleanup = sub {
                     }
                 }
             }
-        } 
+        }
+
+        # do not destroy data sets on the destination, or run post-send-command, unless all operations have been successful
+        next if ($sendFailed);
+
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
@@ -379,25 +395,36 @@ my $createSnapshot = sub {
     #set env variables for pre and post scripts use
     local $ENV{ZNAP_NAME} = $snapshotName;
     local $ENV{ZNAP_TIME} = $timeStamp;
+
+    my $skip = 0;
  
     if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
         $self->zLog->info("running pre snapshot command on $backupSet->{src}");
 
-        system($backupSet->{pre_znap_cmd})
-            && $self->zLog->warn("running pre snapshot command on $backupSet->{src} failed");
+        if (system($backupSet->{pre_znap_cmd})){
+            $self->zLog->warn("running pre snapshot command on $backupSet->{src} failed");
+
+            if ($self->skipOnPreSnapCmdFail){
+                $self->zLog->warn("skipping snapshot on $backupSet->{src}" .
+                    " due to pre snapshot command failure");
+                $skip = 1;
+            }
+        }
     }
 
-    $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
-        . 'snapshot on ' . $backupSet->{src});
+    if (!$skip){
+        $self->zLog->info('creating ' . ($backupSet->{recursive} eq 'on' ? 'recursive ' : '')
+            . 'snapshot on ' . $backupSet->{src});
 
-    $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
-        or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
+        $self->zZfs->createSnapshot($snapshotName, $backupSet->{recursive} eq 'on')
+            or $self->zLog->info("snapshot '$snapshotName' does already exist. skipping one round...");
 
-    if ($backupSet->{post_znap_cmd} && $backupSet->{post_znap_cmd} ne 'off'){
-        $self->zLog->info("running post snapshot command on $backupSet->{src}");
+        if ($backupSet->{post_znap_cmd} && $backupSet->{post_znap_cmd} ne 'off'){
+            $self->zLog->info("running post snapshot command on $backupSet->{src}");
 
-        system($backupSet->{post_znap_cmd})
-            && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
+            system($backupSet->{post_znap_cmd})
+                && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
+        }
     }
 
     #clean up env variables

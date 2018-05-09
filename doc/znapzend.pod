@@ -6,19 +6,24 @@ znapzend - znapzend daemon
 
 B<znapzend> [I<options>...]
 
- --man              show man-page and exit
- -h,--help          display this help and exit
- -d,--debug         print debug messages to STDERR
- -n,--noaction      run in simulation mode. does no changes to the filesystem
- --nodestroy        does all changes to the filesystem except destroy
- --logto=x          select where to log to (syslog::<facility> or <filepath>)
- --loglevel=x       define the log level when logging to file
- --pidfile=x        write a pid file when running in daemon mode
- --daemonize        fork into the background
- --runonce=x        run one round on source dataset x
- --features=x       comma separated list of features to be enabled
- --connectTimeout=x sets the ConnectTimeout for ssh commands
- --autoCreation     automatically create dataset on dest if it not exists
+ --man                  show man-page and exit
+ --version              print version and exit
+ -h,--help              display this help and exit
+ -d,--debug             print debug messages to STDERR
+ -n,--noaction          run in simulation mode. does no changes to the filesystem
+ --nodestroy            does all changes to the filesystem except destroy
+ --logto=x              select where to log to (syslog::<facility> or <filepath>)
+ --loglevel=x           define the log level when logging to file
+ --pidfile=x            write a pid file when running in daemon mode
+ --daemonize            fork into the background
+ --runonce=[x]          run one round on the optionally provided dataset
+ --features=x           comma separated list of features to be enabled
+ --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
+ --connectTimeout=x     sets the ConnectTimeout for ssh commands
+ --autoCreation         automatically create dataset on dest if it not exists
+ --timeWarp=x           shift znapzends sens of NOW into the future by x seconds
+ --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
+ --skipOnPreSendCmdFail skip replication if the pre-send-command fails
 
 =head1 DESCRIPTION
 
@@ -67,11 +72,11 @@ B<pidfile> defaults to I</var/run/znapzend.pid> if no pidfile is given
 
 Fork into the background.
 
-=item B<--runonce>=I<fileset>
+=item B<--runonce>=[I<dataset>]
 
-run one round on source I<fileset>. This is very useful for testing.
-Use it in connection with B<--noaction> and B<--debug> while
-testing your new configuration
+run one round on source I<dataset> or on all datasets if empty.
+This is very useful for testing. Use it in connection with B<--noaction> and
+B<--debug> while testing your new configuration
 
 =item B<--features>=I<feature1>,I<feature2>,...
 
@@ -106,15 +111,28 @@ can destroy. Logging an error about the problem
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
 
-=item pfexec
+=item compressed
 
-use 'pfexec' for zfs commands (e.g. when running znapzend as non-priviledged user)
-
-=item sudo
-
-use 'sudo' for zfs commands (e.g. when running znapzend as non-priviledged user)
+use 'compressed' to add options -Lce to the zfs send command
+If a source and destination volume are both using compression, zfs send will, by
+default, decompress the data before sending. Zfs recv will then compress it again before
+writing it to disk. Using -c will skip the unnecessary decompress-compress stages.
+This decreases CPU load on both source and destination as well as reduce network
+bandwidth. The -L option is for large block support and -e is for embedded data support.
 
 =back
+
+=item B<--rootExec>={sudo|pfexec}
+
+Execute zfs with this command, 'sudo' or 'pfexec', to
+obtain root privileges. This is often necessary when running znapzend as a
+non-privileged user with a zfs install that doesn't support finer permission
+controls. This also applies to the zfs commands ran on remote servers over ssh.
+
+For sudo, the /etc/sudoers file will need to be modified to allow for
+passwordless access to zfs commands if znapzend is to be ran as a daemon or
+the system will be used as a remote. Many ZFS installations include an
+/etc/sudoers.d/zfs file as an example.
 
 =item B<--connectTimeout>=I<timeout>
 
@@ -124,6 +142,25 @@ sets the ssh connection timeout (in seconds)
 
 Automatically create a dataset on a destination host if it's not there yet.
 
+=item B<--timeWarp>=x
+
+Shift ZnapZends sense of time into the future by x seconds.
+
+The practical application if this function is to determine what will happen at some future point in time.
+This can be useful for testing but also when running in noaction and debug mode to determine which
+snapshots would be created and removed at some future point in time.
+
+=item B<--skipOnPreSnapCmdFail>
+
+Prevent snapshots of a dataset from being taken when it has a pre-snap-command
+defined and the command returns a non-zero exit code or is killed by a signal.
+
+=item B<--skipOnPreSendCmdFail>
+
+Prevent snapshots of a dataset from being replicated to a destination when it has
+a pre-snap-command defined and the command returns a non-zero exit code or is killed
+by a signal.
+
 =back
 
 =head1 EXAMPLE
@@ -131,6 +168,10 @@ Automatically create a dataset on a destination host if it's not there yet.
 To test a new config
 
  znapzend --debug --noaction --runonce=tank/test
+
+To see what is going to happen in one hour
+
+ znapzend --debug --noaction --timeWarp=3600 --runonce=tank/test
 
 To run as a daemon
 
