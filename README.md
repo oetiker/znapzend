@@ -5,8 +5,10 @@ ZnapZend 0.18.0
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend)
 
-ZnapZend is a ZFS centric backup tool to create snapshots and send them to backup locations. It relies on the ZFS tools snapshot, send and receive to do its work. It has the built-in ability to manage both local
-snapshots as well as remote copies by thinning them out as time progresses.
+ZnapZend is a ZFS centric backup tool to create snapshots and send them
+to backup locations. It relies on the ZFS tools snapshot, send and receive
+to do its work. It has the built-in ability to manage both local snapshots
+as well as remote copies by thinning them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
 itself.
@@ -71,7 +73,8 @@ for x in /opt/znapzend-0.18.0/bin/*; do ln -s $x /usr/local/bin; done
 Debian packages
 ---------------
 
-Debian control files, guide on using them and experimental debian packages can be found at https://github.com/Gregy/znapzend-debian
+Debian control files, guide on using them and experimental debian packages
+can be found at https://github.com/Gregy/znapzend-debian
 
 
 Configuration
@@ -114,7 +117,8 @@ is deeply thinking, another can do its work.
 Running
 -------
 
-The [znapzend](doc/znapzend.pod) daemon is responsible for doing the actual backups.
+The [znapzend](doc/znapzend.pod) daemon is responsible for doing the actual
+backups.
 
 To see if your configuration is any good, run znapzend in noaction mode first.
 
@@ -122,7 +126,8 @@ To see if your configuration is any good, run znapzend in noaction mode first.
 znapzend --noaction --debug
 ```
 
-If you don't want to wait for the scheduler to actually schedule work, you can also force immediate action by calling
+If you don't want to wait for the scheduler to actually schedule work, you
+can also force immediate action by calling
 
 ```sh
 znapzend --noaction --debug --runonce=<src_dataset>
@@ -134,8 +139,9 @@ then when you are happy with what you got, start it in daemon mode.
 znapzend --daemonize
 ```
 
-Best practice is to integrate znapzend into your system startup sequence, but you can also
-run it by hand. See the [init/README.md](init/README.md) for some inspiration.
+Best practice is to integrate znapzend into your system startup sequence,
+but you can also run it by hand. See the [init/README.md](init/README.md)
+for some inspiration.
 
 Troubleshooting
 ---------------
