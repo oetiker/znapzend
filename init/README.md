@@ -46,6 +46,10 @@ systemctl enable znapzend.service
 systemctl start znapzend.service
 ```
 
+If you want to set parameters for the znapzend daemon separately from the
+unit file, copy ```znapzend.default``` to ```/etc/default/znapzend``` and
+edit it.
+
 ## Upstart
 
 For upstart based systems, you can copy the generated ```znapzend.upstart```
@@ -54,3 +58,7 @@ file to ```/etc/init/znapzend.conf``` and start the daemon.
 ```sh
 service znapzend start
 ```
+
+If you want to set parameters for the znapzend daemon separately from the
+upstart file, copy ```znapzend.default``` to ```/etc/default/znapzend```
+and edit it.
