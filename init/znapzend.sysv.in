@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+#       ZnapZend - ZFS Backup System
+#
+# chkconfig: 2345 20 80
+# config: /etc/default/znapzend
+# probe: true
+
+# Source function library.
+. /etc/init.d/functions
+
+if [ -e /etc/default/znapzend ]; then
+    . /etc/default/znapzend
+fi
+
+start() {
+    echo -n "Starting znapzend: "
+    daemon --check znapzend @BINDIR@/znapzend --daemonize $ZNAPZENDOPTIONS
+    RETVAL=$?
+    if [ $RETVAL -ne 0 ]; then
+        return $RETVAL
+    fi
+    touch /var/lock/subsys/znapzend
+    return 0
+}
+
+stop() {
+    echo -n "Shutting down znapzend: "
+    killproc znapzend
+    RETVAL=$?
+    rm -f /var/lock/subsys/znapzend
+    return $RETVAL
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status znapzend
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    reload)
+        killproc znapzend -HUP
+        ;;
+    condrestart)
+        [ -f /var/lock/subsys/znapzend ] && restart || :
+        ;;
+    *)
+        echo "Usage: znapzend {start|stop|status|reload|restart}"
+        exit 1
+        ;;
+esac
+exit $?
