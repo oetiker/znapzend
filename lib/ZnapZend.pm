@@ -129,7 +129,7 @@ my $refreshBackupPlans = sub {
     $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
 
     @{$self->backupSets}
-        or $self->zLog->warn("No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend");
+        or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend";
 
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
@@ -157,7 +157,7 @@ my $refreshBackupPlans = sub {
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_plan$/ or next;
 
-            #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now 
+            #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now
             if (!$backupSet->{"dst_$key" . '_valid'}){
 
                 $backupSet->{"dst_$key" . '_valid'} =
@@ -175,7 +175,7 @@ my $refreshBackupPlans = sub {
                         };
                     }
                     $backupSet->{"dst_$key" . '_valid'} or
-                        $self->zLog->warn("destination '" . $backupSet->{"dst_$key"} 
+                        $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                             . "' does not exist or is offline. will be rechecked every run...");
                 };
             }
@@ -227,7 +227,7 @@ my $sendRecvCleanup = sub {
     my $sendFailed = 0;
     my $startTime = time;
     $self->zLog->info('starting work on backupSet ' . $backupSet->{src});
-    
+
     #get all sub datasets of source filesystem; need to send them all individually if recursive
     my $srcSubDataSets = $backupSet->{recursive} eq 'on'
         ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
@@ -254,7 +254,7 @@ my $sendRecvCleanup = sub {
             }
         }
 
-        #recheck non valid dst as it might be online, now 
+        #recheck non valid dst as it might be online, now
         if (!$backupSet->{"dst_$key" . '_valid'}) {
 
             $backupSet->{"dst_$key" . '_valid'} =
@@ -397,7 +397,7 @@ my $createSnapshot = sub {
     local $ENV{ZNAP_TIME} = $timeStamp;
 
     my $skip = 0;
- 
+
     if ($backupSet->{pre_znap_cmd} && $backupSet->{pre_znap_cmd} ne 'off'){
         $self->zLog->info("running pre snapshot command on $backupSet->{src}");
 
@@ -468,7 +468,7 @@ my $sendWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-        
+
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
             $backupSet->{send_pid} = $pid;
@@ -505,7 +505,7 @@ my $snapWorker = sub {
         #snapshot worker callback
         sub {
             my ($fc, $err) = @_;
-            
+
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err;
 
@@ -528,7 +528,7 @@ my $snapWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-        
+
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
             $backupSet->{snap_pid} = $pid;
@@ -662,7 +662,7 @@ sub start {
         $self->$refreshBackupPlans($self->dataset);
         $self->$createWorkers;
     };
-    
+
     $self->$refreshBackupPlans($self->dataset);
 
     $self->$createWorkers;
@@ -670,12 +670,12 @@ sub start {
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
     # if Mojo is running with EV, signals will not be received if the IO loop
-    # is sleeping so lets activate it periodically    
+    # is sleeping so lets activate it periodically
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  if (0) {
     Mojo::IOLoop->recurring(1 => sub { }) if not $self->runonce;
 ### RM_COMM_4_TEST ###  }
-    
+
     #start eventloop
     Mojo::IOLoop->start;
 
@@ -755,4 +755,3 @@ S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 2014-05-30 had Initial Version
 
 =cut
-

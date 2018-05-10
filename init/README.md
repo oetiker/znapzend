@@ -13,6 +13,18 @@ replacing the tags in the corresponding ```.in``` template file
 to match your existing system layout (replace ```@exec_prefix@```
 usually with ```/usr/local``` to match other setup documentation).
 
+## macOS launchd
+
+For macOS launchd, you can copy the generated ```org.oetiker.znapzend.plist```
+file to ```/Library/LaunchDaemons``` and then start the daemon with:
+
+```sh
+launchctl load /Library/LaunchDaemons/org.oetiker.znapzend.plist
+```
+
+```Note:``` It is recommended to ```not``` set the ```--daemonize``` flag of ```znapzend```
+as launchd will lose control of the process.
+
 ## Solaris/Illumos
 
 For solaris/illumos OSes you can tell configure to install a znapzend
