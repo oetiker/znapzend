@@ -62,3 +62,27 @@ service znapzend start
 If you want to set parameters for the znapzend daemon separately from the
 upstart file, copy ```znapzend.default``` to ```/etc/default/znapzend```
 and edit it.
+
+## System V
+
+For systems with SysV-based initscripts, you can copy the generated
+```znapzend.sysv``` file to ```/etc/init.d/znapzend``` and then enable and
+start the daemon.
+
+For Red Hat systems (RHEL, RHEL derivatives, and Fedora):
+
+```sh
+chkconfig znapzend on
+service znapzend start
+```
+
+For Debian systems:
+
+```sh
+update-rc.d znapzend defaults
+service znapzend start
+```
+
+If you want to set parameters for the znapzend daemon separately from the
+init script, copy ```znapzend.default``` to ```/etc/default/znapzend```
+and edit it.
