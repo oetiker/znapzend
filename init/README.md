@@ -23,7 +23,8 @@ launchctl load /Library/LaunchDaemons/org.oetiker.znapzend.plist
 ```
 
 ```Note:``` It is recommended to ```not``` set the ```--daemonize``` flag of ```znapzend```
-as launchd will lose control of the process.
+as launchd will lose control of the process. Check out ```init/org.oetiker.znapzend.plist.in```
+for example plist
 
 ## Solaris/Illumos
 
