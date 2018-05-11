@@ -23,41 +23,7 @@ launchctl load /Library/LaunchDaemons/org.oetiker.znapzend.plist
 ```
 
 ```Note:``` It is recommended to ```not``` set the ```--daemonize``` flag of ```znapzend```
-as launchd will lose control of the process.  Here are recommended launchd keys to include to
-startup at system startup and restart after 30 seconds if znapzend exits (except on crashes).  Substitute the correct program prefix for ${prefix} in the example below:
-
-```sh
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>EnvironmentVariables</key>
-	<dict>
-		<key>PATH</key>
-		<string>${prefix}/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-	</dict>
-	<key>KeepAlive</key>
-	<dict>
-		<key>Crashed</key>
-		<false/>
-	</dict>
-	<key>Label</key>
-	<string>org.oetiker.znapzend</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>${prefix}/org.oetiker.znapzend</string>
-	</array>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>StandardErrorPath</key>
-	<string>/var/log/org.oetiker.znapzend.stderr</string>
-	<key>StandardOutPath</key>
-	<string>/var/log/org.oetiker.znapzend.stdout</string>
-	<key>ThrottleInterval</key>
-	<integer>30</integer>
-</dict>
-</plist>
-```
+as launchd will lose control of the process.
 
 ## Solaris/Illumos
 
