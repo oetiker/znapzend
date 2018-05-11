@@ -65,7 +65,7 @@ is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
 
-isnt (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
 
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
