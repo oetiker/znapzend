@@ -70,12 +70,13 @@ system PATH.
 for x in /opt/znapzend-0.18.0/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
-Debian packages
----------------
+Packages
+--------
 
 Debian control files, guide on using them and experimental debian packages
 can be found at https://github.com/Gregy/znapzend-debian
 
+An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
 Configuration
 -------------
