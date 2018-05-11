@@ -25,3 +25,5 @@ thirdparty/*
 init/znapzend.service
 init/znapzend.upstart
 init/znapzend.xml
+init/org.oetiker.znapzend.plist
+.DS_Store
