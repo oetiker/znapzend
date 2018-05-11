@@ -45,13 +45,19 @@ where 'command' is one of the following:
 
     man
 
+Note that in commands above, "SRC" and "DST" are verbatim key words, and
+the dst key is a number of destination configuration (e.g. --dst=0) which
+you can see in zfs dataset properties or using the B<list> function.
+
 =head1 DESCRIPTION
 
 Use znapzendsetup to configure your backup tasks. The cli is modled after
 the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
-for it to re-read the configuration.
+for it to re-read the configuration. If you use a service framework integration
+for znapzend, you can use the appropriate "refresh" or "reload" command for
+managing the service instance, or even "restart" it.
 
 Below a few notes on main commands.
 
@@ -94,6 +100,13 @@ a different pool) or remote.
 When adding multiple B<DST> entries, each will get labled for later
 identification, optionally you can specify your own label.
 
+Note that while you can specify recursive confgurations, at this time it
+is an all-or-nothing proposition: all datasets under the one you have
+explicitly configured will be recursively handled according to its schedule.
+Currently there is no support for pruning the tree ("I do not want to track
+that sub-sub-dataset") nor for overriding configuration of a parent dataset
+at a deeper leveled child dataset.
+
 =over
 
 =item B<--tsformat>=I<limited-strftime-format>
@@ -124,6 +137,8 @@ separator.
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
 Specify the path to your copy of the mbuffer utility.
+If you intend to use large (multi-gigabyte) buffers, be sure to specify
+the path to a 64-bit build of the utility.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
@@ -192,7 +207,7 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back

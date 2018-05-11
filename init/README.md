@@ -10,8 +10,8 @@ Since the service manifests contain the absolute path to the
 prebuilt version.  But you can get a copy from github and roll
 your own by building the project properly or by just manually
 replacing the tags in the corresponding ```.in``` template file
-to match your existing system layout (replace ```@exec_prefix@```
-usually with ```/usr/local``` to match other setup documentation).
+to match your existing system layout (replace ```@BINDIR@``` usually
+with ```/usr/local/bin``` to match other setup documentation).
 
 ## macOS launchd
 
@@ -59,6 +59,10 @@ systemctl enable znapzend.service
 systemctl start znapzend.service
 ```
 
+If you want to set parameters for the znapzend daemon separately from the
+unit file, copy ```znapzend.default``` to ```/etc/default/znapzend``` and
+edit it.
+
 ## Upstart
 
 For upstart based systems, you can copy the generated ```znapzend.upstart```
@@ -67,3 +71,31 @@ file to ```/etc/init/znapzend.conf``` and start the daemon.
 ```sh
 service znapzend start
 ```
+
+If you want to set parameters for the znapzend daemon separately from the
+upstart file, copy ```znapzend.default``` to ```/etc/default/znapzend```
+and edit it.
+
+## System V
+
+For systems with SysV-based initscripts, you can copy the generated
+```znapzend.sysv``` file to ```/etc/init.d/znapzend``` and then enable and
+start the daemon.
+
+For Red Hat systems (RHEL, RHEL derivatives, and Fedora):
+
+```sh
+chkconfig znapzend on
+service znapzend start
+```
+
+For Debian systems:
+
+```sh
+update-rc.d znapzend defaults
+service znapzend start
+```
+
+If you want to set parameters for the znapzend daemon separately from the
+init script, copy ```znapzend.default``` to ```/etc/default/znapzend```
+and edit it.
