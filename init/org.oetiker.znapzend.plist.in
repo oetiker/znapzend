@@ -5,7 +5,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>@exec_prefix@:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<string>@BINDIR@:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 	</dict>
 	<key>KeepAlive</key>
 	<dict>
@@ -16,7 +16,7 @@
 	<string>org.oetiker.znapzend</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>@exec_prefix@/org.oetiker.znapzend</string>
+		<string>@BINDIR@/org.oetiker.znapzend</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
