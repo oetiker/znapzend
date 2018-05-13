@@ -66,7 +66,7 @@ is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
 
-throws_ok { runCommand(qw(--runonce=tank/source) ) } qr/No backup set defined or enabled/,
+throws_ok { runCommand(qw(--runonce=nosets) ) } qr/No backup set defined or enabled/,
       'znapzend dies with no backup sets defined or enabled at startup';
 
 # seems to allow tests to continue so why not?
