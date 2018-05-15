@@ -13,6 +13,19 @@ replacing the tags in the corresponding ```.in``` template file
 to match your existing system layout (replace ```@BINDIR@``` usually
 with ```/usr/local/bin``` to match other setup documentation).
 
+## macOS/launchd
+
+For macOS launchd, you can copy the generated ```org.znapzend.plist```
+file to ```/Library/LaunchDaemons``` and then start the daemon with:
+
+```sh
+launchctl load /Library/LaunchDaemons/org.znapzend.plist
+```
+
+```Note:``` It is recommended to ```not``` set the ```--daemonize``` flag of ```znapzend```
+as launchd will lose control of the process. Check out ```init/org.znapzend.plist.in```
+for an example plist.
+
 ## Solaris/Illumos
 
 For solaris/illumos OSes you can tell configure to install a znapzend

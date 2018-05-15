@@ -54,6 +54,7 @@ sub runCommand {
 }
 
 use Test::More;
+use Test::Exception;
 
 use_ok 'ZnapZend';
 
@@ -65,12 +66,15 @@ is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
 
-is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce');
+throws_ok { runCommand(qw(--runonce=nosets) ) } qr/No backup set defined or enabled/,
+      'znapzend dies with no backup sets defined or enabled at startup';
+
+# seems to allow tests to continue so why not?
+is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
 
 done_testing;
- 
-1;
 
+1;

@@ -194,6 +194,7 @@ AC_CONFIG_FILES([
     init/znapzend.sysv
     init/znapzend.upstart
     init/znapzend.xml
+    init/org.znapzend.plist
 ])
 
 AC_SUBST(VERSION)
