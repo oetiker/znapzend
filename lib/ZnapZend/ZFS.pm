@@ -17,7 +17,7 @@ has connectTimeout  => sub { 30 };
 has propertyPrefix  => sub { q{org.znapzend} };
 has sshCmdArray     => sub { [qw(ssh),
     qw(-o batchMode=yes -o), 'ConnectTimeout=' . shift->connectTimeout] };
-has mbufferParam    => sub { [qw(-q -s 128k -W 600 -m)] }; #don't remove the -m as the buffer size will be added
+has mbufferParam    => sub { [qw(-q -s 256k -W 600 -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
 
 has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
