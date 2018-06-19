@@ -1,52 +1,138 @@
-commit af533d252c65893c73ec11f8e8d93b7d28b491df
+commit 972c74daed1d09b83f88b65483f86ad46a4f4592
+Author: Manuel Oetiker <manuel@oetiker.ch>
+Date:   Fri Jun 15 09:27:00 2018 +0200
+
+    increasing the buffersize (#361)
+    
+    there are warnings from mbuffer:
+    "mbuffer: warning: high value of number of blocks(10696): increase block size for better performance"
+    with 256k mbuffer is happy.
+
+commit 1a4e66aa9dab4f14e0ffb5a92fdf230f82c7dee7
+Author: Randy Wilkey <37119201+rwilkey@users.noreply.github.com>
+Date:   Mon May 14 22:31:00 2018 -0700
+
+    changes for macOS Startup (#358)
+    
+    These changes are proposed as a solution to issue #356 and maybe issue #322.
+    
+    1. Change znapzend startup behavior to die if no zfs snap or backup sets are found.
+    2. Update init directory to add a launchd template and modify README.md to explain use.
+    3. Update main README.md to mention XCode command-line tools requirement.
+
+commit 4b11c69e8c258d11fb51427e9dd92bd2e2e705ca
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:38:34 2018 +0200
+Date:   Fri May 11 11:40:50 2018 +0200
 
-    znapzendzetup.pod : HUP can be sent via SMF refresh or systemctl/upstart reload keywords
+    README.md : Z-spelling
 
-commit 578d0d8c9047d8ab109e59f3565c2020cb34cfee
+commit 188541126aee242f6e573b6a52d803b68e134af9
+Author: Phil! Gold <phil_g@pobox.com>
+Date:   Thu May 10 12:51:52 2018 -0400
+
+    System V init script.
+
+commit f274a4afe27515c07992b4f8eab790103f7d7078
+Author: Phil! Gold <phil_g@pobox.com>
+Date:   Wed May 9 15:24:16 2018 -0400
+
+    Allow use of /etc/default/znapzend for extra znapzend parameters in init files.
+
+commit bc68fa11036373854c7ebe04eeaf2cf97f157b0d
+Author: Phil! Gold <phil_g@pobox.com>
+Date:   Wed May 9 15:00:41 2018 -0400
+
+    Link to RPM spec file.
+
+commit 1e815a84ead0b52db26bbe59955f4319250248fc
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:33:10 2018 +0200
+Date:   Wed May 9 11:09:49 2018 +0200
 
-    znapzendzetup.pod : typo fix
+    README.md : wrap some long lines
 
-commit 70cddb5de524570cf0e29b767f58e50047eefad9
+commit ab776dddacf8ba5a6829bec6e09a79056c96abd4
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:32:59 2018 +0200
+Date:   Tue May 8 11:06:30 2018 +0200
 
-    znapzendzetup.pod : clarify in help text that SRC and DST are verbatim :)
+    znapzend.xml.in : do not go into maintenance if "zfs" coredumps
 
-commit 7d3094df965cc4f71336aaa86b13e35a7f4d9c1f
+commit 1dc773fa61a7a31f5430e210670165234c68ded8
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:32:25 2018 +0200
+Date:   Mon May 7 12:15:09 2018 +0200
 
-    README.md : add a bit of troubleshooting pointers
+    README.md : Clarify about recursive (no-prune) being a feature in certain point of view
 
-commit e8901bbff5a308c7667c5d266e06cf829c89b3c5
+commit 38cbe9c4063451665d164a607f76262c295414b9
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:32:05 2018 +0200
+Date:   Mon May 7 12:12:38 2018 +0200
 
-    README.md : link to init/README.md
+    README.md : Troubleshooting with "znapzendzetup list"
 
-commit 1e1814af915c7c23ae6e136059122cd21317db89
+commit a5e56efc865f372f78e2b607af3d7e745f314951
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:31:20 2018 +0200
+Date:   Sat May 5 14:34:10 2018 +0200
 
-    README.md znapzendzetup.pod : note about 64-bit mbuffer
+    znapzendzetup.pod : warn about current lack of support for pruning of recursive configurations
 
-commit 960469801d8db8579a760ec05b87e1d2610febca
+commit aac8e8017478d351cf3530decfcd4884431d182a
 Author: Jim Klimov <jim@jimklimov.com>
 Date:   Sat May 5 13:30:11 2018 +0200
 
     README.md : warn about current lack of support for pruning of recursive configurations
 
-commit ba1531645ed0ecf46c6bb4d547505ba3f23a2ac7
+commit 67ac09d09bd14bdb56f06a44c551d2409be6a81e
 Author: Jim Klimov <jim@jimklimov.com>
-Date:   Sat May 5 13:04:56 2018 +0200
+Date:   Sat May 5 13:56:52 2018 +0200
 
-    configure.ac
+    Problem: unclear sizing of mbuffer
+    
+    Solution: give a ballpark number, address issues #335 and #347
+    
+    Signed-off-by: Jim Klimov <JimKlimov@gmail.com>
 
-commit eb418c3670c37daf053be72f3a131b6c72446cdd
+commit 3f00ce3d8c123460b7c529efebb20d59e7a79693
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:38:34 2018 +0200
+
+    znapzendzetup.pod : HUP can be sent via SMF refresh or systemctl/upstart reload keywords
+
+commit d12a47b46832e66170d560c32a1f81fca8513fc2
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:33:10 2018 +0200
+
+    znapzendzetup.pod : typo fix
+
+commit 79d5799b2207e1e91aeabccdf038e95179aac635
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:59 2018 +0200
+
+    znapzendzetup.pod : clarify in help text that SRC and DST are verbatim :)
+
+commit b2dfe67f044c68661cb253d46f1d99796ba8a0c8
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:31:20 2018 +0200
+
+    README.md znapzendzetup.pod : note about 64-bit mbuffer
+
+commit d777eb841482b0cbd0dec67433819b315e142d0d
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:25 2018 +0200
+
+    README.md : add a bit of troubleshooting pointers
+
+commit b2f5ff4fbd277a58b3c4b7a9596bcc9712cff1fe
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:32:05 2018 +0200
+
+    README.md : link to init/README.md
+
+commit bfd5eb578b4b358ffc3c4cd20e0804448e152be4
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Sat May 5 13:39:44 2018 +0200
+
+    Regenerated autotools files with bootstrap.sh
+
+commit 7b9556c5d608aebdf32864a9ee649199a93dcc40
 Author: Jim Klimov <jim@jimklimov.com>
 Date:   Fri May 4 22:18:46 2018 +0200
 
@@ -161,6 +247,20 @@ Date:   Tue Feb 6 14:14:03 2018 +0000
     These options cause znapzend to skip snapshot creation or replication if
     the respective pre-command returns a non-zero exit code or is killed by
     a signal.
+
+commit 94105035cf9a9d635b4f2a9d55a367311f9510f1
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Dec 29 21:52:37 2017 +0100
+
+    Update README.md
+
+commit 41deffd297aaf50ac853e4dd11fa15ea0a996bbc
+Author: testbird <noreply@noreply.github.com>
+Date:   Thu Dec 28 17:03:15 2017 +0100
+
+    Update README.md
+    
+    https://github.com/oetiker/znapzend/issues/312
 
 commit a15ab81197bb018cf1e7f8e894ecf74c808d8b30
 Author: Dylan Powers <dylan.kyle.powers@gmail.com>
@@ -325,7 +425,7 @@ Date:   Mon Dec 19 15:55:34 2016 +0000
     Fix trivial typos
 
 commit 3d41cdd8871053ce183209ee7f8f0fbd1e3e4db7
-Author: Дмитрий Глушенок <dglushenok@ya <dglushenok@yandex.ru>
+Author: Дмитрий Глушенок <dglushenok@yandex.ru>
 Date:   Thu Dec 1 15:15:18 2016 +0300
 
     Changed SMF dependency to multi-user

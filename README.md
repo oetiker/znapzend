@@ -1,4 +1,4 @@
-ZnapZend 0.18.0
+ZnapZend 0.19.0
 ===============
 
 [![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
@@ -53,10 +53,10 @@ get them from the command line (Terminal app) with:
 With that in place you can now utter:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.18.0/znapzend-0.18.0.tar.gz
-tar zxvf znapzend-0.18.0.tar.gz
-cd znapzend-0.18.0
-./configure --prefix=/opt/znapzend-0.18.0
+wget https://github.com/oetiker/znapzend/releases/download/v0.19.0/znapzend-0.19.0.tar.gz
+tar zxvf znapzend-0.19.0.tar.gz
+cd znapzend-0.19.0
+./configure --prefix=/opt/znapzend-0.19.0
 ```
 
 If configure finds anything noteworthy, it will tell you about it.  If any
@@ -72,7 +72,7 @@ Optionally (but recommended) put symbolic links to the installed binaries in the
 system PATH.
 
 ```sh
-for x in /opt/znapzend-0.18.0/bin/*; do ln -s $x /usr/local/bin; done
+for x in /opt/znapzend-0.19.0/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
 Packages
@@ -181,4 +181,4 @@ And if you have a contribution, please send a pull request.
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2018-04-13
+2018-06-19
