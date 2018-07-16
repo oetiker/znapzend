@@ -650,6 +650,13 @@ copy the setup from one fileset to another
 
     znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
 
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
+
 =head1 COPYRIGHT
 
 Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
