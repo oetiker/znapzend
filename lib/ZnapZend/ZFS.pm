@@ -623,7 +623,10 @@ my $zfs = ZnapZend::ZFS->new(debug=>0, noaction=>0);
 
 =head1 DESCRIPTION
 
-this object makes zfs snapshot functionality easier to use
+this object makes zfs snapshot functionality easier to use. In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 
 =head1 ATTRIBUTES
 
