@@ -177,6 +177,13 @@ To run as a daemon
 
  znapzend --daemonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
 
+=head1 RUNNING AS A NON-PRIVILEGED USER
+If running as a non-privileged user is required, the set of ZFS permissions required in each
+end of the znapzend pipeline are:
+
+ Sending end: destroy,hold,mount,send,snapshot,userprop
+ Receiving end: create,mount,receive,userprop
+
 =head1 COPYRIGHT
 
 Copyright (c) 2014 by OETIKER+PARTNER AG. All rights reserved.
