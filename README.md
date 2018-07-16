@@ -149,6 +149,14 @@ Best practice is to integrate znapzend into your system startup sequence,
 but you can also run it by hand. See the [init/README.md](init/README.md)
 for some inspiration.
 
+Running by an unprivileged user
+-------------------------------
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
+
 Troubleshooting
 ---------------
 
