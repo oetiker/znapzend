@@ -5,7 +5,8 @@ After=zfs-import-cache.service
 After=zfs-import-scan.service
 
 [Service]
-ExecStart=/usr/local/bin/znapzend
+EnvironmentFile=-/etc/default/znapzend
+ExecStart=@BINDIR@/znapzend $ZNAPZENDOPTIONS
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
 # might be neccessary on low power systems

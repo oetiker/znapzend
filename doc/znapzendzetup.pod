@@ -8,7 +8,7 @@ B<znapzendzetup> I<command> [I<options...>]
 
 where 'command' is one of the following:
 
-    create  [--pfexec|sudo] \
+    create  [--rootExec={pfexec|sudo}] \
             [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
@@ -17,9 +17,9 @@ where 'command' is one of the following:
             SRC plan dataset \
             [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
 
-    delete  [--pfexec|sudo] [--dst=key] <src_dataset>
+    delete  [--rootExec={pfexec|sudo}] [--dst=key] <src_dataset>
 
-    edit    [--pfexec|sudo]
+    edit    [--rootExec={pfexec|sudo}]
             [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
@@ -28,17 +28,17 @@ where 'command' is one of the following:
             SRC [plan] dataset \
             [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
 
-    edit    [--pfexec|sudo] <src_dataset>
+    edit    [--rootExec={pfexec|sudo}] <src_dataset>
 
-    enable  [--pfexec|sudo] <src_dataset>
+    enable  [--rootExec={pfexec|sudo}] <src_dataset>
 
-    disable [--pfexec|sudo] <src_dataset>
+    disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--pfexec|sudo] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [src_dataset]
 
-    export  [--pfexec|sudo] <src_dataset>
+    export  [--rootExec={pfexec|sudo}] <src_dataset>
 
-    import  [--pfexec|sudo] [--write] [--prop <property>=<value>, [--prop ...] ...]
+    import  [--rootExec={pfexec|sudo}] [--write] [--prop <property>=<value>, [--prop ...] ...]
             <src_dataset> [<prop_dump_file>]
 
     help
@@ -103,11 +103,11 @@ constructed.
 
 The syntax is L<strftime>-like. The string must consist of the mandatory
 
- %Y %m %d %H %M %S
+ %Y %m %d %H %M %S %z
 
 Optionally,
 
- - _ . :
+- _ . :
 
 characters as well as any alphanumeric character are allowed.
 
@@ -164,6 +164,8 @@ to make sure that the on-disk data is consistant when snapshotting. Since the
 lock stays only in place for the duration of the connection to mysql
 we need to employ. For this to work, add the root password of your mariadb/mysql db
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
+
+The pre and post snapshot commands can find the name and time of the snapshot in the environment variables ZNAP_NAME and ZNAP_TIME
 
 =item B<--send-delay>
 

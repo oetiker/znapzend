@@ -100,7 +100,9 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = init/znapzend.xml
+CONFIG_CLEAN_FILES = init/znapzend.service init/znapzend.sysv \
+	init/znapzend.upstart init/znapzend.xml \
+	init/org.znapzend.plist
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -194,6 +196,10 @@ DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/conftools/install-sh \
 	$(top_srcdir)/conftools/missing \
+	$(top_srcdir)/init/org.znapzend.plist.in \
+	$(top_srcdir)/init/znapzend.service.in \
+	$(top_srcdir)/init/znapzend.sysv.in \
+	$(top_srcdir)/init/znapzend.upstart.in \
 	$(top_srcdir)/init/znapzend.xml.in AUTHORS README \
 	conftools/config.guess conftools/config.sub \
 	conftools/install-sh conftools/missing
@@ -246,12 +252,15 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BINDIR = @BINDIR@
 CURL = @CURL@
 CYGPATH_W = @CYGPATH_W@
+DATADIR = @DATADIR@
 DEFS = @DEFS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EXEC_PREFIX = @EXEC_PREFIX@
 GMAKE = @GMAKE@
 GREP = @GREP@
 INSTALL = @INSTALL@
@@ -259,6 +268,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LIBDIR = @LIBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -277,10 +287,14 @@ PERL = @PERL@
 PERL5LIB = @PERL5LIB@
 PERL_CC_PATH = @PERL_CC_PATH@
 POD2MAN = @POD2MAN@
+PREFIX = @PREFIX@
+SBINDIR = @SBINDIR@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 SVCINSTALLDIR = @SVCINSTALLDIR@
+SVCNAME_SMF = @SVCNAME_SMF@
+SYSCONFDIR = @SYSCONFDIR@
 URL_CAT = @URL_CAT@
 VERSION = @VERSION@
 WGET = @WGET@
@@ -383,7 +397,15 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+init/znapzend.service: $(top_builddir)/config.status $(top_srcdir)/init/znapzend.service.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+init/znapzend.sysv: $(top_builddir)/config.status $(top_srcdir)/init/znapzend.sysv.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+init/znapzend.upstart: $(top_builddir)/config.status $(top_srcdir)/init/znapzend.upstart.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 init/znapzend.xml: $(top_builddir)/config.status $(top_srcdir)/init/znapzend.xml.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+init/org.znapzend.plist: $(top_builddir)/config.status $(top_srcdir)/init/org.znapzend.plist.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
@@ -909,7 +931,6 @@ man/%.1: bin/% VERSION
 	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
 
 dist-hook: $(POD)  $(MAN) CHANGES
-	$(PERL) -i -p -e 's/\d+\.\d+\.\d+/$(PACKAGE_VERSION)/g;s/20\d\d/$(YEAR)/g;s/20\d\d-\d\d-\d\d/$(DATE)/g;'  $(distdir)/README.md $(distdir)/COPYRIGHT
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:

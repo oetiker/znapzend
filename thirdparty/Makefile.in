@@ -13,9 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
-# Author: Tobi Oetiker <tobi@oetiker.ch>
-# License: Public Domain
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -128,12 +125,15 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BINDIR = @BINDIR@
 CURL = @CURL@
 CYGPATH_W = @CYGPATH_W@
+DATADIR = @DATADIR@
 DEFS = @DEFS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+EXEC_PREFIX = @EXEC_PREFIX@
 GMAKE = @GMAKE@
 GREP = @GREP@
 INSTALL = @INSTALL@
@@ -141,6 +141,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LIBDIR = @LIBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -159,10 +160,14 @@ PERL = @PERL@
 PERL5LIB = @PERL5LIB@
 PERL_CC_PATH = @PERL_CC_PATH@
 POD2MAN = @POD2MAN@
+PREFIX = @PREFIX@
+SBINDIR = @SBINDIR@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 SVCINSTALLDIR = @SVCINSTALLDIR@
+SVCNAME_SMF = @SVCNAME_SMF@
+SYSCONFDIR = @SYSCONFDIR@
 URL_CAT = @URL_CAT@
 VERSION = @VERSION@
 WGET = @WGET@
@@ -399,25 +404,24 @@ uninstall-am:
 
 all-local: touch
 
-touch: CPAN/touch ../config.status
-	$(AM_V_GEN)cat ../PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
+touch: CPAN/touch ../config.status ../PERL_MODULES
+	$(AM_V_GEN)cat ../PERL_MODULES  | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
 	$(AM_V_GEN)touch touch
 
 CPAN/touch: ../PERL_MODULES
 	echo "POPULATING OUR LOCAL micro CPAN"
-	$(AM_V_GEN)$(URL_CAT) http://cpanmin.us | PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) - -q --notest --local-lib $(THIRDPARTY_DIR) --save-dists $(THIRDPARTY_DIR)/CPAN --force App::cpanminus
-	$(AM_V_GEN)PERL_CPANM_HOME=$(THIRDPARTY_DIR)/Ore $(THIRDPARTY_DIR)/bin/cpanm -q --notest  --local-lib $(THIRDPARTY_DIR)/Ore File::Which OrePAN
+	$(AM_V_GEN)$(URL_CAT) https://cpanmin.us | PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) - -q --notest --local-lib $(THIRDPARTY_DIR) --save-dists $(THIRDPARTY_DIR)/CPAN --force App::cpanminus
+	$(AM_V_GEN)PERL5LIB=$(THIRDPARTY_DIR)/Ore/lib/perl5 PERL_CPANM_HOME=$(THIRDPARTY_DIR)/Ore $(THIRDPARTY_DIR)/bin/cpanm -q --notest  --local-lib $(THIRDPARTY_DIR)/Ore File::Which OrePAN
 	$(AM_V_GEN)cat ../PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --self-contained --notest --local-lib-contained $(THIRDPARTY_DIR) --save-dists $(THIRDPARTY_DIR)/CPAN
 	$(AM_V_GEN)PERL5LIB=$(THIRDPARTY_DIR)/Ore/lib/perl5 $(THIRDPARTY_DIR)/Ore/bin/orepan_index.pl --repository $(THIRDPARTY_DIR)/CPAN
-# Ore fails to extract the version form DBI
 	$(AM_V_GEN)gunzip -c CPAN/modules/02packages.details.txt.gz | perl -pe 's{^(DBI\s+)undef(\s+\S+/DBI-)(\d+\.\d+)(\.tar)}{$$1$$3$$2$$3$$4}' |  gzip | cat > x.gz && mv x.gz CPAN/modules/02packages.details.txt.gz
 	$(AM_V_GEN)touch CPAN/touch
 
 clean-local:
-	ls -1 | $(GREP) -v Makefile | $(GREP) -v CPAN |$(GREP) -v bin| xargs rm -rf
+	ls -1 | grep -v Makefile | grep -v bin | grep -v CPAN | xargs rm -rf
 
 distclean-local:
-	ls -1 | $(GREP) -v Makefile. | xargs rm -rf
+	ls -1 | grep -v Makefile | xargs rm -rf
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

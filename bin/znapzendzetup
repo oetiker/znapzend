@@ -31,7 +31,12 @@ sub dumpProperties {
                 }
             }
             else{
-                print $opt . ' ' x (16 - length($opt)) . "= $backupSet->{$opt}\n";
+                if (length($opt) < 16) {
+                    print $opt . ' ' x (16 - length($opt)) . "= $backupSet->{$opt}\n";
+                }
+                else {
+                    print $opt . " = $backupSet->{$opt}\n";
+                }
             }
         }
         print "\n";
@@ -508,11 +513,11 @@ constructed.
 
 The syntax is L<strftime>-like. The string must consist of the mandatory
 
- %Y %m %d %H %M %S
+ %Y %m %d %H %M %S %z
 
 Optionally,
 
- - _ . :
+- _ . :
 
 characters as well as any alphanumeric character are allowed.
 
@@ -649,6 +654,13 @@ create a complex backup task
 copy the setup from one fileset to another
 
     znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
+
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 
 =head1 COPYRIGHT
 
