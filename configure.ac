@@ -15,6 +15,9 @@ AM_MAINTAINER_MODE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PREFIX_DEFAULT(/opt/$PACKAGE_NAME-$PACKAGE_VERSION)
+dnl Fix this early so we can expand with eval later; note literal single quotes in exec_prefix
+AS_IF([test x"${prefix}" = x"NONE"], [prefix="${ac_default_prefix}"])
+AS_IF([test x"${exec_prefix}" = x"NONE"], [exec_prefix='${prefix}'])
 
 AC_ARG_VAR(PERL,   [Path to local perl binary])
 AC_PATH_PROG(PERL, perl, no)
@@ -117,6 +120,7 @@ AC_ARG_ENABLE(pkgonly,
                         [Skip all checking]))
 AC_SUBST(enable_pkgonly)
 
+# TODO: Is this block needed? No code seems to refer this varname...
 actual_prefix=$prefix
 if test x$actual_prefix = xNONE; then
     actual_prefix=$ac_default_prefix
