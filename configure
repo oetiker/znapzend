@@ -2566,6 +2566,12 @@ AM_BACKSLASH='\'
 
 
 
+if test x"${prefix}" = x"NONE"; then :
+  prefix="${ac_default_prefix}"
+fi
+if test x"${exec_prefix}" = x"NONE"; then :
+  exec_prefix='${prefix}'
+fi
 
 
 # Extract the first word of "perl", so it can be a program name with args.
@@ -3002,6 +3008,7 @@ fi
 
 
 
+# TODO: Is this block needed? No code seems to refer this varname...
 actual_prefix=$prefix
 if test x$actual_prefix = xNONE; then
     actual_prefix=$ac_default_prefix
