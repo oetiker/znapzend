@@ -1,3 +1,43 @@
+commit 91e0a0dede87600aa554e38b6b5dff5fa3982f82
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Sep 24 13:02:30 2018 +0200
+
+    Further fix for service integrations (fix evaluated vars other than PREFIX)
+
+commit 55461fcf93294fd62ae920ad5e5cd0bd2b224922
+Author: sylvain <sylvain@ilm-informatique.fr>
+Date:   Wed Sep 19 15:24:25 2018 +0200
+
+    added --setup option
+
+commit 4209a5e4ec381b86af1350222a7fe5efaa1e2012
+Author: Shaun Maher <shaun@ghanima.net>
+Date:   Tue Aug 14 18:38:48 2018 +1000
+
+    Minor fix to supress an error message when doing 'znapzendzetup list' if a property is greater than 16 characters long (#374)
+
+commit 24198cb439dc17aa54d4222093d4a31ea2adc621
+Author: flixman <felix@kngnt.org>
+Date:   Mon Jul 16 14:08:06 2018 +0000
+
+    Adding note about ZFS permissions for unprivileged users (#373)
+    
+    * Update znapzendzetup
+    
+    * Update README.md
+
+commit c604a86857430258c2b8479c356437c0f61a4dc6
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Wed Jun 27 09:09:06 2018 +0200
+
+    update list of files included in dist
+
+commit 5ec68eede2c9e697cdfaafc9528b9b016fa4b212
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 19 17:27:34 2018 +0200
+
+    release 0.19.0
+
 commit 972c74daed1d09b83f88b65483f86ad46a4f4592
 Author: Manuel Oetiker <manuel@oetiker.ch>
 Date:   Fri Jun 15 09:27:00 2018 +0200
