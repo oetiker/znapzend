@@ -435,7 +435,7 @@ my $createSnapshot = sub {
 
         # restrict the list to the datasets that are descendant from the current
         my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
-        if ( scalar @dataSetList > 0 ) {
+        if (@dataSetList) {
 
             # for each dataset: if the property "enabled" is set to "off", set the
             # newly created snapshot for removal
@@ -450,13 +450,14 @@ my $createSnapshot = sub {
                 # if the property does not exist, the command will just return. In this case,
                 # the value is implicit "on"
                 $prop = <$prop> || "on";
-                if ( substr($prop, 0, length('off')) eq 'off' ) {
+                chomp($prop);
+                if ( $prop eq 'off' ) {
                     push(@dataSetsExplicitelyDisabled, $dataSet . '@' . $snapshotSuffix);
                 }
             }
 
             # remove the snapshots previously marked
-           if ( scalar @dataSetsExplicitelyDisabled > 0 ){
+           if ( @dataSetsExplicitelyDisabled ){
                $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitelyDisabled));
                $self->zZfs->destroySnapshots(@dataSetsExplicitelyDisabled);
            }
