@@ -435,7 +435,7 @@ my $createSnapshot = sub {
 
         # restrict the list to the datasets that are descendant from the current
         my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
-        if (@dataSetList) {
+        if ( @dataSetList ) {
 
             # for each dataset: if the property "enabled" is set to "off", set the
             # newly created snapshot for removal
