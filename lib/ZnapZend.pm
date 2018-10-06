@@ -235,6 +235,7 @@ my $sendRecvCleanup = sub {
     #loop through all destinations
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
+        my $currentSendFailed = 0;
 
         #check destination for pre-send-command
         if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
@@ -249,6 +250,7 @@ my $sendRecvCleanup = sub {
                 if ($self->skipOnPreSendCmdFail){
                     $self->zLog->warn("skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure");
                     $sendFailed = 1;
+                    $currentSendFailed = 1;
                     next;
                 }
             }
@@ -275,6 +277,7 @@ my $sendRecvCleanup = sub {
                     $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...");
                     $sendFailed = 1;
+                    $currentSendFailed = 1;
                 };
                 next;
             };
@@ -295,6 +298,7 @@ my $sendRecvCleanup = sub {
                 };
                 if ($@){
                     $sendFailed = 1;
+                    $currentSendFailed = 1;
                     if (blessed $@ && $@->isa('Mojo::Exception')){
                         $self->zLog->warn($@->message);
                     }
@@ -306,7 +310,7 @@ my $sendRecvCleanup = sub {
         }
 
         # do not destroy data sets on the destination, or run post-send-command, unless all operations have been successful
-        next if ($sendFailed);
+        next if ($currentSendFailed);
 
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
