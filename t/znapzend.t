@@ -73,7 +73,7 @@ throws_ok { runCommand(qw(--runonce=nosets) ) } qr/No backup set defined or enab
 is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
-    qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
+    qw( --pidfile=znapzend.pid --cleanOffline)), 1, 'znapzend --daemonize');
 
 done_testing;
 

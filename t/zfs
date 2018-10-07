@@ -65,6 +65,19 @@ for ($command){
             print "10G\n";
             exit;
         }
+        if ($ARGV[-1] && $ARGV[-1] =~ /@/){
+            my ($dataSet) = $ARGV[-1] =~ /([^@]*)@/;
+            exit if !(exists $dataSets{$dataSet} && $dataSets{$dataSet} eq 'src');
+            print<<"ZFS_GET_END";
+org.znapzend:dst_0            backup/destination
+org.znapzend:dst_0_synced     1
+org.znapzend:dst_a            root\@remote:remote/destination
+org.znapzend:dst_a_synced     1
+org.znapzend:dst_fail         backup/destfail
+org.znapzend:dst_fail_synced  1
+ZFS_GET_END
+            exit;
+        }
         exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
         print <<"ZFS_GET_END";
 org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
