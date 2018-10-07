@@ -302,6 +302,44 @@ sub lastAndCommonSnapshots {
         ? ${$srcSnapshots}[$i] : undef), scalar @$dstSnapshots);
 }
 
+sub mostRecentCommonSnapshot {
+    my $self = shift;
+    my $srcDataSet = shift;
+    my $dstDataSet = shift;
+    my $dstName = shift;
+
+    my $lastCommonSnapshot;
+    {
+        local $@;
+        eval {
+            local $SIG{__DIE__};
+            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet))[1];
+        };
+        if ($@){
+            if (blessed $@ && $@->isa('Mojo::Exception')){
+                $self->zLog->warn($@->message);
+            }
+            else{
+                $self->zLog->warn($@);
+            }
+        }
+    }
+    if (not $lastCommonSnapshot){
+        my $srcSnapshots = $self->listSnapshots($srcDataSet);
+        my $i;
+        for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+            my $snapshot = ${$srcSnapshots}[$i];
+            my $properties = $self->getSnapshotProperties($snapshot);
+            if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstName . '_synced'}){
+                $lastCommonSnapshot = $snapshot;
+                last;
+            }
+        }
+    }
+    return $lastCommonSnapshot;
+}
+
+
 sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
@@ -505,6 +543,24 @@ sub deleteDataSetProperties {
     return 1;
 }
 
+sub getSnapshotProperties {
+    my $self = shift;
+    my $snapshot = shift;
+    my %properties;
+    my $propertyPrefix = $self->propertyPrefix;
+
+    my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $snapshot);
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+    while (my $prop = <$props>){
+        chomp $prop;
+        my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+        $properties{$key} = $value;
+    }
+
+    return \%properties;
+}
+
 sub setSnapshotProperties {
     my $self = shift;
     my $snapshot = shift;
@@ -702,6 +758,10 @@ destroys a single snapshot or a list of snapshots on localhost or a remote host
 
 lists the last snapshot on source and the last common snapshot an source and destination and the number of snapshots found on the destination host
 
+=head2 mostRecentCommonSnapshot
+
+gets the name of the most recent common snapshot between source and destination, first by trying to get the actual snapshots, then by checking the dst_*_synced property on each source snapshot if the destination is offline
+
 =head2 sendRecvSnapshots
 
 sends snapshots to a different destination on localhost or a remote host
@@ -721,6 +781,10 @@ sets dataset properties
 =head2 deleteDataSetProperties
 
 deletes dataset properties
+
+=head2 getSnapshotProperties
+
+gets snapshot properties
 
 =head2 setSnapshotProperties
 

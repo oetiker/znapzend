@@ -361,6 +361,17 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
+            # preserve most recent common snapshots for each destination
+            for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+                my $dstDataSet = $srcDataSet;
+                $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+                my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst);
+                if ($recentCommon) {
+                    $self->zLog->debug('not cleaning up ' . $recentCommon . ' because it is the most recent common snapshot with ' . $dstDataSet);
+                    @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                }
+            }
+
             $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
             {
                 local $@;
