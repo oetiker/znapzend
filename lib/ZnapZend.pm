@@ -42,6 +42,7 @@ has autoCreation            => sub { 0 };
 has timeWarp                => sub { undef };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
+has cleanOffline            => sub { 0 };
 has backupSets              => sub { [] };
 
 has zConfig => sub {
@@ -351,10 +352,11 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    if ($sendFailed){
+    if ($sendFailed and not $self->cleanOffline){
         $self->zLog->warn('ERROR: suspending cleanup source dataset because at least one send task failed');
     }
     else{
+        SRC_SET:
         for my $srcDataSet (@$srcSubDataSets){
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
@@ -367,8 +369,11 @@ my $sendRecvCleanup = sub {
                 $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                 my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst);
                 if ($recentCommon) {
-                    $self->zLog->debug('not cleaning up ' . $recentCommon . ' because it is the most recent common snapshot with ' . $dstDataSet);
+                    $self->zLog->debug('not cleaning up ' . $recentCommon . ' because it is needed by ' . $dstDataSet);
                     @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                } elsif ($sendFailed) {
+                    $self->zLog->warn('ERROR: suspending cleanup of ' . $srcDataSet . ' because a send task failed and no common snapshot was found');
+                    next SRC_SET;
                 }
             }
 
