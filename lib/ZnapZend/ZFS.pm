@@ -349,6 +349,7 @@ sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
+    my $dstName = shift; # name of the znapzend policy => attribute prefix
     my $mbuffer = shift;
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
@@ -367,8 +368,14 @@ sub sendRecvSnapshots {
     my ($lastSnapshot, $lastCommon,$dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
+    my %snapshotSynced = ($dstName, $dstDataSet,
+        $dstName . '_synced', 1);
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
-    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
+    return 1 if !$lastSnapshot;
+    if (defined $lastCommon && ($lastSnapshot eq $lastCommon)){
+        $self->setSnapshotProperties($lastCommon, \%snapshotSynced);
+        return 1;
+    }
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
@@ -470,6 +477,7 @@ sub sendRecvSnapshots {
             . ($remote ? " on $remote" : '')) if !$self->noaction;
     }
 
+    $self->setSnapshotProperties($lastSnapshot, \%snapshotSynced);
     return 1;
 }
 
@@ -855,6 +863,23 @@ sub deleteDataSetProperties {
     return 1;
 }
 
+sub setSnapshotProperties {
+    my $self = shift;
+    my $snapshot = shift;
+    my $properties = shift;
+    my $propertyPrefix = $self->propertyPrefix;
+
+    return 0 if !$self->snapshotExists($snapshot);
+    for my $prop (keys %$properties){
+        my @cmd = (@{$self->priv}, qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $snapshot);
+        print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+        system(@cmd)
+            && Mojo::Exception->throw("ERROR: could not set property $prop on $snapshot") if !$self->noaction;
+    }
+
+    return 1;
+}
+
 sub deleteBackupDestination {
     my $self = shift;
     my $dataSet = shift;
@@ -1050,6 +1075,10 @@ sets dataset properties
 =head2 deleteDataSetProperties
 
 deletes dataset properties
+
+=head2 setSnapshotProperties
+
+sets snapshot properties
 
 =head2 deleteBackupDestination
 

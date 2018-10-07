@@ -359,7 +359,7 @@ my $sendRecvCleanup = sub {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
-                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
                 };
                 if (my $err = $@){
