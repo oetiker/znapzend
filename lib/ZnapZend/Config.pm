@@ -10,6 +10,7 @@ has debug    => sub { 0 };
 has noaction => sub { 0 };
 has rootExec => sub { q{} };
 has timeWarp => sub { undef };
+has zLog => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 
 #mandatory properties
 has mandProperties => sub {
@@ -67,8 +68,10 @@ my $checkBackupSets = sub {
 
     for my $backupSet (@{$self->backupSets}){
         for my $prop (keys %{$self->mandProperties}){
-            exists $backupSet->{$prop}
-                or die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n";
+            exists $backupSet->{$prop} || do {
+                $self->zLog->info("WARNING: property $prop not set on backup for " . $backupSet->{src} . ". Skipping to next dataset");
+                last;
+            };
                 
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
