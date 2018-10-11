@@ -67,6 +67,16 @@ my $checkBackupSets = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
+
+        # in case there is only one property on this dataset, which is the "enabled" and is set to "off"
+        # consider it a normal situation and do not even notify it. This situation will appear
+        # when there are descendants of recursive ZFS dataset that should be skipped.
+        # Note: backupSets will have at least the key "Src". Therefore, we need to skip the
+        # dataset if there are two properties and one of them is "enabled".
+        if (keys(%{$backupSet}) eq 2 && exists($backupSet->{"enabled"})){
+           next;
+        }
+
         for my $prop (keys %{$self->mandProperties}){
             exists $backupSet->{$prop} || do {
                 $self->zLog->info("WARNING: property $prop not set on backup for " . $backupSet->{src} . ". Skipping to next dataset");
