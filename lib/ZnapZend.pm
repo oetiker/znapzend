@@ -285,6 +285,8 @@ my $sendRecvCleanup = sub {
         }
 
         #sending loop through all subdatasets
+        #note: given that transfers can take long even locally, we do not
+        #really want recursive sending (so retries can go dataset by dataset)
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
@@ -314,21 +316,57 @@ my $sendRecvCleanup = sub {
         next if ($thisSendFailed);
 
         #cleanup current destination
+        if ($backupSet->{recursive} eq 'on') {
+            # First we try to recursively (and atomically quickly)
+            # remove snapshots of "root" dataset with the recursive
+            # configuration; then go looking for leftovers if any.
+            # On many distros, ZFS has some atomicity lock for pool
+            # operations - so one destroy operation takes ages...
+            # but hundreds of queued operations take the same time
+            # and are all committed at once.
+            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{$dst}, $backupSet->{snapFilter})};
+            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
+
+            $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{$dst});
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->destroySnapshots($toDestroy, 1);
+                };
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->message);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
+            }
+            $self->zLog->debug('now will look if there is anything to clean in children of ' . $backupSet->{$dst});
+        }
+
+        #cleanup children of current destination
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+
+            next if ($backupSet->{recursive} eq 'on' && $dstDataSet eq $backupSet->{$dst});
 
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
+            next if (scalar (@{$toDestroy}) == 0);
+
             $self->zLog->debug('cleaning up snapshots on ' . $dstDataSet);
             {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
-                    $self->zZfs->destroySnapshots($toDestroy);
+                    $self->zZfs->destroySnapshots($toDestroy, 0);
                 };
                 if ($@){
                     if (blessed $@ && $@->isa('Mojo::Exception')){
@@ -357,18 +395,57 @@ my $sendRecvCleanup = sub {
         $self->zLog->warn('ERROR: suspending cleanup source dataset because at least one send task failed');
     }
     else{
+        # cleanup source according to backup schedule
+        if ($backupSet->{recursive} eq 'on') {
+            # First we try to recursively (and atomically quickly)
+            # remove snapshots of "root" dataset with the recursive
+            # configuration; then go looking for leftovers if any.
+            # On many distros, ZFS has some atomicity lock for pool
+            # operations - so one destroy operation takes ages...
+            # but hundreds of queued operations take the same time
+            # and are all committed at once.
+
+            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapFilter})};
+            $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
+                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
+            $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{src});
+            {
+                local $@;
+                eval {
+                    local $SIG{__DIE__};
+                    $self->zZfs->destroySnapshots($toDestroy, 1);
+                };
+                if ($@){
+                    if (blessed $@ && $@->isa('Mojo::Exception')){
+                        $self->zLog->warn($@->message);
+                    }
+                    else{
+                        $self->zLog->warn($@);
+                    }
+                }
+            }
+            $self->zLog->debug('now will look if there is anything to clean in children of ' . $backupSet->{src});
+        }
+
+        # See if there is anything remaining to clean up in child
+        # datasets (if recursive snapshots are enabled) or just
+        # this one dataset.
         for my $srcDataSet (@$srcSubDataSets){
-            # cleanup according to backup schedule
+            next if ($backupSet->{recursive} eq 'on' && $srcDataSet eq $backupSet->{src});
+
             @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
+            next if (scalar (@{$toDestroy}) == 0);
 
             $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
             {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
-                    $self->zZfs->destroySnapshots($toDestroy);
+                    $self->zZfs->destroySnapshots($toDestroy, 0);
                 };
                 if ($@){
                     if (blessed $@ && $@->isa('Mojo::Exception')){
