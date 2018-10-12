@@ -524,7 +524,7 @@ my $createSnapshot = sub {
             # newly created snapshot for removal
             my @dataSetsExplicitelyDisabled = ();
             for my $dataSet (@dataSetList){
-                
+
                 # get the value for org.znapzend property
                 my @cmd = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
                 print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
@@ -540,9 +540,10 @@ my $createSnapshot = sub {
             }
 
             # remove the snapshots previously marked
-           if ( @dataSetsExplicitelyDisabled ){
+            # removal here is non-recursive to allow for fine-grained control
+            if ( @dataSetsExplicitelyDisabled ){
                $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitelyDisabled));
-               $self->zZfs->destroySnapshots(@dataSetsExplicitelyDisabled);
+               $self->zZfs->destroySnapshots(@dataSetsExplicitelyDisabled, 0);
            }
         }
     }
