@@ -287,6 +287,9 @@ my $sendRecvCleanup = sub {
         #sending loop through all subdatasets
         #note: given that transfers can take long even locally, we do not
         #really want recursive sending (so retries can go dataset by dataset)
+        #also, we can disable individual children of recursive ZFS datasets
+        #from being snapshot/sent by setting property "org.znapzend:enabled"
+        #to "off" on them
         for my $srcDataSet (@$srcSubDataSets){
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
