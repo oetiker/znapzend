@@ -89,7 +89,7 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                syslog($logLevels{$level}, @lines);
+                syslog($logLevels{$level}, @lines) if $log->is_level($level);
             }
         );
     };
