@@ -11,6 +11,7 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
+has netcat          => sub { 1 };
 has rootExec        => sub { q{} };
 has sendDelay       => sub { 3 };
 has connectTimeout  => sub { 30 };
@@ -410,6 +411,8 @@ sub sendRecvSnapshots {
         );
         #start forkcall event loop
         $fc->ioloop->start if !$fc->ioloop->is_running;
+        #wake up event loop
+        $fc->ioloop->one_tick();
     }
     else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
