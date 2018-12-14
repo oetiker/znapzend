@@ -31,7 +31,7 @@ sub dumpProperties {
                 }
             }
             else{
-                printf "%16s = $backupSet->{$opt}\n",$opt;
+                printf("%16s = $backupSet->{$opt}\n",$opt);
             }
         }
         print "\n";
@@ -649,6 +649,13 @@ create a complex backup task
 copy the setup from one fileset to another
 
     znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
+
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 
 =head1 COPYRIGHT
 

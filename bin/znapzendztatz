@@ -17,6 +17,7 @@ my $zTime = ZnapZend::Time->new();
 sub dumpStats {
     my $stats = shift;
     my $tabs = shift;
+    my $setup = shift;
 
     if (! $tabs) {
        print ' ' x (5 - length($stats->{usage}));
@@ -25,10 +26,19 @@ sub dumpStats {
     print ($tabs ? "\t" : "   ");
     print "$stats->{last_snap}";
     print ($tabs ? "\t" : "   ");
-    print "$stats->{dataset}\n";
+    print "$stats->{dataset}";
+    if ($setup) {
+       print ($tabs ? "\t" : "   ");
+       print "$stats->{definitionDataset}";
+       print ($tabs ? "\t" : "   ");
+       print "$stats->{key}";
+    }
+    print "\n";
 }
 
 sub collectData {
+    my $definitionDataset = shift;
+    my $key = shift;
     my $dataset = shift;
     my $snapFilter = shift;
     my %data;
@@ -38,6 +48,8 @@ sub collectData {
     my $lastSnap = $snapshots->[-1] // ' @No Snapshots Yet  ';
     ($data{last_snap}) = $lastSnap =~ /^.+\@([^\@]+)$/;
     $data{dataset} = $dataset;
+    $data{definitionDataset} = $definitionDataset;
+    $data{key} = $key;
 
     return \%data;
 }
@@ -45,7 +57,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo rootExec=s man timeWarp=i)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo rootExec=s man timeWarp=i setup)) or exit 1;
 
     if ($opts->{pfexec}) {
         warn "--pfexec is deprecated. Use --rootExec=pfexec instead\n";
@@ -78,8 +90,13 @@ sub main {
     my $dummyTime = $zTime->createSnapshotTime(time + ($opts->{timeWarp} // 0), $backupSets->[0]->{tsformat});
 
     #print header
-    print 'USED    LAST SNAPSHOT' . ' ' x (24 - length($dummyTime))
-        . "DATASET\n" if !$opts->{H};
+    if (!$opts->{H}) {
+        print 'USED    LAST SNAPSHOT' . ' ' x (24 - length($dummyTime)) . "DATASET";
+        if ($opts->{setup}) {
+            print '        SETUP FS       SETUP KEY';
+        }
+        print "\n";
+    }
 
     for my $backupSet (@$backupSets){
         my $datasets = $backupSet->{recursive} eq 'on' && $opts->{recursive}
@@ -89,7 +106,8 @@ sub main {
 
         #source dataset
         for my $dataset (@$datasets){
-            dumpStats(collectData($dataset, $snapFilter), $opts->{H});
+            dumpStats(collectData($backupSet->{src}, "src", $dataset, $snapFilter), $opts->{H}, $opts->{setup});
+
 
             #destination datasets
             for (keys %$backupSet){
@@ -103,7 +121,7 @@ sub main {
                 else{
                     my $dstDataSet = $dataset;
                     $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                    dumpStats(collectData($dstDataSet, $snapFilter), $opts->{H});
+                    dumpStats(collectData($backupSet->{src}, $key, $dstDataSet, $snapFilter), $opts->{H}, $opts->{setup});
                 }
             }
 
@@ -130,6 +148,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
  --only-enabled only show statistics for enabled datasets
+ --setup        show the configuration key and the filesystem that defined the configuration
  --rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
  --timeWarp=x   act as if you were shifted by x seconds into the future
  --man          show man-page and exit

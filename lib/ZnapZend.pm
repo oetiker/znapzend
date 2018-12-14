@@ -2,7 +2,6 @@ package ZnapZend;
 
 use Mojo::Base -base;
 use Mojo::IOLoop::ForkCall;
-use Mojo::Util qw(slurp);
 use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
@@ -47,7 +46,8 @@ has backupSets              => sub { [] };
 has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
-                          rootExec => $self->rootExec, timeWarp => $self->timeWarp);
+                          rootExec => $self->rootExec, timeWarp => $self->timeWarp, 
+                          zLog => $self->zLog);
 };
 
 has zZfs => sub {
@@ -88,7 +88,7 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                syslog($logLevels{$level}, @lines);
+                syslog($logLevels{$level}, @lines) if $log->is_level($level);
             }
         );
     };
@@ -389,8 +389,8 @@ my $createSnapshot = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    my $snapshotName = $backupSet->{src} . '@'
-        . $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    my $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    my $snapshotName = $backupSet->{src} . '@'. $snapshotSuffix;
 
     #set env variables for pre and post scripts use
     local $ENV{ZNAP_NAME} = $snapshotName;
@@ -424,6 +424,43 @@ my $createSnapshot = sub {
 
             system($backupSet->{post_znap_cmd})
                 && $self->zLog->warn("running post snapshot command on $backupSet->{src} failed");
+        }
+    }
+
+    # remove snapshots from descendant subsystems that have the property "enabled" to "off", if the
+    # "recursive" flag is set to "on"
+    if ($backupSet->{recursive} eq 'on') {
+
+        $self->zLog->info("checking ZFS dependent datasets from '$backupSet->{src}' explicitely excluded");
+
+        # restrict the list to the datasets that are descendant from the current
+        my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
+        if ( @dataSetList ) {
+
+            # for each dataset: if the property "enabled" is set to "off", set the
+            # newly created snapshot for removal
+            my @dataSetsExplicitelyDisabled = ();
+            for my $dataSet (@dataSetList){
+                
+                # get the value for org.znapzend property
+                my @cmd = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
+                print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+                open my $prop, '-|', @cmd;
+
+                # if the property does not exist, the command will just return. In this case,
+                # the value is implicit "on"
+                $prop = <$prop> || "on";
+                chomp($prop);
+                if ( $prop eq 'off' ) {
+                    push(@dataSetsExplicitelyDisabled, $dataSet . '@' . $snapshotSuffix);
+                }
+            }
+
+            # remove the snapshots previously marked
+           if ( @dataSetsExplicitelyDisabled ){
+               $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitelyDisabled));
+               $self->zZfs->destroySnapshots(@dataSetsExplicitelyDisabled);
+           }
         }
     }
 
@@ -600,7 +637,9 @@ my $daemonize = sub {
     my $pidFile = $self->pidfile || $self->defaultPidFile;
 
     if (-f $pidFile){
-        chomp(my $pid = slurp $pidFile);
+        open my $fh, $pidFile or die "ERROR: pid file '$pidFile' exists but is not readable\n";
+        chomp(my $pid = <$fh>);
+        close $fh;
         #pid is not empty and is numeric
         if ($pid && ($pid = int($pid)) && kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";

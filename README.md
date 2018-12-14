@@ -83,6 +83,13 @@ can be found at https://github.com/Gregy/znapzend-debian
 
 An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
+For Fedora specifically there's also a [copr repository](https://copr.fedorainfracloud.org/coprs/oranenj/znapzend/) by [oranenj](https://copr.fedorainfracloud.org/coprs/oranenj/) (sources at https://github.com/oranenj/copr-repos/tree/master/znapzend):
+
+```
+dnf copr enable oranenj/znapzend 
+dnf install znapzend
+```
+
 Configuration
 -------------
 
@@ -148,6 +155,14 @@ znapzend --daemonize
 Best practice is to integrate znapzend into your system startup sequence,
 but you can also run it by hand. See the [init/README.md](init/README.md)
 for some inspiration.
+
+Running by an unprivileged user
+-------------------------------
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 
 Troubleshooting
 ---------------
