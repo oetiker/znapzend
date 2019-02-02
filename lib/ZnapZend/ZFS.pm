@@ -243,11 +243,12 @@ sub destroySnapshots {
     if ($self->oracleMode){
         my $destroyError = '';
         for my $task (@toDestroy){
-            my ($remote, $dataSet) = $splitHostDataSet->($task);
-            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), $dataSet]);
+            my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
+            my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
+            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), "$dataSet\@$snapshot"]);
 
             print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-            system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\n"
+            system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
                 if !($self->noaction || $self->nodestroy);
         }
         #remove trailing \n
