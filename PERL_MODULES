@@ -1,4 +1,4 @@
-Mojolicious@6.46
+Mojolicious@6.47
 Mojo::IOLoop::ForkCall@0.17
 Scalar::Util@1.45
 Test::Harness

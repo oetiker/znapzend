@@ -83,6 +83,13 @@ can be found at https://github.com/Gregy/znapzend-debian
 
 An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
+For Fedora specifically there's also a [copr repository](https://copr.fedorainfracloud.org/coprs/oranenj/znapzend/) by [oranenj](https://copr.fedorainfracloud.org/coprs/oranenj/) (sources at https://github.com/oranenj/copr-repos/tree/master/znapzend):
+
+```
+dnf copr enable oranenj/znapzend 
+dnf install znapzend
+```
+
 Configuration
 -------------
 

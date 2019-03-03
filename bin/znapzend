@@ -79,7 +79,7 @@ B<znapzend> [I<options>...]
  -n,--noaction          run in simulation mode. does no changes to the filesystem
  --nodestroy            does all changes to the filesystem except destroy
  --logto=x              select where to log to (syslog::<facility> or <filepath>)
- --loglevel=x           define the log level when logging to file
+ --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
  --daemonize            fork into the background
  --runonce=[x]          run one round on the optionally provided dataset

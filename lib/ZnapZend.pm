@@ -2,7 +2,6 @@ package ZnapZend;
 
 use Mojo::Base -base;
 use Mojo::IOLoop::ForkCall;
-use Mojo::Util qw(slurp);
 use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
@@ -90,7 +89,7 @@ has zLog => sub {
         $log->on(
             message => sub {
                 my ($log, $level, @lines) = @_;
-                syslog($logLevels{$level}, @lines);
+                syslog($logLevels{$level}, @lines) if $log->is_level($level);
             }
         );
     };
@@ -658,7 +657,9 @@ my $daemonize = sub {
     my $pidFile = $self->pidfile || $self->defaultPidFile;
 
     if (-f $pidFile){
-        chomp(my $pid = slurp $pidFile);
+        open my $fh, $pidFile or die "ERROR: pid file '$pidFile' exists but is not readable\n";
+        chomp(my $pid = <$fh>);
+        close $fh;
         #pid is not empty and is numeric
         if ($pid && ($pid = int($pid)) && kill 0, $pid){
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
