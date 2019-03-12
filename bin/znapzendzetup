@@ -31,7 +31,7 @@ sub dumpProperties {
                 }
             }
             else{
-                printf("%16s = $backupSet->{$opt}\n",$opt);
+                printf("%16s = %s\n",$opt,$backupSet->{$opt});
             }
         }
         print "\n";
