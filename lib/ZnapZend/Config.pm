@@ -31,7 +31,7 @@ has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 has backupSets => sub { [] };
 
 ### private functions ###
-my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
+my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
 
 ### private methods ###
 my $checkBackupPlan = sub {
@@ -175,6 +175,7 @@ my $getBackupSet = sub {
     return $self->backupSets;
 };
 
+### public methods ###
 sub getBackupSet {
     my $self = shift;
 
