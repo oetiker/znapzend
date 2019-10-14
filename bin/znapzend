@@ -9,7 +9,7 @@ use Pod::Usage;
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
 my $opts = {};
-my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed);
+my %featureMap = map { $_ => 1 } qw(oracleMode recvu pfexec sudo compressed lowmemRecurse);
 
 sub main {
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
@@ -185,6 +185,14 @@ default, decompress the data before sending. Zfs recv will then compress it agai
 writing it to disk. Using -c will skip the unnecessary decompress-compress stages.
 This decreases CPU load on both source and destination as well as reduce network
 bandwidth. The -L option is for large block support and -e is for embedded data support.
+
+=item lowmemRecurse
+
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
 
 =back
 

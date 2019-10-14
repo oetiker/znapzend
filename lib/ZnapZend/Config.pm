@@ -7,6 +7,7 @@ use Text::ParseWords qw(shellwords);
 
 ### attributes ###
 has debug    => sub { 0 };
+has lowmemRecurse => sub { 0 };
 has noaction => sub { 0 };
 has rootExec => sub { q{} };
 has timeWarp => sub { undef };
@@ -25,7 +26,7 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec); };
+has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec, lowmemRecurse => $self->lowmemRecurse); };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };

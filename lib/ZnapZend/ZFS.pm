@@ -11,6 +11,7 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
+has lowmemRecurse   => sub { 0 };
 has rootExec        => sub { q{} };
 has sendDelay       => sub { 3 };
 has connectTimeout  => sub { 30 };
@@ -125,8 +126,31 @@ sub snapshotExists {
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
+    my $rootDataSets = shift; # May be not passed, or may be a string, or an array of strings
+    my $recurse = shift; # May be not passed => undef
 
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name -t), 'filesystem,volume']);
+    # By default this lists all fs/vol datasets in the system
+    # Optionally we can ask for specific rootDataSets possibly with children
+    if (defined ($rootDataSets) && $rootDataSets) {
+        my @useRDS;
+        if ( (ref($rootDataSets) eq 'ARRAY') ) {
+            if (scalar(@$rootDataSets) > 0) {
+                push (@useRDS, @$rootDataSets);
+            }
+        } else {
+            # Assume string
+            if ($rootDataSets ne "") {
+                push (@useRDS, ($rootDataSets));
+            }
+        }
+        if (scalar(@useRDS) > 0) {
+            if (defined ($recurse) && $recurse) {
+                push (@ssh, qw(-r));
+            }
+            push(@ssh, @useRDS);
+        }
+    }
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
@@ -442,16 +466,37 @@ sub getDataSetProperties {
         $recurse = 0;
     }
 
-    # TODO: Before the recursive and multiple dataset support we either
+    # Note: Before the recursive and multiple dataset support we either
     # used the provided dataSet name "as is" trusting it exists (failed
     # later if not), or called listDataSets() to list everything on the
     # system from `zfs` (also ensuring stuff exists). So we still do.
+    # Before the recursive the @list must have had individual dataset
+    # names, passed directly, or subsequently recursively listed above,
+    # to assign into the discovered list elements. So no recursion was
+    # needed in the logic below. Now we recurse by default to call `zfs`
+    # as rarely as we can and so complete faster. However, on systems
+    # with too many datasets this can exhaust the memory available to
+    # the process, and/or time out. To defend against this, we optionally
+    # can fall back to a big list of individual dataset names found by
+    # recursive listDataSets() invocations instead.
     if ($dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
+            if ($self->lowmemRecurse && $recurse) {
+                my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                push (@list, @{$listds});
+                $recurse = 0;
+            } else {
                 push (@list, @$dataSet);
+            }
         } else {
-                # Assume a string, per usual invokation
+            # Assume a string, per usual invokation
+            if ($self->lowmemRecurse && $recurse) {
+                my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                push (@list, @{$listds});
+                $recurse = 0;
+            } else {
                 push (@list, ($dataSet));
+            }
         }
     } else {
         push (@list, $self->listDataSets());
