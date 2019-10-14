@@ -97,6 +97,8 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
 is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
 is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
 
+is (runCommand(qw(list --features=lowmemRecurse --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse --debug --recursive tank/source');
+
 done_testing;
 
 1;
