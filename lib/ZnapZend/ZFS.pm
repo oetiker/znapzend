@@ -481,7 +481,7 @@ sub getDataSetProperties {
     # the process, and/or time out. To defend against this, we optionally
     # can fall back to a big list of individual dataset names found by
     # recursive listDataSets() invocations instead.
-    if ($dataSet) {
+    if (defined($dataSet) && $dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
             print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
@@ -489,7 +489,11 @@ sub getDataSetProperties {
                 push (@list, @{$listds});
                 $recurse = 0;
             } else {
-                push (@list, @$dataSet);
+                if ( (scalar(@$dataSet) > 0) && (defined(@$dataSet[0])) ) {
+                    push (@list, @$dataSet);
+                } else {
+                    print STDERR "=== getDataSetProperties(): skip array context: value(s) inside undef...\n" if $self->debug;
+                }
             }
         } else {
             # Assume a string, per usual invokation
@@ -499,12 +503,21 @@ sub getDataSetProperties {
                 push (@list, @{$listds});
                 $recurse = 0;
             } else {
-                push (@list, ($dataSet));
+                if ($dataSet ne '') {
+                    push (@list, ($dataSet));
+                } else {
+                    print STDERR "=== getDataSetProperties(): skip string context: value(s) inside undef...\n" if $self->debug;
+                }
             }
         }
     } else {
+        print STDERR "=== getDataSetProperties(): no dataSet argument passed\n" if $self->debug;
+    }
+
+    if (scalar(@list) == 0) {
         print STDERR "=== getDataSetProperties(): List all...\n" if $self->debug;
-        push (@list, $self->listDataSets());
+        my $listds = $self->listDataSets();
+        push (@list, @{$listds});
     }
 
     for my $listElem (@list){

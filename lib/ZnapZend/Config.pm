@@ -164,7 +164,12 @@ my $getBackupSet = sub {
     my $recurse = shift;
 
     #get all backup sets and check if valid, from remainder of ARGV
-    $self->backupSets($self->zfs->getDataSetProperties(\@_, $recurse));
+    if (scalar(@_) > 0) {
+        $self->backupSets($self->zfs->getDataSetProperties(\@_, $recurse));
+    } else {
+        # Not that recursion makes much sense for "undef" (=> list everything)
+        $self->backupSets($self->zfs->getDataSetProperties(undef, $recurse));
+    }
     $self->$checkBackupSets();
 
     if ($enabledOnly){
