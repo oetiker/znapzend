@@ -183,12 +183,14 @@ my $getBackupSet = sub {
 sub getBackupSet {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (false)
     return $self->$getBackupSet(0, @_);
 }
 
 sub getBackupSetEnabled {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (true)
     return $self->$getBackupSet(1, @_);
 }
 
