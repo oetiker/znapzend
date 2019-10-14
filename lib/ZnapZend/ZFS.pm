@@ -486,6 +486,10 @@ sub getDataSetProperties {
             print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                if (scalar(@{$listds}) == 0) {
+                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    return \@propertyList;
+                }
                 push (@list, @{$listds});
                 $recurse = 0;
             } else {
@@ -500,6 +504,10 @@ sub getDataSetProperties {
             print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                if (scalar(@{$listds}) == 0) {
+                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    return \@propertyList;
+                }
                 push (@list, @{$listds});
                 $recurse = 0;
             } else {
@@ -515,8 +523,12 @@ sub getDataSetProperties {
     }
 
     if (scalar(@list) == 0) {
-        print STDERR "=== getDataSetProperties(): List all...\n" if $self->debug;
+        print STDERR "=== getDataSetProperties(): List all local datasets on the system...\n" if $self->debug;
         my $listds = $self->listDataSets();
+        if (scalar(@{$listds}) == 0) {
+            print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+            return \@propertyList;
+        }
         push (@list, @{$listds});
     }
 
