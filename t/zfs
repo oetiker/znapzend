@@ -66,22 +66,26 @@ for ($command){
             exit;
         }
         exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
+        my $prefix = "";
+        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+            $prefix = "tank/source ";
+        }
         print <<"ZFS_GET_END";
-org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
-org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
-org.znapzend:dst_fail_plan  1hours=>1minutes
-org.znapzend:src            tank/source
-org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
-org.znapzend:recursive      on
-org.znapzend:tsformat       %Y-%m-%d-%H%M%S
-org.znapzend:enabled        on
-org.znapzend:dst_0          backup/destination
-org.znapzend:dst_a          root\@remote:remote/destination
-org.znapzend:dst_fail       backup/destfail
-org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
-org.znapzend:mbuffer_size   100M
-org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
-org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
+${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
+${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
+${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes
+${prefix}org.znapzend:src            tank/source
+${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
+${prefix}org.znapzend:recursive      on
+${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S
+${prefix}org.znapzend:enabled        on
+${prefix}org.znapzend:dst_0          backup/destination
+${prefix}org.znapzend:dst_a          root\@remote:remote/destination
+${prefix}org.znapzend:dst_fail       backup/destfail
+${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
+${prefix}org.znapzend:mbuffer_size   100M
+${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
+${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
 ZFS_GET_END
 
         exit;
