@@ -1,4 +1,176 @@
-commit 91e0a0dede87600aa554e38b6b5dff5fa3982f82
+commit 840a4dbbff26f94951bcfccc5d5cd12f09e009dc
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 19:35:53 2019 +0200
+
+    Add znapzendzetup --debug support for getDataSetProperties()
+
+commit 3fd7133d8804a03fb258591592e20de4ca0d3fb1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 14 19:32:00 2019 +0200
+
+    Problem: With many datasets, recursive listing can fail with ENOMEM
+    
+    Solution: add a --features=lowmemRecurse support to first list the
+    datasets recursively, and then one by one inspect their attributes.
+    This is slower (more calls to `zfs`) but should be more reliable on
+    systems that are mis-dimensioned to fail otherwise.
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit 77d6ef66710e96666da5abff29114a3fb0a158fc
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 18:20:33 2019 +0200
+
+    Clarify what the public getBackupSet() and getBackupSetEnabled() do in code comments
+
+commit 1ef93ce0e4bb7bb6b40222daded628faad24a5c7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 18:14:02 2019 +0200
+
+    Fix some typos in comments
+
+commit 982e38921271c542a3da975e2120fa6a28f7e2ff
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 14 18:08:34 2019 +0200
+
+    Problem: Can't list backup plans for many datasets at once
+    
+    Solution: Extend getDataSetProperties() and getBackupSet()
+    with support for passing a $dataSet argument as a perl array,
+    as well as a currently supported string, and so allow to
+    `znapzendzetup list (-r) ds1 ds2 ...`.
+    
+    Compatible with recently added recursion.
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit 88c4f241c217afbd25fdae579518197162f33c3b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 14 18:05:28 2019 +0200
+
+    Problem: Can't recurse from one pool root to get its backup plans
+    
+    Solution: extend getDataSetProperties() and getBackupSet()
+    with recursion ability, than can be optionally invoked from
+    `znapzendzetup list -r poolname(/dataset)`.
+    
+    Try to call `zfs` as few times as possible, listing the ZFS
+    dataset attributes recursively (if asked to at all) starting
+    from the named dataset.
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit 66baf324d60526ab565844e11c363e5b39cb4c19
+Author: spike <spike@fedoraproject.org>
+Date:   Mon Sep 9 02:52:33 2019 +0200
+
+    Updated information about copr repository in README.md
+
+commit 1cf0722a960798d26679f70354fe3010b9f2e2a7
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Sep 10 17:11:16 2019 +0200
+
+    add Test::Exception module
+
+commit c7fa2a586a492e0e34db13b3c1e61610ea683503
+Author: Stefan Benter <stefan@bentertain.de>
+Date:   Fri Feb 1 22:34:09 2019 +0100
+
+    Fixes oetiker/znapzend#402 "Code review - my $splitHostDataSet differs between Config.pm and ZFS.pm"
+    
+    Config.pm now uses the same definition of $splitHostDataSet as ZFS.pm.
+
+commit defcf6d761e2c54a828b47676bf1b2d5c6b6b196
+Author: Chris Griffith <christo.griffith@gmail.com>
+Date:   Tue Mar 12 07:56:49 2019 -0700
+
+    zetup: Don't expand variables in printf format
+    
+    Expanding the timestamp option inside the printf format string results
+    in printf warnings because the % characters get interpreted as format
+    specifiers.
+    
+    Fixes: #409
+
+commit e9d65e62b05cf8e38987d52ab2ef909f033413d8
+Author: Stefan Benter <stefan@bentertain.de>
+Date:   Fri Feb 1 21:56:23 2019 +0100
+
+    Fixes oetiker/znapzend#401 "Code review - destroySnapshots - check that $dataSet is a snapshot before destroying it"
+    
+    ZFS.pm destroySnapshots now invokes splitDataSetSnapshot before destroying a snapshot (new: now also in oracle mode). Therefore we are verifying, that we are actually only destorying a snapshot and not the whole file system.
+
+commit 69b7a71b572f1bdb477d90710db52e4bab847904
+Author: spike77453 <spike77453@users.noreply.github.com>
+Date:   Sun Nov 18 12:55:45 2018 +0100
+
+    Added copr repository to README.md
+
+commit 1822143aa576782d2d621c7b949e0cad7d32b9e5
+Author: Malcolm Scott <github@malc.org.uk>
+Date:   Sun Nov 4 15:15:37 2018 +0000
+
+    Mojo::Log::is_level needs Mojolicious 6.47
+
+commit 7e2b540fb0a5b99c9bace76bebb1834b5db9bbdb
+Author: Malcolm Scott <github@malc.org.uk>
+Date:   Sun Nov 4 15:08:56 2018 +0000
+
+    Honour --loglevel when using syslog
+
+commit b9e1bcda1fca92ce5dabf8c2ea17069da2da3d45
+Author: Malcolm Scott <github@malc.org.uk>
+Date:   Sun Nov 4 15:42:22 2018 +0000
+
+    Don't use deprecated Mojo::Util::slurp
+
+commit 4539a0ac7bd7293690da5cc4ff1ededad57fe3aa
+Author: Felix Rubio <felix@kngnt.org>
+Date:   Thu Oct 11 21:07:59 2018 +0200
+
+    Enabling a pre-check for datasets with only the 'enabled' property set, which is a legitimate situation
+
+commit c319917faac0cea712f7deaab23a9d42623b654b
+Author: Felix Rubio <felix@kngnt.org>
+Date:   Sat Oct 6 22:35:06 2018 +0200
+
+    Added logging support to Config module. When a property does not exist, log it and continue
+
+commit 4ccbe714186ac1fbc72a81e0548e6178279b8c76
+Author: flixman <felix@kngnt.org>
+Date:   Mon Oct 1 17:59:16 2018 +0000
+
+    Update ZnapZend.pm
+    
+    Dummy change to force travis to check the code again.
+
+commit 56eb2f79650eae4b5c4c967842d4756c26b6ee80
+Author: flixman <felix@kngnt.org>
+Date:   Wed Sep 26 18:51:15 2018 +0000
+
+    Update ZnapZend.pm
+
+commit c45ec2c78228dca183169fab07047901502a4bfc
+Author: flixman <felix@kngnt.org>
+Date:   Sun Sep 23 15:56:13 2018 +0000
+
+    Addressing issue #154
+    
+    As the sending of the ZFS streams is per stream, we can disable children ZFS from being snapshot/sent by setting the property "org.znapzend:enabled" to "off" on them. For the dataset being processed, in case the recursive flag is set, its children will be checked and their recently created snapshots removed.
+
+commit 1d8a0960eaa72b75d4f7332986f4c6171a33d15c
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Sep 24 13:07:17 2018 +0200
+
+    Updated CHANGES
+
+commit 9a7885b9beb2256465f89953e486ed8f5c7ce994
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Sep 24 13:06:47 2018 +0200
+
+    Makefile.in : regenerated updated EXTRA_DIST list
+
+commit 755a0dae17efc79226dfec9540bb408eaab21e5d
 Author: Jim Klimov <jim@jimklimov.com>
 Date:   Mon Sep 24 13:02:30 2018 +0200
 
@@ -25,6 +197,12 @@ Date:   Mon Jul 16 14:08:06 2018 +0000
     * Update znapzendzetup
     
     * Update README.md
+
+commit 9a65a4836517341c89715ea9d7fed9353216530d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Dec 14 10:16:26 2018 +0100
+
+    fix issue #400 - negative repeat count error
 
 commit c604a86857430258c2b8479c356437c0f61a4dc6
 Author: Tobias Oetiker <tobi@oetiker.ch>
