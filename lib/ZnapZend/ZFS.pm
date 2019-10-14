@@ -82,7 +82,7 @@ sub dataSetExists {
     my $dataSet = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
@@ -104,7 +104,7 @@ sub snapshotExists {
     my $snapshot = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$snapshot;
 
     ($remote, $snapshot) = $splitHostDataSet->($snapshot);
@@ -169,7 +169,7 @@ sub createDataSet {
     my $dataSet = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
