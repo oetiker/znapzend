@@ -81,7 +81,10 @@ sub main {
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     # MAYBE make $enabledOnly parameter public in Config.pm
-    my $backupSets = ($opts->{"only-enabled"} ? $zConfig->getBackupSetEnabled(pop @ARGV) : $zConfig->getBackupSet(pop @ARGV))
+    my $recurse = (defined($opts->{"recursive"}));
+    my $backupSets = ($opts->{"only-enabled"}
+        ? $zConfig->getBackupSetEnabled($recurse, pop @ARGV)
+        : $zConfig->getBackupSet($recurse, pop @ARGV))
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set

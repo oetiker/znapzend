@@ -156,10 +156,15 @@ my $checkBackupSets = sub {
 my $getBackupSet = sub {
     my $self = shift;
     my $enabledOnly = shift;
+    # The recursion setting allows to find datasets under the named one
+    # (e.g. a pool root DS that might not necessarily have a znapzend
+    # configuration by itself). Similar to listing ALL configs when no
+    # dataset was passed, but no impact of looking at the whole system.
+    my $recurse = shift;
     my $dataSet = shift;
-    
+
     #get all backup sets and check if valid
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet));
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse));
     $self->$checkBackupSets();
 
     if ($enabledOnly){
@@ -307,7 +312,8 @@ keeps the backup configuration to be set
 
 =head2 getBackupSet
 
-returns the backup settings for a dataset or all datasets if dataset is omitted
+returns the backup settings for a dataset, it and/or children
+if called as recursive, or all datasets if dataset is omitted
 
 =head2 getBackupSetEnabled
 

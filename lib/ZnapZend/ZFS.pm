@@ -431,25 +431,55 @@ sub sendRecvSnapshots {
 sub getDataSetProperties {
     my $self = shift;
     my $dataSet = shift;
+    my $recurse = shift; # May be not passed => undef
+
     my @propertyList;
     my $propertyPrefix = $self->propertyPrefix;
 
     my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
 
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
     for my $listElem (@$list){
         my %properties;
-        my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
+        my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
+        push (@cmd, qw(-t), 'filesystem,volume');
+        if ($recurse) {
+            push (@cmd, qw(-r));
+        }
+        push (@cmd, qw(-o), 'name,property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+        # NOTE: Code below assumes that the listing groups all items of one dataset together
+        my $prev_srcds = "";
         while (my $prop = <$props>){
             chomp $prop;
-            my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+            # NOTE: This regex assumes the dataset names do not have trailing whitespaces
+            my ($srcds, $key, $value) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+            if ($srcds ne $prev_srcds) {
+                if (%properties && $prev_srcds ne ""){
+                    # place source dataset on list, too. so we know where the properties are from...
+                    $properties{src} = $prev_srcds;
+                    # Note: replacing %properties completely proved hard,
+                    # it just pushed references to same object for many
+                    # really-found datasets. So we make unique copies and
+                    # push them instead.
+                    my %newProps = %properties;
+                    push @propertyList, \%newProps;
+                    %properties = ();
+                }
+                $prev_srcds = $srcds;
+            }
             $properties{$key} = $value;
         }
         if (%properties){
-        # place source dataset on list, too. so we know where the properties are from...
-            $properties{src} = $listElem;
-            push @propertyList, \%properties;
+            # place source dataset on list, too. so we know where the properties are from...
+            # the last-used dataset is prev_srcds
+            $properties{src} = $prev_srcds;
+            my %newProps = %properties;
+            push @propertyList, \%newProps;
         }
     }
 

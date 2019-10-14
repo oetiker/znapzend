@@ -198,7 +198,7 @@ sub main {
         if ($#ARGV == grep { /^--(?:$ignoreOpts)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
 
-            my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
+            my $backupSet = $zConfig->getBackupSet(0, $opts->{src})->[0]
                 or die "ERROR: cannot get backup config\n";
 
             my $props = dumpPropertiesRaw($backupSet);
@@ -252,7 +252,7 @@ sub main {
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
 
         #get active backup config
-        my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
+        my $backupSets = $zConfig->getBackupSet(0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
         @$backupSets or die "ERROR: backup set for $backupSet->{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
@@ -299,7 +299,11 @@ sub main {
         last;
     };
     /^list$/ && do {
-        my $backupSets = $zConfig->getBackupSet(pop @ARGV)
+        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r))) or exit 1;
+
+        my $recurse = ( defined($opts->{recursive}) );
+
+        my $backupSets = $zConfig->getBackupSet($recurse, pop @ARGV)
             or die "ERROR: cannot list backup config\n";
 
         dumpProperties($backupSets);
@@ -308,8 +312,9 @@ sub main {
     /^export$/ && do {
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
+        # TODO: support --recursive? Does not make much sense "as is" for import then
 
-        my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
+        my $backupSet = $zConfig->getBackupSet(0, $opts->{src})->[0]
             or die "ERROR: cannot get backup config\n";
 
         my $props = dumpPropertiesRaw($backupSet);
@@ -439,7 +444,7 @@ where 'command' is one of the following:
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--rootExec={pfexec|sudo}] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [--recursive] [src_dataset]
 
     export  [--rootExec={pfexec|sudo}] <src_dataset>
 
