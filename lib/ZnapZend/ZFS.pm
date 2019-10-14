@@ -3,6 +3,7 @@ package ZnapZend::ZFS;
 use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::ForkCall;
+use Data::Dumper;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -461,6 +462,7 @@ sub getDataSetProperties {
     my $propertyPrefix = $self->propertyPrefix;
 
     my @list;
+    print STDERR "=== getDataSetProperties():\n\trecurse=" . Dumper($recurse) . "\n\tDS=" . Dumper($dataSet) . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n" if $self->debug;
 
     if (!defined($recurse)) {
         $recurse = 0;
@@ -481,6 +483,7 @@ sub getDataSetProperties {
     # recursive listDataSets() invocations instead.
     if ($dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
+            print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
                 push (@list, @{$listds});
@@ -490,6 +493,7 @@ sub getDataSetProperties {
             }
         } else {
             # Assume a string, per usual invokation
+            print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
                 push (@list, @{$listds});
@@ -499,10 +503,12 @@ sub getDataSetProperties {
             }
         }
     } else {
+        print STDERR "=== getDataSetProperties(): List all...\n" if $self->debug;
         push (@list, $self->listDataSets());
     }
 
     for my $listElem (@list){
+        print STDERR "=== getDataSetProperties(): Looking under '$listElem' with '$recurse' recursion mode\n" if $self->debug;
         my %properties;
         my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
         push (@cmd, qw(-t), 'filesystem,volume');
@@ -518,9 +524,11 @@ sub getDataSetProperties {
             chomp $prop;
             # NOTE: This regex assumes the dataset names do not have trailing whitespaces
             my ($srcds, $key, $value) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+            print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value'\n" if $self->debug;
             if ($srcds ne $prev_srcds) {
                 if (%properties && $prev_srcds ne ""){
                     # place source dataset on list, too. so we know where the properties are from...
+                    print STDERR "=== getDataSetProperties(): SAVE: '$prev_srcds'\n" if $self->debug;
                     $properties{src} = $prev_srcds;
                     # Note: replacing %properties completely proved hard,
                     # it just pushed references to same object for many
@@ -537,11 +545,14 @@ sub getDataSetProperties {
         if (%properties){
             # place source dataset on list, too. so we know where the properties are from...
             # the last-used dataset is prev_srcds
+            print STDERR "=== getDataSetProperties(): SAVE LAST: '$prev_srcds'\n" if $self->debug;
             $properties{src} = $prev_srcds;
             my %newProps = %properties;
             push @propertyList, \%newProps;
         }
     }
+
+    print STDERR "=== getDataSetProperties():\n\tCollected: " . Dumper(@propertyList) . "\n" if $self->debug;
 
     return \@propertyList;
 }

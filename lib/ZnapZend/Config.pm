@@ -26,7 +26,7 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec, lowmemRecurse => $self->lowmemRecurse); };
+has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec, debug => $self->debug, lowmemRecurse => $self->lowmemRecurse); };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };

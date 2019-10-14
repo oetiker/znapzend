@@ -11,7 +11,7 @@ use Mojo::Base -strict;
 use ZnapZend::Config;
 my $VERSION = '0.dev'; #VERSION
 
-my @ROOT_EXEC_OPTIONS = qw(pfexec sudo rootExec=s features=s);
+my @ROOT_EXEC_OPTIONS = qw(pfexec sudo rootExec=s debug features=s);
 my %featureMap = map { $_ => 1 } qw(pfexec sudo lowmemRecurse);
 
 sub dumpProperties {
@@ -146,11 +146,20 @@ sub main {
         $opts->{rootExec} = 'sudo';
     }
 
+    if (defined($opts->{debug})) {
+        $opts->{debug} = 1;
+        if ($opts->{debug} eq 'off') {
+            $opts->{debug} = 0;
+        }
+    } else {
+        $opts->{debug} = 0;
+    }
+
     if (!defined($opts->{lowmemRecurse})) {
         $opts->{lowmemRecurse} = 0;
     }
 
-    my $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, lowmemRecurse => $opts->{lowmemRecurse});
+    my $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, debug => $opts->{debug}, lowmemRecurse => $opts->{lowmemRecurse});
 
     for ($mainOpt){
 
