@@ -61,7 +61,8 @@ for ($command){
     };
 
     /^get$/ && do {
-        if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
+        #if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
+        if ( join(" ", @ARGV) =~ /usedbysnapshots/ ){
             print "10G\n";
             exit;
         }
