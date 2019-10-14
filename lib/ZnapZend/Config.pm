@@ -161,10 +161,9 @@ my $getBackupSet = sub {
     # configuration by itself). Similar to listing ALL configs when no
     # dataset was passed, but no impact of looking at the whole system.
     my $recurse = shift;
-    my $dataSet = shift;
 
-    #get all backup sets and check if valid
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse));
+    #get all backup sets and check if valid, from remainder of ARGV
+    $self->backupSets($self->zfs->getDataSetProperties(\@_, $recurse));
     $self->$checkBackupSets();
 
     if ($enabledOnly){

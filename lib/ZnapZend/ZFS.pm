@@ -436,13 +436,28 @@ sub getDataSetProperties {
     my @propertyList;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
+    my @list;
 
     if (!defined($recurse)) {
         $recurse = 0;
     }
 
-    for my $listElem (@$list){
+    # TODO: Before the recursive and multiple dataset support we either
+    # used the provided dataSet name "as is" trusting it exists (failed
+    # later if not), or called listDataSets() to list everything on the
+    # system from `zfs` (also ensuring stuff exists). So we still do.
+    if ($dataSet) {
+        if (ref($dataSet) eq 'ARRAY') {
+                push (@list, @$dataSet);
+        } else {
+                # Assume a string, per usual invokation
+                push (@list, ($dataSet));
+        }
+    } else {
+        push (@list, $self->listDataSets());
+    }
+
+    for my $listElem (@list){
         my %properties;
         my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
         push (@cmd, qw(-t), 'filesystem,volume');
