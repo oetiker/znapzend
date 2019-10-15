@@ -147,10 +147,7 @@ sub main {
     }
 
     if (defined($opts->{debug})) {
-        $opts->{debug} = 1;
-        if ($opts->{debug} eq 'off') {
-            $opts->{debug} = 0;
-        }
+        $opts->{debug} = ( $opts->{debug} eq 'off' ? 0 : 1 );
     } else {
         $opts->{debug} = 0;
     }
