@@ -31,12 +31,7 @@ sub dumpProperties {
                 }
             }
             else{
-                if (length($opt) < 16) {
-                    print $opt . ' ' x (16 - length($opt)) . "= $backupSet->{$opt}\n";
-                }
-                else {
-                    print $opt . " = $backupSet->{$opt}\n";
-                }
+                printf("%16s = %s\n",$opt,$backupSet->{$opt});
             }
         }
         print "\n";
