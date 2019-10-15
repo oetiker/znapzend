@@ -514,7 +514,7 @@ sub getDataSetProperties {
                 if ($dataSet ne '') {
                     push (@list, ($dataSet));
                 } else {
-                    print STDERR "=== getDataSetProperties(): skip string context: value(s) inside undef...\n" if $self->debug;
+                    print STDERR "=== getDataSetProperties(): skip string context: value inside is empty...\n" if $self->debug;
                 }
             }
         }
