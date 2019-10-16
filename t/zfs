@@ -9,6 +9,8 @@ use Time::Piece;
 my %dataSets = (
     'tank'               => '',
     'tank/source'        => 'src',
+    'tank/source/child'        => 'src',
+    'tank/source/child/grandchild'        => 'src',
     'backup'             => '',
     'backup/destination' => 'dst',
     'remote'             => '',
@@ -22,6 +24,7 @@ sub print_zfs_get {
     my $dstname = shift;
 
     if ( defined($prefix) ) {
+        chomp $prefix;
         if (!defined($srcname) || $srcname eq '') { $srcname = $prefix; }
     } else {
         $prefix = "";
@@ -41,7 +44,7 @@ sub print_zfs_get {
 
     if ($prefix ne '') { $prefix .= " "; }
 
-#print STDERR "===zfs get: '$prefix' '$srcname' '$dstname'\n";
+# print STDERR "===zfs get: '$prefix' '$srcname' '$dstname'\n";
 
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
@@ -113,12 +116,64 @@ for ($command){
             print "10G\n";
             exit;
         }
-        exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
+
+#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
+
+        exit if !( (exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src') || (join(" ", @ARGV) =~ / -r /) );
+
         my $prefix = "";
-        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
-            $prefix = "tank/source";
+        my $srcds = "";
+        my $srcdsOrig = "";
+
+        if (exists $dataSets{$ARGV[-1]}) {
+            $srcds = "$ARGV[-1]";
+            $srcdsOrig = $srcds;
+        } else {
+            $srcds = "tank";
         }
-        print_zfs_get ($prefix);
+
+        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+            # The request we do when recursively looking for dataset props
+            # Asked to print a prefix
+            $prefix = "$srcds";
+        }
+
+        # Print a tree if either recursing from given srcds from CLI args,
+        # or have none given at all (and so printing the world). Note that
+        # the dataset in CLI args *must* be one from the array, otherwise
+        # the mockup treats it as a random `zfs` option and ignores it.
+        if (
+            (join(" ", @ARGV) =~ / -r / && $srcds ne '')
+         || ($srcdsOrig eq '')
+        ) {
+#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
+
+            # Note that listing `zfs get -r -o property,value all dataset`
+            # with both this code and real ZFS returns a lot of repetitive
+            # lines (same keys, different values) for dataset's children
+            # that you can't really tell apart without the "name" column.
+
+            # Per checks above we know the $prefix is empty or exactly
+            # last ARGV item.
+            if ($dataSets{$srcds} eq 'src') {
+                print_zfs_get ($prefix, $srcds);
+            }
+
+            # Does the srcds (from prefix or defaulted) have any descendants?
+            for my $childds (sort(keys %dataSets)) {
+                if ( $childds =~ /^$srcds\// ) {
+                    if ($dataSets{$childds} eq 'src') {
+                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds);
+                    }
+                }
+            }
+        } else {
+            if ($dataSets{$ARGV[-1]} eq 'src') {
+                print_zfs_get ($prefix);
+            }
+        }
         exit;
     };
 
