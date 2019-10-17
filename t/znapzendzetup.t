@@ -117,7 +117,7 @@ is (runCommand(qw(list --features=lowmemRecurse -r missingpool)), 0, 'znapzendze
 is (runCommand(qw(export missingpool)), 0, 'znapzendzetup export missingpool');
 
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = '1';
-is (runCommand(qw(list)), 1, 'znapzendzetup list');
+is (runCommand(qw(list)), 0, 'znapzendzetup list');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = undef;
 
 done_testing;
