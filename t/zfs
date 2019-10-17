@@ -13,8 +13,12 @@ my %dataSets = (
     'tank/source/child/grandchild'        => 'src',
     'backup'             => '',
     'backup/destination' => 'dst',
+    'backup/destination/child' => 'dst',
+    'backup/destination/child/grandchild' => 'dst',
     'remote'             => '',
     'remote/destination' => 'dst',
+    'remote/destination/child' => 'dst',
+    'remote/destination/child/grandchild' => 'dst',
 );
 
 sub print_zfs_get {
@@ -44,7 +48,7 @@ sub print_zfs_get {
 
     if ($prefix ne '') { $prefix .= " "; }
 
-# print STDERR "===zfs get: '$prefix' '$srcname' '$dstname'\n";
+# print STDERR "=== zfs get: '$prefix' '$srcname' '$dstname'\n";
 
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
@@ -156,7 +160,7 @@ for ($command){
             (join(" ", @ARGV) =~ / -r / && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
@@ -167,20 +171,38 @@ for ($command){
             # Per checks above we know the $prefix is empty or exactly
             # last ARGV item.
             if ($dataSets{$srcds} eq 'src') {
-                print_zfs_get ($prefix, $srcds);
+                my $dstds;
+                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
+                    $dstds = "destination$1";
+                } else {
+                    $dstds = $srcds;
+                }
+                print_zfs_get ($prefix, $srcds, $dstds);
             }
 
             # Does the srcds (from prefix or defaulted) have any descendants?
             for my $childds (sort(keys %dataSets)) {
                 if ( $childds =~ /^$srcds\// ) {
+                    my $dstds;
+                    if ($childds =~ /^tank\/source($|\/.*$)/ ) {
+                        $dstds = "destination$1";
+                    } else {
+                        $dstds = $childds;
+                    }
                     if ($dataSets{$childds} eq 'src') {
-                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds);
+                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds);
                     }
                 }
             }
         } else {
             if ($dataSets{$ARGV[-1]} eq 'src') {
-                print_zfs_get ($prefix);
+                my $dstds;
+                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
+                    $dstds = "destination$1";
+                } else {
+                    $dstds = $srcds;
+                }
+                print_zfs_get ($prefix, $srcds, $dstds);
             }
         }
         exit;
