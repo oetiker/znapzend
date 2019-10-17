@@ -109,6 +109,10 @@ for ($command){
     /^snapshot$/ && exit 1;
 
     /^list$/ && do {
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_list'}) ) {
+            print STDERR "failed to list mock dataset(s)\n";
+            exit 1;
+        }
         if ($ARGV[4] && $ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
             if ($ARGV[-1] =~ /^[^\@]+\@[^\@]+$/){
                 print $ARGV[-1] . "\n";

@@ -111,6 +111,10 @@ is (runCommand(qw(list missingpool)), 0, 'znapzendzetup list missingpool');
 is (runCommand(qw(list -r missingpool)), 0, 'znapzendzetup list -r missingpool');
 is (runCommand(qw(export missingpool)), 0, 'znapzendzetup export missingpool');
 
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = '1';
+is (runCommand(qw(list)), 1, 'znapzendzetup list');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = undef;
+
 done_testing;
 
 1;
