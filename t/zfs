@@ -92,9 +92,9 @@ for ($command){
             }
             exit;
         }
-        #if there is a '/' it is a dataset
+        #if there is a '/' it is a (non-root) dataset
         if ($ARGV[-1] =~ /\//){
-            print $ARGV[-1] if grep { $ARGV[-1] eq $_ } keys %dataSets;
+            print "$ARGV[-1]\n" if grep { $ARGV[-1] eq $_ } keys %dataSets;
             exit;
         }
         for (sort keys %dataSets){
