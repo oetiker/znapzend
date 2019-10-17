@@ -84,7 +84,12 @@ print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:set|inherit|send|recv)$/ && exit;
+    /^(?:set|inherit|send|recv)$/ && do {
+        if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
+            exit 1;
+        };
+        exit;
+    };
 
     #pretend snapshot to fail => snapshot does exist already
     /^snapshot$/ && exit 1;
@@ -134,6 +139,10 @@ for ($command){
     /^destroy$/ && do {
         if ($ARGV[0] eq '-nv'){
             print "would reclaim 1337G\n";
+        }
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'}) ) {
+            print STDERR "failed to destroy mock dataset(s)\n";
+            exit 1;
         }
         exit;
     };
