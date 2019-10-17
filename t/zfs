@@ -62,6 +62,13 @@ ${prefix}org.znapzend:mbuffer_size   100M
 ${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
 ${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
 ZFS_GET_END
+
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
+            print <<"ZFS_GET_END";
+${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}
+ZFS_GET_END
+        }
+
 } # end of print_zfs_get()
 
 #print zfs command
