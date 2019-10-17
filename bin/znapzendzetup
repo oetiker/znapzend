@@ -328,8 +328,10 @@ sub main {
 
         my $recurse = ( defined($opts->{recursive}) );
 
-        my $backupSets = $zConfig->getBackupSet($recurse, @ARGV)
-            or die "ERROR: cannot list backup config\n";
+        my $backupSets;
+        if (! ($backupSets = $zConfig->getBackupSet($recurse, @ARGV) ) ) {
+            die "ERROR: cannot list backup config\n";
+        }
 
         dumpProperties($backupSets);
         last;
