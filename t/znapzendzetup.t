@@ -105,10 +105,15 @@ is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1
 is (runCommand(qw(list --debug --recursive tank/source)), 1, 'znapzendzetup list --debug --recursive tank/source');
 # This one should follow a codepath of undefined "dataSet" to show and so all datasets known to zfs (mock)
 is (runCommand(qw(list)), 1, 'znapzendzetup list');
+# This one should follow a codepath of a dataset array with several entries
+is (runCommand(qw(list tank/source tank/anothersource)), 1, 'znapzendzetup list two trees');
+is (runCommand(qw(list --features=lowmemRecurse -r tank/source tank/anothersource)), 1, 'znapzendzetup list lowmem two trees');
 
 # These should fail
 is (runCommand(qw(list missingpool)), 0, 'znapzendzetup list missingpool');
 is (runCommand(qw(list -r missingpool)), 0, 'znapzendzetup list -r missingpool');
+is (runCommand(qw(list --features=lowmemRecurse missingpool)), 0, 'znapzendzetup list --features=lowmemRecurse missingpool');
+is (runCommand(qw(list --features=lowmemRecurse -r missingpool)), 0, 'znapzendzetup list --features=lowmemRecurse -r missingpool');
 is (runCommand(qw(export missingpool)), 0, 'znapzendzetup export missingpool');
 
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = '1';
