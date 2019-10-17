@@ -172,11 +172,22 @@ my $getBackupSet = sub {
     }
     $self->$checkBackupSets();
 
+    printf STDERR "=== getBackupSet() : got " . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n" if $self->debug;
+    # Note/FIXME? If there were ZFS errors getting some of several
+    # requested datasets, but at least one succeeded, the result is OK.
+    if (scalar(@{$self->backupSets}) == 0) {
+        return 0; # false
+    }
+
     if ($enabledOnly){
         my @backupSets;
 
         for my $backupSet (@{$self->backupSets}){
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
+        }
+        printf STDERR "=== getBackupSet() : got " . scalar(\@backupSets) . " enabled-only dataset(s) with a local backup plan\n" if $self->debug;
+        if (scalar(\@backupSets) == 0) {
+            return 0; # false
         }
         #return enabled only backup sets
         return \@backupSets;
