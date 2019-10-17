@@ -339,8 +339,14 @@ sub main {
         defined $opts->{src} or pod2usage(1);
         # TODO: support --recursive? Does not make much sense "as is" for import then
 
-        my $backupSet = $zConfig->getBackupSet(0, $opts->{src})->[0]
-            or die "ERROR: cannot get backup config\n";
+        my $backupSets;
+        if (! ($backupSets = $zConfig->getBackupSet(0, $opts->{src}) ) ) {
+            die "ERROR: cannot get backup config\n";
+        }
+        my $backupSet;
+        if (! ($backupSet = $backupSets->[0]) ) {
+            die "ERROR: cannot get backup config\n";
+        }
 
         my $props = dumpPropertiesRaw($backupSet);
         for (@$props){
