@@ -166,12 +166,12 @@ for ($command){
 #print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
 #    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
 
-        if (exists $dataSetsMissing{$ARGV[-1]}) {
+        if (defined($ARGV[-1]) && exists $dataSetsMissing{$ARGV[-1]}) {
             print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
             exit 1;
         }
 
-        exit if !( (exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
 
         my $localattr = (join(" ", @ARGV) =~ / -s local/);
 
@@ -179,7 +179,7 @@ for ($command){
         my $srcds = "";
         my $srcdsOrig = "";
 
-        if (exists $dataSets{$ARGV[-1]}) {
+        if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
             $srcdsOrig = $srcds;
         } else {
@@ -236,14 +236,14 @@ for ($command){
                 }
             }
         } else {
-            if ( (!$localattr && $dataSets{$ARGV[-1]} =~ /^src/) || ($localattr && $dataSets{$ARGV[-1]} eq 'src' ) ) {
+            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
                 my $dstds;
-                if ($ARGV[-1] =~ /^tank\/source($|\/.*$)/ ) {
+                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
                 } else {
-                    $dstds = $ARGV[-1];
+                    $dstds = $srcds;
                 }
-                print_zfs_get ($prefix, $ARGV[-1], $dstds);
+                print_zfs_get ($prefix, $srcds, $dstds);
             }
         }
         exit;
