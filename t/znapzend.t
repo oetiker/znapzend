@@ -76,8 +76,36 @@ undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 # seems to allow tests to continue so why not?
 is (runCommand('--help'), 1, 'znapzend help');
 
+# Coverage for various failure codepaths
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command');
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = undef;
+
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST POST command');
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'} = undef;
+
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_send'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS SEND command');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_send'} = undef;
+
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_recv'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS RECV command');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_recv'} = undef;
+
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS DESTROY command');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = undef;
+
+
+# Do not test after daemonize, to avoid conflicts
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
+#...but do try to cover these error codepaths ;)
+is (runCommand(qw(--daemonize --debug),'--debug -n',
+    qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
+is (runCommand(qw(--daemonize --debug),'--features=Lce',
+    qw( --pidfile=znapzend2.pid)), 1, 'znapzend --daemonize');
 
 done_testing;
 
