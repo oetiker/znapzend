@@ -51,7 +51,9 @@ sub runCommand {
     my $mainOpt = shift;
     @ARGV = @_;
 
-    main($mainOpt);
+    eval { main($mainOpt); };
+    return 0 if $@;
+    1;
 }
 
 use Test::More;
@@ -107,6 +109,7 @@ is (runCommand(qw(list)), 1, 'znapzendzetup list');
 # These should fail
 is (runCommand(qw(list missingpool)), 0, 'znapzendzetup list missingpool');
 is (runCommand(qw(list -r missingpool)), 0, 'znapzendzetup list -r missingpool');
+is (runCommand(qw(export missingpool)), 0, 'znapzendzetup export missingpool');
 
 done_testing;
 
