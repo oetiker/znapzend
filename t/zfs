@@ -9,8 +9,9 @@ use Time::Piece;
 my %dataSets = (
     'tank'               => '',
     'tank/source'        => 'src',
-    'tank/source/child'        => 'src',
-    'tank/source/child/grandchild'        => 'src',
+    'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"
+    'tank/source/child/grandchild'        => 'src-inherited',
+    'tank/anothersource'        => 'src',
     'backup'             => '',
     'backup/destination' => 'dst',
     'backup/destination/child' => 'dst',
@@ -101,6 +102,8 @@ for ($command){
             my $srcds = $ARGV[-1];
             if (join(" ", @ARGV) =~ / -r /) {
                 for my $childds (sort keys %dataSets){
+                    # Here a "child" concept includes the specified
+                    # dataset too, unlike "zfs get" logic below
                     if ( $childds =~ /^$srcds(\/|$)/ ) {
                         print "$childds\n";
                     }
@@ -133,7 +136,9 @@ for ($command){
 #print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
 #    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
 
-        exit if !( (exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src') || (join(" ", @ARGV) =~ / -r /) );
+        exit if !( (exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+
+        my $localattr = (join(" ", @ARGV) =~ / -s local/);
 
         my $prefix = "";
         my $srcds = "";
@@ -170,7 +175,8 @@ for ($command){
 
             # Per checks above we know the $prefix is empty or exactly
             # last ARGV item.
-            if ($dataSets{$srcds} eq 'src') {
+
+            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
                 my $dstds;
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
@@ -189,20 +195,20 @@ for ($command){
                     } else {
                         $dstds = $childds;
                     }
-                    if ($dataSets{$childds} eq 'src') {
+                    if ( (!$localattr && $dataSets{$childds} =~ /^src/) || ($localattr && $dataSets{$childds} eq 'src' ) ) {
                         print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds);
                     }
                 }
             }
         } else {
-            if ($dataSets{$ARGV[-1]} eq 'src') {
+            if ( (!$localattr && $dataSets{$ARGV[-1]} =~ /^src/) || ($localattr && $dataSets{$ARGV[-1]} eq 'src' ) ) {
                 my $dstds;
-                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
+                if ($ARGV[-1] =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
                 } else {
-                    $dstds = $srcds;
+                    $dstds = $ARGV[-1];
                 }
-                print_zfs_get ($prefix, $srcds, $dstds);
+                print_zfs_get ($prefix, $ARGV[-1], $dstds);
             }
         }
         exit;
