@@ -97,7 +97,12 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
 is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
 is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
 
-is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug --recursive tank/source');
+# This one calls "zfs list -r" and then many times "zfs get"
+is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
+# This one calls "zfs get -r"
+is (runCommand(qw(list --debug --recursive tank/source)), 1, 'znapzendzetup list --debug --recursive tank/source');
+# This one should follow a codepath of undefined "dataSet" to show and so all datasets known to zfs (mock)
+is (runCommand(qw(list)), 1, 'znapzendzetup list');
 
 done_testing;
 
