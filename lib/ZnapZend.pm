@@ -125,7 +125,7 @@ my $refreshBackupPlans = sub {
     my $self = shift;
     my $dataSet = shift;
 
-    $self->zLog->info('refreshing backup plans...');
+    $self->zLog->info('refreshing backup plans for dataset "' . $dataSet . '" ...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
 
     @{$self->backupSets}
