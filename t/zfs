@@ -118,24 +118,26 @@ for ($command){
             exit;
         }
         # If a dataset name was passed on CLI, show (or recurse) it
-        if (exists $dataSetsMissing{$ARGV[-1]}) {
-            print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
-            exit 1;
-        }
-        if (exists $dataSets{$ARGV[-1]}) {
-            my $srcds = $ARGV[-1];
-            if (join(" ", @ARGV) =~ / -r /) {
-                for my $childds (sort keys %dataSets){
-                    # Here a "child" concept includes the specified
-                    # dataset too, unlike "zfs get" logic below
-                    if ( $childds =~ /^$srcds(\/|$)/ ) {
-                        print "$childds\n";
-                    }
-                }
-            } else {
-                print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
+        if (defined($ARGV[-1])) {
+            if (exists $dataSetsMissing{$ARGV[-1]}) {
+                print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+                exit 1;
             }
-            exit;
+            if (exists $dataSets{$ARGV[-1]}) {
+                my $srcds = $ARGV[-1];
+                if (join(" ", @ARGV) =~ / -r /) {
+                    for my $childds (sort keys %dataSets){
+                        # Here a "child" concept includes the specified
+                        # dataset too, unlike "zfs get" logic below
+                        if ( $childds =~ /^$srcds(\/|$)/ ) {
+                            print "$childds\n";
+                        }
+                    }
+                } else {
+                    print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
+                }
+                exit;
+            }
         }
         for (sort keys %dataSets){
             print "$_\n";
