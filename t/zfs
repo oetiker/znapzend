@@ -92,9 +92,18 @@ for ($command){
             }
             exit;
         }
-        #if there is a '/' it is a (non-root) dataset
-        if ($ARGV[-1] =~ /\//){
-            print "$ARGV[-1]\n" if grep { $ARGV[-1] eq $_ } keys %dataSets;
+        # If a dataset name was passed on CLI, show (or recurse) it
+        if (exists $dataSets{$ARGV[-1]}) {
+            my $srcds = $ARGV[-1];
+            if (join(" ", @ARGV) =~ / -r /) {
+                for my $childds (sort keys %dataSets){
+                    if ( $childds =~ /^$srcds(\/|$)/ ) {
+                        print "$childds\n";
+                    }
+                }
+            } else {
+                print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
+            }
             exit;
         }
         for (sort keys %dataSets){
