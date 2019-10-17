@@ -104,6 +104,10 @@ is (runCommand(qw(list --debug --recursive tank/source)), 1, 'znapzendzetup list
 # This one should follow a codepath of undefined "dataSet" to show and so all datasets known to zfs (mock)
 is (runCommand(qw(list)), 1, 'znapzendzetup list');
 
+# These should fail
+is (runCommand(qw(list missingpool)), 0, 'znapzendzetup list missingpool');
+is (runCommand(qw(list -r missingpool)), 0, 'znapzendzetup list -r missingpool');
+
 done_testing;
 
 1;
