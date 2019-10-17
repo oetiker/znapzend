@@ -100,12 +100,12 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = undef;
 
 # Do not test after daemonize, to avoid conflicts
 is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
-    qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
+    qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #1');
 #...but do try to cover these error codepaths ;)
-is (runCommand(qw(--daemonize --debug),'--debug -n',
-    qw( --pidfile=znapzend.pid)), 1, 'znapzend --daemonize');
-is (runCommand(qw(--daemonize --debug),'--features=Lce',
-    qw( --pidfile=znapzend2.pid)), 1, 'znapzend --daemonize');
+eval { is (runCommand(qw(--daemonize --debug),'--features=Lce',
+    qw(--pidfile=znapzend2.pid)), 1, 'znapzend --daemonize #2'); };
+eval { is (runCommand(qw(--daemonize --debug),'-n',
+    qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #3'); };
 
 done_testing;
 
