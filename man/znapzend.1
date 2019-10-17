@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2018-04-13" "0.19.0" "znapzend"
+.TH ZNAPZEND 1 "2019-10-15" "0.19.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -152,7 +152,7 @@ znapzend \- znapzend daemon
 \& \-n,\-\-noaction          run in simulation mode. does no changes to the filesystem
 \& \-\-nodestroy            does all changes to the filesystem except destroy
 \& \-\-logto=x              select where to log to (syslog::<facility> or <filepath>)
-\& \-\-loglevel=x           define the log level when logging to file
+\& \-\-loglevel=x           define the log level
 \& \-\-pidfile=x            write a pid file when running in daemon mode
 \& \-\-daemonize            fork into the background
 \& \-\-runonce=[x]          run one round on the optionally provided dataset
@@ -241,6 +241,13 @@ default, decompress the data before sending. Zfs recv will then compress it agai
 writing it to disk. Using \-c will skip the unnecessary decompress-compress stages.
 This decreases \s-1CPU\s0 load on both source and destination as well as reduce network
 bandwidth. The \-L option is for large block support and \-e is for embedded data support.
+.IP "lowmemRecurse" 4
+.IX Item "lowmemRecurse"
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
 .RE
 .RS 4
 .RE
