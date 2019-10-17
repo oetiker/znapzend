@@ -12,6 +12,8 @@ my %dataSets = (
     'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"
     'tank/source/child/grandchild'        => 'src-inherited',
     'tank/anothersource'        => 'src',
+    'tank/anothersource/disabled'         => 'src-disabled',
+    'tank/anothersource/disabled/also'    => 'src-disabled',
     'backup'             => '',
     'backup/destination' => 'dst',
     'backup/destination/child' => 'dst',
@@ -55,6 +57,11 @@ sub print_zfs_get {
 
     if ($prefix ne '') { $prefix .= " "; }
 
+    my $srcenabled = "on";
+    if (defined($dataSets{"$srcname"}) && ($dataSets{"$srcname"} eq 'src-disabled')) {
+        $srcenabled = "off";
+    }
+
 # print STDERR "=== zfs get: '$prefix' '$srcname' '$dstname'\n";
 
     print <<"ZFS_GET_END";
@@ -67,7 +74,7 @@ ${prefix}org.znapzend:src            ${srcname}
 ${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
 ${prefix}org.znapzend:recursive      on
 ${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S
-${prefix}org.znapzend:enabled        on
+${prefix}org.znapzend:enabled        ${srcenabled}
 ${prefix}org.znapzend:dst_0          backup/${dstname}
 ${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}
 ${prefix}org.znapzend:dst_fail       backup/destfail
