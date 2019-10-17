@@ -22,6 +22,12 @@ my %dataSets = (
     'remote/destination/child/grandchild' => 'dst',
 );
 
+# List explicitly so we know the `zfs` CLI argument is a
+# dataset name from tests, but points to failure codepath
+my %dataSetsMissing = (
+    'missingpool'        => 'fail'
+);
+
 sub print_zfs_get {
     # Arguments are all optional; defaults are matched for the legacy tests
     my $prefix = shift; # Dataset name to prepend (and add a whitespace)
@@ -98,6 +104,10 @@ for ($command){
             exit;
         }
         # If a dataset name was passed on CLI, show (or recurse) it
+        if (exists $dataSetsMissing{$ARGV[-1]}) {
+            print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+            exit 1;
+        }
         if (exists $dataSets{$ARGV[-1]}) {
             my $srcds = $ARGV[-1];
             if (join(" ", @ARGV) =~ / -r /) {
@@ -135,6 +145,11 @@ for ($command){
 
 #print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
 #    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
+
+        if (exists $dataSetsMissing{$ARGV[-1]}) {
+            print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+            exit 1;
+        }
 
         exit if !( (exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
 
