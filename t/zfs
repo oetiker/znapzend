@@ -9,10 +9,25 @@ use Time::Piece;
 my %dataSets = (
     'tank'               => '',
     'tank/source'        => 'src',
+    'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"
+    'tank/source/child/grandchild'        => 'src-inherited',
+    'tank/anothersource'        => 'src',
+    'tank/anothersource/disabled'         => 'src-disabled',
+    'tank/anothersource/disabled/also'    => 'src-disabled',
     'backup'             => '',
     'backup/destination' => 'dst',
+    'backup/destination/child' => 'dst',
+    'backup/destination/child/grandchild' => 'dst',
     'remote'             => '',
     'remote/destination' => 'dst',
+    'remote/destination/child' => 'dst',
+    'remote/destination/child/grandchild' => 'dst',
+);
+
+# List explicitly so we know the `zfs` CLI argument is a
+# dataset name from tests, but points to failure codepath
+my %dataSetsMissing = (
+    'missingpool'        => 'fail'
 );
 
 sub print_zfs_get {
@@ -22,6 +37,7 @@ sub print_zfs_get {
     my $dstname = shift;
 
     if ( defined($prefix) ) {
+        chomp $prefix;
         if (!defined($srcname) || $srcname eq '') { $srcname = $prefix; }
     } else {
         $prefix = "";
@@ -41,7 +57,12 @@ sub print_zfs_get {
 
     if ($prefix ne '') { $prefix .= " "; }
 
-#print STDERR "===zfs get: '$prefix' '$srcname' '$dstname'\n";
+# print STDERR "=== zfs get: '$prefix' '$srcname' '$dstname'\n";
+
+    my $srcenabled = "on";
+    if (defined($dataSets{"$srcname"}) && ($dataSets{"$srcname"} eq 'src-disabled')) {
+        $srcenabled = "off";
+    }
 
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
     my $dst0pstcmd = "/bin/echo 'post znap command for dst_0'";
@@ -62,7 +83,7 @@ ${prefix}org.znapzend:src            ${srcname}
 ${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
 ${prefix}org.znapzend:recursive      on
 ${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S
-${prefix}org.znapzend:enabled        on
+${prefix}org.znapzend:enabled        ${srcenabled}
 ${prefix}org.znapzend:dst_0          backup/${dstname}
 ${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}
 ${prefix}org.znapzend:dst_fail       backup/destfail
@@ -97,6 +118,10 @@ for ($command){
     /^snapshot$/ && exit 1;
 
     /^list$/ && do {
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_list'}) ) {
+            print STDERR "failed to list mock dataset(s)\n";
+            exit 1;
+        }
         if ($ARGV[4] && $ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
             if ($ARGV[-1] =~ /^[^\@]+\@[^\@]+$/){
                 print $ARGV[-1] . "\n";
@@ -112,10 +137,27 @@ for ($command){
             }
             exit;
         }
-        #if there is a '/' it is a dataset
-        if ($ARGV[-1] =~ /\//){
-            print $ARGV[-1] if grep { $ARGV[-1] eq $_ } keys %dataSets;
-            exit;
+        # If a dataset name was passed on CLI, show (or recurse) it
+        if (defined($ARGV[-1])) {
+            if (exists $dataSetsMissing{$ARGV[-1]}) {
+                print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+                exit 1;
+            }
+            if (exists $dataSets{$ARGV[-1]}) {
+                my $srcds = $ARGV[-1];
+                if (join(" ", @ARGV) =~ / -r /) {
+                    for my $childds (sort keys %dataSets){
+                        # Here a "child" concept includes the specified
+                        # dataset too, unlike "zfs get" logic below
+                        if ( $childds =~ /^$srcds(\/|$)/ ) {
+                            print "$childds\n";
+                        }
+                    }
+                } else {
+                    print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
+                }
+                exit;
+            }
         }
         for (sort keys %dataSets){
             print "$_\n";
@@ -135,16 +177,95 @@ for ($command){
     };
 
     /^get$/ && do {
-        if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
+        #if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
+        if ( join(" ", @ARGV) =~ /usedbysnapshots/ ){
             print "10G\n";
             exit;
         }
-        exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
-        my $prefix = "";
-        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
-            $prefix = "tank/source";
+
+#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
+
+        if (defined($ARGV[-1]) && exists $dataSetsMissing{$ARGV[-1]}) {
+            print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+            exit 1;
         }
-        print_zfs_get ($prefix);
+
+        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+
+        my $localattr = (join(" ", @ARGV) =~ / -s local/);
+
+        my $prefix = "";
+        my $srcds = "";
+        my $srcdsOrig = "";
+
+        if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
+            $srcds = "$ARGV[-1]";
+            $srcdsOrig = $srcds;
+        } else {
+            $srcds = "tank";
+        }
+
+        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+            # The request we do when recursively looking for dataset props
+            # Asked to print a prefix
+            $prefix = "$srcds";
+        }
+
+        # Print a tree if either recursing from given srcds from CLI args,
+        # or have none given at all (and so printing the world). Note that
+        # the dataset in CLI args *must* be one from the array, otherwise
+        # the mockup treats it as a random `zfs` option and ignores it.
+        if (
+            (join(" ", @ARGV) =~ / -r / && $srcds ne '')
+         || ($srcdsOrig eq '')
+        ) {
+#print STDERR "=== zfs get : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
+
+            # Note that listing `zfs get -r -o property,value all dataset`
+            # with both this code and real ZFS returns a lot of repetitive
+            # lines (same keys, different values) for dataset's children
+            # that you can't really tell apart without the "name" column.
+
+            # Per checks above we know the $prefix is empty or exactly
+            # last ARGV item.
+
+            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
+                my $dstds;
+                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
+                    $dstds = "destination$1";
+                } else {
+                    $dstds = $srcds;
+                }
+                print_zfs_get ($prefix, $srcds, $dstds);
+            }
+
+            # Does the srcds (from prefix or defaulted) have any descendants?
+            for my $childds (sort(keys %dataSets)) {
+                if ( $childds =~ /^$srcds\// ) {
+                    my $dstds;
+                    if ($childds =~ /^tank\/source($|\/.*$)/ ) {
+                        $dstds = "destination$1";
+                    } else {
+                        $dstds = $childds;
+                    }
+                    if ( (!$localattr && $dataSets{$childds} =~ /^src/) || ($localattr && $dataSets{$childds} eq 'src' ) ) {
+                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds);
+                    }
+                }
+            }
+        } else {
+            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
+                my $dstds;
+                if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
+                    $dstds = "destination$1";
+                } else {
+                    $dstds = $srcds;
+                }
+                print_zfs_get ($prefix, $srcds, $dstds);
+            }
+        }
         exit;
     };
 

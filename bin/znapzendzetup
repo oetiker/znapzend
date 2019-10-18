@@ -11,7 +11,8 @@ use Mojo::Base -strict;
 use ZnapZend::Config;
 my $VERSION = '0.dev'; #VERSION
 
-my @ROOT_EXEC_OPTIONS = qw(pfexec sudo rootExec=s);
+my @ROOT_EXEC_OPTIONS = qw(pfexec sudo rootExec=s debug features=s);
+my %featureMap = map { $_ => 1 } qw(pfexec sudo lowmemRecurse);
 
 sub dumpProperties {
     my $props = shift;
@@ -123,6 +124,20 @@ sub main {
     GetOptions($opts, @ROOT_EXEC_OPTIONS) or exit 1;
     Getopt::Long::Configure(qw(posix_default no_ignore_case));
 
+    #split all features into individual options
+    if ($opts->{features}){
+        for my $feature (split /,/, $opts->{features}){
+            $featureMap{$feature} or die "ERROR: feature '$feature' not supported\n";
+            if ($feature eq "pfexec" or $feature eq "sudo") {
+                warn "--features=" . $feature . " is deprecated. Use --rootExec=" . $feature . " instead\n";
+                $opts->{rootExec} = $feature;
+            } else {
+                $opts->{$feature} = 1;
+            }
+        }
+        delete $opts->{features};
+    }
+
     if ($opts->{pfexec}) {
         warn "--pfexec is deprecated. Use --rootExec=pfexec instead\n";
         $opts->{rootExec} = 'pfexec';
@@ -131,7 +146,17 @@ sub main {
         $opts->{rootExec} = 'sudo';
     }
 
-    my $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec});
+    if (defined($opts->{debug})) {
+        $opts->{debug} = ( $opts->{debug} eq 'off' ? 0 : 1 );
+    } else {
+        $opts->{debug} = 0;
+    }
+
+    if (!defined($opts->{lowmemRecurse})) {
+        $opts->{lowmemRecurse} = 0;
+    }
+
+    my $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, debug => $opts->{debug}, lowmemRecurse => $opts->{lowmemRecurse});
 
     for ($mainOpt){
 
@@ -198,7 +223,7 @@ sub main {
         if ($#ARGV == grep { /^--(?:$ignoreOpts)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
 
-            my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
+            my $backupSet = $zConfig->getBackupSet(0, $opts->{src})->[0]
                 or die "ERROR: cannot get backup config\n";
 
             my $props = dumpPropertiesRaw($backupSet);
@@ -252,7 +277,7 @@ sub main {
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
 
         #get active backup config
-        my $backupSets = $zConfig->getBackupSet($backupSet->{src}) or die "ERROR: cannot get backup config\n";
+        my $backupSets = $zConfig->getBackupSet(0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
         @$backupSets or die "ERROR: backup set for $backupSet->{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
@@ -299,8 +324,14 @@ sub main {
         last;
     };
     /^list$/ && do {
-        my $backupSets = $zConfig->getBackupSet(pop @ARGV)
-            or die "ERROR: cannot list backup config\n";
+        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r))) or exit 1;
+
+        my $recurse = ( defined($opts->{recursive}) );
+
+        my $backupSets;
+        if (! ($backupSets = $zConfig->getBackupSet($recurse, @ARGV) ) ) {
+            die "ERROR: cannot list backup config\n";
+        }
 
         dumpProperties($backupSets);
         last;
@@ -308,9 +339,16 @@ sub main {
     /^export$/ && do {
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
+        # TODO: support --recursive? Does not make much sense "as is" for import then
 
-        my $backupSet = $zConfig->getBackupSet($opts->{src})->[0]
-            or die "ERROR: cannot get backup config\n";
+        my $backupSets;
+        if (! ($backupSets = $zConfig->getBackupSet(0, $opts->{src}) ) ) {
+            die "ERROR: cannot get backup config\n";
+        }
+        my $backupSet;
+        if (! ($backupSet = $backupSets->[0]) ) {
+            die "ERROR: cannot get backup config\n";
+        }
 
         my $props = dumpPropertiesRaw($backupSet);
         for (@$props){
@@ -439,7 +477,7 @@ where 'command' is one of the following:
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--rootExec={pfexec|sudo}] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [--recursive] [src_dataset...]
 
     export  [--rootExec={pfexec|sudo}] <src_dataset>
 
@@ -457,6 +495,32 @@ the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
 for it to re-read the configuration.
+
+Common options include:
+
+=over
+
+=item B<--features>=I<feature1>,I<feature2>,...
+
+enables a few enhanced zfs module features to be on par with those used by
+the znapzend command (but far fewer are relevant for the znapzendzetup)
+
+Available features:
+
+=over
+
+=item lowmemRecurse
+
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
+
+=back
+
+=back
+
 
 Below a few notes on main commands.
 
@@ -597,7 +661,7 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back

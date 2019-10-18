@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2018-04-13" "0.19.0" "znapzend"
+.TH ZNAPZENDZETUP 1 "2019-10-17" "0.19.0" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -173,7 +173,7 @@ where 'command' is one of the following:
 \&
 \&    disable [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
-\&    list    [\-\-rootExec={pfexec|sudo}] [src_dataset]
+\&    list    [\-\-rootExec={pfexec|sudo}] [\-\-recursive] [src_dataset...]
 \&
 \&    export  [\-\-rootExec={pfexec|sudo}] <src_dataset>
 \&
@@ -191,6 +191,25 @@ the zfs commandline.
 .PP
 After modifying the configuration, send a \s-1HUP\s0 signal to your znapzend daemon
 for it to re-read the configuration.
+.PP
+Common options include:
+.IP "\fB\-\-features\fR=\fIfeature1\fR,\fIfeature2\fR,..." 4
+.IX Item "--features=feature1,feature2,..."
+enables a few enhanced zfs module features to be on par with those used by
+the znapzend command (but far fewer are relevant for the znapzendzetup)
+.Sp
+Available features:
+.RS 4
+.IP "lowmemRecurse" 4
+.IX Item "lowmemRecurse"
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
+.RE
+.RS 4
+.RE
 .PP
 Below a few notes on main commands.
 .SS "\fBcreate\fP"
@@ -334,7 +353,7 @@ to remove configuration from a dataset just give its name
 the \fBdelete\fR function understands the following options
 .IP "\fB\-\-dst\fR=\fIkey\fR" 4
 .IX Item "--dst=key"
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 \&\fBlist\fR function to see the keys.
 .SS "\fBedit\fP"
 .IX Subsection "edit"
@@ -380,6 +399,12 @@ copy the setup from one fileset to another
 .Vb 1
 \&    znapzendzetup export tank/home | znapzendzetup import \-\-write tank/new_home
 .Ve
+.SH "RUNNING AS AN UNPRIVILEGED USER"
+.IX Header "RUNNING AS AN UNPRIVILEGED USER"
+In order to allow a non-privileged user to use it, the following permissions are required on the \s-1ZFS\s0 filesystems:
+.PP
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2014 by \s-1OETIKER+PARTNER AG.\s0 All rights reserved.

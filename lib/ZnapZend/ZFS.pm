@@ -3,6 +3,7 @@ package ZnapZend::ZFS;
 use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::ForkCall;
+use Data::Dumper;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -11,6 +12,7 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
+has lowmemRecurse   => sub { 0 };
 has rootExec        => sub { q{} };
 has sendDelay       => sub { 3 };
 has connectTimeout  => sub { 30 };
@@ -82,7 +84,7 @@ sub dataSetExists {
     my $dataSet = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
@@ -104,7 +106,7 @@ sub snapshotExists {
     my $snapshot = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$snapshot;
 
     ($remote, $snapshot) = $splitHostDataSet->($snapshot);
@@ -125,8 +127,31 @@ sub snapshotExists {
 sub listDataSets {
     my $self = shift;
     my $remote = shift;
+    my $rootDataSets = shift; # May be not passed, or may be a string, or an array of strings
+    my $recurse = shift; # May be not passed => undef
 
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs list -H -o name -t), 'filesystem,volume']);
+    # By default this lists all fs/vol datasets in the system
+    # Optionally we can ask for specific rootDataSets possibly with children
+    if (defined ($rootDataSets) && $rootDataSets) {
+        my @useRDS;
+        if ( (ref($rootDataSets) eq 'ARRAY') ) {
+            if (scalar(@$rootDataSets) > 0) {
+                push (@useRDS, @$rootDataSets);
+            }
+        } else {
+            # Assume string
+            if ($rootDataSets ne "") {
+                push (@useRDS, ($rootDataSets));
+            }
+        }
+        if (scalar(@useRDS) > 0) {
+            if (defined ($recurse) && $recurse) {
+                push (@ssh, qw(-r));
+            }
+            push(@ssh, @useRDS);
+        }
+    }
 
     print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
     open my $dataSets, '-|', @ssh
@@ -169,7 +194,7 @@ sub createDataSet {
     my $dataSet = shift;
     my $remote;
 
-    #just in case if someone aks to check '';
+    #just in case if someone asks to check '';
     return 0 if !$dataSet;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
@@ -432,27 +457,131 @@ sub sendRecvSnapshots {
 sub getDataSetProperties {
     my $self = shift;
     my $dataSet = shift;
+    my $recurse = shift; # May be not passed => undef
+
     my @propertyList;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my $list = $dataSet ? [ ($dataSet) ] : $self->listDataSets();
+    my @list;
+    print STDERR "=== getDataSetProperties():\n\trecurse=" 
+        . Dumper($recurse) . "\n\tDS=" . Dumper($dataSet) 
+        . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
+             if $self->debug;
 
-    for my $listElem (@$list){
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
+    # Note: Before the recursive and multiple dataset support we either
+    # used the provided dataSet name "as is" trusting it exists (failed
+    # later if not), or called listDataSets() to list everything on the
+    # system from `zfs` (also ensuring stuff exists). So we still do.
+    # Before the recursive the @list must have had individual dataset
+    # names, passed directly, or subsequently recursively listed above,
+    # to assign into the discovered list elements. So no recursion was
+    # needed in the logic below. Now we recurse by default to call `zfs`
+    # as rarely as we can and so complete faster. However, on systems
+    # with too many datasets this can exhaust the memory available to
+    # the process, and/or time out. To defend against this, we optionally
+    # can fall back to a big list of individual dataset names found by
+    # recursive listDataSets() invocations instead.
+    if (defined($dataSet) && $dataSet) {
+        if (ref($dataSet) eq 'ARRAY') {
+            print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
+            if ($self->lowmemRecurse && $recurse) {
+                my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                if (scalar(@{$listds}) == 0) {
+                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    return \@propertyList;
+                }
+                push (@list, @{$listds});
+                $recurse = 0;
+            } else {
+                if ( (scalar(@$dataSet) > 0) && (defined(@$dataSet[0])) ) {
+                    push (@list, @$dataSet);
+                } else {
+                    print STDERR "=== getDataSetProperties(): skip array context: value(s) inside undef...\n" if $self->debug;
+                }
+            }
+        } else {
+            # Assume a string, per usual invokation
+            print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
+            if ($self->lowmemRecurse && $recurse) {
+                my $listds = $self->listDataSets(undef, $dataSet, $recurse);
+                if (scalar(@{$listds}) == 0) {
+                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    return \@propertyList;
+                }
+                push (@list, @{$listds});
+                $recurse = 0;
+            } else {
+                if ($dataSet ne '') {
+                    push (@list, ($dataSet));
+                } else {
+                    print STDERR "=== getDataSetProperties(): skip string context: value inside is empty...\n" if $self->debug;
+                }
+            }
+        }
+    } else {
+        print STDERR "=== getDataSetProperties(): no dataSet argument passed\n" if $self->debug;
+    }
+
+    if (scalar(@list) == 0) {
+        print STDERR "=== getDataSetProperties(): List all local datasets on the system...\n" if $self->debug;
+        my $listds = $self->listDataSets();
+        if (scalar(@{$listds}) == 0) {
+            print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+            return \@propertyList;
+        }
+        push (@list, @{$listds});
+    }
+
+    for my $listElem (@list){
+        print STDERR "=== getDataSetProperties(): Looking under '$listElem' with '$recurse' recursion mode\n" if $self->debug;
         my %properties;
-        my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $listElem);
+        my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
+        push (@cmd, qw(-t), 'filesystem,volume');
+        if ($recurse) {
+            push (@cmd, qw(-r));
+        }
+        push (@cmd, qw(-o), 'name,property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+        # NOTE: Code below assumes that the listing groups all items of one dataset together
+        my $prev_srcds = "";
         while (my $prop = <$props>){
             chomp $prop;
-            my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+            # NOTE: This regex assumes the dataset names do not have trailing whitespaces
+            my ($srcds, $key, $value) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+            print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value'\n" if $self->debug;
+            if ($srcds ne $prev_srcds) {
+                if (%properties && $prev_srcds ne ""){
+                    # place source dataset on list, too. so we know where the properties are from...
+                    print STDERR "=== getDataSetProperties(): SAVE: '$prev_srcds'\n" if $self->debug;
+                    $properties{src} = $prev_srcds;
+                    # Note: replacing %properties completely proved hard,
+                    # it just pushed references to same object for many
+                    # really-found datasets. So we make unique copies and
+                    # push them instead.
+                    my %newProps = %properties;
+                    push @propertyList, \%newProps;
+                    %properties = ();
+                }
+                $prev_srcds = $srcds;
+            }
             $properties{$key} = $value;
         }
         if (%properties){
-        # place source dataset on list, too. so we know where the properties are from...
-            $properties{src} = $listElem;
-            push @propertyList, \%properties;
+            # place source dataset on list, too. so we know where the properties are from...
+            # the last-used dataset is prev_srcds
+            print STDERR "=== getDataSetProperties(): SAVE LAST: '$prev_srcds'\n" if $self->debug;
+            $properties{src} = $prev_srcds;
+            my %newProps = %properties;
+            push @propertyList, \%newProps;
         }
     }
+
+    print STDERR "=== getDataSetProperties():\n\tCollected: " . Dumper(@propertyList) . "\n" if $self->debug;
 
     return \@propertyList;
 }

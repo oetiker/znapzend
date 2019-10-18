@@ -7,6 +7,7 @@ use Text::ParseWords qw(shellwords);
 
 ### attributes ###
 has debug    => sub { 0 };
+has lowmemRecurse => sub { 0 };
 has noaction => sub { 0 };
 has rootExec => sub { q{} };
 has timeWarp => sub { undef };
@@ -25,7 +26,14 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec); };
+has zfs  => sub { 
+    my $self = shift;
+    ZnapZend::ZFS->new(
+        rootExec => $self->rootExec,
+        debug => $self->debug, 
+        lowmemRecurse => $self->lowmemRecurse
+    ); 
+};
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };
@@ -156,17 +164,41 @@ my $checkBackupSets = sub {
 my $getBackupSet = sub {
     my $self = shift;
     my $enabledOnly = shift;
-    my $dataSet = shift;
-    
-    #get all backup sets and check if valid
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet));
+    # The recursion setting allows to find datasets under the named one
+    # (e.g. a pool root DS that might not necessarily have a znapzend
+    # configuration by itself). Similar to listing ALL configs when no
+    # dataset was passed, but no impact of looking at the whole system.
+    my $recurse = shift;
+
+    #get all backup sets and check if valid, from remainder of ARGV
+    if (scalar(@_) > 0) {
+        $self->backupSets($self->zfs->getDataSetProperties(\@_, $recurse));
+    } else {
+        # Not that recursion makes much sense for "undef" (=> list everything)
+        $self->backupSets($self->zfs->getDataSetProperties(undef, $recurse));
+    }
     $self->$checkBackupSets();
+
+    printf STDERR "=== getBackupSet() : got " 
+        . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n" 
+            if $self->debug;
+    # Note/FIXME? If there were ZFS errors getting some of several
+    # requested datasets, but at least one succeeded, the result is OK.
+    if (scalar(@{$self->backupSets}) == 0) {
+        return 0; # false
+    }
 
     if ($enabledOnly){
         my @backupSets;
 
         for my $backupSet (@{$self->backupSets}){
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
+        }
+        printf STDERR "=== getBackupSet() : got " 
+            . scalar(@backupSets) . " enabled-only dataset(s) with a local backup plan\n" 
+                if $self->debug;
+        if (not @backupSets) {
+            return 0; # false
         }
         #return enabled only backup sets
         return \@backupSets;
@@ -179,12 +211,14 @@ my $getBackupSet = sub {
 sub getBackupSet {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (false)
     return $self->$getBackupSet(0, @_);
 }
 
 sub getBackupSetEnabled {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (true)
     return $self->$getBackupSet(1, @_);
 }
 
@@ -307,7 +341,8 @@ keeps the backup configuration to be set
 
 =head2 getBackupSet
 
-returns the backup settings for a dataset or all datasets if dataset is omitted
+returns the backup settings for a dataset, it and/or children
+if called as recursive, or all datasets if dataset is omitted
 
 =head2 getBackupSetEnabled
 
