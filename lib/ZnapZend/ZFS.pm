@@ -263,6 +263,7 @@ sub destroySnapshots {
     my @toDestroy = ref($_[0]) eq "ARRAY" ? @{$_[0]} : ($_[0]);
     my %toDestroy;
     my ($remote, $dataSet, $snapshot);
+    my @recursive = $_[1] ? ('-r') : ();
 
     #oracleMode: destroy each snapshot individually
     if ($self->oracleMode){
@@ -270,7 +271,7 @@ sub destroySnapshots {
         for my $task (@toDestroy){
             my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
             my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), "$dataSet\@$snapshot"]);
+            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
 
             print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
             system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
@@ -296,7 +297,7 @@ sub destroySnapshots {
     for $remote (keys %toDestroy){
         #check if remote is flaged as 'local'.
         my @ssh = $self->$buildRemote($remote ne 'local'
-            ? $remote : undef, [@{$self->priv}, qw(zfs destroy), join(',', @{$toDestroy{$remote}})]);
+            ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}})]);
 
         print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
         system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
@@ -797,11 +798,11 @@ returns a list of all subdataset including the dataset itself
 
 =head2 createSnapshot
 
-chreates a snapshot on localhost or a remote host
+creates a snapshot on localhost or a remote host, optionally recursively
 
 =head2 destroySnapshots
 
-destroys a single snapshot or a list of snapshots on localhost or a remote host
+destroys a single snapshot or a list of snapshots on localhost or a remote host, optionally recursively
 
 =head2 lastAndCommonSnapshots
 

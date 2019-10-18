@@ -57,17 +57,26 @@ sub print_zfs_get {
 
     if ($prefix ne '') { $prefix .= " "; }
 
+# print STDERR "=== zfs get: '$prefix' '$srcname' '$dstname'\n";
+
     my $srcenabled = "on";
     if (defined($dataSets{"$srcname"}) && ($dataSets{"$srcname"} eq 'src-disabled')) {
         $srcenabled = "off";
     }
 
-# print STDERR "=== zfs get: '$prefix' '$srcname' '$dstname'\n";
+    my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
+    my $dst0pstcmd = "/bin/echo 'post znap command for dst_0'";
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'}) ) {
+        $dst0precmd = "/bin/false";
+    }
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'}) ) {
+        $dst0pstcmd = "/bin/false";
+    }
 
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
-${prefix}org.znapzend:dst_0_precmd   /bin/echo 'pre znap command for dst_0'
-${prefix}org.znapzend:dst_0_pstcmd   /bin/echo 'post znap command for dst_0'
+${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}
+${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}
 ${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
 ${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes
 ${prefix}org.znapzend:src            ${srcname}
