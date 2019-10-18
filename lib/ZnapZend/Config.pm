@@ -179,7 +179,9 @@ my $getBackupSet = sub {
     }
     $self->$checkBackupSets();
 
-    printf STDERR "=== getBackupSet() : got " . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n" if $self->debug;
+    printf STDERR "=== getBackupSet() : got " 
+        . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n" 
+            if $self->debug;
     # Note/FIXME? If there were ZFS errors getting some of several
     # requested datasets, but at least one succeeded, the result is OK.
     if (scalar(@{$self->backupSets}) == 0) {
