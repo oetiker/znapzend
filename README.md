@@ -90,6 +90,8 @@ dnf copr enable spike/znapzend
 dnf install znapzend
 ```
 
+For Gentoo there's an ebuild in the [gerczei overlay](https://git.gerczei.eu/tgerczei/gentoo-overlay).
+
 Configuration
 -------------
 
