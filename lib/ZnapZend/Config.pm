@@ -195,9 +195,9 @@ my $getBackupSet = sub {
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
         }
         printf STDERR "=== getBackupSet() : got " 
-            . scalar(\@backupSets) . " enabled-only dataset(s) with a local backup plan\n" 
+            . scalar(@backupSets) . " enabled-only dataset(s) with a local backup plan\n" 
                 if $self->debug;
-        if (scalar(\@backupSets) == 0) {
+        if (not @backupSets) {
             return 0; # false
         }
         #return enabled only backup sets
