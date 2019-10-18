@@ -28,3 +28,5 @@ init/znapzend.upstart
 init/znapzend.xml
 init/org.znapzend.plist
 .DS_Store
+znapzend*.pid
+dump.dmp

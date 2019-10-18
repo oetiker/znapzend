@@ -15,13 +15,83 @@ my %dataSets = (
     'remote/destination' => 'dst',
 );
 
+sub print_zfs_get {
+    # Arguments are all optional; defaults are matched for the legacy tests
+    my $prefix = shift; # Dataset name to prepend (and add a whitespace)
+    my $srcname = shift;
+    my $dstname = shift;
+
+    if ( defined($prefix) ) {
+        if (!defined($srcname) || $srcname eq '') { $srcname = $prefix; }
+    } else {
+        $prefix = "";
+        if (!defined($srcname) || $srcname eq '') { $srcname = 'tank/source'; }
+    }
+
+    # Note: for DST we only use the pool-less part,
+    # its prefix differs for local and remote.
+    # More so for the legacy auto-guesswork codepath.
+    if (!defined($dstname) || $dstname eq '') {
+        if ($prefix eq 'tank/source' || $prefix eq '') {
+            $dstname = 'destination';
+        } else {
+            $dstname = 'destination/' . $prefix;
+        }
+    }
+
+    if ($prefix ne '') { $prefix .= " "; }
+
+#print STDERR "===zfs get: '$prefix' '$srcname' '$dstname'\n";
+
+    my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
+    my $dst0pstcmd = "/bin/echo 'post znap command for dst_0'";
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'}) ) {
+        $dst0precmd = "/bin/false";
+    }
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'}) ) {
+        $dst0pstcmd = "/bin/false";
+    }
+
+    print <<"ZFS_GET_END";
+${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
+${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}
+${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}
+${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
+${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes
+${prefix}org.znapzend:src            ${srcname}
+${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
+${prefix}org.znapzend:recursive      on
+${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S
+${prefix}org.znapzend:enabled        on
+${prefix}org.znapzend:dst_0          backup/${dstname}
+${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}
+${prefix}org.znapzend:dst_fail       backup/destfail
+${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
+${prefix}org.znapzend:mbuffer_size   100M
+${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
+${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
+ZFS_GET_END
+
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
+            print <<"ZFS_GET_END";
+${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}
+ZFS_GET_END
+        }
+
+} # end of print_zfs_get()
+
 #print zfs command
 print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:set|inherit|send|recv)$/ && exit;
+    /^(?:set|inherit|send|recv)$/ && do {
+        if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
+            exit 1;
+        };
+        exit;
+    };
 
     #pretend snapshot to fail => snapshot does exist already
     /^snapshot$/ && exit 1;
@@ -57,6 +127,10 @@ for ($command){
         if ($ARGV[0] eq '-nv'){
             print "would reclaim 1337G\n";
         }
+        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'}) ) {
+            print STDERR "failed to destroy mock dataset(s)\n";
+            exit 1;
+        }
         exit;
     };
 
@@ -66,24 +140,11 @@ for ($command){
             exit;
         }
         exit if !(exists $dataSets{$ARGV[-1]} && $dataSets{$ARGV[-1]} eq 'src');
-        print <<"ZFS_GET_END";
-org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
-org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
-org.znapzend:dst_fail_plan  1hours=>1minutes
-org.znapzend:src            tank/source
-org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
-org.znapzend:recursive      on
-org.znapzend:tsformat       %Y-%m-%d-%H%M%S
-org.znapzend:enabled        on
-org.znapzend:dst_0          backup/destination
-org.znapzend:dst_a          root\@remote:remote/destination
-org.znapzend:dst_fail       backup/destfail
-org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
-org.znapzend:mbuffer_size   100M
-org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
-org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
-ZFS_GET_END
-
+        my $prefix = "";
+        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+            $prefix = "tank/source";
+        }
+        print_zfs_get ($prefix);
         exit;
     };
 
