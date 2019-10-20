@@ -31,6 +31,7 @@ has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has connectTimeout          => sub { 30 };
 has runonce                 => sub { 0 };
+has recursive               => sub { 0 };
 has dataset                 => sub { q{} };
 has daemonize               => sub { 0 };
 has loglevel                => sub { q{debug} };
@@ -125,10 +126,11 @@ my $killThemAll  = sub {
 
 my $refreshBackupPlans = sub {
     my $self = shift;
+    my $recurse = shift;
     my $dataSet = shift;
 
     $self->zLog->info('refreshing backup plans for dataset "' . $dataSet . '" ...');
-    $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
+    $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $dataSet));
 
     @{$self->backupSets}
         or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
@@ -786,11 +788,11 @@ sub start {
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
-        $self->$refreshBackupPlans($self->dataset);
+        $self->$refreshBackupPlans($self->recursive, $self->dataset);
         $self->$createWorkers;
     };
 
-    $self->$refreshBackupPlans($self->dataset);
+    $self->$refreshBackupPlans($self->recursive, $self->dataset);
 
     $self->$createWorkers;
 
