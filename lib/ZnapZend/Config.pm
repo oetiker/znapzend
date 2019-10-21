@@ -212,6 +212,7 @@ sub getBackupSet {
     my $self = shift;
 
     # Enforce the $enabledOnly flag (false)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(0, @_);
 }
 
@@ -219,6 +220,7 @@ sub getBackupSetEnabled {
     my $self = shift;
 
     # Enforce the $enabledOnly flag (true)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(1, @_);
 }
 
