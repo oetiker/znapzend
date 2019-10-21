@@ -324,9 +324,10 @@ sub main {
         last;
     };
     /^list$/ && do {
-        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r))) or exit 1;
+        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r inherited))) or exit 1;
 
         my $recurse = ( defined($opts->{recursive}) );
+        my $inherited = ( defined($opts->{recursive}) );
 
         my $backupSets;
         if (! ($backupSets = $zConfig->getBackupSet($recurse, @ARGV) ) ) {
@@ -477,7 +478,7 @@ where 'command' is one of the following:
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--rootExec={pfexec|sudo}] [--recursive] [src_dataset...]
+    list    [--rootExec={pfexec|sudo}] [--recursive] [--inherited] [src_dataset...]
 
     export  [--rootExec={pfexec|sudo}] <src_dataset>
 

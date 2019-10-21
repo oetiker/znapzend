@@ -57,7 +57,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo rootExec=s man timeWarp=i setup)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled inherited pfexec sudo rootExec=s man timeWarp=i setup)) or exit 1;
 
     if ($opts->{pfexec}) {
         warn "--pfexec is deprecated. Use --rootExec=pfexec instead\n";
@@ -82,6 +82,7 @@ sub main {
 
     # MAYBE make $enabledOnly parameter public in Config.pm
     my $recurse = (defined($opts->{"recursive"}));
+    my $inherited = (defined($opts->{"inherited"}));
     my $backupSets = ($opts->{"only-enabled"}
         ? $zConfig->getBackupSetEnabled($recurse, pop @ARGV)
         : $zConfig->getBackupSet($recurse, pop @ARGV))
@@ -150,6 +151,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
  -H             do not print headers and separate fields by a single tab
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
+ --inherited    allow to specify a dataset which just inherits a backup plan
  --only-enabled only show statistics for enabled datasets
  --setup        show the configuration key and the filesystem that defined the configuration
  --rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
