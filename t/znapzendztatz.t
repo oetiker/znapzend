@@ -59,7 +59,7 @@ use_ok 'ZnapZend';
 do 'znapzendztatz' or die "ERROR: loading program znapzendztatz\n";
 
 is (runCommand('--help'), 1, 'znapzendztatz help');
- 
+
 is (runCommand(), 1, 'znapzendztatz');
 
 done_testing;
