@@ -547,7 +547,9 @@ sub getDataSetProperties {
         }
         push (@cmd, qw(-o), 'name,property,value', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-        open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+        # Really a rare event, not to confuse with just
+        # getting no properties or bad zfs CLI args
+        open my $props, '-|', @cmd or Mojo::Exception->throw("ERROR: could not execute zfs to get properties from $listElem");
         # NOTE: Code below assumes that the listing groups all items of one dataset together
         my $prev_srcds = "";
         while (my $prop = <$props>){
