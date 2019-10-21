@@ -525,11 +525,14 @@ my $createSnapshot = sub {
         }
     }
 
-    # remove snapshots from descendant subsystems that have the property "enabled" to "off", if the
-    # "recursive" flag is set to "on"
+    # Remove snapshots from descendant subsystems that have the property
+    # "enabled" set to "off", if the "recursive" flag is set to "on",
+    # so their newly created snapshots are discarded quickly and disk
+    # space is not abused by something we do not back up subsequently.
+    # This only applies if we made a single-command recursive snapshot.
     if ($backupSet->{recursive} eq 'on') {
 
-        $self->zLog->info("checking ZFS dependent datasets from '$backupSet->{src}' explicitely excluded");
+        $self->zLog->info("checking for explicitly excluded ZFS dependent datasets under '$backupSet->{src}'");
 
         # restrict the list to the datasets that are descendant from the current
         my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
