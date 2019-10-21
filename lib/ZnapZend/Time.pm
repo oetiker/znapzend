@@ -119,7 +119,7 @@ sub backupPlanToHash {
 sub useUTC {
     my $self = shift;
     my $timeFormat = shift;
-    
+
     return $timeFormat =~ /Z$/;
 }
 

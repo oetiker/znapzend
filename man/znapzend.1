@@ -149,7 +149,7 @@ znapzend \- znapzend daemon
 \& \-\-version              print version and exit
 \& \-h,\-\-help              display this help and exit
 \& \-d,\-\-debug             print debug messages to STDERR
-\& \-n,\-\-noaction          run in simulation mode. does no changes to the filesystem
+\& \-n,\-\-noaction          run in simulation mode: does no changes to the filesystem
 \& \-\-nodestroy            does all changes to the filesystem except destroy
 \& \-\-logto=x              select where to log to (syslog::<facility> or <filepath>)
 \& \-\-loglevel=x           define the log level
@@ -160,7 +160,7 @@ znapzend \- znapzend daemon
 \& \-\-features=x           comma separated list of features to be enabled
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
 \& \-\-connectTimeout=x     sets the ConnectTimeout for ssh commands
-\& \-\-autoCreation         automatically create dataset on dest if it not exists
+\& \-\-autoCreation         automatically create dataset on dest if it does not exist
 \& \-\-timeWarp=x           shift znapzends sens of NOW into the future by x seconds
 \& \-\-skipOnPreSnapCmdFail skip snapshots if the pre\-snap\-command fails
 \& \-\-skipOnPreSendCmdFail skip replication if the pre\-send\-command fails
@@ -170,18 +170,18 @@ znapzend \- znapzend daemon
 ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
 scheduled basis on the source filesystem and on destination filesystems.
 .PP
-ZnapZend reads its configuration from custom properties in the fileset. Use
-znapzendzetup to set these properties.
+ZnapZend reads its configuration from custom properties in the dataset.
+Use znapzendzetup to set and list these properties.
 .IP "\fB\-d\fR, \fB\-\-debug\fR" 4
 .IX Item "-d, --debug"
 talk a lot while running. Sends debug messages to stderr.
 .IP "\fB\-n\fR, \fB\-\-noaction\fR" 4
 .IX Item "-n, --noaction"
-don't do any actions which have lasting effect. Ideal to try our new new
+don't do any actions which have lasting effect. Ideal to try out new
 configurations together with \fB\-\-debug\fR
 .IP "\fB\-\-nodestroy\fR" 4
 .IX Item "--nodestroy"
-do all changes to the filesystem except destroy old snapshots
+do all changes to the filesystem except destroying old snapshots
 .IP "\fB\-\-logto\fR={\fBsyslog::\fR\fIfacility\fR|\fIfilepath\fR}" 4
 .IX Item "--logto={syslog::facility|filepath}"
 send logs out to either syslog or a logfile. Default is to send logs to
@@ -219,7 +219,7 @@ might have any. Useful for quick backups of a pool whose root dataset has no
 .IP "\fB\-\-features\fR=\fIfeature1\fR,\fIfeature2\fR,..." 4
 .IX Item "--features=feature1,feature2,..."
 enables enhanced zfs features not supported by all zfs implementations.
-Do not enable features unless you are sure your zfs supports it
+Do not enable features unless you are sure your zfs supports (or requires) it
 .Sp
 Available features:
 .RS 4
@@ -244,11 +244,16 @@ filesystems unmounted.
 .IP "compressed" 4
 .IX Item "compressed"
 use 'compressed' to add options \-Lce to the zfs send command
-If a source and destination volume are both using compression, zfs send will, by
-default, decompress the data before sending. Zfs recv will then compress it again before
-writing it to disk. Using \-c will skip the unnecessary decompress-compress stages.
-This decreases \s-1CPU\s0 load on both source and destination as well as reduce network
-bandwidth. The \-L option is for large block support and \-e is for embedded data support.
+.Sp
+Even if a source and destination datasets are both using compression,
+zfs send will, by default, decompress the data before sending, and
+zfs recv will then compress it again before writing it to disk.
+Using \-c will skip the unnecessary decompress-compress stages.
+This decreases \s-1CPU\s0 load on both source and destination as well
+as reduces network bandwidth usage.
+.Sp
+The \-L option is for large block support and \-e is for embedded data
+support. These may require certain (Open)ZFS features to be enabled.
 .IP "lowmemRecurse" 4
 .IX Item "lowmemRecurse"
 use 'lowmemRecurse' on systems where you have too many datasets,
@@ -280,33 +285,34 @@ Automatically create a dataset on a destination host if it's not there yet.
 .IX Item "--timeWarp=x"
 Shift ZnapZends sense of time into the future by x seconds.
 .Sp
-The practical application if this function is to determine what will happen at some future point in time.
-This can be useful for testing but also when running in noaction and debug mode to determine which
-snapshots would be created and removed at some future point in time.
+The practical application if this function is to determine what will happen
+at some future point in time. This can be useful for testing but also when
+running in \fBnoaction\fR and \fBdebug\fR mode to determine which snapshots would
+be created and removed at some future point in time.
 .IP "\fB\-\-skipOnPreSnapCmdFail\fR" 4
 .IX Item "--skipOnPreSnapCmdFail"
-Prevent snapshots of a dataset from being taken when it has a pre-snap-command
+Prevent snapshots of a dataset from being taken when it has a \fBpre-snap-command\fR
 defined and the command returns a non-zero exit code or is killed by a signal.
 .IP "\fB\-\-skipOnPreSendCmdFail\fR" 4
 .IX Item "--skipOnPreSendCmdFail"
-Prevent snapshots of a dataset from being replicated to a destination when it has
-a pre-snap-command defined and the command returns a non-zero exit code or is killed
-by a signal.
+Prevent snapshots of a dataset from being replicated to a destination when
+it has a \fBpre-snap-command\fR defined and the command returns a non-zero exit
+code or is killed by a signal.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
-To test a new config
+To test a new config:
 .PP
 .Vb 1
 \& znapzend \-\-debug \-\-noaction \-\-runonce=tank/test
 .Ve
 .PP
-To see what is going to happen in one hour
+To see what is going to happen in one hour:
 .PP
 .Vb 1
 \& znapzend \-\-debug \-\-noaction \-\-timeWarp=3600 \-\-runonce=tank/test
 .Ve
 .PP
-To run as a daemon
+To run as a daemon:
 .PP
 .Vb 1
 \& znapzend \-\-daemonize \-\-pidfile=/var/run/znapzend.pid \-\-logto=syslog::daemon

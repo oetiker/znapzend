@@ -26,13 +26,13 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { 
+has zfs  => sub {
     my $self = shift;
     ZnapZend::ZFS->new(
         rootExec => $self->rootExec,
-        debug => $self->debug, 
+        debug => $self->debug,
         lowmemRecurse => $self->lowmemRecurse
-    ); 
+    );
 };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
@@ -90,7 +90,7 @@ my $checkBackupSets = sub {
                 $self->zLog->info("WARNING: property $prop not set on backup for " . $backupSet->{src} . ". Skipping to next dataset");
                 last;
             };
-                
+
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
                 /^###backupplan###$/ && do {
@@ -109,7 +109,7 @@ my $checkBackupSets = sub {
                 };
                 /^###command###$/ && do {
                     last if $backupSet->{$prop} eq 'off';
-                    
+
                     my $file = (shellwords($backupSet->{$prop}))[0];
                     $self->zfs->fileExistsAndExec($file)
                         or die "ERROR: property $prop: executable '$file' does not exist or can't be executed\n";
@@ -153,7 +153,7 @@ my $checkBackupSets = sub {
         #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan
         for my $dst (grep { /^dst_[^_]+_plan$/ } keys %$backupSet){
             $dst =~ s/_plan//; #remove trailing '_plan' so we get destination
-            
+
             #remove destination plan if destination is not specified
             exists $backupSet->{$dst} or delete $backupSet->{$dst . '_plan'};
         }
@@ -179,8 +179,8 @@ my $getBackupSet = sub {
     }
     $self->$checkBackupSets();
 
-    printf STDERR "=== getBackupSet() : got " 
-        . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n" 
+    printf STDERR "=== getBackupSet() : got "
+        . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n"
             if $self->debug;
     # Note/FIXME? If there were ZFS errors getting some of several
     # requested datasets, but at least one succeeded, the result is OK.
@@ -194,8 +194,8 @@ my $getBackupSet = sub {
         for my $backupSet (@{$self->backupSets}){
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
         }
-        printf STDERR "=== getBackupSet() : got " 
-            . scalar(@backupSets) . " enabled-only dataset(s) with a local backup plan\n" 
+        printf STDERR "=== getBackupSet() : got "
+            . scalar(@backupSets) . " enabled-only dataset(s) with a local backup plan\n"
                 if $self->debug;
         if (not @backupSets) {
             return 0; # false
@@ -212,6 +212,7 @@ sub getBackupSet {
     my $self = shift;
 
     # Enforce the $enabledOnly flag (false)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(0, @_);
 }
 
@@ -219,6 +220,7 @@ sub getBackupSetEnabled {
     my $self = shift;
 
     # Enforce the $enabledOnly flag (true)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(1, @_);
 }
 
@@ -235,7 +237,7 @@ sub checkBackupSet {
 sub setBackupSet {
     my $self = shift;
     my $cfg = shift;
-    
+
     #main program should check backup set prior to set it. anyway, check again just to be sure
     $self->checkBackupSet($cfg);
 

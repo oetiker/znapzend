@@ -34,7 +34,7 @@ where 'command' is one of the following:
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--rootExec={pfexec|sudo}] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [--recursive] [src_dataset...]
 
     export  [--rootExec={pfexec|sudo}] <src_dataset>
 
@@ -53,6 +53,32 @@ the zfs commandline.
 After modifying the configuration, send a HUP signal to your znapzend daemon
 for it to re-read the configuration.
 
+Common options include:
+
+=over
+
+=item B<--features>=I<feature1>,I<feature2>,...
+
+enables a few enhanced zfs module features to be on par with those used by
+the znapzend command (but far fewer are relevant for the znapzendzetup)
+
+Available features:
+
+=over
+
+=item lowmemRecurse
+
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
+
+=back
+
+=back
+
+
 Below a few notes on main commands.
 
 =head2 B<create>
@@ -61,7 +87,7 @@ The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
 
-The plan consists of a series of retention periodes to interval
+The plan consists of a series of retention periods to interval
 associations:
 
   retA=>intA,retB=>intB,...
@@ -91,7 +117,7 @@ will cause snapshots to be taken and destroyed according to the plan. You
 can then add one or several destinations (B<DST>) both local (preferably on
 a different pool) or remote.
 
-When adding multiple B<DST> entries, each will get labled for later
+When adding multiple B<DST> entries, each will get labeled for later
 identification, optionally you can specify your own label.
 
 =over
@@ -155,28 +181,33 @@ intended it to be.
 Run commands/scripts before and after snapshots are taken on source.
 e.g. for database locking/flushing (pre) and unlocking (post).
 
-If you deal with a mariadb/mysql database, you can use 
+If you deal with a mariadb/mysql database, you can use
 
   pre-snap-command  = /opt/oep/mariadb/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! /bin/sleep 600" &  /usr/bin/echo $! > /tmp/mariadblock.pid ; sleep 10
   post-snap-command = /usr/bin/kill `/usr/bin/cat /tmp/mariadblock.pid`;/usr/bin/rm /tmp/mariadblock.pid
-  
-to make sure that the on-disk data is consistant when snapshotting. Since the
-lock stays only in place for the duration of the connection to mysql
-we need to employ. For this to work, add the root password of your mariadb/mysql db
+
+to make sure that the on-disk data is consistent when snapshotting. The
+lock stays in place only for the duration of the lingering connection
+to mysql we need to employ, or until the snapshotting attempt times out.
+For this to work, add the root password of your mariadb/mysql database
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
 
-The pre and post snapshot commands can find the name and time of the snapshot in the environment variables ZNAP_NAME and ZNAP_TIME
+The pre and post snapshot commands can find the name and time of the
+snapshot in the environment variables I<ZNAP_NAME> and I<ZNAP_TIME>.
 
 =item B<--send-delay>
 
-Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
+Specify delay (in seconds) before sending snaps to the destination.
+May be useful if you want to control sending time.
 
-=item B<pre-send-command post-send-command>
+=item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 
-Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on
-the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
+Run command/script before and after sending the snapshot to the destination.
+Intended to run a remote script via ssh on the destination, e.g. to bring
+up a backup disk or server. Or to put a zpool online/offline:
 
-"ssh root@bserv zpool import -Nf tank" "ssh root@bserv zpool export tank".
+  "ssh root@bserv zpool import -Nf tank"
+  "ssh root@bserv zpool export tank"
 
 =back
 
@@ -186,20 +217,20 @@ to remove configuration from a dataset just give its name
 
  znapzendzetup delete I<dataset>
 
-the B<delete> function understands the following options
+the B<delete> function understands the following options:
 
 =over
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back
 
 =head2 B<edit>
 
-modify the configuration of a dataset. see the descriptions in the B<create>
+modify the configuration of a dataset. See the descriptions in the B<create>
 function for details.
 
 If B<edit> is used with a source dataset as single argument, properties
@@ -220,7 +251,7 @@ reads configuration data from a file or STDIN and prints it content
 =item B<--write>
 
 actually store the new configuration into the dataset given on the
-commandline.
+command line.
 
 =item B<--prop> I<key>="I<value>" [ B<--prop> ... ]
 
@@ -238,12 +269,23 @@ create a complex backup task
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
-       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b pool off"
+       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' \
+          root@bserv:backup/home \
+          "/root/znapzend.sh dst_b pool on" \
+          "/root/znapzend.sh dst_b pool off"
 
 
 copy the setup from one fileset to another
 
     znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
+
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following
+permissions are required on the ZFS filesystems:
+
+Sending end: I<destroy,hold,mount,send,snapshot,userprop>
+Receiving end: I<create,mount,receive,userprop>
 
 =head1 COPYRIGHT
 

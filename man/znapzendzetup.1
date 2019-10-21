@@ -218,7 +218,7 @@ The heart of the znapzend backup is the plan. The plan specifies how often
 to backup and for how long to keep the backups. A plan is required both for
 the source and the destination datasets.
 .PP
-The plan consists of a series of retention periodes to interval
+The plan consists of a series of retention periods to interval
 associations:
 .PP
 .Vb 1
@@ -256,7 +256,7 @@ will cause snapshots to be taken and destroyed according to the plan. You
 can then add one or several destinations (\fB\s-1DST\s0\fR) both local (preferably on
 a different pool) or remote.
 .PP
-When adding multiple \fB\s-1DST\s0\fR entries, each will get labled for later
+When adding multiple \fB\s-1DST\s0\fR entries, each will get labeled for later
 identification, optionally you can specify your own label.
 .IP "\fB\-\-tsformat\fR=\fIlimited-strftime-format\fR" 4
 .IX Item "--tsformat=limited-strftime-format"
@@ -327,21 +327,28 @@ If you deal with a mariadb/mysql database, you can use
 \&  post\-snap\-command = /usr/bin/kill \`/usr/bin/cat /tmp/mariadblock.pid\`;/usr/bin/rm /tmp/mariadblock.pid
 .Ve
 .Sp
-to make sure that the on-disk data is consistant when snapshotting. Since the
-lock stays only in place for the duration of the connection to mysql
-we need to employ. For this to work, add the root password of your mariadb/mysql db
+to make sure that the on-disk data is consistent when snapshotting. The
+lock stays in place only for the duration of the lingering connection
+to mysql we need to employ, or until the snapshotting attempt times out.
+For this to work, add the root password of your mariadb/mysql database
 setup into ~root/.my.cnf and make sure the file permissions are tight ...
 .Sp
-The pre and post snapshot commands can find the name and time of the snapshot in the environment variables \s-1ZNAP_NAME\s0 and \s-1ZNAP_TIME\s0
+The pre and post snapshot commands can find the name and time of the
+snapshot in the environment variables \fI\s-1ZNAP_NAME\s0\fR and \fI\s-1ZNAP_TIME\s0\fR.
 .IP "\fB\-\-send\-delay\fR" 4
 .IX Item "--send-delay"
-Specify delay (in seconds) before sending snaps to the destination. May be useful if you want to control sending time.
-.IP "\fBpre-send-command post-send-command\fR" 4
-.IX Item "pre-send-command post-send-command"
-Run command/script before and after sending the snapshot to the destination. Intended to run a remote script via ssh on
-the destination, e.g. to bring up a backup disk or server. Or to put a zpool online/offline:
+Specify delay (in seconds) before sending snaps to the destination.
+May be useful if you want to control sending time.
+.IP "\fBpre-send-command\fR=\fI/path/bin args\fR, \fBpost-send-command\fR=\fI/path/bin args\fR" 4
+.IX Item "pre-send-command=/path/bin args, post-send-command=/path/bin args"
+Run command/script before and after sending the snapshot to the destination.
+Intended to run a remote script via ssh on the destination, e.g. to bring
+up a backup disk or server. Or to put a zpool online/offline:
 .Sp
-\&\*(L"ssh root@bserv zpool import \-Nf tank\*(R" \*(L"ssh root@bserv zpool export tank\*(R".
+.Vb 2
+\&  "ssh root@bserv zpool import \-Nf tank"
+\&  "ssh root@bserv zpool export tank"
+.Ve
 .SS "\fBdelete\fP"
 .IX Subsection "delete"
 to remove configuration from a dataset just give its name
@@ -350,14 +357,14 @@ to remove configuration from a dataset just give its name
 \& znapzendzetup delete I<dataset>
 .Ve
 .PP
-the \fBdelete\fR function understands the following options
+the \fBdelete\fR function understands the following options:
 .IP "\fB\-\-dst\fR=\fIkey\fR" 4
 .IX Item "--dst=key"
 to only remove a destination, specify the key of the destination. Use the
 \&\fBlist\fR function to see the keys.
 .SS "\fBedit\fP"
 .IX Subsection "edit"
-modify the configuration of a dataset. see the descriptions in the \fBcreate\fR
+modify the configuration of a dataset. See the descriptions in the \fBcreate\fR
 function for details.
 .PP
 If \fBedit\fR is used with a source dataset as single argument, properties
@@ -375,7 +382,7 @@ reads configuration data from a file or \s-1STDIN\s0 and prints it content
 .IP "\fB\-\-write\fR" 4
 .IX Item "--write"
 actually store the new configuration into the dataset given on the
-commandline.
+command line.
 .ie n .IP "\fB\-\-prop\fR \fIkey\fR=""\fIvalue\fR"" [ \fB\-\-prop\fR ... ]" 4
 .el .IP "\fB\-\-prop\fR \fIkey\fR=``\fIvalue\fR'' [ \fB\-\-prop\fR ... ]" 4
 .IX Item "--prop key=""value"" [ --prop ... ]"
@@ -384,14 +391,17 @@ may be called multiple times to override properties in the imported config.
 .IX Header "EXAMPLES"
 create a complex backup task
 .PP
-.Vb 7
+.Vb 10
 \&    znapzendzetup create \-\-recursive \-\-mbuffer=/opt/omni/bin/mbuffer \e
 \&       \-\-mbuffersize=1G \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
 \&       \-\-pre\-snap\-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \e
 \&       \-\-post\-snap\-command="/bin/sh /usr/local/bin/unlock_db.sh" \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
-\&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq root@bserv:backup/home "/root/znapzend.sh dst_b pool on" "/root/znapzend.sh dst_b pool off"
+\&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq \e
+\&          root@bserv:backup/home \e
+\&          "/root/znapzend.sh dst_b pool on" \e
+\&          "/root/znapzend.sh dst_b pool off"
 .Ve
 .PP
 copy the setup from one fileset to another
@@ -401,10 +411,11 @@ copy the setup from one fileset to another
 .Ve
 .SH "RUNNING AS AN UNPRIVILEGED USER"
 .IX Header "RUNNING AS AN UNPRIVILEGED USER"
-In order to allow a non-privileged user to use it, the following permissions are required on the \s-1ZFS\s0 filesystems:
+In order to allow a non-privileged user to use it, the following
+permissions are required on the \s-1ZFS\s0 filesystems:
 .PP
-Sending end: destroy,hold,mount,send,snapshot,userprop
-Receiving end: create,mount,receive,userprop
+Sending end: \fIdestroy,hold,mount,send,snapshot,userprop\fR
+Receiving end: \fIcreate,mount,receive,userprop\fR
 .SH "COPYRIGHT"
 .IX Header "COPYRIGHT"
 Copyright (c) 2014 by \s-1OETIKER+PARTNER AG.\s0 All rights reserved.

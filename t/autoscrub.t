@@ -68,7 +68,7 @@ is ($zZFS->stopScrub('tank'), 1, 'stop scrub');
 is ($zZFS->scrubActive('tank'), 0, 'scrub active');
 
 isnt ($zTime->getLastScrubTimestamp($zpoolStatus), 0, 'last scrub time');
-    
- 
+
+
 1;
 

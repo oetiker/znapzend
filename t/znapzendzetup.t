@@ -33,7 +33,7 @@ unshift @INC, sub {
 
         # uncomment testing code
         $module_text =~ s/### RM_COMM_4_TEST ###//sg;
-                
+
         # filehandle on the scalar
         open $fh, '<', \$module_text;
 
@@ -68,13 +68,13 @@ is (runCommand('help'), 1, 'znapzendzetup help');
 
 is (runCommand('list'), 1, 'znapzendzetup list');
 
-is (runCommand(qw(create SRC 1h=>10min tank/source), 
+is (runCommand(qw(create SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
 
-is (runCommand(qw(edit SRC 1h=>10min tank/source), 
+is (runCommand(qw(edit SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit');
 
-is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset'); 
+is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
