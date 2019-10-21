@@ -82,10 +82,10 @@ sub main {
 
     # MAYBE make $enabledOnly parameter public in Config.pm
     my $recurse = (defined($opts->{"recursive"}));
-    my $inherited = (defined($opts->{"inherited"}));
+    my $inherit = (defined($opts->{"inherited"}));
     my $backupSets = ($opts->{"only-enabled"}
-        ? $zConfig->getBackupSetEnabled($recurse, pop @ARGV)
-        : $zConfig->getBackupSet($recurse, pop @ARGV))
+        ? $zConfig->getBackupSetEnabled($recurse, $inherit, pop @ARGV)
+        : $zConfig->getBackupSet($recurse, $inherit, pop @ARGV))
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set

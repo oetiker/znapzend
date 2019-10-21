@@ -458,6 +458,7 @@ sub getDataSetProperties {
     my $self = shift;
     my $dataSet = shift;
     my $recurse = shift; # May be not passed => undef
+    my $inherit = shift; # May be not passed => undef
 
     my @propertyList;
     my $propertyPrefix = $self->propertyPrefix;
@@ -465,12 +466,17 @@ sub getDataSetProperties {
     my @list;
     print STDERR "=== getDataSetProperties():"
         . "\n\trecurse=" . Dumper($recurse)
+        . "\n\tinherit=" . Dumper($inherit)
         . "\n\tDS=" . Dumper($dataSet)
         . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
              if $self->debug;
 
     if (!defined($recurse)) {
         $recurse = 0;
+    }
+
+    if (!defined($inherit)) {
+        $inherit = 0;
     }
 
     # Note: Before the recursive and multiple dataset support we either
@@ -486,6 +492,17 @@ sub getDataSetProperties {
     # the process, and/or time out. To defend against this, we optionally
     # can fall back to a big list of individual dataset names found by
     # recursive listDataSets() invocations instead.
+    #
+    # If both recurse and inherit are specified, behavior depends on
+    # the dataset(s) whose name is passed. If the dataset has a local
+    # or inherited-from-local backup plan, the recursion stops here.
+    # If it has no plan (e.g. pool root dataset), we should recurse and
+    # report all children with a "local" backup plan (ignore inherit).
+    # Note that listDataSets(), optionally used below for either full
+    # or selective listing of datasets seen by the system, does not
+    # have a say in this dilemma ("zfs list" does not care about the
+    # "source" of an attribute, only "zfs get" used in this routine does).
+    #
     if (defined($dataSet) && $dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
             print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
@@ -497,6 +514,7 @@ sub getDataSetProperties {
                 }
                 push (@list, @{$listds});
                 $recurse = 0;
+                $inherit = 0;
             } else {
                 if ( (scalar(@$dataSet) > 0) && (defined(@$dataSet[0])) ) {
                     push (@list, @$dataSet);
@@ -515,6 +533,7 @@ sub getDataSetProperties {
                 }
                 push (@list, @{$listds});
                 $recurse = 0;
+                $inherit = 0;
             } else {
                 if ($dataSet ne '') {
                     push (@list, ($dataSet));
@@ -535,11 +554,30 @@ sub getDataSetProperties {
             return \@propertyList;
         }
         push (@list, @{$listds});
+        $recurse = 0;
+        $inherit = 0;
     }
 
+    # Iterate every dataset pathname found above, e.g.:
+    # * (no args/empty/undef arg) all filesystem/volume datasets on all locally
+    #   imported pools, and now recurse==0 and inherit==0 is enforced
+    # * (with args and with recursion originally, but lowmemRecurse enabled)
+    #   one or more filesystem/volume named datasets and their children found
+    #   via zfs list, and now recurse==0 and inherit==0 is enforced
+    # * (finally) one or more named datasets from args, with recursion and
+    #   inheritance settings to be processed below
+    # Depending on inherit (and each dataset referenced in $listElem), pick
+    # either datasets that have a backup plan in their arguments with a
+    # "local" source, or those that have one inherited from a local (stop
+    # at a topmost such then).
+    # TODO/FIXME: There may be no support for new backup plan definitions
+    # inside a tree that has one above, and/or good grounds for conflicts.
     for my $listElem (@list){
-        print STDERR "=== getDataSetProperties(): Looking under '$listElem' with '$recurse' recursion mode\n" if $self->debug;
+        print STDERR "=== getDataSetProperties(): Looking under '$listElem' with "
+            . "'$recurse' recursion mode and '$inherit' inheritance mode\n"
+            if $self->debug;
         my %properties;
+        # TODO : support "inherit-from-local" mode
         my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
         push (@cmd, qw(-t), 'filesystem,volume');
         if ($recurse) {

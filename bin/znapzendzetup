@@ -223,7 +223,7 @@ sub main {
         if ($#ARGV == grep { /^--(?:$ignoreOpts)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
 
-            my $backupSet = $zConfig->getBackupSet(0, $opts->{src})->[0]
+            my $backupSet = $zConfig->getBackupSet(0, 0, $opts->{src})->[0]
                 or die "ERROR: cannot get backup config\n";
 
             my $props = dumpPropertiesRaw($backupSet);
@@ -277,7 +277,7 @@ sub main {
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
 
         #get active backup config
-        my $backupSets = $zConfig->getBackupSet(0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
+        my $backupSets = $zConfig->getBackupSet(0, 0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
         ($backupSets && @$backupSets) or die "ERROR: backup set for $backupSet->{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
@@ -327,10 +327,10 @@ sub main {
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r inherited))) or exit 1;
 
         my $recurse = ( defined($opts->{recursive}) );
-        my $inherited = ( defined($opts->{recursive}) );
+        my $inherit = ( defined($opts->{inherited}) );
 
         my $backupSets;
-        if (! ($backupSets = $zConfig->getBackupSet($recurse, @ARGV) ) ) {
+        if (! ($backupSets = $zConfig->getBackupSet($recurse, $inherit, @ARGV) ) ) {
             die "ERROR: cannot list backup config\n";
         }
 
@@ -343,7 +343,7 @@ sub main {
         # TODO: support --recursive? Does not make much sense "as is" for import then
 
         my $backupSets;
-        if (! ($backupSets = $zConfig->getBackupSet(0, $opts->{src}) ) ) {
+        if (! ($backupSets = $zConfig->getBackupSet(0, 0, $opts->{src}) ) ) {
             die "ERROR: cannot get backup config\n";
         }
         my $backupSet;
