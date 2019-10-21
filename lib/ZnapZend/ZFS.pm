@@ -463,8 +463,9 @@ sub getDataSetProperties {
     my $propertyPrefix = $self->propertyPrefix;
 
     my @list;
-    print STDERR "=== getDataSetProperties():\n\trecurse=" 
-        . Dumper($recurse) . "\n\tDS=" . Dumper($dataSet) 
+    print STDERR "=== getDataSetProperties():"
+        . "\n\trecurse=" . Dumper($recurse)
+        . "\n\tDS=" . Dumper($dataSet)
         . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
              if $self->debug;
 

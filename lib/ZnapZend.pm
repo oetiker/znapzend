@@ -48,7 +48,7 @@ has backupSets              => sub { [] };
 has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
-                          rootExec => $self->rootExec, timeWarp => $self->timeWarp, 
+                          rootExec => $self->rootExec, timeWarp => $self->timeWarp,
                           zLog => $self->zLog);
 };
 
