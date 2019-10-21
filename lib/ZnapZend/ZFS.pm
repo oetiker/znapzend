@@ -572,6 +572,7 @@ sub getDataSetProperties {
     # at a topmost such then).
     # TODO/FIXME: There may be no support for new backup plan definitions
     # inside a tree that has one above, and/or good grounds for conflicts.
+    my %cachedInheritance; # Cache datasets that we know to define znapzend attrs (if inherit mode is used)
     for my $listElem (@list){
         print STDERR "=== getDataSetProperties(): Looking under '$listElem' with "
             . "'$recurse' recursion mode and '$inherit' inheritance mode\n"
@@ -588,18 +589,48 @@ sub getDataSetProperties {
         if ($recurse) {
             push (@cmd, qw(-r));
         }
-        push (@cmd, qw(-o), 'name,property,value', 'all', $listElem);
+        push (@cmd, qw(-o), 'name,property,value,source', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
         # Really a rare event, not to confuse with just
         # getting no properties or bad zfs CLI args
         open my $props, '-|', @cmd or Mojo::Exception->throw("ERROR: could not execute zfs to get properties from $listElem");
         # NOTE: Code below assumes that the listing groups all items of one dataset together
         my $prev_srcds = "";
+        my $prevSkipped_srcds = "";
         while (my $prop = <$props>){
             chomp $prop;
             # NOTE: This regex assumes the dataset names do not have trailing whitespaces
-            my ($srcds, $key, $value) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
-            print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value'\n" if $self->debug;
+            my ($srcds, $key, $value, $sourcetype, $tail) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from )(.*)$/ or next; ### |received|default|-
+            # If we are here, the attribute name (key) is under $propertyPrefix
+            # namespace. So this dataset has at least one "interesting" attr...
+            if ($inherit && $sourcetype ne 'local') {
+                # We should trim (non-local) descendants of a listed dataset
+                # so as to not define the whole world as if having explicit
+                # backup plans configured
+                if (defined($cachedInheritance{"$srcds\tattr:source"})) {
+                    # We've already seen a line of this and decided to skip it
+                    if ($prevSkipped_srcds ne $srcds && $self->debug) {
+                        print STDERR "=== getDataSetProperties(): SKIP: '$srcds' "
+                            . "because it is already skipped\n";
+                    }
+                    $prevSkipped_srcds = $srcds;
+                    next;
+                }
+                my $srcdsParent = $srcds;
+                $srcdsParent =~ s,/[^/]+$,,; # chop off the tail (if any - none on root datasets)
+                if (defined($cachedInheritance{"$srcdsParent\tattr:source"})) {
+                    if ($prevSkipped_srcds ne $srcds && $self->debug) {
+                        print STDERR "=== getDataSetProperties(): SKIP: '$srcds' "
+                            . "because parent config '$srcdsParent' is already listed ("
+                            . $cachedInheritance{"$srcdsParent\tattr:source"} .")\n";
+                    }
+                    $cachedInheritance{"$srcds\tattr:source"} = "${sourcetype}${tail}";
+                    $prevSkipped_srcds = $srcds;
+                    %properties = ();
+                    next;
+                }
+            }
+            print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value' (source: '${sourcetype}${tail}')\n" if $self->debug;
             if ($srcds ne $prev_srcds) {
                 if (%properties && $prev_srcds ne ""){
                     # place source dataset on list, too. so we know where the properties are from...
@@ -612,10 +643,88 @@ sub getDataSetProperties {
                     my %newProps = %properties;
                     push @propertyList, \%newProps;
                     %properties = ();
+                    if ($inherit) {
+                        # We've just had a successful save of 1+ attrs we chose
+                        # to keep, so should trim descendants above.
+                        # TODO: Track somehow else? We effectively save the
+                        # source of last seen attr here, but are really
+                        # interested if this dataset is end of tree walk
+                        # (as far as non-local attrs go)...
+                        $cachedInheritance{"$prev_srcds\tattr:source"} = "${sourcetype}${tail}";
+                    }
                 }
                 $prev_srcds = $srcds;
             }
-            $properties{$key} = $value;
+            # We are okay to use this dataset if:
+            # * sourcetype == local (any inheritance value)
+            # * sourcetype == inherited* and the tail names a dataset whose value for the attribute is local (and inheritance is allowed)
+            # A bit of optimization (speed vs mem tradeoff) is to cache seen
+            # attr sources (as magic int values); do not bother if not in
+            # inheritance mode at all.
+            my $inheritKey = "$srcds\t$key"; # TODO: lowmemInherit => "$srcds" ?
+            if ($inherit) {
+                if (!defined($cachedInheritance{$inheritKey})) {
+                    if ($sourcetype eq 'local') {
+                        # this DS defines this attr
+                        $cachedInheritance{$inheritKey} = 1;
+                    } else {
+                        # inherited from something... technically there are other
+                        # categories too (default, received) but we only care to
+                        # not run "zfs get" in vain for known misses
+                        $cachedInheritance{$inheritKey} = 2;
+                    }
+                }
+            }
+            if ($sourcetype eq 'local') {
+                $properties{$key} = $value;
+            } else {
+                # Not a local...
+#                print STDERR "NAL: '$inherit' && '$sourcetype' eq 'inherited from ' && '$tail' ne ''\n" if $self->debug;
+
+                if ($inherit && $sourcetype eq 'inherited from ' && $tail ne '') {
+                    my $tail_inheritKey = "$tail\t$key"; # TODO: lowmemInherit => "$tail" ?
+
+                    if (!defined($cachedInheritance{$tail_inheritKey})) {
+                        # Call zfs get for $tail, fetch all interesting attrs while at it
+                        print STDERR "=== getDataSetProperties(): "
+                            . "Looking for '$key' under inheritance source "
+                            . "'$tail' to see if it is local there\n"
+                                if $self->debug;
+                        # TODO: here and in mock t/zfs, reduce to "-o property,source"
+                        my @inh_cmd = (@{$self->priv}, qw(zfs get -H -s local -t),
+                            'filesystem,volume', qw(-o), 'name,property,value,source',
+                            'all', $tail);
+                        print STDERR '## ' . join(' ', @inh_cmd) . "\n" if $self->debug;
+                        open my $inh_props, '-|', @inh_cmd or Mojo::Exception->throw("ERROR: could not execute zfs to get properties from $tail");
+                        while (my $inh_prop = <$inh_props>){
+                            chomp $inh_prop;
+                            my ($inh_srcds, $inh_key, $inh_value, $inh_sourcetype, $inh_tail) =
+                                $inh_prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/
+                                    or next;
+                            print STDERR "=== getDataSetProperties(): FOUND ORIGIN: '$inh_srcds' => '$inh_key' == '$inh_value' (source: '${inh_sourcetype}${inh_tail}')\n" if $self->debug;
+                            my $inh_inheritKey = "$inh_srcds\t$inh_key"; # TODO: lowmemInherit => "$inh_srcds" ?
+                            if ($inh_sourcetype eq 'local') {
+                                # this DS defines this attr
+                                $cachedInheritance{$inh_inheritKey} = 1;
+                            } else {
+                                # inherited from something... technically there are other
+                                # categories too (default, received) but we only care to
+                                # not run "zfs get" in vain for known misses
+                                $cachedInheritance{$inh_inheritKey} = 2;
+                            }
+                        }
+#                    } else {
+#                        print STDERR "NAL: '$tail_inheritKey' already defined: " . $cachedInheritance{$tail_inheritKey} . "\n" if $self->debug;
+                    }
+                    if (defined($cachedInheritance{$tail_inheritKey}) && 1 == $cachedInheritance{$tail_inheritKey}) {
+                        # This attr comes from a local source
+                        $properties{$key} = $value;
+                    }
+                } else {
+                    # See some other $props...
+                    next;
+                }
+            }
         }
         if (%properties){
             # place source dataset on list, too. so we know where the properties are from...
