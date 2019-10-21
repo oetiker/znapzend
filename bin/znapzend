@@ -44,7 +44,12 @@ sub main {
     if (defined($opts->{recursive})) {
         $opts->{recursive} = 1;
     } else {
-        $opts->{recursive} = 0;
+        if (1 == $opts->{runonce}) {
+            $opts->{recursive} = 0;
+        } else {
+            # Effectively, recurse our whole ZFS namespace from its null root
+            $opts->{recursive} = 1;
+        }
     }
 
     $opts->{help} && do {
