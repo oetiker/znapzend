@@ -62,6 +62,7 @@ use_ok 'ZnapZend';
 @ARGV = qw(--help);
 do 'znapzend' or die "ERROR: loading program znapzend\n";
 
+# seems to allow tests to continue so why not?
 is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
@@ -79,9 +80,6 @@ $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = ' qwe ';
 is (runCommand(qw(--runonce=tank/source)),
     1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
 undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
-
-# seems to allow tests to continue so why not?
-is (runCommand('--help'), 1, 'znapzend help');
 
 # Coverage for various failure codepaths
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
