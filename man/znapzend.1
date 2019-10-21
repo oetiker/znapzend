@@ -156,6 +156,7 @@ znapzend \- znapzend daemon
 \& \-\-pidfile=x            write a pid file when running in daemon mode
 \& \-\-daemonize            fork into the background
 \& \-\-runonce=[x]          run one round on the optionally provided dataset
+\& \-r,\-\-recursive         recurse from the given "run\-once" dataset
 \& \-\-features=x           comma separated list of features to be enabled
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
 \& \-\-connectTimeout=x     sets the ConnectTimeout for ssh commands
@@ -207,7 +208,14 @@ Fork into the background.
 .IX Item "--runonce=[dataset]"
 run one round on source \fIdataset\fR or on all datasets if empty.
 This is very useful for testing. Use it in connection with \fB\-\-noaction\fR and
-\&\fB\-\-debug\fR while testing your new configuration
+\&\fB\-\-debug\fR while testing your new configuration, or with \fB\-\-recursive\fR for
+quick back up of whatever has backup plans in a single pool or dataset tree.
+.IP "\fB\-r\fR, \fB\-\-recursive\fR" 4
+.IX Item "-r, --recursive"
+when backing up a particular dataset with \fB\-\-runonce\fR=[\fIdataset\fR], do not
+just look at this dataset's backup plan, but iterate into its children that
+might have any. Useful for quick backups of a pool whose root dataset has no
+\&\fIznapzendzetup\fR configurations defined, but some trees under it do.
 .IP "\fB\-\-features\fR=\fIfeature1\fR,\fIfeature2\fR,..." 4
 .IX Item "--features=feature1,feature2,..."
 enables enhanced zfs features not supported by all zfs implementations.
