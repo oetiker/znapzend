@@ -578,7 +578,12 @@ sub getDataSetProperties {
             if $self->debug;
         my %properties;
         # TODO : support "inherit-from-local" mode
-        my @cmd = (@{$self->priv}, qw(zfs get -H -s local));
+        my @cmd = (@{$self->priv}, qw(zfs get -H));
+        if ($inherit) {
+            push (@cmd, qw(-s), 'local,inherited');
+        } else {
+            push (@cmd, qw(-s local));
+        }
         push (@cmd, qw(-t), 'filesystem,volume');
         if ($recurse) {
             push (@cmd, qw(-r));
