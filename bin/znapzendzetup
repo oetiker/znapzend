@@ -278,7 +278,7 @@ sub main {
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet(0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
-        @$backupSets or die "ERROR: backup set for $backupSet->{src} does not exist\n";
+        ($backupSets && @$backupSets) or die "ERROR: backup set for $backupSet->{src} does not exist\n";
         %cfg = %{$backupSets->[0]};
 
         #merge new config
