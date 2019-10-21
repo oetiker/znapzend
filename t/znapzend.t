@@ -83,7 +83,12 @@ undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
+is (runCommand(qw(--inherit --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherit flag');
+# TODO : implement and test --inherit --recurse handling
+
 # Coverage for various failure codepaths
+is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
+
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command');
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = undef;

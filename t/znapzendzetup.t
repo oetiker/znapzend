@@ -68,6 +68,11 @@ is (runCommand('help'), 1, 'znapzendzetup help');
 
 is (runCommand('list'), 1, 'znapzendzetup list');
 
+# Enabled dataset with an inherited plan:
+is (runCommand(qw(list --debug --inherited tank/source/child)), 1, 'znapzendzetup list --inherited tank/source/child succeeds');
+is (runCommand(qw(list tank/source/child)), 0, 'znapzendzetup list tank/source/child (no inheritance) fails');
+# TODO : implement and test --inherit --recurse handling
+
 is (runCommand(qw(create SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
 

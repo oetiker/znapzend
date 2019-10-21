@@ -9,7 +9,7 @@ use Time::Piece;
 my %dataSets = (
     'tank'               => '',
     'tank/source'        => 'src',
-    'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"
+    'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"; should also "get -s (local,)inherited" though
     'tank/source/child/grandchild'        => 'src-inherited',
     'tank/anothersource'        => 'src',
     'tank/anothersource/disabled'         => 'src-disabled',
@@ -194,6 +194,7 @@ for ($command){
         exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
 
         my $localattr = (join(" ", @ARGV) =~ / -s local/);
+        my $inheritedattr = (join(" ", @ARGV) =~ / -s (local,|)inherited/);
 
         my $prefix = "";
         my $srcds = "";
@@ -231,7 +232,10 @@ for ($command){
             # Per checks above we know the $prefix is empty or exactly
             # last ARGV item.
 
-            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
+            if (   (!$localattr && !$inheritedattr && $dataSets{$srcds} =~ /^src/)
+                || ($localattr && $dataSets{$srcds} eq 'src')
+                || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
+            ) {
                 my $dstds;
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
@@ -250,13 +254,19 @@ for ($command){
                     } else {
                         $dstds = $childds;
                     }
-                    if ( (!$localattr && $dataSets{$childds} =~ /^src/) || ($localattr && $dataSets{$childds} eq 'src' ) ) {
+                    if (   (!$localattr && !$inheritedattr && $dataSets{$childds} =~ /^src/)
+                        || ($localattr && $dataSets{$childds} eq 'src')
+                        || ($inheritedattr && $dataSets{$childds} eq 'src-inherited')
+                    ) {
                         print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds);
                     }
                 }
             }
         } else {
-            if ( (!$localattr && $dataSets{$srcds} =~ /^src/) || ($localattr && $dataSets{$srcds} eq 'src' ) ) {
+            if (   (!$localattr && !$inheritedattr && $dataSets{$srcds} =~ /^src/)
+                || ($localattr && $dataSets{$srcds} eq 'src')
+                || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
+            ) {
                 my $dstds;
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
