@@ -35,6 +35,7 @@ sub print_zfs_get {
     my $prefix = shift; # Dataset name to prepend (and add a whitespace)
     my $srcname = shift;
     my $dstname = shift;
+    my $printsrc = shift;
 
     if ( defined($prefix) ) {
         chomp $prefix;
@@ -64,6 +65,29 @@ sub print_zfs_get {
         $srcenabled = "off";
     }
 
+    my $srcsuffix = "";
+    my $srcenabledsuffix = "";
+    if ($printsrc) {
+        if (defined($dataSets{"$srcname"})) {
+            if ($dataSets{"$srcname"} eq 'src') {
+                $srcsuffix = "\tlocal";
+                $srcenabledsuffix = "$srcsuffix";
+            }
+            if ($dataSets{"$srcname"} eq 'src-disabled') {
+                $srcsuffix = "\tinherited from tank/source"; # TODO: Honestly iterate the array
+                $srcenabledsuffix = "\tlocal";
+            }
+            if ($dataSets{"$srcname"} eq 'src-inherited') {
+                $srcsuffix = "\tinherited from tank/source"; # TODO: Honestly iterate the array
+                $srcenabledsuffix = "$srcsuffix";
+            }
+        } else {
+            # dst, other
+            $srcsuffix = "received";
+            $srcenabledsuffix = "$srcsuffix";
+        }
+    }
+
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
     my $dst0pstcmd = "/bin/echo 'post znap command for dst_0'";
     if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'}) ) {
@@ -74,28 +98,28 @@ sub print_zfs_get {
     }
 
     print <<"ZFS_GET_END";
-${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds
-${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}
-${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}
-${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds
-${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes
-${prefix}org.znapzend:src            ${srcname}
-${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds
-${prefix}org.znapzend:recursive      on
-${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S
-${prefix}org.znapzend:enabled        ${srcenabled}
-${prefix}org.znapzend:dst_0          backup/${dstname}
-${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}
-${prefix}org.znapzend:dst_fail       backup/destfail
-${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337
-${prefix}org.znapzend:mbuffer_size   100M
-${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'
-${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'
+${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
+${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}${srcsuffix}
+${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}${srcsuffix}
+${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds${srcsuffix}
+${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes${srcsuffix}
+${prefix}org.znapzend:src            ${srcname}${srcsuffix}
+${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds${srcsuffix}
+${prefix}org.znapzend:recursive      on${srcsuffix}
+${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S${srcsuffix}
+${prefix}org.znapzend:enabled        ${srcenabled}${srcenabledsuffix}
+${prefix}org.znapzend:dst_0          backup/${dstname}${srcsuffix}
+${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}${srcsuffix}
+${prefix}org.znapzend:dst_fail       backup/destfail${srcsuffix}
+${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337${srcsuffix}
+${prefix}org.znapzend:mbuffer_size   100M${srcsuffix}
+${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'${srcsuffix}
+${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'${srcsuffix}
 ZFS_GET_END
 
         if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
             print <<"ZFS_GET_END";
-${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}
+${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${srcsuffix}
 ZFS_GET_END
         }
 
@@ -199,6 +223,10 @@ for ($command){
         my $prefix = "";
         my $srcds = "";
         my $srcdsOrig = "";
+        my $printSource = 0;
+        if ( join(" ", @ARGV) =~ /name,property,value,source/ ) {
+            $printSource = 1;
+        }
 
         if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
@@ -242,7 +270,7 @@ for ($command){
                 } else {
                     $dstds = $srcds;
                 }
-                print_zfs_get ($prefix, $srcds, $dstds);
+                print_zfs_get ($prefix, $srcds, $dstds, $printSource);
             }
 
             # Does the srcds (from prefix or defaulted) have any descendants?
@@ -258,7 +286,7 @@ for ($command){
                         || ($localattr && $dataSets{$childds} eq 'src')
                         || ($inheritedattr && $dataSets{$childds} eq 'src-inherited')
                     ) {
-                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds);
+                        print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds, $printSource);
                     }
                 }
             }
@@ -273,7 +301,7 @@ for ($command){
                 } else {
                     $dstds = $srcds;
                 }
-                print_zfs_get ($prefix, $srcds, $dstds);
+                print_zfs_get ($prefix, $srcds, $dstds, $printSource);
             }
         }
         exit;
