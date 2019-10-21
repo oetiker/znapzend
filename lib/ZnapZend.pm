@@ -220,10 +220,18 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    if ($backupSet->{zend_delay} and $backupSet->{zend_delay} > 0){
-        $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
-        sleep $backupSet->{zend_delay};
-        $self->zLog->info("resume sending action on backupSet $backupSet->{src}");
+    if ($backupSet->{zend_delay}) {
+        chomp $backupSet->{zend_delay};
+        if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
+            warn "Option 'zend-delay' has an invalid value, ignored";
+            undef $backupSet->{zend_delay};
+        } else {
+            if($backupSet->{zend_delay} > 0) {
+                $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
+                sleep $backupSet->{zend_delay};
+                $self->zLog->info("resume sending action on backupSet $backupSet->{src}");
+            }
+        }
     }
 
     my @snapshots;

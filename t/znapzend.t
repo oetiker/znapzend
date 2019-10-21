@@ -73,6 +73,13 @@ $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1');
 undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
+# Try an invalid string, should ignore and proceed without a delay
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = ' qwe ';
+# TODO : Find a way to check stderr for qr/Option 'zend-delay' has an invalid value/
+is (runCommand(qw(--runonce=tank/source)),
+    1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
+undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+
 # seems to allow tests to continue so why not?
 is (runCommand('--help'), 1, 'znapzend help');
 
