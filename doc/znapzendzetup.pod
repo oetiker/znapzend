@@ -1,4 +1,4 @@
-=head1 NAME
+[01;31m[K=head1 NAME[m[K
 
 znapzendzetup - znapzend setup utility
 
@@ -34,7 +34,7 @@ where 'command' is one of the following:
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
 
-    list    [--rootExec={pfexec|sudo}] [src_dataset]
+    list    [--rootExec={pfexec|sudo}] [--recursive] [src_dataset...]
 
     export  [--rootExec={pfexec|sudo}] <src_dataset>
 
@@ -52,6 +52,32 @@ the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
 for it to re-read the configuration.
+
+Common options include:
+
+=over
+
+=item B<--features>=I<feature1>,I<feature2>,...
+
+enables a few enhanced zfs module features to be on par with those used by
+the znapzend command (but far fewer are relevant for the znapzendzetup)
+
+Available features:
+
+=over
+
+=item lowmemRecurse
+
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
+
+=back
+
+=back
+
 
 Below a few notes on main commands.
 
@@ -192,7 +218,7 @@ the B<delete> function understands the following options
 
 =item B<--dst>=I<key>
 
-to only remove a destination, specify the key of the destionation. Use the
+to only remove a destination, specify the key of the destination. Use the
 B<list> function to see the keys.
 
 =back
@@ -244,6 +270,13 @@ create a complex backup task
 copy the setup from one fileset to another
 
     znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
+
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+
+Sending end: destroy,hold,mount,send,snapshot,userprop
+Receiving end: create,mount,receive,userprop
 
 =head1 COPYRIGHT
 

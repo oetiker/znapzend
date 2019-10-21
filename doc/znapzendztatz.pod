@@ -1,4 +1,4 @@
-=head1 NAME
+[01;31m[K=head1 NAME[m[K
 
 znapzendztatz - znapzend statistics utility
 
@@ -10,6 +10,7 @@ B<znapzendztatz> [I<options>...] [src_dataset]
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
  --only-enabled only show statistics for enabled datasets
+ --setup        show the configuration key and the filesystem that defined the configuration
  --rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
  --timeWarp=x   act as if you were shifted by x seconds into the future
  --man          show man-page and exit

@@ -1,4 +1,4 @@
-=head1 NAME
+[01;31m[K=head1 NAME[m[K
 
 znapzend - znapzend daemon
 
@@ -13,10 +13,11 @@ B<znapzend> [I<options>...]
  -n,--noaction          run in simulation mode. does no changes to the filesystem
  --nodestroy            does all changes to the filesystem except destroy
  --logto=x              select where to log to (syslog::<facility> or <filepath>)
- --loglevel=x           define the log level when logging to file
+ --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
  --daemonize            fork into the background
  --runonce=[x]          run one round on the optionally provided dataset
+ -r,--recursive         recurse from the given "run-once" dataset
  --features=x           comma separated list of features to be enabled
  --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
@@ -76,7 +77,15 @@ Fork into the background.
 
 run one round on source I<dataset> or on all datasets if empty.
 This is very useful for testing. Use it in connection with B<--noaction> and
-B<--debug> while testing your new configuration
+B<--debug> while testing your new configuration, or with B<--recursive> for
+quick back up of whatever has backup plans in a single pool or dataset tree.
+
+=item B<-r>, B<--recursive>
+
+when backing up a particular dataset with B<--runonce>=[I<dataset>], do not
+just look at this dataset's backup plan, but iterate into its children that
+might have any. Useful for quick backups of a pool whose root dataset has no
+I<znapzendzetup> configurations defined, but some trees under it do.
 
 =item B<--features>=I<feature1>,I<feature2>,...
 
@@ -119,6 +128,14 @@ default, decompress the data before sending. Zfs recv will then compress it agai
 writing it to disk. Using -c will skip the unnecessary decompress-compress stages.
 This decreases CPU load on both source and destination as well as reduce network
 bandwidth. The -L option is for large block support and -e is for embedded data support.
+
+=item lowmemRecurse
+
+use 'lowmemRecurse' on systems where you have too many datasets,
+so a recursive listing of attributes to find backup plans exhausts
+the memory available to `znapzend(zetup)`: instead, go the slower
+way to first list all impacted dataset names, and then query their
+configs one by one.
 
 =back
 
