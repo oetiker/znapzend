@@ -18,6 +18,7 @@ B<znapzend> [I<options>...]
  --daemonize            fork into the background
  --runonce=[x]          run one round on the optionally provided dataset
  -r,--recursive         recurse from the given "run-once" dataset
+ --inherited            allow "run-once" on dataset which only inherits a plan
  --features=x           comma separated list of features to be enabled
  --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
@@ -86,6 +87,23 @@ when backing up a particular dataset with B<--runonce>=[I<dataset>], do not
 just look at this dataset's backup plan, but iterate into its children that
 might have any. Useful for quick backups of a pool whose root dataset has no
 I<znapzendzetup> configurations defined, but some trees under it do.
+
+See also B<--inherited> for interaction with that option.
+
+=item B<--inherited>
+
+when backing up a particular dataset with B<--runonce>=[I<dataset>], do not
+require that the provided dataset directly has a locally defined backup plan
+configuration (sanity check that it is not "received" via ZFS replication).
+With this option in place, allow also to quickly snapshot and/or replicate
+datasets of subtrees which inherit a backup plan from a dataset which has it
+in its attributes whose source is "local".
+
+At this time, the B<--inherited> is effectively exclusive vs. B<--recursive>
+mode (and preferred if both are specified) if the requested dataset has some
+(local or inherited) backup plan. If a dataset without a backup plan is passed,
+the script should ignore the B<--inherited> option and just recurse until it
+finds some dataset(s) with a proper locally defined backup plan.
 
 =item B<--features>=I<feature1>,I<feature2>,...
 
