@@ -193,7 +193,9 @@ my $getBackupSet = sub {
     $self->$checkBackupSets();
 
     printf STDERR "=== getBackupSet() : got "
-        . scalar(@{$self->backupSets}) . " dataset(s) with a local backup plan\n"
+        . scalar(@{$self->backupSets}) . " dataset(s) with a local "
+        . ($inherit ? "or inherited " : "")
+        . "backup plan\n"
             if $self->debug;
     # Note/FIXME? If there were ZFS errors getting some of several
     # requested datasets, but at least one succeeded, the result is OK.
@@ -208,7 +210,9 @@ my $getBackupSet = sub {
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
         }
         printf STDERR "=== getBackupSet() : got "
-            . scalar(@backupSets) . " enabled-only dataset(s) with a local backup plan\n"
+            . scalar(@backupSets) . " enabled-only dataset(s) with a local "
+            . ($inherit ? "or inherited " : "")
+            . "backup plan\n"
                 if $self->debug;
         if (not @backupSets) {
             return 0; # false
