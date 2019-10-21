@@ -62,6 +62,7 @@ use_ok 'ZnapZend';
 @ARGV = qw(--help);
 do 'znapzend' or die "ERROR: loading program znapzend\n";
 
+# seems to allow tests to continue so why not?
 is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
@@ -73,8 +74,14 @@ $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1');
 undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
-# seems to allow tests to continue so why not?
-is (runCommand('--help'), 1, 'znapzend help');
+# Try an invalid string, should ignore and proceed without a delay
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = ' qwe ';
+# TODO : Find a way to check stderr for qr/Option 'zend-delay' has an invalid value/
+is (runCommand(qw(--runonce=tank/source)),
+    1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
+undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+
+is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
 # Coverage for various failure codepaths
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';

@@ -31,6 +31,7 @@ has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has connectTimeout          => sub { 30 };
 has runonce                 => sub { 0 };
+has recursive               => sub { 0 };
 has dataset                 => sub { q{} };
 has daemonize               => sub { 0 };
 has loglevel                => sub { q{debug} };
@@ -125,12 +126,13 @@ my $killThemAll  = sub {
 
 my $refreshBackupPlans = sub {
     my $self = shift;
+    my $recurse = shift;
     my $dataSet = shift;
 
     $self->zLog->info('refreshing backup plans for dataset "' . $dataSet . '" ...');
-    $self->backupSets($self->zConfig->getBackupSetEnabled($dataSet));
+    $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $dataSet));
 
-    @{$self->backupSets}
+    ($self->backupSets && @{$self->backupSets})
         or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
 
     for my $backupSet (@{$self->backupSets}){
@@ -218,10 +220,18 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    if ($backupSet->{zend_delay} and $backupSet->{zend_delay} > 0){
-        $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
-        sleep $backupSet->{zend_delay};
-        $self->zLog->info("resume sending action on backupSet $backupSet->{src}");
+    if ($backupSet->{zend_delay}) {
+        chomp $backupSet->{zend_delay};
+        if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
+            warn "Option 'zend-delay' has an invalid value, ignored";
+            undef $backupSet->{zend_delay};
+        } else {
+            if($backupSet->{zend_delay} > 0) {
+                $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
+                sleep $backupSet->{zend_delay};
+                $self->zLog->info("resume sending action on backupSet $backupSet->{src}");
+            }
+        }
     }
 
     my @snapshots;
@@ -786,11 +796,11 @@ sub start {
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
-        $self->$refreshBackupPlans($self->dataset);
+        $self->$refreshBackupPlans($self->recursive, $self->dataset);
         $self->$createWorkers;
     };
 
-    $self->$refreshBackupPlans($self->dataset);
+    $self->$refreshBackupPlans($self->recursive, $self->dataset);
 
     $self->$createWorkers;
 
