@@ -98,7 +98,7 @@ B<znapzend> [I<options>...]
  --features=x           comma separated list of features to be enabled
  --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
- --autoCreation         automatically create dataset on dest if it not exists
+ --autoCreation         automatically create dataset on dest if it does not exist
  --timeWarp=x           shift znapzends sens of NOW into the future by x seconds
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
  --skipOnPreSendCmdFail skip replication if the pre-send-command fails

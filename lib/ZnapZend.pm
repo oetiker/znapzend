@@ -180,7 +180,8 @@ my $refreshBackupPlans = sub {
                     }
                     $backupSet->{"dst_$key" . '_valid'} or
                         $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
-                            . "' does not exist or is offline. will be rechecked every run...");
+                            . "' does not exist or is offline. will be rechecked every run..."
+                            . ( $self->autoCreation ? "" : " Consider running znapzend --autoCreation" ) );
                 };
             }
             $backupSet->{"dst$key" . 'PlanHash'}
