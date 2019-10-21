@@ -132,7 +132,7 @@ my $refreshBackupPlans = sub {
     $self->zLog->info('refreshing backup plans for dataset "' . $dataSet . '" ...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $dataSet));
 
-    @{$self->backupSets}
+    ($self->backupSets && @{$self->backupSets})
         or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
 
     for my $backupSet (@{$self->backupSets}){
