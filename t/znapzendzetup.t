@@ -52,7 +52,7 @@ sub runCommand {
     @ARGV = @_;
 
     eval { main($mainOpt); };
-    return 0 if $@;
+    return 0 if $@; # Presumably die() handler caught something
     1;
 }
 
