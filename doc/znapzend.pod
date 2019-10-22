@@ -88,7 +88,7 @@ just look at this dataset's backup plan, but iterate into its children that
 might have any. Useful for quick backups of a pool whose root dataset has no
 I<znapzendzetup> configurations defined, but some trees under it do.
 
-See also B<--inherited> for interaction with that option.
+See below for interaction with B<--inherited> option and examples.
 
 =item B<--inherited>
 
@@ -99,11 +99,93 @@ With this option in place, allow also to quickly snapshot and/or replicate
 datasets of subtrees which inherit a backup plan from a dataset which has it
 in its attributes whose source is "local".
 
-At this time, the B<--inherited> is effectively exclusive vs. B<--recursive>
-mode (and preferred if both are specified) if the requested dataset has some
-(local or inherited) backup plan. If a dataset without a backup plan is passed,
-the script should ignore the B<--inherited> option and just recurse until it
-finds some dataset(s) with a proper locally defined backup plan.
+=item B<--inherited> and B<--recursive> together
+
+At this time, the B<--inherited> is "sort of exclusive" vs. B<--recursive>
+mode, and if both are specified the behavior depends on whether the requested
+dataset has some (local or inherited-from-local) backup plan. If a dataset
+without a backup plan is passed, the script should effectively ignore the
+B<--inherited> option and just recurse until it finds some dataset(s) with
+proper locally defined backup plan(s) (note that finding inherited plans
+first is highly unlikely due to ZFS attribute inheritance from parents to
+children).
+
+Examples below assume the following dataset layout:
+
++ I<tank> (no znapzend config)
+| + I<export> (local znapzend config)
+| | + I<home> (inherited znapzend config from local tank/export)
+| |   + I<user> (inherited znapzend config from local tank/export)
+| |     + I<sources> (inherited znapzend config from local tank/export)
+| |     + I<documents> (inherited znapzend config from local tank/export)
+| |       + I<pictures> (inherited znapzend config from local tank/export)
+| + I<var> (local znapzend config)
++ I<usbbackup> (no znapzend config)
+  + I<snapshots> (no znapzend config)
+    + I<export> (received znapzend config)
+    | + I<home> (inherited from received usbbackup/snapshots/export)
+    |   + I<user> (inherited from received usbbackup/snapshots/export)
+    |     + I<sources> (inherited from received usbbackup/snapshots/export)
+    |     + I<documents> (inherited from received usbbackup/snapshots/export)
+    |       + I<documents> (inherited from received usbbackup/snapshots/export)
+    + I<var> (received znapzend config)
+
+Examples:
+
+  znapzend --recursive --runonce=tank
+
+This should walk all filesystem or volume datasets defined anywhere under
+I<tank> (root dataset of same-named pool) and snapshot/replicate the found
+datasets that have a backup plan configured "locally", such as I<tank/export>
+and I<tank/var>, according to configuration (e.g. with children and beyond
+if the corresponding backup plan's I<recursive=on> option is specified).
+It should not waste time looking for datasets under the I<usbbackup> pool.
+
+  znapzend --runonce=tank/export/home/user/documents
+
+Given that only I<tank/export> "locally" defines a znapzend backup plan, the
+default B<znapzend> behavior with a descendant dataset would be to find no
+configuration (sourced as "local" right in it) and so would "run-once" nothing.
+
+  znapzend --recursive --runonce=tank/export/home
+
+Same (no config found) for recursion starting from a dataset with inherited
+backup plan configuration (assuming none of its descendants have a "local"
+config of their own).
+
+  znapzend --inherited --runonce=tank/export/home/user/documents
+
+With the B<--inherited> option however it would recognize this descendant
+dataset as having a backup plan configuration inherited from I<tank/export>,
+would then look at I<tank/export> and confirm that it has this configuration
+from a "local" source, and should B<znapzend runonce> just this dataset and
+its descendants (so including I<tank/export/home/user/documents/pictures>,
+but not including siblings like I<tank/export/home/user/sources>).
+
+  znapzend --inherited --recursive --runonce=tank
+
+Since I<tank> has no backup plan, B<znapzend> should recurse and find the
+nearest datasets with configured plans, I<tank/export> and I<tank/var>, and
+process them according to configuration.
+
+  znapzend --inherited --recursive --runonce=tank/export
+
+Since I<tank/export> has a locally defined backup plan, B<znapzend> should
+process it according to configuration.
+
+  znapzend --inherited --recursive --runonce=tank/export/home
+
+Since I<tank/export/home> has a backup plan inherited from a locally defined
+one in I<tank/export>, B<znapzend> should process it according to configuration.
+
+  znapzend --recursive --runonce=usbbackup
+  znapzend --inherited --runonce=usbbackup/snapshots
+  znapzend --inherited --recursive --runonce=usbbackup/snapshots/export/home
+
+Neither of these runs should do anything, because all datasets involved
+(including those found by a recursive walk) under I<usbbackup> have neither
+a local definition of a backup plan, nor one inherited from a local definition.
+
 
 =item B<--features>=I<feature1>,I<feature2>,...
 

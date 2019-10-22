@@ -626,10 +626,11 @@ sub getDataSetProperties {
                     }
                     $cachedInheritance{"$srcds\tattr:source"} = "${sourcetype}${tail}";
                     $prevSkipped_srcds = $srcds;
-                    %properties = ();
+#                    %properties = ();
                     next;
                 }
             }
+
             print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value' (source: '${sourcetype}${tail}')\n" if $self->debug;
             if ($srcds ne $prev_srcds) {
                 if (%properties && $prev_srcds ne ""){
