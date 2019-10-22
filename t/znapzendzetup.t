@@ -68,11 +68,6 @@ is (runCommand('help'), 1, 'znapzendzetup help');
 
 is (runCommand('list'), 1, 'znapzendzetup list');
 
-# Enabled dataset with an inherited plan:
-is (runCommand(qw(list --debug --inherited tank/source/child)), 1, 'znapzendzetup list --inherited tank/source/child succeeds');
-is (runCommand(qw(list tank/source/child)), 0, 'znapzendzetup list tank/source/child (no inheritance) fails');
-# TODO : implement and test --inherit --recurse handling
-
 is (runCommand(qw(create SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create');
 
@@ -114,7 +109,22 @@ is (runCommand(qw(list)), 1, 'znapzendzetup list');
 is (runCommand(qw(list tank/source tank/anothersource)), 1, 'znapzendzetup list two trees');
 is (runCommand(qw(list --features=lowmemRecurse -r tank/source tank/anothersource)), 1, 'znapzendzetup list lowmem two trees');
 
+# Enabled dataset with an inherited plan:
+is (runCommand(qw(list --debug --inherited tank/source/child)), 1, 'znapzendzetup list --inherited tank/source/child succeeds');
+is (runCommand(qw(list --debug --recursive --inherited tank/source/child)), 1, 'znapzendzetup list --inherited -r tank/source/child succeeds (finds only it, not the grandchild)');
+is (runCommand(qw(list --debug --recursive --inherited tank)), 1, 'znapzendzetup list --inherited -r tank succeeds (finds only source and anothersource, not the descendants)');
+is (runCommand(qw(list --debug --recursive --inherited tank tank/source/child)), 1, 'znapzendzetup list --inherited -r tank tank/source/child succeeds (finds source and anothersource via recursion, and the explicit tank/source/child, but not other descendants)');
+
 # These should fail
+is (runCommand(qw(list --debug --inherited tank)), 0, 'znapzendzetup list --inherited tank (non-recursive) fails');
+is (runCommand(qw(list tank/source/child)), 0, 'znapzendzetup list tank/source/child (no inheritance) fails');
+is (runCommand(qw(list --recursive tank/source/child)), 0, 'znapzendzetup list -r tank/source/child (no inheritance, no descendants with a local config) fails');
+
+is (runCommand(qw(list --debug --inherited backup)), 0, 'znapzendzetup list --inherited backup (non-recursive) fails');
+is (runCommand(qw(list --debug --recursive backup)), 0, 'znapzendzetup list --recursive backup fails');
+is (runCommand(qw(list --debug --inherited --recursive backup)), 0, 'znapzendzetup list --inherited --recursive backup fails');
+is (runCommand(qw(list --debug backup)), 0, 'znapzendzetup list backup (non-recursive) fails');
+
 is (runCommand(qw(list missingpool)), 0, 'znapzendzetup list missingpool');
 is (runCommand(qw(list -r missingpool)), 0, 'znapzendzetup list -r missingpool');
 is (runCommand(qw(list --features=lowmemRecurse missingpool)), 0, 'znapzendzetup list --features=lowmemRecurse missingpool');

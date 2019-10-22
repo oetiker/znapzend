@@ -83,10 +83,13 @@ undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
-is (runCommand(qw(--inherit --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherit flag');
-# TODO : implement and test --inherit --recurse handling
+is (runCommand(qw(--inherited --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited flag');
+is (runCommand(qw(--inherited --recursive --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited --recursive flag');
+is (runCommand(qw(--inherited --recursive --runonce=tank)), 1, 'znapzend runonce of a dataset only whose descendants have a plan succeeds with --inherited --recursive flag');
 
 # Coverage for various failure codepaths
+is (runCommand(qw(--inherited --runonce=tank)), 0, 'znapzend runonce of a dataset without a plan fails also with --inherited flag');
+is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails with only --recursive flag and without --inherited');
 is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
