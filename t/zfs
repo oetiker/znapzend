@@ -33,6 +33,60 @@ my %dataSetsMissing = (
     'missingpool'        => 'fail'
 );
 
+sub find_attr_source {
+    my $srcname = shift;
+    my $attr = shift; # only matters for "enabled" at the moment
+
+    if (!defined($srcname) || $srcname eq '') {
+        die "FATAL: zfs mock find_attr_source() got empty/undef srcame";
+    }
+
+    if (!defined($dataSets{"$srcname"})) {
+        die "FATAL: zfs mock find_attr_source() got unlisted srcame '$srcname' (not in dataSets table)";
+        # return undef;
+    }
+
+    if ($dataSets{"$srcname"} eq 'src') {
+        return 'local';
+    }
+
+    if ($dataSets{"$srcname"} eq '') {
+        return 'default'; # Should not really be seen for our unconfigured datasets like pool roots etc
+    }
+
+    if (($dataSets{"$srcname"} eq 'src-disabled') && $attr eq 'enabled') {
+        return 'local';
+    }
+
+    if ($dataSets{"$srcname"} eq 'dst') {
+        return 'received';
+    }
+
+    if ( $dataSets{"$srcname"} =~ /-inherited$/ ) {
+        my $parentSourceName = $srcname;
+        $parentSourceName =~ s,/[^/]+$,, ;
+        if (!defined($parentSourceName) || $parentSourceName eq '') {
+            die "FATAL: zfs mock find_attr_source() got empty/undef parentSourceName";
+        }
+        if ($parentSourceName eq $srcname) {
+            die "FATAL: zfs mock find_attr_source() got same parentSourceName as srcname '$srcname'";
+        }
+
+        my $parentSource = find_attr_source($parentSourceName);
+        if (!defined($parentSource) || $parentSource eq '-' || $parentSource eq 'default') {
+            return 'default'; #...or shoul we return $parentSource here?
+        }
+
+        if ($parentSource eq 'local' || $parentSource eq 'received') {
+            return "inherited from $parentSourceName";
+        }
+
+        return $parentSource;
+    }
+
+    return '-';
+}
+
 sub print_zfs_get {
     # Arguments are all optional; defaults are matched for the legacy tests
     my $prefix = shift; # Dataset name to prepend (and add a whitespace)
@@ -71,24 +125,8 @@ sub print_zfs_get {
     my $srcsuffix = "";
     my $srcenabledsuffix = "";
     if ($printsrc) {
-        if (defined($dataSets{"$srcname"})) {
-            if ($dataSets{"$srcname"} eq 'src') {
-                $srcsuffix = "\tlocal";
-                $srcenabledsuffix = "$srcsuffix";
-            }
-            if ($dataSets{"$srcname"} eq 'src-disabled') {
-                $srcsuffix = "\tinherited from tank/source"; # TODO: Honestly iterate the array
-                $srcenabledsuffix = "\tlocal";
-            }
-            if ($dataSets{"$srcname"} eq 'src-inherited') {
-                $srcsuffix = "\tinherited from tank/source"; # TODO: Honestly iterate the array
-                $srcenabledsuffix = "$srcsuffix";
-            }
-        } else {
-            # dst, other
-            $srcsuffix = "received";
-            $srcenabledsuffix = "$srcsuffix";
-        }
+        $srcsuffix = "\t" . find_attr_source($srcname, '');
+        $srcenabledsuffix = "\t" . find_attr_source($srcname, 'enabled');
     }
 
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
