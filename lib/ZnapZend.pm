@@ -100,7 +100,7 @@ has zLog => sub {
 };
 
 ### private methods ###
-my $killThemAll  = sub {
+my $killThemAll = sub {
     my $self = shift;
 
     $self->zLog->info("terminating znapzend (PID=$$) ...");
