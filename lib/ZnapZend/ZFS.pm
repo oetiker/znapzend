@@ -603,6 +603,9 @@ sub getDataSetProperties {
             my ($srcds, $key, $value, $sourcetype, $tail) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from )(.*)$/ or next; ### |received|default|-
             # If we are here, the attribute name (key) is under $propertyPrefix
             # namespace. So this dataset has at least one "interesting" attr...
+
+            # Check if we have inherit mode and should spend time
+            # and memory about cached data (selective trimming)
             if ($inherit && $sourcetype ne 'local') {
                 # We should trim (non-local) descendants of a listed dataset
                 # so as to not define the whole world as if having explicit
@@ -626,7 +629,12 @@ sub getDataSetProperties {
                     }
                     $cachedInheritance{"$srcds\tattr:source"} = "${sourcetype}${tail}";
                     $prevSkipped_srcds = $srcds;
-#                    %properties = ();
+                    # TODO/THINK: Do we assume that a configured dataset has ALL fields
+                    # "local" via e.g. znapzendzetup, or if in case of recursion we can
+                    # have a mix of inherited and local? Sounds probable for "enabled"
+                    # attribute at least. Maybe we should not chop this away right here,
+                    # but do a smarter analysis below in SAVE/SAVE-LAST blocks instead.
+                    %properties = ();
                     next;
                 }
             }
@@ -651,6 +659,8 @@ sub getDataSetProperties {
                         # source of last seen attr here, but are really
                         # interested if this dataset is end of tree walk
                         # (as far as non-local attrs go)...
+                        # TODO! Even worse, we now check the new line's source
+                        # type and tail, not the prev-dataset's ones.
                         $cachedInheritance{"$prev_srcds\tattr:source"} = "${sourcetype}${tail}";
                     }
                 }
