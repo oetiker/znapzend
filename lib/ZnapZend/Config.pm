@@ -13,7 +13,7 @@ has rootExec => sub { q{} };
 has timeWarp => sub { undef };
 has zLog => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 
-#mandatory properties
+### mandatory properties ###
 has mandProperties => sub {
     {
         enabled       => 'on|off',

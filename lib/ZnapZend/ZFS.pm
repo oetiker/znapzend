@@ -43,6 +43,7 @@ my $shellQuote = sub {
     return join '|', @return;
 };
 
+### private methods ###
 my $buildRemoteRefArray = sub {
     my $self = shift;
     my $remote = shift;

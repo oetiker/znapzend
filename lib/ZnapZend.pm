@@ -99,6 +99,7 @@ has zLog => sub {
     return $log;
 };
 
+### private methods ###
 my $killThemAll  = sub {
     my $self = shift;
 
@@ -783,6 +784,7 @@ my $daemonize = sub {
     }
 };
 
+### public methods ###
 sub start {
     my $self = shift;
 
