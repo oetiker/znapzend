@@ -26,8 +26,13 @@ has zLog            => sub { Mojo::Exception->throw('zLog must be specified at c
 has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $self->rootExec) : ()] };
 
 ### private functions ###
-my $splitHostDataSet     = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
-my $splitDataSetSnapshot = sub { return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/); };
+my $splitHostDataSet = sub {
+    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+};
+
+my $splitDataSetSnapshot = sub {
+    return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/);
+};
 
 my $shellQuote = sub {
     my @return;
