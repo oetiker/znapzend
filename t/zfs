@@ -256,6 +256,10 @@ for ($command){
             exit 1;
         }
 
+        # Note: In this line and in selections below we explicitly
+        # but somewhat artificially rule out displaying datasets
+        # under "backup" that are a pool root and destinations.
+        # Real "zfs get" would show these.
         exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
 
         my $localattr = (join(" ", @ARGV) =~ / -s local/);
