@@ -420,8 +420,10 @@ my $sendRecvCleanup = sub {
     #cleanup source
     if (scalar(@sendFailed) > 0) {
         $self->zLog->warn('ERROR: suspending cleanup source dataset because '
-            . scalar(@sendFailed) . ' send task(s) failed:\n'
-            . join('\n\t', @sendFailed) . '\n' );
+            . scalar(@sendFailed) . ' send task(s) failed:');
+        foreach my $errmsg (@sendFailed) {
+            $self->zLog->warn(' +-->   ' . $errmsg);
+        }
     }
     else{
         # cleanup source according to backup schedule
