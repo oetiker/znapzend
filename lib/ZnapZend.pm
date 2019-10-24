@@ -268,9 +268,9 @@ my $sendRecvCleanup = sub {
             delete $ENV{WORKER};
 
             if ($ev){
-                $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+                $self->zLog->warn("pre-send-command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
                 if ($self->skipOnPreSendCmdFail) {
-                    my $errmsg = "skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure";
+                    my $errmsg = "skipping " . $backupSet->{"dst_$key"} . " due to pre-send-command failure";
                     $self->zLog->warn($errmsg);
                     push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
