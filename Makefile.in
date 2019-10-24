@@ -931,7 +931,10 @@ doc/%.pod: bin/% VERSION
 man/%.1: bin/% VERSION
 	$(AM_V_GEN)mkdir -p man; test $(POD2MAN) = "no" || $(POD2MAN) --release=$(VERSION) --center=$(PACKAGE_NAME) $<  > $@
 
-dist-hook: $(POD)  $(MAN) CHANGES
+# Regenerate MAN pages and perl POD files from original script sources
+docs: $(POD) $(MAN)
+
+dist-hook: docs CHANGES
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:

@@ -53,7 +53,10 @@ man/%.1: bin/% VERSION
 
 dist_bin_SCRIPTS = $(BIN)
 
-dist-hook: $(POD)  $(MAN) CHANGES
+# Regenerate MAN pages and perl POD files from original script sources
+docs: $(POD) $(MAN)
+
+dist-hook: docs CHANGES
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:
