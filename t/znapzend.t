@@ -107,11 +107,16 @@ is (runCommand(qw(--inherited --runonce=tank/source/child)), 1, 'znapzend runonc
 is (runCommand(qw(--inherited --recursive --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited --recursive flag');
 is (runCommand(qw(--inherited --recursive --runonce=tank)), 1, 'znapzend runonce of a dataset only whose descendants have a plan succeeds with --inherited --recursive flag');
 
-# Coverage for various failure codepaths
+# Coverage for various failure codepaths of inherited +/- recursive modes
 is (runCommand(qw(--inherited --runonce=tank)), 0, 'znapzend runonce of a dataset without a plan fails also with --inherited flag');
 is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails with only --recursive flag and without --inherited');
 is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
 
+# Series of tests over usual tank/source with different options
+is (runCommand(qw(--runonce=tank/source --features=oracleMode,recvu,compressed)),
+    1, 'znapzend --features=oracleMode,recvu,compressed --runonce=tank/source succeeds');
+
+# Coverage for various failure codepaths
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command');
 is (runCommand(qw(--runonce=tank/source --skipOnPreSnapCmdFail)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command and --skipOnPreSnapCmdFail');
@@ -136,6 +141,9 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS DESTROY command');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = undef;
 
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS snapshot command');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = undef;
 
 # Do not test after daemonize, to avoid conflicts
 is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
