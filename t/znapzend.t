@@ -34,6 +34,17 @@ unshift @INC, sub {
         # uncomment testing code
         $module_text =~ s/### RM_COMM_4_TEST ###//sg;
 
+        # unhide private methods to avoid "Variable will not stay shared"
+        # warnings that appear due to change of applicable scoping rules
+        # Note: not '\s*' in the start of string, to avoid matching and
+        # removing blank lines before the private sub definitions.
+        $module_text =~ s/^[ \t]*my\s+(\S+\s*=\s*sub.*)$/our $1/gm;
+
+        if(defined($ENV{DEBUG_ZNAPZEND_SELFTEST_REWRITE})) {
+            open(my $fhp, '>', $found . '.selftest-rewritten') or warn "Could not open " . $found . '.selftest-rewritten';
+            if ($fhp) { print $fhp $module_text ; close $fhp; }
+        }
+
         # filehandle on the scalar
         open $fh, '<', \$module_text;
 
@@ -41,8 +52,8 @@ unshift @INC, sub {
         # from the file directly
         $INC{$filename} = $found;
         return $fh;
-     }
-     else {
+    }
+    else {
         return ();
     }
 };

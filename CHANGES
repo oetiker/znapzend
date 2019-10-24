@@ -1,3 +1,538 @@
+commit c1238cf0ad4533f51b7b55b99c015c4ff5d5232a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 13:28:51 2019 +0200
+
+    Makefile : rearrange to have a "make clean" target able to remove *.selftest-rewritten
+
+commit 8bb09bcc74fbdffce370855608268586323b4901
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 13:25:59 2019 +0200
+
+    Makefile : rearrange to have a "make docs" target
+
+commit c3f57fc09f2eff9bc323d5a977682aa57f9ffd32
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 18:02:48 2019 +0200
+
+    t/znapzend*.t : rewrite the included scripts and modules to avoid "my"-scoped vars and the warning about "Variable will not stay shared" on the fly
+
+commit e38943896f5f05d09767893cf8a38855135ea9fb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 15:37:07 2019 +0200
+
+    Line-break single-line sub definitions in *.pm files
+
+commit 7886da0c8b358d6c757380516359767d184b7bfe
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 15:36:31 2019 +0200
+
+    Mark the private/public methods consistently in *.pm files
+
+commit 08e046a0aa7a84c525bc4f51f4e9a59c1217b951
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 15:03:47 2019 +0200
+
+    Update znapzendztatz.pod
+    
+    Fix POD headers
+
+commit 5860cbe03c79ec2cdd4843d5e9c62338b93e283e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 15:02:57 2019 +0200
+
+    Update doc/znapzendzetup.pod
+    
+    Fix POD headers
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 99bbbe2eef272abe5064199c14482ad94db6ea59
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 15:02:41 2019 +0200
+
+    Update doc/znapzend.pod
+    
+    Fix POD headers
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 5a51510aa6a7980f8ecf359f1e5481b27c04af26
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 14:44:28 2019 +0200
+
+    Fix trailing whitespace in self-test progs
+
+commit 83b866856bd0424c6131d50a1426e885c2658be3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 14:11:59 2019 +0200
+
+    ZFS.pm : getDataSetProperties() : in exception, report which dataset props could not be received (tool error)
+
+commit f24941370af93630ab13724d1c4edd21e3394aac
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 12:50:06 2019 +0200
+
+    ZnapZend.pm : createSnapshot() : clarify comment for removing snapshots of disabled children
+
+commit 9e0588d87430a331d6bd5c36a12d049d376c0d59
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 12:03:08 2019 +0200
+
+    Proof-read documentation in bin/ scripts and regenerate MAN/POD copies
+
+commit d7b4f5f1e900f93b0f59d6ce66cda291b48a1677
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 11:35:51 2019 +0200
+
+    Cleanup trailing whitespaces
+
+commit cbefa7b2609884f069bb06880d1a84d88dcb9ebd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 11:29:39 2019 +0200
+
+    getBackupSet{Enabled}: comment that there are many args on the list passed into hidden getBackupSet()
+
+commit cd1f358c48d2c04c67e2ea84233d757653a6db5a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 10:57:19 2019 +0200
+
+    znapzendzetup: do not freak out if getBackupSet{Enabled}() returns "0" for errors finding stuff
+
+commit 630dcd89f7dede910eb48429116be8fb20a6cddb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 10:32:21 2019 +0200
+
+    Regenerate POD files for changes of the past months
+
+commit 84518a2235998f266ff5c85bc0673364fed9d0f8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 10:31:36 2019 +0200
+
+    ZnapZend.pm : suggest --autoCreation (if not set) if no target dataset exists
+
+commit 7bcc9d2fec343deeaefda14fdc02967f9a18c6c5
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 10:21:45 2019 +0200
+
+    znapzend.t : test the recursive runonce mode
+
+commit 238d6b6ca5729a0d28b3d88f0cd7757b644ab53f
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 10:20:21 2019 +0200
+
+    znapzend.t : avoid duplicate test of "--help"
+
+commit a30f509e4522ac4eff36245da30e0f94c8ad1c7e
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 10:15:48 2019 +0200
+
+    znapzend.1 : regen manpage for runonce recursive
+
+commit 01d7cf50f71a802dd35378b28a029554aabee8d7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 10:13:17 2019 +0200
+
+    ZnapZend.pm : avoid errors like `Argument " " isn't numeric in numeric gt (>) at lib/ZnapZend.pm line 223`
+
+commit 0b3975407b4e2e5670575b8e35ba96a35cf8fe4f
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 09:29:14 2019 +0200
+
+    znapzend : fix recursion for not-specified runonce dataset
+
+commit f51c3c55918f0051fea659df079a2ddfd45f3b18
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 21 09:26:46 2019 +0200
+
+    ZnapZend.pm : do not freak out if getBackupSet{Enabled}() returns "0" for errors finding stuff
+
+commit c6a8a409f40494230e77e594782a93a78148b2f4
+Author: Tamás Gérczei < <tamas@gerczei.eu>
+Date:   Fri Oct 18 19:53:09 2019 +0200
+
+    added information about the Gentoo ebuild
+
+commit c091652ef4aeb1da5bb484329f1be256a59d98bb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 00:34:45 2019 +0200
+
+    Problem: no easy way to runonce a pool
+    
+    Solution: add recurse ability to `znapzend --runonce=x -r` with same
+    logic as in `znapzendzetup list -r x`
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit 8b20412a36edffd154feb9306c00a7ed197af8fa
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Fri Oct 18 15:36:08 2019 +0200
+
+    Config.pm : fix enabled-only case of @backupSets dereferencing
+
+commit 28f8fca5bd9ed445d1adedd6c858107cac0f1d62
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:02:35 2019 +0200
+
+    t/znapzend.t : retouch daemonized tests in the end
+
+commit 53bbce41e076f52c0d2d5f59e016776ea7828b67
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:01:19 2019 +0200
+
+    ZnapZend.pm refreshBackupPlans() : report which dataset we are refreshing
+
+commit 3c2c441b0ecc275959ccc241c4f5f6d2d7c6b872
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 17:57:53 2019 +0200
+
+    znapzend : move "my opts" into main() to avoid senseless setups in self-test included re-runs
+
+commit 758034a6b40eb5c1b601f4c97b8640c3b109340c
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 17:24:13 2019 +0200
+
+    GitIgnore dump.dmp and znapzend*.pid
+
+commit 2e7721abcd1b36e05ab763142fdadf948629ade2
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 17:19:48 2019 +0200
+
+    t/znapzend.t : cover more erroneous codepaths
+
+commit 185dc143ede853d9e491adcce09034d57623927a
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:41:50 2019 +0200
+
+    t/zfs : add support for ZNAPZENDTEST_ZFS_GET_ZEND_DELAY envvar in "get"
+
+commit 72c80bc407676700848e3f1e371634ce72109dd0
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:20:27 2019 +0200
+
+    t/zfs : in "zfs get" provide a dst_key_pstcmd and dst_key_precmd for more coverage
+
+commit f848d3a4c5ca682d6c6c4b8b8ddc5d5433731b64
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 17:21:22 2019 +0200
+
+    t/zfs : extend the refactor
+
+commit 9f86955a6b632f2918ae0a71cae61af54ea02ec7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 07:30:28 2019 +0200
+
+    t/zfs : refactor print_zfs_get() out of the code loop to reuse it
+
+commit 430ff31554a8a799c39e79d3badb083f5b444491
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 20:23:25 2019 +0200
+
+    t/zfs mockup: update for getDataSetProperties() recursion feature
+
+commit 5c8518f30bd03553948013c833748594a5987c0e
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:37:44 2019 +0200
+
+    t/znapzend.t : test the codepath for zend-delay
+
+commit 18f9065a32408d05627b3c5ceb9ae99ce29c9564
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:21:26 2019 +0200
+
+    t/zfs : provide a "ZNAPZENDTEST_ZFS_FAIL_$command" envvar support for more coverage
+
+commit 1a42e98bdbbf2a784f91ece3c03997974e374130
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Fri Oct 12 18:03:46 2018 +0200
+
+    lib/ZnapZend.pm : comment about more reasons why we do not send recursively
+
+commit 0bdfece7eb490831eb70939b6e2f706315fabdbf
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Fri Oct 12 17:58:30 2018 +0200
+
+    lib/ZnapZend.pm : support new destroySnapshots() recursion option in sub $createSnapshot
+
+commit 530104ccdcc8502d7074f32491daad064acbce29
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 11 18:17:16 2018 +0200
+
+    Support recursive destruction of dst and src snapshots before iterating into their children
+
+commit c05012c0fcd325f6be3f4f425a24f6d26e80ebca
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 11 17:49:34 2018 +0200
+
+    ZnapZend.pm : for multi-destination cleanup, differentiate THIS destination failure vs. SOME destination failure (as needed for source cleanup)
+
+commit fd66b5216f63dc7e2e106e962027509619dc1f87
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Oct 18 12:33:58 2019 +0200
+
+    Update lib/ZnapZend/Config.pm
+    
+    Commit formatting suggestion from PR review.
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 42d7d7b0db2bbf48565eff4970ceb2e94e5e722b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Oct 18 12:32:11 2019 +0200
+
+    Update lib/ZnapZend/Config.pm
+    
+    Commit formatting suggestion from PR review.
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 3c019d502295597a75f02d96757057d5660c466c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Oct 18 12:31:58 2019 +0200
+
+    Update lib/ZnapZend/ZFS.pm
+    
+    Commit formatting suggestion from PR review.
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 6d4f759ca06977c553d0fe993f4b17e462ba9e7a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Oct 18 12:30:56 2019 +0200
+
+    Update lib/ZnapZend/Config.pm
+    
+    Commit formatting suggestion from PR review.
+    
+    Co-Authored-By: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 1154bc279c0fdc586bf7cd15e15b187a0cdffaed
+Author: Phlogi <Phlogi@users.noreply.github.com>
+Date:   Fri Oct 18 11:15:47 2019 +0200
+
+    Remove perl modules to compile on debian buster (#429)
+
+commit c76a7ffb252da3d9cdad181e1aa6ebad723e69f0
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 19:29:37 2019 +0200
+
+    Add mock pfexec and sudo
+
+commit 8abe6c79507fe25381f554caab2c3fbd59881999
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 19:25:49 2019 +0200
+
+    znapzendzetup.t : fix expected error code
+
+commit 1be74495f115e6fd86eea9a663a560cf4f8b83df
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:58:00 2019 +0200
+
+    znapzendzetup.t : cover some more codepaths
+
+commit 1c43880009173e115588062df373e1389f62e080
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:44:32 2019 +0200
+
+    znapzendzetup.t : test for "zfs list" not finding any datasets
+
+commit e01aed0acaf55c335af57c16b9fea58423b708fa
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:23:08 2019 +0200
+
+    t/zfs mock : provide child datasets that have org.znapzend:enabled==off
+
+commit 8924001d5a0e3e190e8c00651629189368232bed
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:21:33 2019 +0200
+
+    t/zfs mock : fix warnings for "zfs get" without dataset ARG
+
+commit 5410fb39ff9f83aa85f73ef2dc71f1d02b6ed0e8
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 18:16:40 2019 +0200
+
+    t/zfs mock : fix for "zfs list" without dataset ARG
+
+commit 153f009f9ee02980a536774b7e9811ffcdc6738f
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:37:44 2019 +0200
+
+    t/znapzend.t : test the codepath for zend-delay
+
+commit 80ea07b0b9b72a336c4ba97f5f1cce257e7a5845
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:41:50 2019 +0200
+
+    t/zfs : add support for ZNAPZENDTEST_ZFS_GET_ZEND_DELAY envvar in "get"
+
+commit 19ed3dce4630967443b9d2219705bed5f2241c9d
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:23:04 2019 +0200
+
+    znapzendztatz.1 : regenerated manpage
+
+commit 6ffc3e2de3aa3cafdd3267b0734319e391ed8444
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:21:26 2019 +0200
+
+    t/zfs : provide a "ZNAPZENDTEST_ZFS_FAIL_$command" envvar support for more coverage
+
+commit 4d9ed0e5ffc498ed6f5089db3a3b15b3041df142
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 16:20:27 2019 +0200
+
+    t/zfs : in "zfs get" provide a dst_key_pstcmd and dst_key_precmd for more coverage
+
+commit 48ce535f75891a94fcddf1f6350a596fa9a7ec5a
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:54:36 2019 +0200
+
+    t/znapzendzetup.t : work around die() killing the test program
+
+commit a627f1da43a2fd7b95694cec611b015388fb69fa
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:52:16 2019 +0200
+
+    t/znapzendzetup.t : walk codepaths for missing datasets
+
+commit 38ebbb5117f7eb4d3aec11446005382320455cf5
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:50:58 2019 +0200
+
+    znapzendzetup list : rearrange like "export"
+
+commit 62c9761294a0d5685c975d8d679c89cbc9fede72
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:50:32 2019 +0200
+
+    znapzendzetup export : do not dereference "->[0]" when invalid dataset is requested
+
+commit b1fe027a9de0e679227afcb66dd8e5cd3c27762e
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:42:54 2019 +0200
+
+    Config.pm getBackupSet() : propagate an error ("false" aka 0) for empty results array
+
+commit ccf5684b72c6a6edbaac08221f63e0feb359b2ad
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:10:06 2019 +0200
+
+    t/zfs mock : support erroring out for "known missing" datasets
+
+commit bbbdf09597f46b601587704c9ad2606eec7d8bfd
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 15:09:00 2019 +0200
+
+    t/zfs mock : in "zfs get" actually only return the dataset with a backup plan, not all those that inherit one, when "zfs get -s local" is used
+
+commit 0ff5f607efd11bab127662da864833e0e2b4061c
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 14:32:28 2019 +0200
+
+    t/znapzendzetup.t : add codepaths to follow
+
+commit 72cb5fff49c3552904a2401e246a6d834248a470
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 14:24:37 2019 +0200
+
+    t/zfs mock : in "zfs get" craft suitable dstds for tank/source/* descendants
+
+commit ce0bc510573d7b6d76ded5039b7881e373bc4c1e
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 13:53:21 2019 +0200
+
+    t/zfs mock : extend "zfs list" with recursion from given dataset
+
+commit a468af1d2435756506f03823f0b73ec9a7a586c3
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Thu Oct 17 13:46:30 2019 +0200
+
+    t/zfs mock : print the dataset name with "list" as a full line (with EOL)
+
+commit 79523cfd1faeb6bc510aa13c8dd46a34240d79a7
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Wed Oct 16 17:50:17 2019 +0200
+
+    t/zfs mock : return several datasets for recursive mode with "get"
+
+commit 20a20f308cedde108e81579f51528f0cc541e55b
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 17:21:22 2019 +0200
+
+    t/zfs : extend the refactor
+
+commit 655d1853d8937039b9507ffea034d6d4edcfa6fb
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 07:30:28 2019 +0200
+
+    t/zfs : refactor print_zfs_get() out of the code loop to reuse it
+
+commit 5c642fcc34c680fe6ee1b249065caf4a2a1cba81
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 07:25:27 2019 +0200
+
+    ZFS.pm : reword getDataSetProperties() warning for skipped empty-string context
+
+commit 6c78be5d5fd289e97a66087306e8dbd97f71fb55
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 07:14:16 2019 +0200
+
+    znapzendzetup.t : invoke coverage for warning on feature=sudo
+
+commit eac76c28318b5f019bb277f33bdacb0667b67fb2
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 07:13:26 2019 +0200
+
+    znapzendzetup : rearrange CLI debug opt processing
+
+commit aab59e65997fbb139164372b841f7d6c0672b42c
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Tue Oct 15 02:50:04 2019 +0200
+
+    Regen manpages
+
+commit 041021d14ef525effc2b56d636e7d83f86390116
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 22:06:04 2019 +0200
+
+    getDataSetProperties() : catch empty return from listDataSets() as an error
+
+commit 1333f8d6fcaba613d77fa7b9f002e8661aa5d0b9
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 21:33:28 2019 +0200
+
+    t/znapzendzetup.t : add coverage for new logic
+
+commit b29152eaa5fead99160f3336eedbe991048b3fe3
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 21:28:04 2019 +0200
+
+    znapzendzetup : man text markup...
+
+commit 085b8c7c1e36a6899280d1c2142b8a42a2cb0a36
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 21:17:29 2019 +0200
+
+    Fix t/zfs mockup for get usedbysnapshots
+
+commit 41993da6703e998ff6b1451f4fcd1421f376b3d1
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 21:10:06 2019 +0200
+
+    Fix getDataSetProperties() for undef/empty dataSet argument
+
+commit be9dc6ad69af31e96923b8349fff07f40ad0f509
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 20:23:25 2019 +0200
+
+    t/zfs mockup: update for getDataSetProperties() recursion feature
+
+commit 085a465939d460d3a6f8dd726da3f19a6609d23d
+Author: Jim Klimov <jim@jimklimov.com>
+Date:   Mon Oct 14 19:50:11 2019 +0200
+
+    Regenerated CHANGES
+
 commit 840a4dbbff26f94951bcfccc5d5cd12f09e009dc
 Author: Jim Klimov <jim@jimklimov.com>
 Date:   Mon Oct 14 19:35:53 2019 +0200

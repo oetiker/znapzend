@@ -100,7 +100,8 @@ has zLog => sub {
     return $log;
 };
 
-my $killThemAll  = sub {
+### private methods ###
+my $killThemAll = sub {
     my $self = shift;
 
     $self->zLog->info("terminating znapzend (PID=$$) ...");
@@ -789,6 +790,7 @@ my $daemonize = sub {
     }
 };
 
+### public methods ###
 sub start {
     my $self = shift;
 
