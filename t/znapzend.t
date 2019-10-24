@@ -145,6 +145,10 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS snapshot command');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = undef;
 
+$ENV{'ZNAPZENDTEST_ZFS_SUCCEED_snapshot'} = '1';
+is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a successful ZFS snapshot command');
+$ENV{'ZNAPZENDTEST_ZFS_SUCCEED_snapshot'} = undef;
+
 is (runCommand(qw(--runonce=tank/source --autoCreation)), 1, 'znapzend --autoCreation --runonce=tank/source');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = '1';
 is (runCommand(qw(--runonce=tank/source --autoCreation)), 0, 'znapzend --autoCreation --runonce=tank/source with a failed ZFS create command - fails');
