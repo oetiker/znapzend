@@ -58,7 +58,9 @@ unshift @INC, sub {
 sub runCommand {
     @ARGV = @_;
 
-    main();
+    eval { main(); };
+    return 0 if $@; # Presumably die() handler caught something
+    1;
 }
 
 use Test::More;

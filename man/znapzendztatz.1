@@ -144,10 +144,11 @@ znapzendztatz \- znapzend statistics utility
 .IX Header "SYNOPSIS"
 \&\fBznapzendztatz\fR [\fIoptions\fR...] [src_dataset]
 .PP
-.Vb 9
+.Vb 10
 \& \-H             do not print headers and separate fields by a single tab
 \&                instead of arbitrary white space
 \& \-r,\-\-recursive show statistics for dataset and sub datasets
+\& \-\-inherited    allow to specify a dataset which just inherits a backup plan
 \& \-\-only\-enabled only show statistics for enabled datasets
 \& \-\-setup        show the configuration key and the filesystem that defined the configuration
 \& \-\-rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
