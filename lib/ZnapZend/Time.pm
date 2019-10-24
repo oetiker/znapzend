@@ -45,6 +45,7 @@ has scrubTimeFilter => sub { qr/[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\d
 has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 has timeWarp        => sub { undef };
 
+### private methods ###
 my $intervalToTimestamp = sub {
     my $time = shift;
     my $interval = shift;
