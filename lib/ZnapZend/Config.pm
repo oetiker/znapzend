@@ -13,7 +13,7 @@ has rootExec => sub { q{} };
 has timeWarp => sub { undef };
 has zLog => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
 
-#mandatory properties
+### mandatory properties ###
 has mandProperties => sub {
     {
         enabled       => 'on|off',
@@ -39,7 +39,9 @@ has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 has backupSets => sub { [] };
 
 ### private functions ###
-my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/); };
+my $splitHostDataSet = sub {
+    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+};
 
 ### private methods ###
 my $checkBackupPlan = sub {
