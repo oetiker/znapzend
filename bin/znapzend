@@ -14,7 +14,7 @@ sub main {
     my $opts = {};
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
-        qw(runonce:s connectTimeout=s timeWarp=i autoCreation version),
+        qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation version),
         qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited)) or exit 1;
 
     $opts->{version} && do {
@@ -88,6 +88,7 @@ B<znapzend> [I<options>...]
  -h,--help              display this help and exit
  -d,--debug             print debug messages to STDERR
  -n,--noaction          run in simulation mode: does no changes to the filesystem
+ --nodelay              if a backup plan has a zend_delay defined, ignore it
  --nodestroy            does all changes to the filesystem except destroy
  --logto=x              select where to log to (syslog::<facility> or <filepath>)
  --loglevel=x           define the log level
@@ -122,6 +123,12 @@ talk a lot while running. Sends debug messages to stderr.
 
 don't do any actions which have lasting effect. Ideal to try out new
 configurations together with B<--debug>
+
+=item B<--nodelay>
+
+if a backup plan has a zend_delay defined, ignore it (should help when
+debugging the backup plan configurations, without waiting for hours to
+run them during experiments)
 
 =item B<--nodestroy>
 
