@@ -1,3 +1,196 @@
+commit 9ff0bbd97f49c0eae9dc32159be38637cc51a4d4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 18:22:18 2019 +0200
+
+    znapzend.t : fix the comma-separated arglist vs qw()
+
+commit d5ff373207019e3a6533f7a4e610e55f849d7d37
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 18:20:38 2019 +0200
+
+    znapzend : fix a warning for undef var
+
+commit 2a9523fc7c4a93847a61616f813d5df3fee2d23e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 18:18:27 2019 +0200
+
+    autoscrub.t : missed the fix for "Variable will not stay shared"
+
+commit 5c196d893692648bbc1110f7029af71e67571ef7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 17:44:12 2019 +0200
+
+    znapzend.t : add more test combos to cover
+
+commit 144af7d87c390e6dabc32a8b1d703a885c0b26ed
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 18:03:37 2019 +0200
+
+    znapzend.t : test with ZNAPZENDTEST_ZFS_SUCCEED_snapshot=1
+
+commit a609ed0048ae793c69fac0759d6a630b4c1bcd5e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 17:59:11 2019 +0200
+
+    znapzend.t : fix features test typo ("Lce" => "compressed")
+
+commit 8cba74b25c3c6c9a970ddd6ca2b2bd088fcd021d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 17:58:49 2019 +0200
+
+    znapzend.t : test autoCreation
+
+commit 858c52a46bbb2b1d71166c27d057a1c765d5f5b8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 17:53:30 2019 +0200
+
+    t/zfs mock : add "create" command, add ZNAPZENDTEST_ZFS_SUCCEED_$command support for cmds we do not process deeply
+
+commit 050ee7ad3295a29de97528a7966d5d99fd7ea668
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 17:44:12 2019 +0200
+
+    znapzend.t : add more test combos to cover
+
+commit 2888a76980273be0df898caebfe5a3078bb7fc98
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 15:07:24 2019 +0200
+
+    ZnapZend.pm : fix formatting and wording for pre-send-command reporting
+
+commit ea7824bb33e6087c5b6d2867d2325b3ea866fdcc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 14:49:45 2019 +0200
+
+    znapzend.t : cover more fault scenarios for cmdfail
+
+commit 5a47caee68d5bb9d3e69b62109bfb0e4bc9f3d6f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 14:32:39 2019 +0200
+
+    ZnapZend.pm : report the sending-error list replay really line by line
+
+commit cea1b2121bee3e69c6114b4a0641c4700f4acb51
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 13:55:48 2019 +0200
+
+    Problem: failed send cancels cleanup, hard to debug
+    
+    Solution: repeat the warnings/errors logged when flagging a send
+    as failed in the end, to help find the needles in the haystask.
+    Reuse the previously booleanish flag $sendFailed as an array of
+    such messages (usually one line = one sending error) @sendFailed.
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit 4f3e09c19820ce321ac933fd0c92628d8782910b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 14:35:49 2019 +0200
+
+    ZFS.pm : update a comment
+
+commit 3906597320c8280b60014b20dc1cbc4b659ea571
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 15:31:01 2019 +0200
+
+    ZFS.pm : some fixes to getDataSetProperties()
+
+commit 73c1f76f32855db65bc025e6dbe9ee5078ad67ed
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 15:14:15 2019 +0200
+
+    t/zfs mock : clarify in comments that this "zfs get" ignores "backup"
+
+commit d626eca73514adab440fd19cb0f871a224f84811
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 13:54:34 2019 +0200
+
+    t/zfs mock : add find_attr_source() to actually discover proper "inherited from X" values from the table
+
+commit 870dce20b898635381d1c1d4b7e8d31457345f4b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 23 13:53:47 2019 +0200
+
+    t/zfs mock : add a subtree under a configured backup plan that has its own further config
+
+commit 80e09b5dd9b0e9b696eb47f61bfce0df6a4442a8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Oct 22 15:05:46 2019 +0200
+
+    znapzendztatz.t znapzendzetup.t znapzend.t : unify runCommand() definition to survive expected errors
+
+commit 21f58a8948a40a2ba5b1ac58d6c18ac972e2954e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Oct 22 13:23:22 2019 +0200
+
+    znapzendzetup.t znapzend.t : Extend for runonce+inherited+recursive flag combos
+
+commit a99f26a129a3e3a6d5e851d2e3f233af283847c5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Oct 22 11:29:35 2019 +0200
+
+    znapzend : revise documentation of runonce+inherited+recursive, regen POD+MAN
+
+commit ffe91501a90b484893083cdf749d5e9768c037de
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 17:10:54 2019 +0200
+
+    ZFS.pm : getDataSetProperties() : mix interaction of recurse and inherit flags
+
+commit 03676581f1c03b8e7db09618e4dbc6be403e8219
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 17:11:51 2019 +0200
+
+    t/zfs mock: basic support for GETing attribute source (local, received, inherited from X)
+
+commit 19044e656ca143e2037a5c5ffb7f20212d33f5ba
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 15:05:30 2019 +0200
+
+    Extend t/zfs mock and znapzend{,zetup}.t to initially test simple --inherit flag usage
+
+commit 132b4472285aa51354ab553797484d716e180db8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 14:41:44 2019 +0200
+
+    getDataSetProperties() : simply add inherit support (no designed complex logic)
+
+commit 78616ad7ae40544b829ffe66e9b7ad00986fb2f2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 14:39:57 2019 +0200
+
+    ZFS.pm : getDataSetProperties() : report if inherit was considered
+
+commit 18f764f1a0975729a3a598e0e08ce688505aba84
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 11:28:46 2019 +0200
+
+    Introduce $inherit argument passing and reporting, and the commentary in the codebase (not the logic implem yet)
+
+commit a3c5feb211f0d9c5c81d645240153d7760e919a6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 10:59:00 2019 +0200
+
+    Regenerate docs for added --inherited flag
+
+commit 36568d9c61dc71b1c6b5feb257f360b439a173e4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 21 10:53:30 2019 +0200
+
+    Introduce ("on paper") the --inherited option for the tools
+
+commit bd6e87b3fa537e2f8c6a8d5694671fc1f3a68963
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 14:44:22 2019 +0200
+
+    ZnapZend.pm : report "on backupSet $backupSet->{src}" for all zend_delay warnings
+
+commit 062fc2c26311b57fd00e59a89017cb5cd10556a8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 13:35:39 2019 +0200
+
+    CHANGES : update with recent commits
+
 commit c1238cf0ad4533f51b7b55b99c015c4ff5d5232a
 Author: Jim Klimov <jimklimov@gmail.com>
 Date:   Thu Oct 24 13:28:51 2019 +0200
@@ -27,6 +220,19 @@ Author: Jim Klimov <jimklimov@gmail.com>
 Date:   Wed Oct 23 15:36:31 2019 +0200
 
     Mark the private/public methods consistently in *.pm files
+
+commit b3b0380e2625702b2dbbb70790892dd9d8c31bec
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 14:11:57 2019 +0200
+
+    Problem [#437]: run-once should have option to bypass zend_delay time for troubleshoot purpose
+    
+    Solution: do what the subject says :)
+    
+    Add a `--nodelay` option (though in fact not constrained only for
+    runonce ATM)
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
 
 commit 08e046a0aa7a84c525bc4f51f4e9a59c1217b951
 Author: Jim Klimov <jimklimov@gmail.com>
