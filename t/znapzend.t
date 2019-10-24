@@ -155,7 +155,7 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = undef;
 is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #1');
 #...but do try to cover these error codepaths ;)
-eval { is (runCommand_canThrow(qw(--daemonize --debug),'--features=Lce',
+eval { is (runCommand_canThrow(qw(--daemonize --debug),'--features=compressed',
     qw(--pidfile=znapzend2.pid)), 1, 'znapzend --daemonize #2'); };
 eval { is (runCommand_canThrow(qw(--daemonize --debug),'-n',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #3'); };
