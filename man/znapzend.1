@@ -157,6 +157,7 @@ znapzend \- znapzend daemon
 \& \-\-daemonize            fork into the background
 \& \-\-runonce=[x]          run one round on the optionally provided dataset
 \& \-r,\-\-recursive         recurse from the given "run\-once" dataset
+\& \-\-inherited            allow "run\-once" on dataset which only inherits a plan
 \& \-\-features=x           comma separated list of features to be enabled
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
 \& \-\-connectTimeout=x     sets the ConnectTimeout for ssh commands
@@ -216,6 +217,118 @@ when backing up a particular dataset with \fB\-\-runonce\fR=[\fIdataset\fR], do 
 just look at this dataset's backup plan, but iterate into its children that
 might have any. Useful for quick backups of a pool whose root dataset has no
 \&\fIznapzendzetup\fR configurations defined, but some trees under it do.
+.Sp
+See below for interaction with \fB\-\-inherited\fR option and examples.
+.IP "\fB\-\-inherited\fR" 4
+.IX Item "--inherited"
+when backing up a particular dataset with \fB\-\-runonce\fR=[\fIdataset\fR], do not
+require that the provided dataset directly has a locally defined backup plan
+configuration (sanity check that it is not \*(L"received\*(R" via \s-1ZFS\s0 replication).
+With this option in place, allow also to quickly snapshot and/or replicate
+datasets of subtrees which inherit a backup plan from a dataset which has it
+in its attributes whose source is \*(L"local\*(R".
+.IP "\fB\-\-inherited\fR and \fB\-\-recursive\fR together" 4
+.IX Item "--inherited and --recursive together"
+At this time, the \fB\-\-inherited\fR is \*(L"sort of exclusive\*(R" vs. \fB\-\-recursive\fR
+mode, and if both are specified the behavior depends on whether the requested
+dataset has some (local or inherited-from-local) backup plan. If a dataset
+without a backup plan is passed, the script should effectively ignore the
+\&\fB\-\-inherited\fR option and just recurse until it finds some dataset(s) with
+proper locally defined backup plan(s) (note that finding inherited plans
+first is highly unlikely due to \s-1ZFS\s0 attribute inheritance from parents to
+children).
+.Sp
+Examples below assume the following dataset layout:
+.Sp
++ \fItank\fR (no znapzend config)
+| + \fIexport\fR (local znapzend config)
+| | + \fIhome\fR (inherited znapzend config from local tank/export)
+| |   + \fIuser\fR (inherited znapzend config from local tank/export)
+| |     + \fIsources\fR (inherited znapzend config from local tank/export)
+| |     + \fIdocuments\fR (inherited znapzend config from local tank/export)
+| |       + \fIpictures\fR (inherited znapzend config from local tank/export)
+| + \fIvar\fR (local znapzend config)
++ \fIusbbackup\fR (no znapzend config)
+  + \fIsnapshots\fR (no znapzend config)
+    + \fIexport\fR (received znapzend config)
+    | + \fIhome\fR (inherited from received usbbackup/snapshots/export)
+    |   + \fIuser\fR (inherited from received usbbackup/snapshots/export)
+    |     + \fIsources\fR (inherited from received usbbackup/snapshots/export)
+    |     + \fIdocuments\fR (inherited from received usbbackup/snapshots/export)
+    |       + \fIdocuments\fR (inherited from received usbbackup/snapshots/export)
+    + \fIvar\fR (received znapzend config)
+.Sp
+Examples:
+.Sp
+.Vb 1
+\&  znapzend \-\-recursive \-\-runonce=tank
+.Ve
+.Sp
+This should walk all filesystem or volume datasets defined anywhere under
+\&\fItank\fR (root dataset of same-named pool) and snapshot/replicate the found
+datasets that have a backup plan configured \*(L"locally\*(R", such as \fItank/export\fR
+and \fItank/var\fR, according to configuration (e.g. with children and beyond
+if the corresponding backup plan's \fIrecursive=on\fR option is specified).
+It should not waste time looking for datasets under the \fIusbbackup\fR pool.
+.Sp
+.Vb 1
+\&  znapzend \-\-runonce=tank/export/home/user/documents
+.Ve
+.Sp
+Given that only \fItank/export\fR \*(L"locally\*(R" defines a znapzend backup plan, the
+default \fBznapzend\fR behavior with a descendant dataset would be to find no
+configuration (sourced as \*(L"local\*(R" right in it) and so would \*(L"run-once\*(R" nothing.
+.Sp
+.Vb 1
+\&  znapzend \-\-recursive \-\-runonce=tank/export/home
+.Ve
+.Sp
+Same (no config found) for recursion starting from a dataset with inherited
+backup plan configuration (assuming none of its descendants have a \*(L"local\*(R"
+config of their own).
+.Sp
+.Vb 1
+\&  znapzend \-\-inherited \-\-runonce=tank/export/home/user/documents
+.Ve
+.Sp
+With the \fB\-\-inherited\fR option however it would recognize this descendant
+dataset as having a backup plan configuration inherited from \fItank/export\fR,
+would then look at \fItank/export\fR and confirm that it has this configuration
+from a \*(L"local\*(R" source, and should \fBznapzend runonce\fR just this dataset and
+its descendants (so including \fItank/export/home/user/documents/pictures\fR,
+but not including siblings like \fItank/export/home/user/sources\fR).
+.Sp
+.Vb 1
+\&  znapzend \-\-inherited \-\-recursive \-\-runonce=tank
+.Ve
+.Sp
+Since \fItank\fR has no backup plan, \fBznapzend\fR should recurse and find the
+nearest datasets with configured plans, \fItank/export\fR and \fItank/var\fR, and
+process them according to configuration.
+.Sp
+.Vb 1
+\&  znapzend \-\-inherited \-\-recursive \-\-runonce=tank/export
+.Ve
+.Sp
+Since \fItank/export\fR has a locally defined backup plan, \fBznapzend\fR should
+process it according to configuration.
+.Sp
+.Vb 1
+\&  znapzend \-\-inherited \-\-recursive \-\-runonce=tank/export/home
+.Ve
+.Sp
+Since \fItank/export/home\fR has a backup plan inherited from a locally defined
+one in \fItank/export\fR, \fBznapzend\fR should process it according to configuration.
+.Sp
+.Vb 3
+\&  znapzend \-\-recursive \-\-runonce=usbbackup
+\&  znapzend \-\-inherited \-\-runonce=usbbackup/snapshots
+\&  znapzend \-\-inherited \-\-recursive \-\-runonce=usbbackup/snapshots/export/home
+.Ve
+.Sp
+Neither of these runs should do anything, because all datasets involved
+(including those found by a recursive walk) under \fIusbbackup\fR have neither
+a local definition of a backup plan, nor one inherited from a local definition.
 .IP "\fB\-\-features\fR=\fIfeature1\fR,\fIfeature2\fR,..." 4
 .IX Item "--features=feature1,feature2,..."
 enables enhanced zfs features not supported by all zfs implementations.

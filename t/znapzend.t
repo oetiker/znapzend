@@ -61,6 +61,14 @@ unshift @INC, sub {
 sub runCommand {
     @ARGV = @_;
 
+    eval { main(); };
+    return 0 if $@; # Presumably die() handler caught something
+    1;
+}
+
+sub runCommand_canThrow {
+    @ARGV = @_;
+
     main();
 }
 
@@ -78,7 +86,7 @@ is (runCommand('--help'), 1, 'znapzend help');
 
 is (runCommand(), 1, 'znapzend');
 
-throws_ok { runCommand(qw(--runonce=nosets) ) } qr/No backup set defined or enabled/,
+throws_ok { runCommand_canThrow(qw(--runonce=nosets) ) } qr/No backup set defined or enabled/,
       'znapzend dies with no backup sets defined or enabled at startup';
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
@@ -94,7 +102,15 @@ undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
+is (runCommand(qw(--inherited --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited flag');
+is (runCommand(qw(--inherited --recursive --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited --recursive flag');
+is (runCommand(qw(--inherited --recursive --runonce=tank)), 1, 'znapzend runonce of a dataset only whose descendants have a plan succeeds with --inherited --recursive flag');
+
 # Coverage for various failure codepaths
+is (runCommand(qw(--inherited --runonce=tank)), 0, 'znapzend runonce of a dataset without a plan fails also with --inherited flag');
+is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails with only --recursive flag and without --inherited');
+is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
+
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command');
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = undef;
@@ -117,12 +133,12 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'} = undef;
 
 
 # Do not test after daemonize, to avoid conflicts
-is (runCommand(qw(--daemonize --debug),'--features=oracleMode,recvu',
+is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #1');
 #...but do try to cover these error codepaths ;)
-eval { is (runCommand(qw(--daemonize --debug),'--features=Lce',
+eval { is (runCommand_canThrow(qw(--daemonize --debug),'--features=Lce',
     qw(--pidfile=znapzend2.pid)), 1, 'znapzend --daemonize #2'); };
-eval { is (runCommand(qw(--daemonize --debug),'-n',
+eval { is (runCommand_canThrow(qw(--daemonize --debug),'-n',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #3'); };
 
 done_testing;
