@@ -145,6 +145,12 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed ZFS snapshot command');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_snapshot'} = undef;
 
+is (runCommand(qw(--runonce=tank/source --autoCreation)), 1, 'znapzend --autoCreation --runonce=tank/source');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = '1';
+is (runCommand(qw(--runonce=tank/source --autoCreation)), 0, 'znapzend --autoCreation --runonce=tank/source with a failed ZFS create command - fails');
+$ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = undef;
+
+
 # Do not test after daemonize, to avoid conflicts
 is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #1');
