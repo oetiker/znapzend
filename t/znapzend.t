@@ -113,7 +113,7 @@ is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonc
 is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
 
 # Series of tests over usual tank/source with different options
-is (runCommand(qw(--runonce=tank/source --features=oracleMode,recvu,compressed)),
+is (runCommand(qw(--runonce=tank/source), '--features=oracleMode,recvu,compressed'),
     1, 'znapzend --features=oracleMode,recvu,compressed --runonce=tank/source succeeds');
 
 # Coverage for various failure codepaths
