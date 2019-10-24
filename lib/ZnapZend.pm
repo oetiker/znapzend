@@ -246,7 +246,7 @@ my $sendRecvCleanup = sub {
 
     my @snapshots;
     my $toDestroy;
-    my $sendFailed = 0;
+    my @sendFailed; # List of messages about failed sends
     my $startTime = time;
     $self->zLog->info('starting work on backupSet ' . $backupSet->{src});
 
@@ -269,9 +269,10 @@ my $sendRecvCleanup = sub {
 
             if ($ev){
                 $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
-                if ($self->skipOnPreSendCmdFail){
-                    $self->zLog->warn("skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure");
-                    $sendFailed = 1;
+                if ($self->skipOnPreSendCmdFail) {
+                    my $errmsg = "skipping " . $backupSet->{"dst_$key"} . "due to pre-command failure";
+                    $self->zLog->warn($errmsg);
+                    push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
                     next;
                 }
@@ -296,9 +297,10 @@ my $sendRecvCleanup = sub {
                     };
                 }
                 $backupSet->{"dst_$key" . '_valid'} or do {
-                    $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
-                        . "' does not exist or is offline. ignoring it for this round...");
-                    $sendFailed = 1;
+                    my $errmsg = "destination '" . $backupSet->{"dst_$key"}
+                        . "' does not exist or is offline. ignoring it for this round...";
+                    $self->zLog->warn($errmsg);
+                    push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
                 };
                 next;
@@ -324,13 +326,14 @@ my $sendRecvCleanup = sub {
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
                 };
                 if ($@){
-                    $sendFailed = 1;
                     $thisSendFailed = 1;
                     if (blessed $@ && $@->isa('Mojo::Exception')){
                         $self->zLog->warn($@->message);
+                        push (@sendFailed, $@->message);
                     }
                     else{
                         $self->zLog->warn($@);
+                        push (@sendFailed, $@);
                     }
                 }
             }
@@ -415,8 +418,10 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    if ($sendFailed){
-        $self->zLog->warn('ERROR: suspending cleanup source dataset because at least one send task failed');
+    if (scalar(@sendFailed) > 0) {
+        $self->zLog->warn('ERROR: suspending cleanup source dataset because '
+            . scalar(@sendFailed) . ' send task(s) failed:\n'
+            . join('\n\t', @sendFailed) . '\n' );
     }
     else{
         # cleanup source according to backup schedule
