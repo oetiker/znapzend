@@ -666,7 +666,9 @@ sub getDataSetProperties {
                         # interested if this dataset is end of tree walk
                         # (as far as non-local attrs go)...
                         # TODO! Even worse, we now check the new line's source
-                        # type and tail, not the prev-dataset's ones.
+                        # type and tail, not the prev-dataset's ones. It doesn't
+                        # matter much at the moment, as we now only care about it
+                        # being set, but can matter after TODO/THINK note above.
                         $cachedInheritance{"$prev_srcds\tattr:source"} = "${sourcetype}${tail}";
                     }
                 }
