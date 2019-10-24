@@ -72,6 +72,7 @@ throws_ok { runCommand(qw(--runonce=nosets) ) } qr/No backup set defined or enab
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1');
+is (runCommand(qw(--nodelay --runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1 and --nodelay (should ignore the plan setting)');
 undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
 
 # Try an invalid string, should ignore and proceed without a delay

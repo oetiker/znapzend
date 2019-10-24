@@ -150,6 +150,7 @@ znapzend \- znapzend daemon
 \& \-h,\-\-help              display this help and exit
 \& \-d,\-\-debug             print debug messages to STDERR
 \& \-n,\-\-noaction          run in simulation mode: does no changes to the filesystem
+\& \-\-nodelay              if a backup plan has a zend_delay defined, ignore it
 \& \-\-nodestroy            does all changes to the filesystem except destroy
 \& \-\-logto=x              select where to log to (syslog::<facility> or <filepath>)
 \& \-\-loglevel=x           define the log level
@@ -179,6 +180,11 @@ talk a lot while running. Sends debug messages to stderr.
 .IX Item "-n, --noaction"
 don't do any actions which have lasting effect. Ideal to try out new
 configurations together with \fB\-\-debug\fR
+.IP "\fB\-\-nodelay\fR" 4
+.IX Item "--nodelay"
+if a backup plan has a zend_delay defined, ignore it (should help when
+debugging the backup plan configurations, without waiting for hours to
+run them during experiments)
 .IP "\fB\-\-nodestroy\fR" 4
 .IX Item "--nodestroy"
 do all changes to the filesystem except destroying old snapshots

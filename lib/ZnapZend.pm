@@ -41,6 +41,7 @@ has defaultPidFile          => sub { q{/var/run/znapzend.pid} };
 has terminate               => sub { 0 };
 has autoCreation            => sub { 0 };
 has timeWarp                => sub { undef };
+has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
 has backupSets              => sub { [] };
@@ -221,10 +222,15 @@ my $sendRecvCleanup = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
+    if ($self->nodelay && $backupSet->{zend_delay}) {
+        warn "CLI option --nodelay was requested, so ignoring backup plan option 'zend-delay' (was $backupSet->{zend_delay})";
+        undef $backupSet->{zend_delay};
+    }
+
     if ($backupSet->{zend_delay}) {
         chomp $backupSet->{zend_delay};
         if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
-            warn "Option 'zend-delay' has an invalid value, ignored";
+            warn "Backup plan option 'zend-delay' has an invalid value, ignored";
             undef $backupSet->{zend_delay};
         } else {
             if($backupSet->{zend_delay} > 0) {
