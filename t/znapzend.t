@@ -114,10 +114,14 @@ is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a datas
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command');
+is (runCommand(qw(--runonce=tank/source --skipOnPreSnapCmdFail)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command and --skipOnPreSnapCmdFail');
+is (runCommand(qw(--runonce=tank/source --skipOnPreSendCmdFail)), 1, 'znapzend sendRecvCleanup with a failed DST PRE command and --skipOnPreSendCmdFail');
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = undef;
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend sendRecvCleanup with a failed DST POST command');
+is (runCommand(qw(--runonce=tank/source --skipOnPreSnapCmdFail)), 1, 'znapzend sendRecvCleanup with a failed DST POST command and --skipOnPreSnapCmdFail');
+is (runCommand(qw(--runonce=tank/source --skipOnPreSendCmdFail)), 1, 'znapzend sendRecvCleanup with a failed DST POST command and --skipOnPreSendCmdFail');
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'} = undef;
 
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_send'} = '1';
