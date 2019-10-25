@@ -172,15 +172,25 @@ print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 my $command = shift @ARGV or exit 1;
 
 for ($command){
-    /^(?:set|inherit|send|recv)$/ && do {
+    /^(?:set|inherit|send|recv|create)$/ && do {
         if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
             exit 1;
+        };
+        if ( defined($ENV{"ZNAPZENDTEST_ZFS_SUCCEED_$command"}) ) {
+            exit 0;
         };
         exit;
     };
 
-    #pretend snapshot to fail => snapshot does exist already
-    /^snapshot$/ && exit 1;
+    /^snapshot$/ && do {
+        if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
+            exit 1;
+        };
+        if ( defined($ENV{"ZNAPZENDTEST_ZFS_SUCCEED_$command"}) ) {
+            exit 0;
+        };
+        exit 1; # (Legacy) default for tests around this: pretend snapshot to fail => snapshot does exist already
+    };
 
     /^list$/ && do {
         if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_list'}) ) {
