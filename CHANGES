@@ -1,3 +1,21 @@
+commit b820aa81fb498954bee0ca0878908be482a2f095
+Author: Lauri Tirkkonen <lauri@tuxera.com>
+Date:   Fri Nov 8 12:48:05 2019 +0200
+
+    avoid using uninitialized $dataSet in string concatenation
+
+commit 86363addc3a706f2270ad337f1d8e476024fec4c
+Author: Lauri Tirkkonen <lauri@tuxera.com>
+Date:   Wed Nov 6 16:18:09 2019 +0200
+
+    fix znapzend dataset discovery without arguments
+
+commit 6dbc1e1c26b9473a40fd19bb1e8cbeb397908db4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 24 19:04:14 2019 +0200
+
+    CHANGES : update with recent commits
+
 commit 9ff0bbd97f49c0eae9dc32159be38637cc51a4d4
 Author: Jim Klimov <jimklimov@gmail.com>
 Date:   Thu Oct 24 18:22:18 2019 +0200
