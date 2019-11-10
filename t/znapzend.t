@@ -154,6 +154,13 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = '1';
 is (runCommand(qw(--runonce=tank/source --autoCreation)), 0, 'znapzend --autoCreation --runonce=tank/source with a failed ZFS create command - fails');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = undef;
 
+$ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
+is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
+    0, 'znapzend --features=zfsGetType --runonce=tank/source fails with old ZFS');
+$ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
+is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
+    1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS');
+
 # Do not test after daemonize, to avoid conflicts
 is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
     qw(--pidfile=znapzend.pid)), 1, 'znapzend --daemonize #1');

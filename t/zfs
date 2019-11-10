@@ -266,6 +266,19 @@ for ($command){
             exit 1;
         }
 
+        # Note: illumos zfs as of 2019 and some years before allows
+        # `zfs get -t filesystem,volume ...` (and can list snapshot
+        # props otherwise) but Sol 10 did not
+        if ( (join(" ", @ARGV) =~ / -t / ) && (defined $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'}) ) {
+            # Report like Solaris 10 did
+            print STDERR "invalid option 't'
+usage:
+        get [-rHp] [-d max] [-o \"all\" | field[,...]] [-s source[,...]]
+            <\"all\" | property[,...]> [filesystem|volume|snapshot] ...
+\n";
+            exit 2;
+        }
+
         # Note: In this line and in selections below we explicitly
         # but somewhat artificially rule out displaying datasets
         # under "backup" that are a pool root and destinations.
