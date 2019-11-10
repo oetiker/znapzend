@@ -13,6 +13,7 @@ has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
 has lowmemRecurse   => sub { 0 };
+has zfsGetType      => sub { 0 };
 has rootExec        => sub { q{} };
 has sendDelay       => sub { 3 };
 has connectTimeout  => sub { 30 };
@@ -591,7 +592,9 @@ sub getDataSetProperties {
         } else {
             push (@cmd, qw(-s local));
         }
-        push (@cmd, qw(-t), 'filesystem,volume');
+        if ($self->zfsGetType) {
+            push (@cmd, qw(-t), 'filesystem,volume');
+        }
         if ($recurse) {
             push (@cmd, qw(-r));
         }
@@ -710,8 +713,11 @@ sub getDataSetProperties {
                             . "'$tail' to see if it is local there\n"
                                 if $self->debug;
                         # TODO: here and in mock t/zfs, reduce to "-o property,source"
-                        my @inh_cmd = (@{$self->priv}, qw(zfs get -H -s local -t),
-                            'filesystem,volume', qw(-o), 'name,property,value,source',
+                        my @inh_cmd = (@{$self->priv}, qw(zfs get -H -s local));
+                        if ($self->zfsGetType) {
+                            push (@inh_cmd, qw(-t), 'filesystem,volume');
+                        }
+                        push (@inh_cmd, qw(-o), 'name,property,value,source',
                             'all', $tail);
                         print STDERR '## ' . join(' ', @inh_cmd) . "\n" if $self->debug;
                         open my $inh_props, '-|', @inh_cmd or Mojo::Exception->throw("ERROR: could not execute zfs to get properties from $tail");

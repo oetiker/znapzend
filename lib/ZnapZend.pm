@@ -29,6 +29,7 @@ has recvu                   => sub { 0 };
 has compressed              => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
+has zfsGetType              => sub { 0 };
 has connectTimeout          => sub { 30 };
 has runonce                 => sub { 0 };
 has recursive               => sub { 0 };
@@ -60,7 +61,7 @@ has zZfs => sub {
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         lowmemRecurse => $self->lowmemRecurse,
-        rootExec => $self->rootExec,
+        rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
         zLog => $self->zLog, compressed => $self->compressed);
 };
 
