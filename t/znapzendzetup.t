@@ -122,8 +122,10 @@ is (runCommand(qw(list --features=lowmemRecurse -r tank/source tank/anothersourc
 
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
 is (runCommand(qw(list --features=zfsGetType -r tank/source)), 0, 'znapzendzetup list with zfsGetType feature and old zfs - fails');
+is (runCommand(qw(list --features=zfsGetType --inherited -r tank/source)), 0, 'znapzendzetup list with zfsGetType feature and --inherited and old zfs - fails');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
 is (runCommand(qw(list --features=zfsGetType -r tank/source)), 1, 'znapzendzetup list with zfsGetType feature and new zfs - succeeds');
+is (runCommand(qw(list --features=zfsGetType --inherited -r tank/source)), 1, 'znapzendzetup list with zfsGetType feature and --inherited and new zfs - succeeds');
 
 # Enabled dataset with an inherited plan:
 is (runCommand(qw(list --debug --inherited tank/source/child)), 1, 'znapzendzetup list --inherited tank/source/child succeeds');
