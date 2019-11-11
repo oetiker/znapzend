@@ -608,6 +608,12 @@ sub getDataSetProperties {
         my $prevSkipped_srcds = "";
         while (my $prop = <$props>){
             chomp $prop;
+            if ( (!$self->zfsGetType) && ($prop =~ /^\S+@\S+\s/) ) {
+                # Filter away snapshot properties ASAP
+                #print STDERR "=== getDataSetProperties(): SKIP: '$prop' "
+                #    . "because it is a snapshot property\n" if $self->debug;
+                next;
+            }
             # NOTE: This regex assumes the dataset names do not have trailing whitespaces
             my ($srcds, $key, $value, $sourcetype, $tail) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from )(.*)$/ or next; ### |received|default|-
             # If we are here, the attribute name (key) is under $propertyPrefix
@@ -712,17 +718,24 @@ sub getDataSetProperties {
                             . "Looking for '$key' under inheritance source "
                             . "'$tail' to see if it is local there\n"
                                 if $self->debug;
-                        # TODO: here and in mock t/zfs, reduce to "-o property,source"
                         my @inh_cmd = (@{$self->priv}, qw(zfs get -H -s local));
                         if ($self->zfsGetType) {
                             push (@inh_cmd, qw(-t), 'filesystem,volume');
                         }
+                        # TODO: here and in mock t/zfs, reduce to "-o name,property,source"
+                        # or even "-o property,source" when zfsGetType is enabled
                         push (@inh_cmd, qw(-o), 'name,property,value,source',
                             'all', $tail);
                         print STDERR '## ' . join(' ', @inh_cmd) . "\n" if $self->debug;
                         open my $inh_props, '-|', @inh_cmd or Mojo::Exception->throw("ERROR: could not execute zfs to get properties from $tail");
                         while (my $inh_prop = <$inh_props>){
                             chomp $inh_prop;
+                            if ( (!$self->zfsGetType) && ($inh_prop =~ /^\S+@\S+\s/) ) {
+                                # Filter away snapshot properties ASAP
+                                #print STDERR "=== getDataSetProperties(): SKIP: inherited '$inh_prop' "
+                                #    . "because it is a snapshot property\n" if $self->debug;
+                                next;
+                            }
                             my ($inh_srcds, $inh_key, $inh_value, $inh_sourcetype, $inh_tail) =
                                 $inh_prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/
                                     or next;
