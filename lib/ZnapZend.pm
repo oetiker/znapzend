@@ -261,6 +261,17 @@ my $sendRecvCleanup = sub {
         my ($key) = $dst =~ /dst_([^_]+)$/;
         my $thisSendFailed = 0; # Track if we don't want THIS destination cleaned up
 
+        #allow users to disable some destinations (e.g. reserved/templated
+        #backup plan config items, or known broken targets) without deleting
+        #them outright. Note it is likely that the common (automatic) snapshots
+        #between source and that destination would disappear over time, making
+        #incremental sync impossible at some point in the future.
+        if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+            $self->zLog->info("Skipping disabled destination " . $backupSet->{"dst_$key"}
+                . ". Note that you would likely need to recreate the backup data tree there");
+            next;
+        }
+
         #check destination for pre-send-command
         if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
             local $ENV{WORKER} = $backupSet->{"dst_$key"};

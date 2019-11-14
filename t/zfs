@@ -21,6 +21,7 @@ my %dataSets = (
     'backup/destination' => 'dst',
     'backup/destination/child' => 'dst', # TODO: dst-inherited
     'backup/destination/child/grandchild' => 'dst',
+    'backup/destination/disabled' => 'dst-disabled',
     'remote'             => '',
     'remote/destination' => 'dst',
     'remote/destination/child' => 'dst',
@@ -58,7 +59,7 @@ sub find_attr_source {
         return 'local';
     }
 
-    if ($dataSets{"$srcname"} eq 'dst') {
+    if ($dataSets{"$srcname"} eq 'dst' || $dataSets{"$srcname"} eq 'dst-disabled') {
         return 'received';
     }
 
@@ -163,6 +164,12 @@ ZFS_GET_END
 ${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${srcsuffix}
 ZFS_GET_END
         }
+
+    if (defined ($dataSets{"backup/${dstname}${srcsuffix}"}) && $dataSets{"backup/${dstname}${srcsuffix}"} eq 'dst-disabled') {
+            print <<"ZFS_GET_END";
+${prefix}org.znapzend:dst_0_enabled  off
+ZFS_GET_END
+    }
 
 } # end of print_zfs_get()
 
