@@ -97,7 +97,7 @@ sub parseArguments {
         #catch post-command if any
         $state eq 'pst' && do {
             $backupSet{'dst_' . $key . '_pstcmd'} = $_;
-            $state = '';
+            $state = 'dst_enabled';
             next;
         };
         die "ERROR: dont know what to do with $_. check the syntax\n";
@@ -323,6 +323,26 @@ sub main {
 
         last;
     };
+    /^enable-dst$/ && do {
+        $opts->{src} = pop @ARGV;
+        $opts->{dst} = pop @ARGV;
+        defined $opts->{src} or pod2usage(1);
+        defined $opts->{dst} or pod2usage(1);
+        $zConfig->enableBackupSetDst($opts->{src}, $opts->{dst})
+            or die "ERROR: cannot enable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
+
+        last;
+    };
+    /^disable-dst$/ && do {
+        $opts->{src} = pop @ARGV;
+        $opts->{dst} = pop @ARGV;
+        defined $opts->{src} or pod2usage(1);
+        defined $opts->{dst} or pod2usage(1);
+        $zConfig->disableBackupSet($opts->{src}, $opts->{dst})
+            or die "ERROR: cannot disable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
+
+        last;
+    };
     /^list$/ && do {
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r inherited))) or exit 1;
 
@@ -477,6 +497,10 @@ where 'command' is one of the following:
     enable  [--rootExec={pfexec|sudo}] <src_dataset>
 
     disable [--rootExec={pfexec|sudo}] <src_dataset>
+
+    enable-dst  [--rootExec={pfexec|sudo}] <src_dataset> <DST_key>
+
+    disable-dst [--rootExec={pfexec|sudo}] <src_dataset> <DST_key>
 
     list    [--rootExec={pfexec|sudo}] [--recursive] [--inherited] [src_dataset...]
 

@@ -329,6 +329,81 @@ sub disableBackupSet {
     return 0;
 }
 
+sub enableBackupSetDst {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dest = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
+
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
+
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
+
+    if (@{$self->backupSets}){
+        my %cfg = %{$self->backupSets->[0]};
+
+        if ( !($dest =~ /^dst_[^_]+$/) ) {
+            if ($cfg{'dst_' . $dest}) {
+                # User passed valid key of the destination config,
+                # convert to zfs attribute/perl struct name part
+                $dest = 'dst_' . $dest;
+            }
+        }
+
+        if ($cfg{$dest}) {
+            if ($cfg{$dest . '_enabled'}) {
+                $cfg{$dest . '_enabled'} = undef;
+            } else {
+                # Already not set => default is "on"
+                return 1;
+            }
+        } else {
+            die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
+        }
+        $self->setBackupSet(\%cfg);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+sub disableBackupSetDst {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dest = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
+
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
+
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
+
+    if (@{$self->backupSets}){
+        my %cfg = %{$self->backupSets->[0]};
+
+        if ( !($dest =~ /^dst_[^_]+$/) ) {
+            if ($cfg{'dst_' . $dest}) {
+                # User passed valid key of the destination config,
+                # convert to zfs attribute/perl struct name part
+                $dest = 'dst_' . $dest;
+            }
+        }
+
+        if ($cfg{$dest}) {
+            $cfg{$dest . '_enabled'} = 'off';
+        } else {
+            die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
+        }
+        $self->setBackupSet(\%cfg);
+
+        return 1;
+    }
+
+    return 0;
+}
+
 1;
 
 __END__
