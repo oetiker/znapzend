@@ -740,7 +740,23 @@ sub getDataSetProperties {
                     }
                     if (defined($cachedInheritance{$tail_inheritKey}) && 1 == $cachedInheritance{$tail_inheritKey}) {
                         # This attr comes from a local source
-                        $properties{$key} = $value;
+                        if ( $key =~ /^dst_[^_]+$/ ) {
+                            # Rewrite destination dataset name shifted same as
+                            # this inherited source ($srcds) compared to its
+                            # ancestor which the config is inherited from ($tail
+                            # in the currently active sanity-checked conditions).
+                            if ($srcds =~ /^$tail\/(.+)$/) {
+                                print STDERR "=== getDataSetProperties(): Shifting destination name in config for dataset '$srcds' with configuration inherited from '$tail' : after '$value' will append '/$1'\n" if $self->debug;
+                                $properties{$key} = $value . "/" . $1;
+                            } else {
+                                # Abort if we can not decide well (better sadly
+                                # safe than very-sorry). Not sure if we can get
+                                # here... maybe by some zfs clones and promotion?
+                                die "The dataset '$srcds' with configuration inherited from '$tail' does not have the latter as ancestor, can't decide how to shift the destination dataset names";
+                            }
+                        } else {
+                            $properties{$key} = $value;
+                        }
                     }
                 } else {
                     # See some other $props...
