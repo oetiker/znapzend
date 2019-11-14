@@ -324,8 +324,8 @@ sub main {
         last;
     };
     /^enable-dst$/ && do {
-        $opts->{src} = pop @ARGV;
         $opts->{dst} = pop @ARGV;
+        $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
         defined $opts->{dst} or pod2usage(1);
         $zConfig->enableBackupSetDst($opts->{src}, $opts->{dst})
@@ -334,8 +334,8 @@ sub main {
         last;
     };
     /^disable-dst$/ && do {
-        $opts->{src} = pop @ARGV;
         $opts->{dst} = pop @ARGV;
+        $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
         defined $opts->{dst} or pod2usage(1);
         $zConfig->disableBackupSet($opts->{src}, $opts->{dst})
