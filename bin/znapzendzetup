@@ -88,6 +88,14 @@ sub parseArguments {
             $state = 'pre';
             next;
         };
+        #catch 'dst(...) on|off' if any
+        ($state eq 'pre' || $state eq 'pst' || $state eq 'dst-enabled') && do {
+            if ($_ eq 'off' || $_ eq 'on') {
+                $backupSet{'dst_' . $key . '_enabled'} = $_;
+                $state = '';
+                next;
+            }; # else fall through to state-processing or to die() below
+        };
         #catch pre-command if any
         $state eq 'pre' && do {
             $backupSet{'dst_' . $key . '_precmd'} = $_;
@@ -97,9 +105,10 @@ sub parseArguments {
         #catch post-command if any
         $state eq 'pst' && do {
             $backupSet{'dst_' . $key . '_pstcmd'} = $_;
-            $state = '';
+            $state = 'dst_enabled';
             next;
         };
+
         die "ERROR: dont know what to do with $_. check the syntax\n";
     }
 
