@@ -110,6 +110,14 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
 is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
 is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
 
+is(runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is(runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds');
+
+is(runCommand(qw(enable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup enable-dst tank/source dst_1_badkey - fails');
+is(runCommand(qw(disable-dst tank/source 1)), 0, 'znapzendzetup enable-dst tank/source 1 - fails');
+is(runCommand(qw(enable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails');
+is(runCommand(qw(disable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails');
+
 # This one calls "zfs list -r" and then many times "zfs get"
 is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
 # This one calls "zfs get -r"
