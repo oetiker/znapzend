@@ -134,8 +134,8 @@ my $refreshBackupPlans = sub {
     my $dataSet = shift;
 
     $self->zLog->info('refreshing backup plans' .
-	    (defined($dataSet) ? ' for dataset "' . $dataSet . '"' : '') .
-	    ' ...');
+        (defined($dataSet) ? ' for dataset "' . $dataSet . '"' : '') .
+        ' ...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $inherit, $dataSet));
 
     ($self->backupSets && @{$self->backupSets})
