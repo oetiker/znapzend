@@ -629,6 +629,9 @@ sub getDataSetProperties {
                 $srcdsParent =~ s,/[^/]+$,,; # chop off the tail (if any - none on root datasets)
                 if (defined($cachedInheritance{"$srcdsParent\tattr:source"})) {
                     if ($prevSkipped_srcds ne $srcds && $self->debug) {
+                        # Even if we recurse+inherit, we do not need to return
+                        # dozens of backup configurations, one for each child.
+                        # The backup activity would recurse from the topmost.
                         print STDERR "=== getDataSetProperties(): SKIP: '$srcds' "
                             . "because parent config '$srcdsParent' is already listed ("
                             . $cachedInheritance{"$srcdsParent\tattr:source"} .")\n";
