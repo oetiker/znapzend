@@ -157,4 +157,3 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = undef;
 done_testing;
 
 1;
-

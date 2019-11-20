@@ -49,8 +49,8 @@ unshift @INC, sub {
         # from the file directly
         $INC{$filename} = $found;
         return $fh;
-     }
-     else {
+    }
+    else {
         return ();
     }
 };

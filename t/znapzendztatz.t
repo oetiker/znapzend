@@ -78,4 +78,3 @@ is (runCommand(), 1, 'znapzendztatz');
 done_testing;
 
 1;
-
