@@ -57,7 +57,7 @@ sub find_attr_source {
         return 'default'; # Should not really be seen for our unconfigured datasets like pool roots etc
     }
 
-    if (($dataSets{"$srcname"} eq 'src-disabled') && $attr eq 'enabled') {
+    if (($dataSets{"$srcname"} eq 'src-disabled') && ($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
         return 'local';
     }
 
@@ -127,9 +127,11 @@ sub print_zfs_get {
 
     my $srcsuffix = "";
     my $srcenabledsuffix = "";
+    my $srcenabledsuffix_0 = "";
     if ($printsrc) {
         $srcsuffix = "\t" . find_attr_source($srcname, '');
         $srcenabledsuffix = "\t" . find_attr_source($srcname, 'enabled');
+        $srcenabledsuffix_0 = "\t" . find_attr_source($srcname, 'dst_0_enabled');
     }
 
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
@@ -169,7 +171,7 @@ ZFS_GET_END
 
     if (defined ($dataSets{"backup/${dstname}"}) && $dataSets{"backup/${dstname}"} eq 'dst-disabled') {
         print <<"ZFS_GET_END";
-${prefix}org.znapzend:dst_0_enabled  off
+${prefix}org.znapzend:dst_0_enabled  off${srcenabledsuffix_0}
 ZFS_GET_END
     }
 
