@@ -240,7 +240,7 @@ my $sendRecvCleanup = sub {
         undef $backupSet->{zend_delay};
     }
 
-    if ($backupSet->{zend_delay}) {
+    if (defined($backupSet->{zend_delay})) {
         chomp $backupSet->{zend_delay};
         if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
             warn "Backup plan option 'zend-delay' has an invalid value ('$backupSet->{zend_delay}' is not a number) on backupSet $backupSet->{src}, ignored";
