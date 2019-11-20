@@ -118,7 +118,10 @@ sub main {
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  $ZNAPZEND_TESTING = 1;
 
-    defined $mainOpt or pod2usage(1);
+    if (!defined $mainOpt) {
+        pod2usage(-exitval => 'NOEXIT');
+        die ("ERROR: Main option was not provided\n");
+    }
 
     Getopt::Long::Configure(qw(posix_default no_ignore_case pass_through));
     GetOptions($opts, @ROOT_EXEC_OPTIONS) or exit 1;
@@ -204,7 +207,10 @@ sub main {
         GetOptions($opts, @ROOT_EXEC_OPTIONS, qw(dst=s)) or exit 1;
 
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
 
         if ($opts->{dst}){
             $zConfig->deleteBackupDestination($opts->{src}, 'dst_' . $opts->{dst});
@@ -309,7 +315,11 @@ sub main {
     };
     /^enable$/ && do {
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+
         $zConfig->enableBackupSet($opts->{src})
             or die "ERROR: cannot enable backup config for $opts->{src}. Did you create it?\n";
 
@@ -317,7 +327,10 @@ sub main {
     };
     /^disable$/ && do {
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
         $zConfig->disableBackupSet($opts->{src})
             or die "ERROR: cannot disable backup config for $opts->{src}. Did you create it?\n";
 
@@ -326,8 +339,14 @@ sub main {
     /^enable-dst$/ && do {
         $opts->{dst} = pop @ARGV;
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
-        defined $opts->{dst} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+        if (!defined $opts->{dst}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: destination argument for option $mainOpt was not provided\n");
+        }
         $zConfig->enableBackupSetDst($opts->{src}, $opts->{dst})
             or die "ERROR: cannot enable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
 
@@ -336,8 +355,14 @@ sub main {
     /^disable-dst$/ && do {
         $opts->{dst} = pop @ARGV;
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
-        defined $opts->{dst} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+        if (!defined $opts->{dst}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: destination argument for option $mainOpt was not provided\n");
+        }
         $zConfig->disableBackupSetDst($opts->{src}, $opts->{dst})
             or die "ERROR: cannot disable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
 
@@ -359,7 +384,10 @@ sub main {
     };
     /^export$/ && do {
         $opts->{src} = pop @ARGV;
-        defined $opts->{src} or pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
         # TODO: support --recursive? Does not make much sense "as is" for import then
 
         my $backupSets;
@@ -433,7 +461,10 @@ sub main {
         last;
     };
         #main argument invalid
-        pod2usage(1);
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: Unsupported main option $mainOpt was provided\n");
+        }
     }
     print STDERR <<NOTE;
 NOTE: if you have modified your configuration, send a HUP signal
