@@ -167,7 +167,7 @@ ${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${sr
 ZFS_GET_END
     }
 
-    if (defined ($dataSets{"backup/${dstname}${srcsuffix}"}) && $dataSets{"backup/${dstname}${srcsuffix}"} eq 'dst-disabled') {
+    if (defined ($dataSets{"backup/${dstname}"}) && $dataSets{"backup/${dstname}"} eq 'dst-disabled') {
         print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_enabled  off
 ZFS_GET_END
