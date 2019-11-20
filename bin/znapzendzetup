@@ -338,7 +338,7 @@ sub main {
         $opts->{src} = pop @ARGV;
         defined $opts->{src} or pod2usage(1);
         defined $opts->{dst} or pod2usage(1);
-        $zConfig->disableBackupSet($opts->{src}, $opts->{dst})
+        $zConfig->disableBackupSetDst($opts->{src}, $opts->{dst})
             or die "ERROR: cannot disable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
 
         last;
