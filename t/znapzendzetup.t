@@ -114,24 +114,26 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
     is (runCommand(qw(export tank/source)), 1, 'znapzendzetup export');
 }
 
-is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
-is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
+is (runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
+is (runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
 
 # Cover various codepaths for successes and failures...
 # Destination can be passed by number (N) or zfs attr name (dst_N)
 # TODO? Add by target dataset value as the more user-meaningful variant?
-is(runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
-is(runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
-is(runCommand(qw(enable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
-is(runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
+is (runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(enable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
+is (runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup disable-dst tank/source 0 - succeeds (0=>dst_0)');
 
 # Destination-management fails for a number of expected reasons
-is(runCommand(qw(enable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup enable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
-is(runCommand(qw(disable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup disable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
-is(runCommand(qw(enable-dst tank/source 1)), 0, 'znapzendzetup enable-dst tank/source 1 - fails (no 1=>dst_1 there)');
-is(runCommand(qw(disable-dst tank/source 1)), 0, 'znapzendzetup disable-dst tank/source 1 - fails (no 1=>dst_1 there)');
-is(runCommand(qw(enable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails (no such dataset)');
-is(runCommand(qw(disable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails (no such dataset)');
+is (runCommand(qw(enable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup enable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
+is (runCommand(qw(disable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup disable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
+is (runCommand(qw(enable-dst tank/source 1)), 0, 'znapzendzetup enable-dst tank/source 1 - fails (no 1=>dst_1 there)');
+is (runCommand(qw(disable-dst tank/source 1)), 0, 'znapzendzetup disable-dst tank/source 1 - fails (no 1=>dst_1 there)');
+is (runCommand(qw(enable-dst tank/sourcemissing dst_whatever)), 0, 'znapzendzetup enable-dst tank/sourcemissing dst_whatever - fails (no such dataset)');
+is (runCommand(qw(disable-dst tank/sourcemissing dst_whatever)), 0, 'znapzendzetup disable-dst tank/sourcemissing dst_whatever - fails (no such dataset)');
+is (runCommand(qw(enable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails (bad arg list)');
+is (runCommand(qw(disable-dst tank/sourcemissing)), 0, 'znapzendzetup disable-dst tank/sourcemissing - fails (bad arg list)');
 
 # This one calls "zfs list -r" and then many times "zfs get"
 is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
