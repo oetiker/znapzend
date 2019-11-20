@@ -11,7 +11,8 @@ my %dataSets = (
     'tank/source'        => 'src',
     'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"; should also "get -s (local,)inherited" though
     'tank/source/child/grandchild'        => 'src-inherited',
-    'tank/source/dest-disabled' => 'src-inherited',
+    'tank/source/dest-disabled' => 'src-inherited', # TODO: mixed inherit/local bits of config are not supported ATM
+    'tank/dest-disabled' => 'src',
     'tank/anothersource'        => 'src',
     'tank/anothersource/anotherchild'        => 'src-inherited',
     'tank/anothersource/anotherchild/anewconfig'        => 'src',
@@ -23,7 +24,8 @@ my %dataSets = (
     'backup/destination/child' => 'dst', # TODO: dst-inherited
     'backup/destination/child/grandchild' => 'dst',
     'backup/destination/disabled' => 'dst-disabled',
-    'backup/destination/dest-disabled' => 'dst-disabled',
+    'backup/destination/dest-disabled' => 'dst-disabled', # TODO: mixed inherit/local bits of config are not supported ATM
+    'backup/dest-disabled' => 'dst-disabled',
     'remote'             => '',
     'remote/destination' => 'dst',
     'remote/destination/child' => 'dst',
@@ -57,8 +59,10 @@ sub find_attr_source {
         return 'default'; # Should not really be seen for our unconfigured datasets like pool roots etc
     }
 
-    if (($dataSets{"$srcname"} eq 'src-disabled') && defined($attr) && ($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
-        return 'local';
+    if (defined($attr) && ($dataSets{"$srcname"} eq 'src-disabled')) {
+        if (($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
+            return 'local';
+        }
     }
 
     if ($dataSets{"$srcname"} eq 'dst' || $dataSets{"$srcname"} eq 'dst-disabled') {
