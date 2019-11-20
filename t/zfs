@@ -161,14 +161,14 @@ ${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'${srcsuffix}
 ${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'${srcsuffix}
 ZFS_GET_END
 
-        if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
-            print <<"ZFS_GET_END";
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
+        print <<"ZFS_GET_END";
 ${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${srcsuffix}
 ZFS_GET_END
-        }
+    }
 
     if (defined ($dataSets{"backup/${dstname}${srcsuffix}"}) && $dataSets{"backup/${dstname}${srcsuffix}"} eq 'dst-disabled') {
-            print <<"ZFS_GET_END";
+        print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_enabled  off
 ZFS_GET_END
     }
