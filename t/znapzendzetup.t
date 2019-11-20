@@ -63,7 +63,14 @@ sub runCommand {
     @ARGV = @_;
 
     eval { main($mainOpt); };
-    return 0 if $@; # Presumably die() handler caught something
+
+    if ($@) {
+        # Presumably a die() handler caught something
+        print STDERR "EXCEPTION: " . $@ . "\n";
+        return 0;
+    };
+
+    # Return "true" if not failed :)
     1;
 }
 
