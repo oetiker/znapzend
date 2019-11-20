@@ -57,7 +57,7 @@ sub find_attr_source {
         return 'default'; # Should not really be seen for our unconfigured datasets like pool roots etc
     }
 
-    if (($dataSets{"$srcname"} eq 'src-disabled') && ($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
+    if (($dataSets{"$srcname"} eq 'src-disabled') && defined($attr) && ($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
         return 'local';
     }
 
