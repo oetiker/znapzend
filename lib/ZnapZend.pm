@@ -149,14 +149,18 @@ my $refreshBackupPlans = sub {
 
             #perform pre-send-command if any
             if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
-                # set env var for script to use
-                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
-                $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
+                if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+                    $self->zLog->info("Skipping pre-send-command for disabled destination " . $backupSet->{"dst_$key"});
+                } else {
+                    # set env var for script to use
+                    local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
+                    $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
 
-                system($backupSet->{"dst_$key" . '_precmd'})
-                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
-                # clean up env var
-                delete $ENV{WORKER};
+                    system($backupSet->{"dst_$key" . '_precmd'})
+                        && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+                    # clean up env var
+                    delete $ENV{WORKER};
+                }
             }
         }
     }
@@ -206,14 +210,18 @@ my $refreshBackupPlans = sub {
 
             #perform post-send-command if any
             if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
-                # set env var for script to use
-                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
-                $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
+                if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+                    $self->zLog->info("Skipping post-send-command for disabled destination " . $backupSet->{"dst_$key"});
+                } else {
+                    # set env var for script to use
+                    local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
+                    $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
 
-                system($backupSet->{"dst_$key" . '_pstcmd'})
-                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
-                # clean up env var
-                delete $ENV{WORKER};
+                    system($backupSet->{"dst_$key" . '_pstcmd'})
+                        && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+                    # clean up env var
+                    delete $ENV{WORKER};
+                }
             }
         }
     }
