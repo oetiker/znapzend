@@ -332,6 +332,18 @@ usage:
         # Real "zfs get" would show these.
         exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || ($ARGSTR =~ / -r /) );
 
+        # IRL the default actually depends on zpool 'listsnapshots' attribute;
+        # these tests assumed an 'off' behavior previously, so they do still.
+        my $listsnaps = 0;
+        if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
+            # Only list snapshots defined in the dataSets array if explicitly
+            # asked for (or its name is the explicit argument and no -1 below)
+            $listsnaps = 1;
+        } elsif ($ARGSTR =~ / -t\s*\S*(file|vol)/) {
+            # Type constraint specified, but snapshot not among those - forbid even if explicitly asked for
+            $listsnaps = -1;
+        }
+
         my $localattr = ($ARGSTR =~ / -s local/);
         my $inheritedattr = ($ARGSTR =~ / -s (local,|)inherited/);
 
@@ -385,7 +397,15 @@ usage:
                 } else {
                     $dstds = $srcds;
                 }
+                if ( ($srcds =~ /@/) && ($listsnaps < 0) ) {
+                    # The last argument is a snapshot and is expressly forbidden by '-t' args
+                    print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                    exit 1;
+                }
                 print_zfs_get ($prefix, $srcds, $dstds, $printSource);
+                if ($srcds =~ /@/) {
+                    exit; # Do not recurse for explicit snapshot arg
+                }
             }
 
             # Does the srcds (from prefix or defaulted) have any descendants?
@@ -401,6 +421,9 @@ usage:
                         || ($localattr && $dataSets{$childds} eq 'src')
                         || ($inheritedattr && $dataSets{$childds} eq 'src-inherited')
                     ) {
+                        if ( ($childds =~ /@/) && ($listsnaps < 1) ) {
+                            next;
+                        }
                         print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds, $printSource);
                     }
                 }
@@ -415,6 +438,11 @@ usage:
                     $dstds = "destination$1";
                 } else {
                     $dstds = $srcds;
+                }
+                if ( ($srcds =~ /@/) && ($listsnaps < 0) ) {
+                    # The last argument is a snapshot and is expressly forbidden by '-t' args
+                    print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                    exit 1;
                 }
                 print_zfs_get ($prefix, $srcds, $dstds, $printSource);
             }
