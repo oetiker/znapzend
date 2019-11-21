@@ -97,7 +97,7 @@ sub parseArguments {
         #catch post-command if any
         $state eq 'pst' && do {
             $backupSet{'dst_' . $key . '_pstcmd'} = $_;
-            $state = 'dst_enabled';
+            $state = '';
             next;
         };
         die "ERROR: dont know what to do with $_. check the syntax\n";
