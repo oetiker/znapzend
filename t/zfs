@@ -101,6 +101,8 @@ sub print_zfs_get {
     my $dstname = shift;
     my $printsrc = shift;
 
+#print STDERR "=== print_zfs_get() starting with: prefix='$prefix' srcname='$srcname' dstname='$dstname' printsrc='$printsrc'\n";
+
     if ( defined($prefix) ) {
         chomp $prefix;
         if (!defined($srcname) || $srcname eq '') { $srcname = $prefix; }
@@ -146,6 +148,10 @@ sub print_zfs_get {
     if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'}) ) {
         $dst0pstcmd = "/bin/false";
     }
+
+#print STDERR "=== Checking dataSets entry for 'backup/${dstname}' : "
+#    . ( defined($dataSets{"backup/${dstname}"}) ? $dataSets{"backup/${dstname}"} : 'UNDEF' )
+#    . "\n";
 
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
