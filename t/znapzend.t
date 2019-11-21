@@ -156,10 +156,26 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = undef;
 
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS');
+is (runCommand(qw(--inherited --runonce=tank/source/child --features=zfsGetType')),
+    1, 'znapzend --inherited --features=zfsGetType --runonce=tank/source/child succeeds with new ZFS');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     0, 'znapzend --features=zfsGetType --runonce=tank/source fails with old ZFS');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
+
+# Cover another codepath for ZFS that lists snapshots by default
+$ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} = '1';
+is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
+    1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS when it lists snapshots');
+is (runCommand(qw(--runonce=tank/source)),
+    1, 'znapzend --runonce=tank/source succeeds with new ZFS when it lists snapshots');
+is (runCommand(qw(--inherited --recursive --runonce=tank/source/child --features=zfsGetType')),
+    1, 'znapzend --inherited --recursive --features=zfsGetType --runonce=tank/source/child succeeds with new ZFS when it lists snapshots');
+$ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
+is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
+    0, 'znapzend --features=zfsGetType --runonce=tank/source fails with old ZFS when it lists snapshots');
+$ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
+$ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} = undef;
 
 # Do not test after daemonize, to avoid conflicts
 is (runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
