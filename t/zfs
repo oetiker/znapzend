@@ -223,7 +223,24 @@ for ($command){
             }
             exit;
         }
+
+        # IRL the default actually depends on zpool 'listsnapshots' attribute;
+        # these tests assumed an 'off' behavior previously, so they do still.
+        my $listsnaps = 0;
+        if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
+            # Only list snapshots defined in the dataSets array if explicitly
+            # asked for (or its name is the explicit argument and no -1 below)
+            $listsnaps = 1;
+        } elsif ($ARGSTR =~ / -t\s*\S*(file|vol)/) {
+            # Type constraint specified, but snapshot not among those - forbid even if explicitly asked for
+            $listsnaps = -1;
+        }
+
+#print STDERR "=== zfs list : listsnaps=$listsnaps\n";
+
         # If a dataset name was passed on CLI, show (or recurse) it
+        # NOTE: We do not handle so far requests here to show ONLY snapshots
+        #       The use-case for this ability from self-test is handled above
         if (defined($ARGV[-1])) {
             if (exists $dataSetsMissing{$ARGV[-1]}) {
                 print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
@@ -231,21 +248,40 @@ for ($command){
             }
             if (exists $dataSets{$ARGV[-1]}) {
                 my $srcds = $ARGV[-1];
-                if ($ARGSTR =~ / -r /) {
+#print STDERR "=== zfs list : srcds=$srcds\n";
+                if ($ARGSTR =~ / -r / && !($srcds =~ /@/) ) {
+                    # "Recursing a snapshot" is not illegal, but should
+                    # show just it - so done below
                     for my $childds (sort keys %dataSets){
+#print STDERR "=== zfs list : childds=$childds\n";
                         # Here a "child" concept includes the specified
                         # dataset too, unlike "zfs get" logic below
-                        if ( $childds =~ /^$srcds(\/|$)/ ) {
+                        if ( $childds =~ /@/ && $listsnaps < 1 ) {
+                            next;
+                        }
+                        if ( $childds =~ /^$srcds(\/|\@|$)/ ) {
                             print "$childds\n";
                         }
                     }
                 } else {
+                    # Non-recursive, print the requested dataset of any type
+                    # unless constrained by non-snapshots explicitly
+#print STDERR "=== zfs list : nonrecursive\n";
+                    if ( $srcds =~ /@/ && $listsnaps < 0 ) {
+                        print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                        exit 1;
+                    }
                     print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
                 }
                 exit;
             }
         }
+
+        # By default, list all known datasets (tank/* backup/* ...)
         for (sort keys %dataSets){
+            if ( $_ =~ /@/ && $listsnaps < 1 ) {
+                next;
+            }
             print "$_\n";
         }
         exit;
