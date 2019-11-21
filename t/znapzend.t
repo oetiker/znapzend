@@ -99,14 +99,14 @@ throws_ok { runCommand_canThrow(qw(--runonce=nosets) ) } qr/No backup set define
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1');
 is (runCommand(qw(--nodelay --runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1 and --nodelay (should ignore the plan setting)');
-undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = undef;
 
 # Try an invalid string, should ignore and proceed without a delay
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = ' qwe ';
 # TODO : Find a way to check stderr for qr/Option 'zend-delay' has an invalid value/
 is (runCommand(qw(--runonce=tank/source)),
     1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
-undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = undef;
 
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
