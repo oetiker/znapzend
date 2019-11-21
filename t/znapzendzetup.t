@@ -171,6 +171,17 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = '1';
 is (runCommand(qw(list)), 0, 'znapzendzetup list');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = undef;
 
+# Code-cover parsing of bad argument lists
+is (runCommand(), 0, 'znapzendzetup <no main opt> - fails');
+is (runCommand(qw(bogusMainOpt)), 0, 'znapzendzetup <bogus main opt> - fails');
+
+is (runCommand(qw(delete)), 0, 'znapzendzetup delete <no src arg> - fails');
+is (runCommand(qw(enable)), 0, 'znapzendzetup enable <no src arg> - fails');
+is (runCommand(qw(disable)), 0, 'znapzendzetup disable <no src arg> - fails');
+is (runCommand(qw(enable-dst)), 0, 'znapzendzetup enable-dst <no src arg> <no dst arg> - fails');
+is (runCommand(qw(disable-dst)), 0, 'znapzendzetup disable-dst <no src arg> <no dst arg> - fails');
+is (runCommand(qw(export)), 0, 'znapzendzetup export <no src arg> - fails');
+
 done_testing;
 
 1;
