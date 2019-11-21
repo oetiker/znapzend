@@ -227,6 +227,11 @@ for ($command){
         # IRL the default actually depends on zpool 'listsnapshots' attribute;
         # these tests assumed an 'off' behavior previously, so they do still.
         my $listsnaps = 0;
+        if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
+            if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
+                $listsnaps = 1;
+            }
+        }
         if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
             # Only list snapshots defined in the dataSets array if explicitly
             # asked for (or its name is the explicit argument and no -1 below)
@@ -335,6 +340,11 @@ usage:
         # IRL the default actually depends on zpool 'listsnapshots' attribute;
         # these tests assumed an 'off' behavior previously, so they do still.
         my $listsnaps = 0;
+        if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
+            if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
+                $listsnaps = 1;
+            }
+        }
         if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
             # Only list snapshots defined in the dataSets array if explicitly
             # asked for (or its name is the explicit argument and no -1 below)
