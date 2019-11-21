@@ -201,6 +201,10 @@ print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 
 my $command = shift @ARGV or exit 1;
 
+# Some parsers below peek into overall string to see if certain flag
+# combos are provided. Note the leading space for simpler matchers.
+my $ARGSTR = join(" ", '', @ARGV);
+
 for ($command){
     /^(?:set|inherit|send|recv|create)$/ && do {
         if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
@@ -250,7 +254,7 @@ for ($command){
             }
             if (exists $dataSets{$ARGV[-1]}) {
                 my $srcds = $ARGV[-1];
-                if (join(" ", @ARGV) =~ / -r /) {
+                if ($ARGSTR =~ / -r /) {
                     for my $childds (sort keys %dataSets){
                         # Here a "child" concept includes the specified
                         # dataset too, unlike "zfs get" logic below
@@ -283,12 +287,12 @@ for ($command){
 
     /^get$/ && do {
         #if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
-        if ( join(" ", @ARGV) =~ /usedbysnapshots/ ){
+        if ( $ARGSTR =~ /usedbysnapshots/ ){
             print "10G\n";
             exit;
         }
 
-#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
 #    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
 
         if (defined($ARGV[-1]) && exists $dataSetsMissing{$ARGV[-1]}) {
@@ -296,20 +300,33 @@ for ($command){
             exit 1;
         }
 
+        # Note: illumos zfs as of 2019 and some years before allows
+        # `zfs get -t filesystem,volume ...` (and can list snapshot
+        # props otherwise) but Sol 10 did not
+        if ( ($ARGSTR =~ / -t / ) && (defined $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'}) ) {
+            # Report like Solaris 10 did
+            print STDERR "invalid option 't'
+usage:
+        get [-rHp] [-d max] [-o \"all\" | field[,...]] [-s source[,...]]
+            <\"all\" | property[,...]> [filesystem|volume|snapshot] ...
+\n";
+            exit 2;
+        }
+
         # Note: In this line and in selections below we explicitly
         # but somewhat artificially rule out displaying datasets
         # under "backup" that are a pool root and destinations.
         # Real "zfs get" would show these.
-        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || ($ARGSTR =~ / -r /) );
 
-        my $localattr = (join(" ", @ARGV) =~ / -s local/);
-        my $inheritedattr = (join(" ", @ARGV) =~ / -s (local,|)inherited/);
+        my $localattr = ($ARGSTR =~ / -s local/);
+        my $inheritedattr = ($ARGSTR =~ / -s (local,|)inherited/);
 
         my $prefix = "";
         my $srcds = "";
         my $srcdsOrig = "";
         my $printSource = 0;
-        if ( join(" ", @ARGV) =~ /name,property,value,source/ ) {
+        if ( $ARGSTR =~ /name,property,value,source/ ) {
             $printSource = 1;
         }
 
@@ -320,7 +337,7 @@ for ($command){
             $srcds = "tank";
         }
 
-        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+        if ( $ARGSTR =~ /name,property,value/ ) {
             # The request we do when recursively looking for dataset props
             # Asked to print a prefix
             $prefix = "$srcds";
@@ -331,10 +348,10 @@ for ($command){
         # the dataset in CLI args *must* be one from the array, otherwise
         # the mockup treats it as a random `zfs` option and ignores it.
         if (
-            (join(" ", @ARGV) =~ / -r / && $srcds ne '')
+            ($ARGSTR =~ / -r / && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs get : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
