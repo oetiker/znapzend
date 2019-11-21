@@ -124,6 +124,8 @@ is (runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst t
 is (runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
 is (runCommand(qw(enable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
 is (runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup disable-dst tank/source 0 - succeeds (0=>dst_0)');
+is (runCommand(qw(enable-dst tank/dest-disabled dst_0)), 1, 'znapzendzetup enable-dst tank/dest-disabled dst_0 - succeeds (processing codepath with dst_0_enabled present in zfs args)');
+is (runCommand(qw(disable-dst tank/dest-disabled dst_0)), 1, 'znapzendzetup disable-dst tank/dest-disabled dst_0 - succeeds (processing codepath with dst_0_enabled present in zfs args)');
 
 # Destination-management fails for a number of expected reasons
 is (runCommand(qw(enable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup enable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
