@@ -162,9 +162,10 @@ $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     0, 'znapzend --features=zfsGetType --runonce=tank/source fails with old ZFS');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
+undef $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'};
 
 # Cover another codepath for ZFS that lists snapshots by default
-$ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} = '1';
+$ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} = 'on';
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS when it lists snapshots');
 is (runCommand(qw(--runonce=tank/source)),
