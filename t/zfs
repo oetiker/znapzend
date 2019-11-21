@@ -11,6 +11,7 @@ my %dataSets = (
     'tank/source'        => 'src',
     'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"; should also "get -s (local,)inherited" though
     'tank/source/child/grandchild'        => 'src-inherited',
+    'tank/source/child/grandchild@znapzend-auto-2019-11-15T10:30:00Z'        => 'src-inherited', # Not sure if snapshots can have 'local' attrs. I do see 'default', '-' (which is effectively its local metadata) and 'inherited' in practice.
     'tank/anothersource'        => 'src',
     'tank/anothersource/anotherchild'        => 'src-inherited',
     'tank/anothersource/anotherchild/anewconfig'        => 'src',
@@ -138,19 +139,25 @@ sub print_zfs_get {
         $dst0pstcmd = "/bin/false";
     }
 
+    # For snapshots, truncate the "@snapname" to get the datasets
+    my $srcdsname = $srcname;
+    my $dstdsname = $dstname;
+    $srcdsname =~ s/@.*$// ;
+    $dstdsname =~ s/@.*$// ;
+
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
 ${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}${srcsuffix}
 ${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}${srcsuffix}
 ${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds${srcsuffix}
 ${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes${srcsuffix}
-${prefix}org.znapzend:src            ${srcname}${srcsuffix}
+${prefix}org.znapzend:src            ${srcdsname}${srcsuffix}
 ${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds${srcsuffix}
 ${prefix}org.znapzend:recursive      on${srcsuffix}
 ${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S${srcsuffix}
 ${prefix}org.znapzend:enabled        ${srcenabled}${srcenabledsuffix}
-${prefix}org.znapzend:dst_0          backup/${dstname}${srcsuffix}
-${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}${srcsuffix}
+${prefix}org.znapzend:dst_0          backup/${dstdsname}${srcsuffix}
+${prefix}org.znapzend:dst_a          root\@remote:remote/${dstdsname}${srcsuffix}
 ${prefix}org.znapzend:dst_fail       backup/destfail${srcsuffix}
 ${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337${srcsuffix}
 ${prefix}org.znapzend:mbuffer_size   100M${srcsuffix}
