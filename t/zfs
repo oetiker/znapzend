@@ -117,6 +117,8 @@ sub print_zfs_get {
     if (!defined($dstname) || $dstname eq '') {
         if ($prefix eq 'tank/source' || $prefix eq '') {
             $dstname = 'destination';
+        } elsif ($prefix eq 'tank/dest-disabled') {
+            $dstname = 'dest-disabled';
         } else {
             $dstname = 'destination/' . $prefix;
         }
@@ -341,8 +343,11 @@ for ($command){
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
             ) {
                 my $dstds;
+                # TODO: Rectify use of specially handled dataset names
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
+                } elsif ($srcds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                    $dstds = "dest-disabled$1";
                 } else {
                     $dstds = $srcds;
                 }
@@ -353,8 +358,11 @@ for ($command){
             for my $childds (sort(keys %dataSets)) {
                 if ( $childds =~ /^$srcds\// ) {
                     my $dstds;
+                    # TODO: Rectify use of specially handled dataset names
                     if ($childds =~ /^tank\/source($|\/.*$)/ ) {
                         $dstds = "destination$1";
+                    } elsif ($childds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                        $dstds = "dest-disabled$1";
                     } else {
                         $dstds = $childds;
                     }
@@ -372,8 +380,11 @@ for ($command){
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
             ) {
                 my $dstds;
+                # TODO: Rectify use of specially handled dataset names
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
+                } elsif ($srcds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                    $dstds = "dest-disabled$1";
                 } else {
                     $dstds = $srcds;
                 }
