@@ -582,6 +582,7 @@ sub getDataSetProperties {
     my %cachedInheritance; # Cache datasets that we know to define znapzend attrs (if inherit mode is used)
     for my $listElem (@list){
         print STDERR "=== getDataSetProperties(): Looking under '$listElem' with "
+            . "zfsGetType='" . $self->zfsGetType . "', "
             . "'$recurse' recursion mode and '$inherit' inheritance mode\n"
             if $self->debug;
         my %properties;

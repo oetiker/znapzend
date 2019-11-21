@@ -11,6 +11,7 @@ my %dataSets = (
     'tank/source'        => 'src',
     'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"; should also "get -s (local,)inherited" though
     'tank/source/child/grandchild'        => 'src-inherited',
+    'tank/source/child/grandchild@znapzend-auto-2019-11-15T10:30:00Z'        => 'src-inherited', # Not sure if snapshots can have 'local' attrs. I do see 'default', '-' (which is effectively its local metadata) and 'inherited' in practice.
     'tank/anothersource'        => 'src',
     'tank/anothersource/anotherchild'        => 'src-inherited',
     'tank/anothersource/anotherchild/anewconfig'        => 'src',
@@ -138,19 +139,25 @@ sub print_zfs_get {
         $dst0pstcmd = "/bin/false";
     }
 
+    # For snapshots, truncate the "@snapname" to get the datasets
+    my $srcdsname = $srcname;
+    my $dstdsname = $dstname;
+    $srcdsname =~ s/@.*$// ;
+    $dstdsname =~ s/@.*$// ;
+
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
 ${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}${srcsuffix}
 ${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}${srcsuffix}
 ${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds${srcsuffix}
 ${prefix}org.znapzend:dst_fail_plan  1hours=>1minutes${srcsuffix}
-${prefix}org.znapzend:src            ${srcname}${srcsuffix}
+${prefix}org.znapzend:src            ${srcdsname}${srcsuffix}
 ${prefix}org.znapzend:src_plan       1hours=>10minutes,30minutes=>5minutes,1minutes=>6seconds${srcsuffix}
 ${prefix}org.znapzend:recursive      on${srcsuffix}
 ${prefix}org.znapzend:tsformat       %Y-%m-%d-%H%M%S${srcsuffix}
 ${prefix}org.znapzend:enabled        ${srcenabled}${srcenabledsuffix}
-${prefix}org.znapzend:dst_0          backup/${dstname}${srcsuffix}
-${prefix}org.znapzend:dst_a          root\@remote:remote/${dstname}${srcsuffix}
+${prefix}org.znapzend:dst_0          backup/${dstdsname}${srcsuffix}
+${prefix}org.znapzend:dst_a          root\@remote:remote/${dstdsname}${srcsuffix}
 ${prefix}org.znapzend:dst_fail       backup/destfail${srcsuffix}
 ${prefix}org.znapzend:mbuffer        $FindBin::Bin/mbuffer:31337${srcsuffix}
 ${prefix}org.znapzend:mbuffer_size   100M${srcsuffix}
@@ -170,6 +177,10 @@ ZFS_GET_END
 print STDERR '# zfs ' . join(' ', @ARGV) . "\n";
 
 my $command = shift @ARGV or exit 1;
+
+# Some parsers below peek into overall string to see if certain flag
+# combos are provided. Note the leading space for simpler matchers.
+my $ARGSTR = join(" ", '', @ARGV);
 
 for ($command){
     /^(?:set|inherit|send|recv|create)$/ && do {
@@ -212,7 +223,24 @@ for ($command){
             }
             exit;
         }
+
+        # IRL the default actually depends on zpool 'listsnapshots' attribute;
+        # these tests assumed an 'off' behavior previously, so they do still.
+        my $listsnaps = 0;
+        if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
+            # Only list snapshots defined in the dataSets array if explicitly
+            # asked for (or its name is the explicit argument and no -1 below)
+            $listsnaps = 1;
+        } elsif ($ARGSTR =~ / -t\s*\S*(file|vol)/) {
+            # Type constraint specified, but snapshot not among those - forbid even if explicitly asked for
+            $listsnaps = -1;
+        }
+
+#print STDERR "=== zfs list : listsnaps=$listsnaps\n";
+
         # If a dataset name was passed on CLI, show (or recurse) it
+        # NOTE: We do not handle so far requests here to show ONLY snapshots
+        #       The use-case for this ability from self-test is handled above
         if (defined($ARGV[-1])) {
             if (exists $dataSetsMissing{$ARGV[-1]}) {
                 print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
@@ -220,21 +248,40 @@ for ($command){
             }
             if (exists $dataSets{$ARGV[-1]}) {
                 my $srcds = $ARGV[-1];
-                if (join(" ", @ARGV) =~ / -r /) {
+#print STDERR "=== zfs list : srcds=$srcds\n";
+                if ($ARGSTR =~ / -r / && !($srcds =~ /@/) ) {
+                    # "Recursing a snapshot" is not illegal, but should
+                    # show just it - so done below
                     for my $childds (sort keys %dataSets){
+#print STDERR "=== zfs list : childds=$childds\n";
                         # Here a "child" concept includes the specified
                         # dataset too, unlike "zfs get" logic below
-                        if ( $childds =~ /^$srcds(\/|$)/ ) {
+                        if ( $childds =~ /@/ && $listsnaps < 1 ) {
+                            next;
+                        }
+                        if ( $childds =~ /^$srcds(\/|\@|$)/ ) {
                             print "$childds\n";
                         }
                     }
                 } else {
+                    # Non-recursive, print the requested dataset of any type
+                    # unless constrained by non-snapshots explicitly
+#print STDERR "=== zfs list : nonrecursive\n";
+                    if ( $srcds =~ /@/ && $listsnaps < 0 ) {
+                        print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                        exit 1;
+                    }
                     print "$srcds\n" if grep { $srcds eq $_ } keys %dataSets;
                 }
                 exit;
             }
         }
+
+        # By default, list all known datasets (tank/* backup/* ...)
         for (sort keys %dataSets){
+            if ( $_ =~ /@/ && $listsnaps < 1 ) {
+                next;
+            }
             print "$_\n";
         }
         exit;
@@ -253,12 +300,12 @@ for ($command){
 
     /^get$/ && do {
         #if ($ARGV[6] && $ARGV[6] eq 'usedbysnapshots'){
-        if ( join(" ", @ARGV) =~ /usedbysnapshots/ ){
+        if ( $ARGSTR =~ /usedbysnapshots/ ){
             print "10G\n";
             exit;
         }
 
-#print STDERR "=== zfs : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
 #    . " ARG='$ARGV[-1]' tabledata='$dataSets{$ARGV[-1]}'\n" ;
 
         if (defined($ARGV[-1]) && exists $dataSetsMissing{$ARGV[-1]}) {
@@ -269,7 +316,7 @@ for ($command){
         # Note: illumos zfs as of 2019 and some years before allows
         # `zfs get -t filesystem,volume ...` (and can list snapshot
         # props otherwise) but Sol 10 did not
-        if ( (join(" ", @ARGV) =~ / -t / ) && (defined $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'}) ) {
+        if ( ($ARGSTR =~ / -t / ) && (defined $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'}) ) {
             # Report like Solaris 10 did
             print STDERR "invalid option 't'
 usage:
@@ -283,16 +330,28 @@ usage:
         # but somewhat artificially rule out displaying datasets
         # under "backup" that are a pool root and destinations.
         # Real "zfs get" would show these.
-        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || ($ARGSTR =~ / -r /) );
 
-        my $localattr = (join(" ", @ARGV) =~ / -s local/);
-        my $inheritedattr = (join(" ", @ARGV) =~ / -s (local,|)inherited/);
+        # IRL the default actually depends on zpool 'listsnapshots' attribute;
+        # these tests assumed an 'off' behavior previously, so they do still.
+        my $listsnaps = 0;
+        if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
+            # Only list snapshots defined in the dataSets array if explicitly
+            # asked for (or its name is the explicit argument and no -1 below)
+            $listsnaps = 1;
+        } elsif ($ARGSTR =~ / -t\s*\S*(file|vol)/) {
+            # Type constraint specified, but snapshot not among those - forbid even if explicitly asked for
+            $listsnaps = -1;
+        }
+
+        my $localattr = ($ARGSTR =~ / -s local/);
+        my $inheritedattr = ($ARGSTR =~ / -s (local,|)inherited/);
 
         my $prefix = "";
         my $srcds = "";
         my $srcdsOrig = "";
         my $printSource = 0;
-        if ( join(" ", @ARGV) =~ /name,property,value,source/ ) {
+        if ( $ARGSTR =~ /name,property,value,source/ ) {
             $printSource = 1;
         }
 
@@ -303,7 +362,7 @@ usage:
             $srcds = "tank";
         }
 
-        if ( join(" ", @ARGV) =~ /name,property,value/ ) {
+        if ( $ARGSTR =~ /name,property,value/ ) {
             # The request we do when recursively looking for dataset props
             # Asked to print a prefix
             $prefix = "$srcds";
@@ -314,10 +373,10 @@ usage:
         # the dataset in CLI args *must* be one from the array, otherwise
         # the mockup treats it as a random `zfs` option and ignores it.
         if (
-            (join(" ", @ARGV) =~ / -r / && $srcds ne '')
+            ($ARGSTR =~ / -r / && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs get : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
@@ -338,7 +397,15 @@ usage:
                 } else {
                     $dstds = $srcds;
                 }
+                if ( ($srcds =~ /@/) && ($listsnaps < 0) ) {
+                    # The last argument is a snapshot and is expressly forbidden by '-t' args
+                    print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                    exit 1;
+                }
                 print_zfs_get ($prefix, $srcds, $dstds, $printSource);
+                if ($srcds =~ /@/) {
+                    exit; # Do not recurse for explicit snapshot arg
+                }
             }
 
             # Does the srcds (from prefix or defaulted) have any descendants?
@@ -354,6 +421,9 @@ usage:
                         || ($localattr && $dataSets{$childds} eq 'src')
                         || ($inheritedattr && $dataSets{$childds} eq 'src-inherited')
                     ) {
+                        if ( ($childds =~ /@/) && ($listsnaps < 1) ) {
+                            next;
+                        }
                         print_zfs_get ( ($prefix eq '') ? '' : $childds, $childds, $dstds, $printSource);
                     }
                 }
@@ -368,6 +438,11 @@ usage:
                     $dstds = "destination$1";
                 } else {
                     $dstds = $srcds;
+                }
+                if ( ($srcds =~ /@/) && ($listsnaps < 0) ) {
+                    # The last argument is a snapshot and is expressly forbidden by '-t' args
+                    print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
+                    exit 1;
                 }
                 print_zfs_get ($prefix, $srcds, $dstds, $printSource);
             }
