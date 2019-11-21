@@ -52,6 +52,7 @@ has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
                           rootExec => $self->rootExec, timeWarp => $self->timeWarp,
+                          zfsGetType => $self->zfsGetType,
                           zLog => $self->zLog);
 };
 
