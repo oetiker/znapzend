@@ -348,7 +348,16 @@ sub enableBackupSetDst {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
                 $dest = 'dst_' . $dest;
+            } elsif ($dest =~ /^DST:/) {
+                my $desttemp = $dest;
+                $desttemp =~ s/^DST:// ;
+                if ($cfg{'dst_' . $desttemp}) {
+                    # User passed valid key of the destination config,
+                    # convert to zfs attribute/perl struct name part
+                    $dest = 'dst_' . $desttemp;
+                }
             }
+            # TODO: Else search by value of 'dst_N' as a "(remote@)dataset"
         }
 
         if ($cfg{$dest}) {
@@ -388,7 +397,16 @@ sub disableBackupSetDst {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
                 $dest = 'dst_' . $dest;
+            } elsif ($dest =~ /^DST:/) {
+                my $desttemp = $dest;
+                $desttemp =~ s/^DST:// ;
+                if ($cfg{'dst_' . $desttemp}) {
+                    # User passed valid key of the destination config,
+                    # convert to zfs attribute/perl struct name part
+                    $dest = 'dst_' . $desttemp;
+                }
             }
+            # TODO: Else search by value of 'dst_N' as a "(remote@)dataset"
         }
 
         if ($cfg{$dest}) {
