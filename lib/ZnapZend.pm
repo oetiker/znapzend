@@ -111,16 +111,19 @@ my $killThemAll = sub {
 
     Mojo::IOLoop->reset;
 
-    for my $backupSet (@{$self->backupSets}){
-        kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
-        kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
-    }
-    sleep 1;
-    for my $backupSet (@{$self->backupSets}){
-        waitpid($backupSet->{snap_pid}, WNOHANG)
-            || kill(SIGKILL, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
-        waitpid($backupSet->{send_pid}, WNOHANG)
-            || kill(SIGKILL, $backupSet->{send_pid}) if $backupSet->{send_pid};
+    # Avoid "dereferencing" a value and type of $self->backupSets that is not an array object
+    if (defined($self->backupSets) && $self->backupSets ne '0' && $self->backupSets != 0) {
+        for my $backupSet (@{$self->backupSets}){
+            kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
+            kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
+        }
+        sleep 1;
+        for my $backupSet (@{$self->backupSets}){
+            waitpid($backupSet->{snap_pid}, WNOHANG)
+                || kill(SIGKILL, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
+            waitpid($backupSet->{send_pid}, WNOHANG)
+                || kill(SIGKILL, $backupSet->{send_pid}) if $backupSet->{send_pid};
+        }
     }
 
     $self->zLog->info("znapzend (PID=$$) terminated.");
