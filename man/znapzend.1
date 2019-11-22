@@ -229,7 +229,8 @@ of local significance while making an unscheduled backup.
 This option is not valid if the run-once mode is not requested.
 .Sp
 While basic sanity checks are done, it is up to the caller to specify a
-correct string value according to the rules of their \s-1ZFS\s0 version.
+correct string value according to the rules of their \s-1ZFS\s0 version, and to
+take care that it is unique (no snapshots with such suffix already exist).
 .IP "\fB\-r\fR, \fB\-\-recursive\fR" 4
 .IX Item "-r, --recursive"
 when backing up a particular dataset with \fB\-\-runonce\fR=[\fIdataset\fR], do not

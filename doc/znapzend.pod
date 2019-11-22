@@ -100,7 +100,8 @@ of local significance while making an unscheduled backup.
 This option is not valid if the run-once mode is not requested.
 
 While basic sanity checks are done, it is up to the caller to specify a
-correct string value according to the rules of their ZFS version.
+correct string value according to the rules of their ZFS version, and to
+take care that it is unique (no snapshots with such suffix already exist).
 
 =item B<-r>, B<--recursive>
 
