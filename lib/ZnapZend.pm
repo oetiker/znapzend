@@ -136,8 +136,8 @@ my $refreshBackupPlans = sub {
     my $dataSet = shift;
 
     $self->zLog->info('refreshing backup plans' .
-	    (defined($dataSet) ? ' for dataset "' . $dataSet . '"' : '') .
-	    ' ...');
+        (defined($dataSet) ? ' for dataset "' . $dataSet . '"' : '') .
+        ' ...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $inherit, $dataSet));
 
     ($self->backupSets && @{$self->backupSets})
@@ -151,14 +151,18 @@ my $refreshBackupPlans = sub {
 
             #perform pre-send-command if any
             if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){
-                # set env var for script to use
-                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
-                $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
+                if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+                    $self->zLog->info("Skipping pre-send-command for disabled destination " . $backupSet->{"dst_$key"});
+                } else {
+                    # set env var for script to use
+                    local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
+                    $self->zLog->info("running pre-send-command for " . $backupSet->{"dst_$key"});
 
-                system($backupSet->{"dst_$key" . '_precmd'})
-                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
-                # clean up env var
-                delete $ENV{WORKER};
+                    system($backupSet->{"dst_$key" . '_precmd'})
+                        && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_precmd'} . "\' failed");
+                    # clean up env var
+                    delete $ENV{WORKER};
+                }
             }
         }
     }
@@ -208,14 +212,18 @@ my $refreshBackupPlans = sub {
 
             #perform post-send-command if any
             if ($backupSet->{"dst_$key" . '_pstcmd'} && $backupSet->{"dst_$key" . '_pstcmd'} ne 'off'){
-                # set env var for script to use
-                local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
-                $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
+                if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+                    $self->zLog->info("Skipping post-send-command for disabled destination " . $backupSet->{"dst_$key"});
+                } else {
+                    # set env var for script to use
+                    local $ENV{WORKER} = $backupSet->{"dst_$key"} . '-refresh';
+                    $self->zLog->info("running post-send-command for " . $backupSet->{"dst_$key"});
 
-                system($backupSet->{"dst_$key" . '_pstcmd'})
-                    && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
-                # clean up env var
-                delete $ENV{WORKER};
+                    system($backupSet->{"dst_$key" . '_pstcmd'})
+                        && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
+                    # clean up env var
+                    delete $ENV{WORKER};
+                }
             }
         }
     }
@@ -231,14 +239,14 @@ my $sendRecvCleanup = sub {
 
     if ($self->nodelay && $backupSet->{zend_delay}) {
         warn "CLI option --nodelay was requested, so ignoring backup plan option 'zend-delay' (was $backupSet->{zend_delay}) on backupSet $backupSet->{src}";
-        undef $backupSet->{zend_delay};
+        $backupSet->{zend_delay} = undef;
     }
 
-    if ($backupSet->{zend_delay}) {
+    if (defined($backupSet->{zend_delay})) {
         chomp $backupSet->{zend_delay};
         if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
-            warn "Backup plan option 'zend-delay' has an invalid value (not a number) on backupSet $backupSet->{src}, ignored";
-            undef $backupSet->{zend_delay};
+            warn "Backup plan option 'zend-delay' has an invalid value ('$backupSet->{zend_delay}' is not a number) on backupSet $backupSet->{src}, ignored";
+            $backupSet->{zend_delay} = undef;
         } else {
             if($backupSet->{zend_delay} > 0) {
                 $self->zLog->info("waiting $backupSet->{zend_delay} seconds before sending snaps on backupSet $backupSet->{src}...");
@@ -262,6 +270,17 @@ my $sendRecvCleanup = sub {
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
         my $thisSendFailed = 0; # Track if we don't want THIS destination cleaned up
+
+        #allow users to disable some destinations (e.g. reserved/templated
+        #backup plan config items, or known broken targets) without deleting
+        #them outright. Note it is likely that the common (automatic) snapshots
+        #between source and that destination would disappear over time, making
+        #incremental sync impossible at some point in the future.
+        if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
+            $self->zLog->info("Skipping disabled destination " . $backupSet->{"dst_$key"}
+                . ". Note that you would likely need to recreate the backup data tree there");
+            next;
+        }
 
         #check destination for pre-send-command
         if ($backupSet->{"dst_$key" . '_precmd'} && $backupSet->{"dst_$key" . '_precmd'} ne 'off'){

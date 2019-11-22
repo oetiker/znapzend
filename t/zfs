@@ -12,6 +12,8 @@ my %dataSets = (
     'tank/source/child'        => 'src-inherited', # Should "list" but not "get -s local"; should also "get -s (local,)inherited" though
     'tank/source/child/grandchild'        => 'src-inherited',
     'tank/source/child/grandchild@znapzend-auto-2019-11-15T10:30:00Z'        => 'src-inherited', # Not sure if snapshots can have 'local' attrs. I do see 'default', '-' (which is effectively its local metadata) and 'inherited' in practice.
+#    'tank/source/dest-disabled' => 'src-inherited', # TODO: mixed inherit/local bits of config are not supported ATM
+    'tank/dest-disabled' => 'src',
     'tank/anothersource'        => 'src',
     'tank/anothersource/anotherchild'        => 'src-inherited',
     'tank/anothersource/anotherchild/anewconfig'        => 'src',
@@ -22,6 +24,9 @@ my %dataSets = (
     'backup/destination' => 'dst',
     'backup/destination/child' => 'dst', # TODO: dst-inherited
     'backup/destination/child/grandchild' => 'dst',
+    'backup/destination/disabled' => 'dst-disabled',
+#    'backup/destination/dest-disabled' => 'dst-disabled', # TODO: mixed inherit/local bits of config are not supported ATM
+    'backup/dest-disabled' => 'dst-disabled',
     'remote'             => '',
     'remote/destination' => 'dst',
     'remote/destination/child' => 'dst',
@@ -32,6 +37,16 @@ my %dataSets = (
 # dataset name from tests, but points to failure codepath
 my %dataSetsMissing = (
     'missingpool'        => 'fail'
+);
+
+# Our calls to "zfs get" from production code triggered by
+# self-tests only use a limited amount of combinations of
+# real ZFS keywords and maybe dataset names from the array
+# above or not in it at all. This array helps differentiate
+# a good keyword vs bad dataset name as last CLI argument.
+# Keys matter, values ignored ATM
+my %zfs_get_keywords = (
+    'all'                => 1,
 );
 
 sub find_attr_source {
@@ -55,11 +70,13 @@ sub find_attr_source {
         return 'default'; # Should not really be seen for our unconfigured datasets like pool roots etc
     }
 
-    if (($dataSets{"$srcname"} eq 'src-disabled') && $attr eq 'enabled') {
-        return 'local';
+    if (defined($attr) && ($dataSets{"$srcname"} eq 'src-disabled')) {
+        if (($attr eq 'enabled') || ($attr eq 'dst_0_enabled')) {
+            return 'local';
+        }
     }
 
-    if ($dataSets{"$srcname"} eq 'dst') {
+    if ($dataSets{"$srcname"} eq 'dst' || $dataSets{"$srcname"} eq 'dst-disabled') {
         return 'received';
     }
 
@@ -95,6 +112,8 @@ sub print_zfs_get {
     my $dstname = shift;
     my $printsrc = shift;
 
+#print STDERR "=== print_zfs_get() starting with: prefix='$prefix' srcname='$srcname' dstname='$dstname' printsrc='$printsrc'\n";
+
     if ( defined($prefix) ) {
         chomp $prefix;
         if (!defined($srcname) || $srcname eq '') { $srcname = $prefix; }
@@ -109,6 +128,8 @@ sub print_zfs_get {
     if (!defined($dstname) || $dstname eq '') {
         if ($prefix eq 'tank/source' || $prefix eq '') {
             $dstname = 'destination';
+        } elsif ($prefix eq 'tank/dest-disabled') {
+            $dstname = 'dest-disabled';
         } else {
             $dstname = 'destination/' . $prefix;
         }
@@ -125,9 +146,11 @@ sub print_zfs_get {
 
     my $srcsuffix = "";
     my $srcenabledsuffix = "";
+    my $srcenabledsuffix_0 = "";
     if ($printsrc) {
         $srcsuffix = "\t" . find_attr_source($srcname, '');
         $srcenabledsuffix = "\t" . find_attr_source($srcname, 'enabled');
+        $srcenabledsuffix_0 = "\t" . find_attr_source($srcname, 'dst_0_enabled');
     }
 
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
@@ -144,6 +167,10 @@ sub print_zfs_get {
     my $dstdsname = $dstname;
     $srcdsname =~ s/@.*$// ;
     $dstdsname =~ s/@.*$// ;
+
+#print STDERR "=== Checking dataSets entry for 'backup/${dstdsname}' : "
+#    . ( defined($dataSets{"backup/${dstdsname}"}) ? $dataSets{"backup/${dstdsname}"} : 'UNDEF' )
+#    . "\n";
 
     print <<"ZFS_GET_END";
 ${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
@@ -165,11 +192,17 @@ ${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'${srcsuffix}
 ${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'${srcsuffix}
 ZFS_GET_END
 
-        if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
-            print <<"ZFS_GET_END";
+    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
+        print <<"ZFS_GET_END";
 ${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${srcsuffix}
 ZFS_GET_END
-        }
+    }
+
+    if (defined ($dataSets{"backup/${dstname}"}) && $dataSets{"backup/${dstname}"} eq 'dst-disabled') {
+        print <<"ZFS_GET_END";
+${prefix}org.znapzend:dst_0_enabled  off${srcenabledsuffix_0}
+ZFS_GET_END
+    }
 
 } # end of print_zfs_get()
 
@@ -230,7 +263,10 @@ for ($command){
         if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
             if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
                 $listsnaps = 1;
+            } elsif ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'off') {
+                $listsnaps = 0;
             }
+
         }
         if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
             # Only list snapshots defined in the dataSets array if explicitly
@@ -343,6 +379,8 @@ usage:
         if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
             if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
                 $listsnaps = 1;
+            } elsif ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'off') {
+                $listsnaps = 0;
             }
         }
         if ($ARGSTR =~ / -t\s*\S*(snap|all)/) {
@@ -356,6 +394,7 @@ usage:
 
         my $localattr = ($ARGSTR =~ / -s local/);
         my $inheritedattr = ($ARGSTR =~ / -s (local,|)inherited/);
+        my $recursive = ($ARGSTR =~ / -r /);
 
         my $prefix = "";
         my $srcds = "";
@@ -365,11 +404,33 @@ usage:
             $printSource = 1;
         }
 
+        # Note: In this line and in selections below we explicitly
+        # but somewhat artificially rule out displaying datasets
+        # under "backup" that are a pool root and destinations.
+        # Real "zfs get" would show these.
+###LEGACY###        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+### survive if recursive (any dataset value, maybe unspecified or not in array)
+### survive if last arg is in array and has an 'src.*' value
+### exit otherwise
+### subsequent legacy logic below was to use last arg as srcds if defined and in array, otherwise used 'tank' (no forcing of recursive flag)
+###NEW###
+### if last arg is in array, try to use it
+### + if it is NOT 'src.*' and we are NOT recursing, exit
+### if last arg not in array (and not a "real" arg, list of these is matching tests), fall back to recursing from 'tank' (real ZFS would show all datasets)
         if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
             $srcdsOrig = $srcds;
+            if ( !($dataSets{$srcds} =~ /^src/) && !$recursive ) {
+                exit;
+            }
         } else {
+            if (defined($ARGV[-1]) && (!exists ($zfs_get_keywords{$ARGV[-1]}))) {
+                # The last arg was not one of keywords we pass from tested code for dataset-less calls
+                print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+                exit 1;
+            }
             $srcds = "tank";
+            $recursive = 1;
         }
 
         if ( $ARGSTR =~ /name,property,value/ ) {
@@ -383,10 +444,10 @@ usage:
         # the dataset in CLI args *must* be one from the array, otherwise
         # the mockup treats it as a random `zfs` option and ignores it.
         if (
-            ($ARGSTR =~ / -r / && $srcds ne '')
+            ($recursive && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs get : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . ($recursive ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
@@ -402,8 +463,11 @@ usage:
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
             ) {
                 my $dstds;
+                # TODO: Rectify use of specially handled dataset names
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
+                } elsif ($srcds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                    $dstds = "dest-disabled$1";
                 } else {
                     $dstds = $srcds;
                 }
@@ -422,8 +486,11 @@ usage:
             for my $childds (sort(keys %dataSets)) {
                 if ( $childds =~ /^$srcds\// ) {
                     my $dstds;
+                    # TODO: Rectify use of specially handled dataset names
                     if ($childds =~ /^tank\/source($|\/.*$)/ ) {
                         $dstds = "destination$1";
+                    } elsif ($childds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                        $dstds = "dest-disabled$1";
                     } else {
                         $dstds = $childds;
                     }
@@ -439,13 +506,17 @@ usage:
                 }
             }
         } else {
+            ### srcdsOrig!='' OR !($recursive && $srcds ne '')
             if (   (!$localattr && !$inheritedattr && $dataSets{$srcds} =~ /^src/)
                 || ($localattr && $dataSets{$srcds} eq 'src')
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
             ) {
                 my $dstds;
+                # TODO: Rectify use of specially handled dataset names
                 if ($srcds =~ /^tank\/source($|\/.*$)/ ) {
                     $dstds = "destination$1";
+                } elsif ($srcds =~ /^tank\/dest-disabled($|\/.*$)/ ) {
+                    $dstds = "dest-disabled$1";
                 } else {
                     $dstds = $srcds;
                 }

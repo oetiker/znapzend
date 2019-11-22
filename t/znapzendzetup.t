@@ -63,7 +63,14 @@ sub runCommand {
     @ARGV = @_;
 
     eval { main($mainOpt); };
-    return 0 if $@; # Presumably die() handler caught something
+
+    if ($@) {
+        # Presumably a die() handler caught something
+        print STDERR "EXCEPTION: " . $@ . "\n";
+        return 0;
+    };
+
+    # Return "true" if not failed :)
     1;
 }
 
@@ -107,8 +114,28 @@ is (runCommand(qw(delete --dst='0' tank/source)), 1, 'znapzendzetup delete desti
     is (runCommand(qw(export tank/source)), 1, 'znapzendzetup export');
 }
 
-is(runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
-is(runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
+is (runCommand(qw(import tank/source ./dump.dmp)), 1, 'znapzendzetup import');
+is (runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup import --write');
+
+# Cover various codepaths for successes and failures...
+# Destination can be passed by number (N) or zfs attr name (dst_N)
+# TODO? Add by target dataset value as the more user-meaningful variant?
+is (runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(enable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
+is (runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup disable-dst tank/source 0 - succeeds (0=>dst_0)');
+is (runCommand(qw(enable-dst tank/dest-disabled dst_0)), 1, 'znapzendzetup enable-dst tank/dest-disabled dst_0 - succeeds (processing codepath with dst_0_enabled present in zfs args)');
+is (runCommand(qw(disable-dst tank/dest-disabled dst_0)), 1, 'znapzendzetup disable-dst tank/dest-disabled dst_0 - succeeds (processing codepath with dst_0_enabled present in zfs args)');
+
+# Destination-management fails for a number of expected reasons
+is (runCommand(qw(enable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup enable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
+is (runCommand(qw(disable-dst tank/source dst_1_badkey)), 0, 'znapzendzetup disable-dst tank/source dst_1_badkey - fails (arg is not a dst ID pattern)');
+is (runCommand(qw(enable-dst tank/source 1)), 0, 'znapzendzetup enable-dst tank/source 1 - fails (no 1=>dst_1 there)');
+is (runCommand(qw(disable-dst tank/source 1)), 0, 'znapzendzetup disable-dst tank/source 1 - fails (no 1=>dst_1 there)');
+is (runCommand(qw(enable-dst tank/sourcemissing dst_whatever)), 0, 'znapzendzetup enable-dst tank/sourcemissing dst_whatever - fails (no such dataset)');
+is (runCommand(qw(disable-dst tank/sourcemissing dst_whatever)), 0, 'znapzendzetup disable-dst tank/sourcemissing dst_whatever - fails (no such dataset)');
+is (runCommand(qw(enable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst tank/sourcemissing - fails (bad arg list)');
+is (runCommand(qw(disable-dst tank/sourcemissing)), 0, 'znapzendzetup disable-dst tank/sourcemissing - fails (bad arg list)');
 
 # This one calls "zfs list -r" and then many times "zfs get"
 is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
@@ -153,7 +180,17 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = '1';
 is (runCommand(qw(list)), 0, 'znapzendzetup list');
 $ENV{'ZNAPZENDTEST_ZFS_FAIL_list'} = undef;
 
+# Code-cover parsing of bad argument lists
+is (runCommand(), 0, 'znapzendzetup <no main opt> - fails');
+is (runCommand(qw(bogusMainOpt)), 0, 'znapzendzetup <bogus main opt> - fails');
+
+is (runCommand(qw(delete)), 0, 'znapzendzetup delete <no src arg> - fails');
+is (runCommand(qw(enable)), 0, 'znapzendzetup enable <no src arg> - fails');
+is (runCommand(qw(disable)), 0, 'znapzendzetup disable <no src arg> - fails');
+is (runCommand(qw(enable-dst)), 0, 'znapzendzetup enable-dst <no src arg> <no dst arg> - fails');
+is (runCommand(qw(disable-dst)), 0, 'znapzendzetup disable-dst <no src arg> <no dst arg> - fails');
+is (runCommand(qw(export)), 0, 'znapzendzetup export <no src arg> - fails');
+
 done_testing;
 
 1;
-
