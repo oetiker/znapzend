@@ -241,6 +241,30 @@ as reduces network bandwidth usage.
 The -L option is for large block support and -e is for embedded data
 support. These may require certain (Open)ZFS features to be enabled.
 
+=item sendIntermediates
+
+use the -I option on the sending end, rather than -i, to keep the
+destination zfs dataset history similar to the source's one.
+
+The default is to send a single increment between latest common
+snapshot and the newly made one. It may skip several source snaps
+if the destination was offline for some time, and it should skip
+snapshots not managed by znapzend. Normally for online destinations,
+the new snapshot is sent as soon as it is created on the source,
+so there are no automatic increments to skip.
+
+With the 'sendIntermediates' feature enabled, all snapshots between
+the latest common one and the newly created one on the source would
+be sent to each destination, and then the "extra" ones of those managed
+by znapzend may get discarded according to destination's retention
+policy. Note that snapshots NOT managed by znapzend, e.g. ones you
+created manually, would appear on the destination and stay there
+until removed manually. Also note that this may consume more disk
+space and transfer time than otherwise needed for the data increment.
+This mode is primarily intended for irregular backups (on removable
+media) and cases where the sysadmin marks certain data states via
+snapshots as special (e.g. "before_upgrade", etc.)
+
 =item lowmemRecurse
 
 use 'lowmemRecurse' on systems where you have too many datasets,

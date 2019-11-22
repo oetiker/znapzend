@@ -127,6 +127,8 @@ is (runCommand(qw(--runonce=tank/dest-disabled)), 1, 'cover znapzend runonce of 
 # Series of tests over usual tank/source with different options
 is (runCommand(qw(--runonce=tank/source), '--features=oracleMode,recvu,compressed'),
     1, 'znapzend --features=oracleMode,recvu,compressed --runonce=tank/source succeeds');
+is (runCommand(qw(--runonce=tank/source), '--features=sendIntermediates'),
+    1, 'znapzend --features=sendIntermediates --runonce=tank/source succeeds');
 
 # Coverage for various failure codepaths
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';
