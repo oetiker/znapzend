@@ -266,12 +266,6 @@ for ($command){
             exit 1;
         }
 
-        # Note: In this line and in selections below we explicitly
-        # but somewhat artificially rule out displaying datasets
-        # under "backup" that are a pool root and destinations.
-        # Real "zfs get" would show these.
-        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
-
         my $localattr = (join(" ", @ARGV) =~ / -s local/);
         my $inheritedattr = (join(" ", @ARGV) =~ / -s (local,|)inherited/);
         my $recursive = (join(" ", @ARGV) =~ / -r /);
@@ -284,11 +278,28 @@ for ($command){
             $printSource = 1;
         }
 
+        # Note: In this line and in selections below we explicitly
+        # but somewhat artificially rule out displaying datasets
+        # under "backup" that are a pool root and destinations.
+        # Real "zfs get" would show these.
+###LEGACY###        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+### survive if recursive (any dataset value, maybe unspecified or not in array)
+### survive if last arg is in array and has an 'src.*' value
+### exit otherwise
+### subsequent legacy logic below was to use last arg as srcds if defined and in array, otherwise used 'tank' (no forcing of recursive flag)
+###NEW###
+### if last arg is in array, try to use it
+### + if it is NOT 'src.*' and we are NOT recursing, exit
+### if last arg not in array, fall back to recursing from 'tank'
         if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
             $srcdsOrig = $srcds;
+            if ( !($dataSets{$srcds} =~ /^src/) && !$recursive ) {
+                exit;
+            }
         } else {
             $srcds = "tank";
+            $recursive = 1;
         }
 
         if ( join(" ", @ARGV) =~ /name,property,value/ ) {
@@ -347,6 +358,7 @@ for ($command){
                 }
             }
         } else {
+            ### srcdsOrig!='' OR !($recursive && $srcds ne '')
             if (   (!$localattr && !$inheritedattr && $dataSets{$srcds} =~ /^src/)
                 || ($localattr && $dataSets{$srcds} eq 'src')
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
