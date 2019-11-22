@@ -37,7 +37,11 @@ sub main {
     }
 
     if (defined($opts->{runonce})) {
-        $opts->{dataset} = $opts->{runonce};
+        # Note: empty arg is ok, means to pass all backup plans once
+        chomp $opts->{runonce};
+        if ($opts->{runonce} ne '') {
+            $opts->{dataset} = $opts->{runonce};
+        }
         $opts->{runonce} = 1;
     }
 
