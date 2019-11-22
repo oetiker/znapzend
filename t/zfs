@@ -297,10 +297,10 @@ for ($command){
         # IRL the default actually depends on zpool 'listsnapshots' attribute;
         # these tests assumed an 'off' behavior previously, so they do still.
         my $listsnaps = 0;
-        if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
-            if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
+        if ( envval('ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots') ) {
+            if ($ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} eq 'on') {
                 $listsnaps = 1;
-            } elsif ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'off') {
+            } elsif ($ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} eq 'off') {
                 $listsnaps = 0;
             }
 
@@ -413,10 +413,10 @@ usage:
         # IRL the default actually depends on zpool 'listsnapshots' attribute;
         # these tests assumed an 'off' behavior previously, so they do still.
         my $listsnaps = 0;
-        if ( defined($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"}) ) {
-            if ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'on') {
+        if ( envval('ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots') ) {
+            if ($ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} eq 'on') {
                 $listsnaps = 1;
-            } elsif ($ENV{"ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots"} eq 'off') {
+            } elsif ($ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} eq 'off') {
                 $listsnaps = 0;
             }
         }
