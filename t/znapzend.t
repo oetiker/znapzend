@@ -134,6 +134,8 @@ is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manual@snap)), 0,
 is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix=manual snap'), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manual" "snap fails (invalid chars in string)');
 ### SKIPPED : This one gets failed by arg processing routines in a way that test program is killed
 #is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=)), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix= fails (empty snapname)');
+#throws_ok { runCommand_canThrow(qw(--runonce=tank/source --forcedSnapshotSuffix=) ) } qr/Option forcedSnapshotSuffix requires an argument/,
+#      'znapzend --runonce=tank/source --forcedSnapshotSuffix= fails (empty snapname)';
 is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix= '), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=" " fails (snapname becomes empty after chomp)');
 is (runCommand(qw(--forcedSnapshotSuffix=manualsnap)), 0, 'znapzend --forcedSnapshotSuffix=manualsnap fails (not in runonce mode)');
 
