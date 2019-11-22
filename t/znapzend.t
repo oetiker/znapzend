@@ -114,7 +114,8 @@ is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a datas
 
 # Valid and invalid variants of forced snapshot name
 is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manualsnap)), 1, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manualsnap succeeds');
-is (runCommand(qw(--runonce --forcedSnapshotSuffix=@manualsnap)), 1, 'znapzend --runonce --forcedSnapshotSuffix=@manualsnap succeeds (removes leading @)');
+#is (runCommand(qw(--runonce --forcedSnapshotSuffix=@manualsnap)), 1, 'znapzend --runonce --forcedSnapshotSuffix=@manualsnap succeeds (removes leading @)');
+is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=@manualsnap)), 1, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=@manualsnap succeeds (removes leading @)');
 
 is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manual@snap)), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manual@snap fails (invalid chars in string)');
 is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix=manual snap'), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manual" "snap fails (invalid chars in string)');
