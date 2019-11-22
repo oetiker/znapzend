@@ -200,6 +200,10 @@ my $refreshBackupPlans = sub {
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
         $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
+            # TODO : Should this include ^ (or ^.*@) and $ boundaries?
+            $backupSet->{snapFilter} = '(' . $backupSet->{snapFilter} . '|' . $self->forcedSnapshotSuffix . ')';
+        }
         $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
     }
