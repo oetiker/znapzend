@@ -170,7 +170,7 @@ $ENV{'ZNAPZENDTEST_ZFS_FAIL_create'} = undef;
 
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS');
-is (runCommand(qw(--inherited --runonce=tank/source/child --features=zfsGetType')),
+is (runCommand(qw(--inherited --runonce=tank/source/child --features=zfsGetType)),
     1, 'znapzend --inherited --features=zfsGetType --runonce=tank/source/child succeeds with new ZFS');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
@@ -184,7 +184,7 @@ is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
     1, 'znapzend --features=zfsGetType --runonce=tank/source succeeds with new ZFS when it lists snapshots');
 is (runCommand(qw(--runonce=tank/source)),
     1, 'znapzend --runonce=tank/source succeeds with new ZFS when it lists snapshots');
-is (runCommand(qw(--inherited --recursive --runonce=tank/source/child --features=zfsGetType')),
+is (runCommand(qw(--inherited --recursive --runonce=tank/source/child --features=zfsGetType)),
     1, 'znapzend --inherited --recursive --features=zfsGetType --runonce=tank/source/child succeeds with new ZFS when it lists snapshots');
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = '1';
 is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
