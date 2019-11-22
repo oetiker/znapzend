@@ -27,7 +27,7 @@ has nodestroy               => sub { 0 };
 has oracleMode              => sub { 0 };
 has recvu                   => sub { 0 };
 has compressed              => sub { 0 };
-has sendIntermediates       => sub { 0 };
+has skipIntermediates       => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has connectTimeout          => sub { 30 };
@@ -60,7 +60,7 @@ has zZfs => sub {
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
-        lowmemRecurse => $self->lowmemRecurse, sendIntermediates => $self->sendIntermediates,
+        lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
         rootExec => $self->rootExec,
         zLog => $self->zLog, compressed => $self->compressed);
 };
