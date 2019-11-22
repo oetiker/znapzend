@@ -38,6 +38,7 @@ has daemonize               => sub { 0 };
 has loglevel                => sub { q{debug} };
 has logto                   => sub { q{} };
 has pidfile                 => sub { q{} };
+has forcedSnapshotSuffix    => sub { q{} };
 has defaultPidFile          => sub { q{/var/run/znapzend.pid} };
 has terminate               => sub { 0 };
 has autoCreation            => sub { 0 };
@@ -505,7 +506,20 @@ my $createSnapshot = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    my $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    my $snapshotSuffix;
+    if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
+        $self->zLog->warn("requesting manually specified snapshot suffix '@$self->forcedSnapshotSuffix'");
+        $snapshotSuffix = $self->forcedSnapshotSuffix;
+    } else {
+        $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    }
+    # Basic sanity/security check (e.g. don't let the user pass extra
+    # keywords to zfs cli using bad forcedSnapshotSuffix option or
+    # backup plan config patterns)
+    if ($snapshotSuffix =~ /[@\s\"\'\`#\$]/) { ### # ` and $ to try and avoid shell escaping
+        die ("snapshot suffix '$snapshotSuffix' contains invalid characters\n");
+    }
+
     my $snapshotName = $backupSet->{src} . '@'. $snapshotSuffix;
 
     #set env variables for pre and post scripts use
