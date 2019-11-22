@@ -33,6 +33,16 @@ my %dataSetsMissing = (
     'missingpool'        => 'fail'
 );
 
+# Our calls to "zfs get" from production code triggered by
+# self-tests only use a limited amount of combinations of
+# real ZFS keywords and maybe dataset names from the array
+# above or not in it at all. This array helps differentiate
+# a good keyword vs bad dataset name as last CLI argument.
+# Keys matter, values ignored ATM
+my %zfs_get_keywords = (
+    'all'                => 1,
+);
+
 sub find_attr_source {
     my $srcname = shift;
     my $attr = shift; # only matters for "enabled" at the moment
@@ -290,7 +300,7 @@ for ($command){
 ###NEW###
 ### if last arg is in array, try to use it
 ### + if it is NOT 'src.*' and we are NOT recursing, exit
-### if last arg not in array, fall back to recursing from 'tank'
+### if last arg not in array (and not a "real" arg, list of these is matching tests), fall back to recursing from 'tank' (real ZFS would show all datasets)
         if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
             $srcdsOrig = $srcds;
@@ -298,6 +308,11 @@ for ($command){
                 exit;
             }
         } else {
+            if (defined($ARGV[-1]) && (!exists ($zfs_get_keywords{$ARGV[-1]}))) {
+                # The last arg was not one of keywords we pass from tested code for dataset-less calls
+                print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+                exit 1;
+            }
             $srcds = "tank";
             $recursive = 1;
         }
