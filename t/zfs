@@ -274,6 +274,7 @@ for ($command){
 
         my $localattr = (join(" ", @ARGV) =~ / -s local/);
         my $inheritedattr = (join(" ", @ARGV) =~ / -s (local,|)inherited/);
+        my $recursive = (join(" ", @ARGV) =~ / -r /);
 
         my $prefix = "";
         my $srcds = "";
@@ -301,10 +302,10 @@ for ($command){
         # the dataset in CLI args *must* be one from the array, otherwise
         # the mockup treats it as a random `zfs` option and ignores it.
         if (
-            (join(" ", @ARGV) =~ / -r / && $srcds ne '')
+            ($recursive && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs get : recursive=" . (join(" ", @ARGV) =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . ($recursive ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
