@@ -59,7 +59,14 @@ sub runCommand {
     @ARGV = @_;
 
     eval { main(); };
-    return 0 if $@; # Presumably die() handler caught something
+
+    if ($@) {
+        # Presumably a die() handler caught something
+        print STDERR "EXCEPTION: " . $@ . "\n";
+        return 0;
+    };
+
+    # Return "true" if not failed :)
     1;
 }
 
@@ -78,4 +85,3 @@ is (runCommand(), 1, 'znapzendztatz');
 done_testing;
 
 1;
-

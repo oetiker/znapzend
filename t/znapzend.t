@@ -62,7 +62,14 @@ sub runCommand {
     @ARGV = @_;
 
     eval { main(); };
-    return 0 if $@; # Presumably die() handler caught something
+
+    if ($@) {
+        # Presumably a die() handler caught something
+        print STDERR "EXCEPTION: " . $@ . "\n";
+        return 0;
+    };
+
+    # Return "true" if not failed :)
     1;
 }
 
@@ -92,14 +99,14 @@ throws_ok { runCommand_canThrow(qw(--runonce=nosets) ) } qr/No backup set define
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = '1';
 is (runCommand(qw(--runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1');
 is (runCommand(qw(--nodelay --runonce=tank/source)), 1, 'znapzend --runonce=tank/source with zend-delay==1 and --nodelay (should ignore the plan setting)');
-undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = undef;
 
 # Try an invalid string, should ignore and proceed without a delay
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = ' qwe ';
 # TODO : Find a way to check stderr for qr/Option 'zend-delay' has an invalid value/
 is (runCommand(qw(--runonce=tank/source)),
     1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
-undef $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'};
+$ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = undef;
 
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
@@ -111,6 +118,10 @@ is (runCommand(qw(--inherited --recursive --runonce=tank)), 1, 'znapzend runonce
 is (runCommand(qw(--inherited --runonce=tank)), 0, 'znapzend runonce of a dataset without a plan fails also with --inherited flag');
 is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails with only --recursive flag and without --inherited');
 is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
+is (runCommand(qw(--runonce=tank/dest-disabled)), 1, 'cover znapzend runonce of a dataset with original backup plan and a disabled destination - does not fail');
+
+# TODO: Add handling and testing for inherited-config datasets with a locally defined bits of the backup plan, e.g. disabled destinations?
+#is (runCommand(qw(--inherited --runonce=tank/source/dest-disabled)), 0, 'cover znapzend runonce of a dataset with inherited backup plan and a disabled destination - such mixing is not supported at the moment');
 
 # Valid and invalid variants of forced snapshot name
 is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manualsnap)), 1, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manualsnap succeeds');
