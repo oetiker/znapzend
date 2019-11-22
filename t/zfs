@@ -49,6 +49,43 @@ my %zfs_get_keywords = (
     'all'                => 1,
 );
 
+sub envval {
+    my $envvar_name = shift; # not-empty string
+    my $envvar_expect = shift; # May be undef
+
+    if (! defined($envvar_name) ) {
+        print STDERR "envval_is(): bad args";
+        return 0; # false
+    }
+
+    if ($envvar_name eq '') {
+        print STDERR "envval_is(): bad args";
+        return 0; # false
+    }
+
+    if (! defined($ENV{$envvar_name}) ) {
+        # Expected envvar name is not set in the environment
+        return 0; # false
+    }
+
+    if ( (defined($envvar_expect)) && ($envvar_expect ne $ENV{$envvar_name}) ) {
+        # Expectation defined and not met
+        return 0; # false
+    }
+
+    if ( (!defined($envvar_expect)) && ('' eq $ENV{$envvar_name}) ) {
+        # Special case that otherwise gets our tests upset (ENV entry
+        # was set and undef'ed in a znapzend.t and ends up set here):
+        # Expectation not defined, but envvar value resolves to empty
+        return 0; # false
+    }
+
+    # Envvar is defined, and either:
+    # * has the expected value, or
+    # * no expectation is set (envvar has any value)
+    return 1; # true
+}
+
 sub find_attr_source {
     my $srcname = shift;
     my $attr = shift; # only matters for "enabled" at the moment
@@ -155,10 +192,10 @@ sub print_zfs_get {
 
     my $dst0precmd = "/bin/echo 'pre znap command for dst_0'";
     my $dst0pstcmd = "/bin/echo 'post znap command for dst_0'";
-    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'}) ) {
+    if ( envval('ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL', '1') ) {
         $dst0precmd = "/bin/false";
     }
-    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL'}) ) {
+    if ( envval('ZNAPZENDTEST_ZFS_GET_DST0PSTCMD_FAIL') ) {
         $dst0pstcmd = "/bin/false";
     }
 
@@ -192,7 +229,7 @@ ${prefix}org.znapzend:pre_znap_cmd   /bin/echo 'pre znap command'${srcsuffix}
 ${prefix}org.znapzend:post_znap_cmd  /bin/echo 'post znap command'${srcsuffix}
 ZFS_GET_END
 
-    if ( defined($ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}) ) {
+    if ( envval('ZNAPZENDTEST_ZFS_GET_ZEND_DELAY') ) {
         print <<"ZFS_GET_END";
 ${prefix}org.znapzend:zend_delay     $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'}${srcsuffix}
 ZFS_GET_END
@@ -217,27 +254,27 @@ my $ARGSTR = join(" ", '', @ARGV);
 
 for ($command){
     /^(?:set|inherit|send|recv|create)$/ && do {
-        if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
+        if ( envval("ZNAPZENDTEST_ZFS_FAIL_$command") ) {
             exit 1;
         };
-        if ( defined($ENV{"ZNAPZENDTEST_ZFS_SUCCEED_$command"}) ) {
+        if ( envval("ZNAPZENDTEST_ZFS_SUCCEED_$command") ) {
             exit 0;
         };
         exit;
     };
 
     /^snapshot$/ && do {
-        if ( defined($ENV{"ZNAPZENDTEST_ZFS_FAIL_$command"}) ) {
+        if ( envval("ZNAPZENDTEST_ZFS_FAIL_$command") ) {
             exit 1;
         };
-        if ( defined($ENV{"ZNAPZENDTEST_ZFS_SUCCEED_$command"}) ) {
+        if ( envval("ZNAPZENDTEST_ZFS_SUCCEED_$command") ) {
             exit 0;
         };
         exit 1; # (Legacy) default for tests around this: pretend snapshot to fail => snapshot does exist already
     };
 
     /^list$/ && do {
-        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_list'}) ) {
+        if ( envval('ZNAPZENDTEST_ZFS_FAIL_list') ) {
             print STDERR "failed to list mock dataset(s)\n";
             exit 1;
         }
@@ -332,7 +369,7 @@ for ($command){
         if ($ARGV[0] eq '-nv'){
             print "would reclaim 1337G\n";
         }
-        if ( defined($ENV{'ZNAPZENDTEST_ZFS_FAIL_destroy'}) ) {
+        if ( envval('ZNAPZENDTEST_ZFS_FAIL_destroy') ) {
             print STDERR "failed to destroy mock dataset(s)\n";
             exit 1;
         }
@@ -357,7 +394,7 @@ for ($command){
         # Note: illumos zfs as of 2019 and some years before allows
         # `zfs get -t filesystem,volume ...` (and can list snapshot
         # props otherwise) but Sol 10 did not
-        if ( ($ARGSTR =~ / -t / ) && (defined $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'}) ) {
+        if ( ($ARGSTR =~ / -t / ) && (envval('ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED')) ) {
             # Report like Solaris 10 did
             print STDERR "invalid option 't'
 usage:
