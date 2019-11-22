@@ -39,6 +39,16 @@ my %dataSetsMissing = (
     'missingpool'        => 'fail'
 );
 
+# Our calls to "zfs get" from production code triggered by
+# self-tests only use a limited amount of combinations of
+# real ZFS keywords and maybe dataset names from the array
+# above or not in it at all. This array helps differentiate
+# a good keyword vs bad dataset name as last CLI argument.
+# Keys matter, values ignored ATM
+my %zfs_get_keywords = (
+    'all'                => 1,
+);
+
 sub find_attr_source {
     my $srcname = shift;
     my $attr = shift; # only matters for "enabled" at the moment
@@ -369,6 +379,7 @@ usage:
 
         my $localattr = ($ARGSTR =~ / -s local/);
         my $inheritedattr = ($ARGSTR =~ / -s (local,|)inherited/);
+        my $recursive = ($ARGSTR =~ / -r /);
 
         my $prefix = "";
         my $srcds = "";
@@ -378,11 +389,33 @@ usage:
             $printSource = 1;
         }
 
+        # Note: In this line and in selections below we explicitly
+        # but somewhat artificially rule out displaying datasets
+        # under "backup" that are a pool root and destinations.
+        # Real "zfs get" would show these.
+###LEGACY###        exit if !( (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]} && ($dataSets{$ARGV[-1]} =~ /^src/)) || (join(" ", @ARGV) =~ / -r /) );
+### survive if recursive (any dataset value, maybe unspecified or not in array)
+### survive if last arg is in array and has an 'src.*' value
+### exit otherwise
+### subsequent legacy logic below was to use last arg as srcds if defined and in array, otherwise used 'tank' (no forcing of recursive flag)
+###NEW###
+### if last arg is in array, try to use it
+### + if it is NOT 'src.*' and we are NOT recursing, exit
+### if last arg not in array (and not a "real" arg, list of these is matching tests), fall back to recursing from 'tank' (real ZFS would show all datasets)
         if (defined($ARGV[-1]) && exists $dataSets{$ARGV[-1]}) {
             $srcds = "$ARGV[-1]";
             $srcdsOrig = $srcds;
+            if ( !($dataSets{$srcds} =~ /^src/) && !$recursive ) {
+                exit;
+            }
         } else {
+            if (defined($ARGV[-1]) && (!exists ($zfs_get_keywords{$ARGV[-1]}))) {
+                # The last arg was not one of keywords we pass from tested code for dataset-less calls
+                print STDERR "cannot open '$ARGV[-1]': dataset does not exist\n";
+                exit 1;
+            }
             $srcds = "tank";
+            $recursive = 1;
         }
 
         if ( $ARGSTR =~ /name,property,value/ ) {
@@ -396,10 +429,10 @@ usage:
         # the dataset in CLI args *must* be one from the array, otherwise
         # the mockup treats it as a random `zfs` option and ignores it.
         if (
-            ($ARGSTR =~ / -r / && $srcds ne '')
+            ($recursive && $srcds ne '')
          || ($srcdsOrig eq '')
         ) {
-#print STDERR "=== zfs get : recursive=" . ($ARGSTR =~ / -r / ? "Y" : "N")
+#print STDERR "=== zfs get : recursive=" . ($recursive ? "Y" : "N")
 #    . " srcds='$srcds' srcdsOrig='$srcdsOrig' prefix='$prefix'\n" ;
 
             # Note that listing `zfs get -r -o property,value all dataset`
@@ -458,6 +491,7 @@ usage:
                 }
             }
         } else {
+            ### srcdsOrig!='' OR !($recursive && $srcds ne '')
             if (   (!$localattr && !$inheritedattr && $dataSets{$srcds} =~ /^src/)
                 || ($localattr && $dataSets{$srcds} eq 'src')
                 || ($inheritedattr && $dataSets{$srcds} eq 'src-inherited')
