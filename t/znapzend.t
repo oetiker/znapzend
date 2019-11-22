@@ -108,6 +108,8 @@ is (runCommand(qw(--runonce=tank/source)),
     1, 'znapzend --runonce=tank/source with zend-delay==" qwe " complains but survives');
 $ENV{'ZNAPZENDTEST_ZFS_GET_ZEND_DELAY'} = undef;
 
+is (runCommand(qw(--runonce)), 1, 'znapzend runonce without dataset specified succeeds (should find all backup plans)');
+is (runCommand(qw(--runonce=)), 1, 'znapzend runonce with empty dataset == without dataset specified succeeds (should find all backup plans)');
 is (runCommand(qw(--runonce=tank -r)), 1, 'znapzend runonce recursing from a dataset without plan (pool root) succeeds');
 
 is (runCommand(qw(--inherited --runonce=tank/source/child)), 1, 'znapzend runonce of a dataset with only an inherited plan succeeds with --inherited flag');
