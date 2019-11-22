@@ -527,7 +527,7 @@ my $createSnapshot = sub {
 
     my $snapshotSuffix;
     if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
-        $self->zLog->warn("requesting manually specified snapshot suffix '@$self->forcedSnapshotSuffix'");
+        $self->zLog->warn("requesting manually specified snapshot suffix '@" . $self->forcedSnapshotSuffix ."'");
         $snapshotSuffix = $self->forcedSnapshotSuffix;
     } else {
         $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
