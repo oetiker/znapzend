@@ -241,6 +241,41 @@ as reduces network bandwidth usage.
 The -L option is for large block support and -e is for embedded data
 support. These may require certain (Open)ZFS features to be enabled.
 
+=item skipIntermediates
+
+Enable the 'skipIntermediates' feature to send a single increment
+between latest common snapshot and the newly made one. It may skip
+several source snaps if the destination was offline for some time,
+and it should skip snapshots not managed by znapzend. Normally for
+online destinations, the new snapshot is sent as soon as it is
+created on the source, so there are no automatic increments to skip.
+
+By default 'znapzend' uses the '-I' option on the sending end (so to
+include all intermediate snapshots), rather than '-i', to keep the
+destination zfs dataset history similar to the source's one.
+
+Note: it was the default from beginning of 'znapzend' to make sure
+that in case a send operation takes too long, we still get all the
+intermediate snapshots sent to the destination.
+
+With the 'skipIntermediates' feature disabled, all snapshots between
+the latest common one and the newly created one on the source would
+be sent to each destination, and then the "extra" ones of those managed
+by znapzend may get discarded according to destination's retention
+policy. Note that snapshots which are NOT managed by znapzend, e.g.
+ones you created manually, would appear on the destination and stay
+there until removed manually. Also note that this may consume more
+disk space and transfer time than otherwise needed for the data
+increment.
+
+This original mode is now primarily recommended for irregular backups
+(on removable media or over unstable links) and cases where the
+sysadmin marks certain data states via snapshots as special (e.g.
+"before_upgrade", etc.)
+
+The feature is recommended to be part of your 'znapzend' service
+setup for regular runs in stable storage/networking conditions.
+
 =item lowmemRecurse
 
 use 'lowmemRecurse' on systems where you have too many datasets,
