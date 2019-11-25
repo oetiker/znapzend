@@ -375,7 +375,8 @@ sub main {
         my $inherit = ( defined($opts->{inherited}) );
 
         my $backupSets;
-        if (! ($backupSets = $zConfig->getBackupSet($recurse, $inherit, @ARGV) ) ) {
+        if ( ( !($backupSets = $zConfig->getBackupSet($recurse, $inherit, @ARGV) ) )
+        || (ref $backupSets ne 'ARRAY') ) {
             die "ERROR: cannot list backup config\n";
         }
 
@@ -391,9 +392,11 @@ sub main {
         # TODO: support --recursive? Does not make much sense "as is" for import then
 
         my $backupSets;
-        if (! ($backupSets = $zConfig->getBackupSet(0, 0, $opts->{src}) ) ) {
+        if ( ( !($backupSets = $zConfig->getBackupSet(0, 0, $opts->{src}) ) )
+        || (ref $backupSets ne 'ARRAY') ) {
             die "ERROR: cannot get backup config\n";
         }
+
         my $backupSet;
         if (! ($backupSet = $backupSets->[0]) ) {
             die "ERROR: cannot get backup config\n";

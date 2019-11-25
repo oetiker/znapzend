@@ -142,7 +142,7 @@ my $refreshBackupPlans = sub {
         ' ...');
     $self->backupSets($self->zConfig->getBackupSetEnabled($recurse, $inherit, $dataSet));
 
-    ($self->backupSets && @{$self->backupSets})
+    ($self->backupSets && ( (ref $self->backupSets eq 'ARRAY') && @{$self->backupSets} ) )
         or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
 
     for my $backupSet (@{$self->backupSets}){
@@ -206,6 +206,7 @@ my $refreshBackupPlans = sub {
         $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
     }
+
     for my $backupSet (@{$self->backupSets}){
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #check destination for remote post-command
@@ -728,8 +729,13 @@ my $snapWorker = sub {
 my $createWorkers = sub {
     my $self = shift;
 
+    # Abort if no backup set plans were discovered
+    if (ref $self->backupSets ne 'ARRAY') {
+        return 1;
+    }
+
     #create a timer for each backup set
-    for my $backupSet (@{$self->backupSets}){
+    for my $backupSet (@{$self->backupSets}) {
         #calculate next snapshot timestamp
         my $timeStamp = $self->zTime->getNextSnapshotTimestamp($backupSet->{interval}, $backupSet->{UTC});
         #define timer callback
@@ -839,8 +845,10 @@ sub start {
         $self->zLog->debug('SIGHUP received.');
 
         #remove active timers from ioloop
-        for my $backupSet (@{$self->backupSets}){
-            Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
+        if (ref $self->backupSets eq 'ARRAY') {
+            for my $backupSet (@{$self->backupSets}) {
+                Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
+            }
         }
         $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
         $self->$createWorkers;

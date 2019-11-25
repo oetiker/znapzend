@@ -89,7 +89,7 @@ sub main {
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set
-    @$backupSets or die "ERROR: no valid znapzend setup found on source\n";
+    ( (ref $backupSets eq 'ARRAY') && (@$backupSets) ) or die "ERROR: no valid znapzend setup found on source\n";
 
     my $dummyTime = $zTime->createSnapshotTime(time + ($opts->{timeWarp} // 0), $backupSets->[0]->{tsformat});
 

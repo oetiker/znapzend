@@ -76,6 +76,10 @@ my $checkBackupPlan = sub {
 my $checkBackupSets = sub {
     my $self = shift;
 
+    if (ref $self->backupSets ne 'ARRAY') {
+        return 0; # false
+    }
+
     for my $backupSet (@{$self->backupSets}){
 
         # in case there is only one property on this dataset, which is the "enabled" and is set to "off"
@@ -201,7 +205,7 @@ my $getBackupSet = sub {
             if $self->debug;
     # Note/FIXME? If there were ZFS errors getting some of several
     # requested datasets, but at least one succeeded, the result is OK.
-    if (scalar(@{$self->backupSets}) == 0) {
+    if ((ref $self->backupSets ne 'ARRAY') || (scalar(@{$self->backupSets}) == 0)) {
         return 0; # false
     }
 
@@ -297,7 +301,7 @@ sub enableBackupSet {
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
-    if (@{$self->backupSets}){
+    if ((ref $self->backupSets eq 'ARRAY') && (@{$self->backupSets})) {
         my %cfg = %{$self->backupSets->[0]};
         $cfg{enabled} = 'on';
         $self->setBackupSet(\%cfg);
@@ -318,7 +322,7 @@ sub disableBackupSet {
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
-    if (@{$self->backupSets}){
+    if ((ref $self->backupSets eq 'ARRAY') && (@{$self->backupSets})) {
         my %cfg = %{$self->backupSets->[0]};
         $cfg{enabled} = 'off';
         $self->setBackupSet(\%cfg);
@@ -340,7 +344,7 @@ sub enableBackupSetDst {
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
-    if (@{$self->backupSets}){
+    if ((ref $self->backupSets eq 'ARRAY') && (@{$self->backupSets})) {
         my %cfg = %{$self->backupSets->[0]};
 
         if ( !($dest =~ /^dst_[^_]+$/) ) {
@@ -380,7 +384,7 @@ sub disableBackupSetDst {
 
     $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
-    if (@{$self->backupSets}){
+    if ((ref $self->backupSets eq 'ARRAY') && (@{$self->backupSets})) {
         my %cfg = %{$self->backupSets->[0]};
 
         if ( !($dest =~ /^dst_[^_]+$/) ) {
