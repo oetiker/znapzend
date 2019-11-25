@@ -414,10 +414,6 @@ my $sendRecvCleanup = sub {
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
             next if (scalar (@{$toDestroy}) == 0);
-            if (scalar (@{$toDestroy}) < 2) {
-                $self->zLog->warn('only one snapshot matching the filter is present on destination ' . $dstDataSet . '; not wiping it');
-                next;
-            }
 
             $self->zLog->debug('cleaning up snapshots on ' . $dstDataSet);
             {
@@ -501,10 +497,6 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
             next if (scalar (@{$toDestroy}) == 0);
-            if (scalar (@{$toDestroy}) < 2) {
-                $self->zLog->warn('only one snapshot matching the filter is present on source ' . $srcDataSet . '; not wiping it');
-                next;
-            }
 
             $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
             {
