@@ -113,7 +113,7 @@ my $killThemAll = sub {
     Mojo::IOLoop->reset;
 
     # Avoid "dereferencing" a value and type of $self->backupSets that is not an array object
-    if (defined($self->backupSets) && $self->backupSets ne '0' && $self->backupSets != 0) {
+    if (ref $self->backupSets eq 'ARRAY') {
         for my $backupSet (@{$self->backupSets}){
             kill (SIGTERM, $backupSet->{snap_pid}) if $backupSet->{snap_pid};
             kill (SIGTERM, $backupSet->{send_pid}) if $backupSet->{send_pid};
