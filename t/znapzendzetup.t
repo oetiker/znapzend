@@ -138,7 +138,7 @@ is (runCommand(qw(enable-dst tank/sourcemissing)), 0, 'znapzendzetup enable-dst 
 is (runCommand(qw(disable-dst tank/sourcemissing)), 0, 'znapzendzetup disable-dst tank/sourcemissing - fails (bad arg list)');
 
 # This one calls "zfs list -r" and then many times "zfs get"
-is (runCommand(qw(list --features=lowmemRecurse,sudo --debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
+is (runCommand(qw(list), '--features=lowmemRecurse,sudo', qw(--debug -r tank/source)), 1, 'znapzendzetup list --features=lowmemRecurse,sudo --debug -r tank/source');
 # This one calls "zfs get -r"
 is (runCommand(qw(list --debug --recursive tank/source)), 1, 'znapzendzetup list --debug --recursive tank/source');
 # This one should follow a codepath of undefined "dataSet" to show and so all datasets known to zfs (mock)
