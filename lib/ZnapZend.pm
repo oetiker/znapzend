@@ -199,12 +199,17 @@ my $refreshBackupPlans = sub {
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
-        $backupSet->{snapSendFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
-        $backupSet->{snapCleanFilter} = $backupSet->{snapSendFilter};
-        if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
-            # TODO : Should this include ^ (or ^.*@) and $ boundaries?
-            $backupSet->{snapSendFilter} = '(' . $backupSet->{snapSendFilter} . '|' . $self->forcedSnapshotSuffix . ')';
-        }
+        $backupSet->{snapCleanFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        # Due to support of possible intermediate snapshots named outside the
+        # generated configured pattern (tsformat), to send (and not destroy on
+        # destination) the arbitrary names, and find last common ones properly,
+        # we should match all snap names here and there.
+        $backupSet->{snapSendFilter} = qr/.*/;
+#        $backupSet->{snapSendFilter} = $backupSet->{snapCleanFilter};
+#        if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
+#            # TODO : Should this include ^ (or ^.*@) and $ boundaries?
+#            #$backupSet->{snapSendFilter} = '(' . $backupSet->{snapSendFilter} . '|' . $self->forcedSnapshotSuffix . ')';
+#        }
         $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
     }
