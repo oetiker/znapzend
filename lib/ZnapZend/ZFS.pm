@@ -794,6 +794,8 @@ sub setDataSetProperties {
         #don't save source dataset as we know the source from the property location
         #also don't save destination validity flags as they are evaluated 'on demand'
         next if $prop eq 'src' || $prop =~ /^dst_[^_]+_valid$/;
+        next if !defined($prop);
+        next if !defined($properties->{$prop});
 
         my @cmd = (@{$self->priv}, qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;

@@ -121,7 +121,9 @@ is (runCommand(qw(import --write tank/source ./dump.dmp)), 1, 'znapzendzetup imp
 # Destination can be passed by number (N) or zfs attr name (dst_N)
 # TODO? Add by target dataset value as the more user-meaningful variant?
 is (runCommand(qw(enable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
-is (runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup enable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(disable-dst tank/source dst_0)), 1, 'znapzendzetup disable-dst tank/source dst_0 - succeeds');
+is (runCommand(qw(enable-dst tank/source DST:0)), 1, 'znapzendzetup enable-dst tank/source DST:0 - succeeds');
+is (runCommand(qw(disable-dst tank/source DST:0)), 1, 'znapzendzetup disable-dst tank/source DST:0 - succeeds');
 is (runCommand(qw(enable-dst tank/source 0)), 1, 'znapzendzetup enable-dst tank/source 0 - succeeds (0=>dst_0)');
 is (runCommand(qw(disable-dst tank/source 0)), 1, 'znapzendzetup disable-dst tank/source 0 - succeeds (0=>dst_0)');
 is (runCommand(qw(enable-dst tank/dest-disabled dst_0)), 1, 'znapzendzetup enable-dst tank/dest-disabled dst_0 - succeeds (processing codepath with dst_0_enabled present in zfs args)');
