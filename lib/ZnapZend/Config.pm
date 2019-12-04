@@ -8,6 +8,7 @@ use Text::ParseWords qw(shellwords);
 ### attributes ###
 has debug    => sub { 0 };
 has lowmemRecurse => sub { 0 };
+has zfsGetType => sub { 0 };
 has noaction => sub { 0 };
 has rootExec => sub { q{} };
 has timeWarp => sub { undef };
@@ -31,7 +32,8 @@ has zfs  => sub {
     ZnapZend::ZFS->new(
         rootExec => $self->rootExec,
         debug => $self->debug,
-        lowmemRecurse => $self->lowmemRecurse
+        lowmemRecurse => $self->lowmemRecurse,
+        zfsGetType => $self->zfsGetType
     );
 };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
