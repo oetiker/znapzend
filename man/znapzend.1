@@ -428,6 +428,22 @@ so a recursive listing of attributes to find backup plans exhausts
 the memory available to `znapzend(zetup)`: instead, go the slower
 way to first list all impacted dataset names, and then query their
 configs one by one.
+.IP "zfsGetType" 4
+.IX Item "zfsGetType"
+use 'zfsGetType' if your 'zfs get' supports a '\-t' argument for
+filtering by dataset type at all (e.g. one in Solaris 10 does not),
+\&\s-1AND\s0 lists properties for snapshots by default when recursing (e.g.
+the one in Solaris 10u8 already does), so that there is too much
+data to process while searching for backup plans.
+.Sp
+If these two conditions apply to your system, the time needed for
+a '\-\-recursive' search for backup plans can literally differ by
+hundreds of times (depending on the amount of snapshots in that
+dataset tree... and a decent backup plan will ensure you have a
+lot of those), so you would benefit from requesting this feature.
+.Sp
+This feature should not impact the default (non\- '\-\-recursive')
+listings however.
 .RE
 .RS 4
 .RE
