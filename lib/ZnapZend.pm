@@ -30,6 +30,7 @@ has compressed              => sub { 0 };
 has skipIntermediates       => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
+has zfsGetType              => sub { 0 };
 has connectTimeout          => sub { 30 };
 has runonce                 => sub { 0 };
 has recursive               => sub { 0 };
@@ -52,6 +53,7 @@ has zConfig => sub {
     my $self = shift;
     ZnapZend::Config->new(debug => $self->debug, noaction => $self->noaction,
                           rootExec => $self->rootExec, timeWarp => $self->timeWarp,
+                          zfsGetType => $self->zfsGetType,
                           zLog => $self->zLog);
 };
 
@@ -61,7 +63,7 @@ has zZfs => sub {
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
-        rootExec => $self->rootExec,
+        rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
         zLog => $self->zLog, compressed => $self->compressed);
 };
 
