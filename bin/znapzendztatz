@@ -106,12 +106,12 @@ sub main {
         my $datasets = $backupSet->{recursive} eq 'on' && $opts->{recursive}
             ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
 
+        # TOTHINK: Consider forcedSnapshotSuffix here? Not really known outside of bin/znapzend anyway...
         my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset
         for my $dataset (@$datasets){
             dumpStats(collectData($backupSet->{src}, "src", $dataset, $snapFilter), $opts->{H}, $opts->{setup});
-
 
             #destination datasets
             for (keys %$backupSet){

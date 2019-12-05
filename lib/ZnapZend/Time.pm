@@ -65,6 +65,7 @@ my $getSnapshotTimestamp = sub {
     my $snapshot = shift;
     my $timeFormat = shift;
 
+    # TOTHINK: Consider forcedSnapshotSuffix here? We do not clean these anyway...
     my $snapFilter = $self->getSnapshotFilter($timeFormat);
 
     if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
