@@ -120,11 +120,24 @@ is (runCommand(qw(--inherited --recursive --runonce=tank)), 1, 'znapzend runonce
 is (runCommand(qw(--inherited --runonce=tank)), 0, 'znapzend runonce of a dataset without a plan fails also with --inherited flag');
 is (runCommand(qw(--recursive --runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails with only --recursive flag and without --inherited');
 is (runCommand(qw(--runonce=tank/source/child)), 0, 'znapzend runonce of a dataset with only an inherited plan fails without --inherit flag');
-
 is (runCommand(qw(--runonce=tank/dest-disabled)), 1, 'cover znapzend runonce of a dataset with original backup plan and a disabled destination - does not fail');
 
 # TODO: Add handling and testing for inherited-config datasets with a locally defined bits of the backup plan, e.g. disabled destinations?
 #is (runCommand(qw(--inherited --runonce=tank/source/dest-disabled)), 0, 'cover znapzend runonce of a dataset with inherited backup plan and a disabled destination - such mixing is not supported at the moment');
+
+# Valid and invalid variants of forced snapshot name
+is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manualsnap)), 1, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manualsnap succeeds');
+#is (runCommand(qw(--runonce --forcedSnapshotSuffix=@manualsnap)), 1, 'znapzend --runonce --forcedSnapshotSuffix=@manualsnap succeeds (removes leading @)');
+is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=@manualsnap)), 1, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=@manualsnap succeeds (removes leading @)');
+
+is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=manual@snap)), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manual@snap fails (invalid chars in string)');
+is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix=manual snap'), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=manual" "snap fails (invalid chars in string)');
+### SKIPPED : This one gets failed by arg processing routines in a way that test program is killed
+#is (runCommand(qw(--runonce=tank/source --forcedSnapshotSuffix=)), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix= fails (empty snapname)');
+#throws_ok { runCommand_canThrow(qw(--runonce=tank/source --forcedSnapshotSuffix=) ) } qr/Option forcedSnapshotSuffix requires an argument/,
+#      'znapzend --runonce=tank/source --forcedSnapshotSuffix= fails (empty snapname)';
+is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix= '), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=" " fails (snapname becomes empty after chomp)');
+is (runCommand(qw(--forcedSnapshotSuffix=manualsnap)), 0, 'znapzend --forcedSnapshotSuffix=manualsnap fails (not in runonce mode)');
 
 # Series of tests over usual tank/source with different options
 is (runCommand(qw(--runonce=tank/source), '--features=oracleMode,recvu,compressed'),

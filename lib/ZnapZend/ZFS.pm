@@ -1029,10 +1029,6 @@ lists the last snapshot on source and the last common snapshot an source and des
 
 sends snapshots to a different destination on localhost or a remote host
 
-=head2 sendRecvSnapshotsExec
-
-same as sendRecvSnapshots but calls 'exec'
-
 =head2 getDataSetProperties
 
 gets dataset properties

@@ -40,6 +40,7 @@ has daemonize               => sub { 0 };
 has loglevel                => sub { q{debug} };
 has logto                   => sub { q{} };
 has pidfile                 => sub { q{} };
+has forcedSnapshotSuffix    => sub { q{} };
 has defaultPidFile          => sub { q{/var/run/znapzend.pid} };
 has terminate               => sub { 0 };
 has autoCreation            => sub { 0 };
@@ -201,7 +202,17 @@ my $refreshBackupPlans = sub {
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
-        $backupSet->{snapFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        $backupSet->{snapCleanFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        # Due to support of possible intermediate snapshots named outside the
+        # generated configured pattern (tsformat), to send (and not destroy on
+        # destination) the arbitrary names, and find last common ones properly,
+        # we should match all snap names here and there.
+        $backupSet->{snapSendFilter} = qr/.*/;
+#        $backupSet->{snapSendFilter} = $backupSet->{snapCleanFilter};
+#        if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
+#            # TODO : Should this include ^ (or ^.*@) and $ boundaries?
+#            #$backupSet->{snapSendFilter} = '(' . $backupSet->{snapSendFilter} . '|' . $self->forcedSnapshotSuffix . ')';
+#        }
         $backupSet->{UTC}        = $self->zTime->useUTC($backupSet->{tsformat});
         $self->zLog->info("found a valid backup plan for $backupSet->{src}...");
     }
@@ -347,7 +358,7 @@ my $sendRecvCleanup = sub {
                 eval {
                     local $SIG{__DIE__};
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapFilter});
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
                 };
                 if ($@){
                     $thisSendFailed = 1;
@@ -375,7 +386,7 @@ my $sendRecvCleanup = sub {
             # operations - so one destroy operation takes ages...
             # but hundreds of queued operations take the same time
             # and are all committed at once.
-            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{$dst}, $backupSet->{snapFilter})};
+            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{$dst}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
@@ -406,7 +417,7 @@ my $sendRecvCleanup = sub {
             next if ($backupSet->{recursive} eq 'on' && $dstDataSet eq $backupSet->{$dst});
 
             # cleanup according to backup schedule
-            @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapFilter})};
+            @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
@@ -460,7 +471,7 @@ my $sendRecvCleanup = sub {
             # but hundreds of queued operations take the same time
             # and are all committed at once.
 
-            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapFilter})};
+            @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
@@ -489,7 +500,7 @@ my $sendRecvCleanup = sub {
         for my $srcDataSet (@$srcSubDataSets){
             next if ($backupSet->{recursive} eq 'on' && $srcDataSet eq $backupSet->{src});
 
-            @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapFilter})};
+            @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
@@ -527,7 +538,20 @@ my $createSnapshot = sub {
     #no HUP handler in child
     $SIG{HUP} = 'IGNORE';
 
-    my $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    my $snapshotSuffix;
+    if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
+        $self->zLog->warn("requesting manually specified snapshot suffix '@" . $self->forcedSnapshotSuffix ."'");
+        $snapshotSuffix = $self->forcedSnapshotSuffix;
+    } else {
+        $snapshotSuffix = $self->zTime->createSnapshotTime($timeStamp, $backupSet->{tsformat});
+    }
+    # Basic sanity/security check (e.g. don't let the user pass extra
+    # keywords to zfs cli using bad forcedSnapshotSuffix option or
+    # backup plan config patterns)
+    if ($snapshotSuffix =~ /[@\s\"\'\`#\$]/) { ### # ` and $ to try and avoid shell escaping
+        die ("snapshot suffix '$snapshotSuffix' contains invalid characters\n");
+    }
+
     my $snapshotName = $backupSet->{src} . '@'. $snapshotSuffix;
 
     #set env variables for pre and post scripts use
