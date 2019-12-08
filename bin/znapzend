@@ -128,6 +128,9 @@ B<znapzend> [I<options>...]
  --inherited            allow "run-once" on dataset which only inherits a plan
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
+                        (detailed in man page):
+    oracleMode recvu pfexec sudo compressed lowmemRecurse zfsGetType
+    skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
  --autoCreation         automatically create dataset on dest if it does not exist
