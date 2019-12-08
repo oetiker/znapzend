@@ -509,7 +509,7 @@ where 'common-options' (must precede command-options) is a mix of the following:
 
             [--rootExec={pfexec|sudo}] \
             [--features={x,y,...}] \
-                {pfexec sudo lowmemRecurse zfsGetType} \
+                {lowmemRecurse zfsGetType} \
             [--debug]
 
 and where 'command' and its unique options is one of the following:
