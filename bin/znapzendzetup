@@ -505,7 +505,8 @@ znapzendzetup - znapzend setup utility
 
 B<znapzendzetup> I<command> [I<common-options...>] [I<command-options...>]
 
-where 'common-options' (must precede command-options) is a mix of the following:
+where 'common-options' (must precede command-options) is a mix of the
+following:
 
             [--rootExec={pfexec|sudo}] \
             [--features={x,y,...}] \
@@ -520,17 +521,20 @@ and where 'command' and its unique options is one of the following:
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC plan dataset \
-            [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
+            [ DST[:key] plan [[user@]host:]dataset
+                [pre-send-command] [post-send-command] ]
 
     delete  [--dst=key] <src_dataset>
 
-    edit    [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
+    edit    [--recursive=on|off] \
+            [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
+            [ DST:key [plan] [dataset] \
+                [pre-send-command|off] [post-send-command|off] ]
 
     edit    <src_dataset>
 
