@@ -16,6 +16,11 @@ sub main {
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
         qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation version),
         qw(forcedSnapshotSuffix=s),
+        qw(skipIntermediates|i sendIntermediates|I),
+            # Note: the intended usage is either via feature as done
+            # originally, or via shorthand -i/-I flags as mnemonical
+            # for "zfs send", so the longer variants --skipIntermediates
+            # vs. --sendIntermediates are not documented in the manpage.
         qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited)) or exit 1;
 
     $opts->{version} && do {
@@ -35,6 +40,14 @@ sub main {
             }
         }
         delete $opts->{features};
+    }
+
+    if (defined($opts->{sendIntermediates})) {
+        if ( (defined($opts->{skipIntermediates})) && ($opts->{skipIntermediates} != 0) ) {
+            warn "Options skipIntermediates and sendIntermediates are exclusive; and sendIntermediates wins!";
+        }
+        $opts->{skipIntermediates} = 0;
+        delete $opts->{sendIntermediates};
     }
 
     if (defined($opts->{runonce})) {
@@ -130,6 +143,7 @@ B<znapzend> [I<options>...]
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
     oracleMode recvu compressed lowmemRecurse zfsGetType skipIntermediates
+ -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
