@@ -142,46 +142,57 @@
 znapzendzetup \- znapzend setup utility
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBznapzendzetup\fR \fIcommand\fR [\fIoptions...\fR]
+\&\fBznapzendzetup\fR \fIcommand\fR [\fIcommon-options...\fR] [\fIcommand-options...\fR]
 .PP
-where 'command' is one of the following:
+where 'common\-options' (must precede command-options) is a mix of the
+following:
+.PP
+.Vb 4
+\&            [\-\-rootExec={pfexec|sudo}] \e
+\&            [\-\-features={x,y,...}] \e
+\&                {lowmemRecurse zfsGetType} \e
+\&            [\-\-debug]
+.Ve
+.PP
+and where 'command' and its unique options is one of the following:
 .PP
 .Vb 8
-\&    create  [\-\-rootExec={pfexec|sudo}] \e
-\&            [\-\-recursive] [\-\-mbuffer=<path>[:<port>]] [\-\-mbuffersize=<size>] \e
+\&    create  [\-\-recursive] [\-\-mbuffer=<path>[:<port>]] [\-\-mbuffersize=<size>] \e
 \&            [\-\-pre\-snap\-command=<command>] \e
 \&            [\-\-post\-snap\-command=<command>] \e
 \&            [\-\-tsformat=<format>] \-\-donotask \e
 \&            [\-\-send\-delay=<time>] \e
 \&            SRC plan dataset \e
-\&            [ DST[:key] plan [[user@]host:]dataset [pre\-send\-command] [post\-send\-command] ]
+\&            [ DST[:key] plan [[user@]host:]dataset
+\&                [pre\-send\-command] [post\-send\-command] ]
 \&
-\&    delete  [\-\-rootExec={pfexec|sudo}] [\-\-dst=key] <src_dataset>
+\&    delete  [\-\-dst=key] <src_dataset>
 \&
-\&    edit    [\-\-rootExec={pfexec|sudo}]
-\&            [\-\-recursive=on|off] [\-\-mbuffer=<path>[:<port>]|off] [\-\-mbuffersize=<size>] \e
+\&    edit    [\-\-recursive=on|off] \e
+\&            [\-\-mbuffer=<path>[:<port>]|off] [\-\-mbuffersize=<size>] \e
 \&            [\-\-pre\-snap\-command=<command>|off] \e
 \&            [\-\-post\-snap\-command=<command>|off] \e
 \&            [\-\-tsformat=<format>] \-\-donotask \e
 \&            [\-\-send\-delay=<time>] \e
 \&            SRC [plan] dataset \e
-\&            [ DST:key [plan] [dataset] [pre\-send\-command|off] [post\-send\-command|off] ]
+\&            [ DST:key [plan] [dataset] \e
+\&                [pre\-send\-command|off] [post\-send\-command|off] ]
 \&
-\&    edit    [\-\-rootExec={pfexec|sudo}] <src_dataset>
+\&    edit    <src_dataset>
 \&
-\&    enable  [\-\-rootExec={pfexec|sudo}] <src_dataset>
+\&    enable  <src_dataset>
 \&
-\&    disable [\-\-rootExec={pfexec|sudo}] <src_dataset>
+\&    disable <src_dataset>
 \&
-\&    enable\-dst  [\-\-rootExec={pfexec|sudo}] <src_dataset> <DST_key>
+\&    enable\-dst  <src_dataset> <DST_key>
 \&
-\&    disable\-dst [\-\-rootExec={pfexec|sudo}] <src_dataset> <DST_key>
+\&    disable\-dst <src_dataset> <DST_key>
 \&
-\&    list    [\-\-rootExec={pfexec|sudo}] [\-\-recursive] [\-\-inherited] [src_dataset...]
+\&    list    [\-\-recursive] [\-\-inherited] [src_dataset...]
 \&
-\&    export  [\-\-rootExec={pfexec|sudo}] <src_dataset>
+\&    export  <src_dataset>
 \&
-\&    import  [\-\-rootExec={pfexec|sudo}] [\-\-write] [\-\-prop <property>=<value>, [\-\-prop ...] ...]
+\&    import  [\-\-write] [\-\-prop <property>=<value>, [\-\-prop ...] ...]
 \&            <src_dataset> [<prop_dump_file>]
 \&
 \&    help
