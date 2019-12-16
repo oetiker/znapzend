@@ -144,6 +144,8 @@ is (runCommand(qw(--runonce=tank/source), '--features=oracleMode,recvu,compresse
     1, 'znapzend --features=oracleMode,recvu,compressed --runonce=tank/source succeeds');
 is (runCommand(qw(--runonce=tank/source), '--features=skipIntermediates'),
     1, 'znapzend --features=skipIntermediates --runonce=tank/source succeeds');
+is (runCommand(qw(--runonce=tank/source -i -I), '--features=skipIntermediates'),
+    1, 'znapzend --features=skipIntermediates --runonce=tank/source -i -I succeeds (should complain about both opposing flags used)');
 
 # Coverage for various failure codepaths
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST0PRECMD_FAIL'} = '1';

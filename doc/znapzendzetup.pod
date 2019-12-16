@@ -1,48 +1,57 @@
-=head1 NAME
+[01;31m[K=head1 NAME[m[K
 
 znapzendzetup - znapzend setup utility
 
 =head1 SYNOPSIS
 
-B<znapzendzetup> I<command> [I<options...>]
+B<znapzendzetup> I<command> [I<common-options...>] [I<command-options...>]
 
-where 'command' is one of the following:
+where 'common-options' (must precede command-options) is a mix of the
+following:
 
-    create  [--rootExec={pfexec|sudo}] \
-            [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
+            [--rootExec={pfexec|sudo}] \
+            [--features={x,y,...}] \
+                {lowmemRecurse zfsGetType} \
+            [--debug]
+
+and where 'command' and its unique options is one of the following:
+
+    create  [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC plan dataset \
-            [ DST[:key] plan [[user@]host:]dataset [pre-send-command] [post-send-command] ]
+            [ DST[:key] plan [[user@]host:]dataset
+                [pre-send-command] [post-send-command] ]
 
-    delete  [--rootExec={pfexec|sudo}] [--dst=key] <src_dataset>
+    delete  [--dst=key] <src_dataset>
 
-    edit    [--rootExec={pfexec|sudo}]
-            [--recursive=on|off] [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
+    edit    [--recursive=on|off] \
+            [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
             SRC [plan] dataset \
-            [ DST:key [plan] [dataset] [pre-send-command|off] [post-send-command|off] ]
+            [ DST:key [plan] [dataset] \
+                [pre-send-command|off] [post-send-command|off] ]
 
-    edit    [--rootExec={pfexec|sudo}] <src_dataset>
+    edit    <src_dataset>
 
-    enable  [--rootExec={pfexec|sudo}] <src_dataset>
+    enable  <src_dataset>
 
-    disable [--rootExec={pfexec|sudo}] <src_dataset>
+    disable <src_dataset>
 
-    enable-dst  [--rootExec={pfexec|sudo}] <src_dataset> <DST_key>
+    enable-dst  <src_dataset> <DST_key>
 
-    disable-dst [--rootExec={pfexec|sudo}] <src_dataset> <DST_key>
+    disable-dst <src_dataset> <DST_key>
 
-    list    [--rootExec={pfexec|sudo}] [--recursive] [--inherited] [src_dataset...]
+    list    [--recursive] [--inherited] [src_dataset...]
 
-    export  [--rootExec={pfexec|sudo}] <src_dataset>
+    export  <src_dataset>
 
-    import  [--rootExec={pfexec|sudo}] [--write] [--prop <property>=<value>, [--prop ...] ...]
+    import  [--write] [--prop <property>=<value>, [--prop ...] ...]
             <src_dataset> [<prop_dump_file>]
 
     help

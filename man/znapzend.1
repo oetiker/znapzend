@@ -149,10 +149,10 @@ znapzend \- znapzend daemon
 \& \-\-version              print version and exit
 \& \-h,\-\-help              display this help and exit
 \& \-d,\-\-debug             print debug messages to STDERR
-\& \-n,\-\-noaction          run in simulation mode: does no changes to the filesystem
+\& \-n,\-\-noaction          run in simulation mode: does no changes to filesystems
 \& \-\-nodelay              if a backup plan has a zend_delay defined, ignore it
 \& \-\-nodestroy            does all changes to the filesystem except destroy
-\& \-\-logto=x              select where to log to (syslog::<facility> or <filepath>)
+\& \-\-logto=x              select where to log (syslog::<facility> or <filepath>)
 \& \-\-loglevel=x           define the log level
 \& \-\-pidfile=x            write a pid file when running in daemon mode
 \& \-\-daemonize            fork into the background
@@ -161,10 +161,16 @@ znapzend \- znapzend daemon
 \& \-\-inherited            allow "run\-once" on dataset which only inherits a plan
 \& \-\-forcedSnapshotSuffix=x  use non\-generated snapshot suffix for this "run\-once"
 \& \-\-features=x           comma separated list of features to be enabled
-\& \-\-rootExec=x           exec zfs with this command to obtain root privileges (sudo or pfexec)
+\&                        (detailed in man page):
+\&    oracleMode recvu compressed lowmemRecurse zfsGetType skipIntermediates
+\& \-i/\-I                  a "zfs send" compatible on/off for skipIntermediates
+\& \-\-rootExec=x           exec zfs with this command to obtain root privileges
+\&                        (sudo or pfexec)
 \& \-\-connectTimeout=x     sets the ConnectTimeout for ssh commands
-\& \-\-autoCreation         automatically create dataset on dest if it does not exist
-\& \-\-timeWarp=x           shift znapzends sens of NOW into the future by x seconds
+\& \-\-autoCreation         automatically create dataset on destination if it does
+\&                        not exist
+\& \-\-timeWarp=x           shift znapzend\*(Aqs sense of NOW into the future
+\&                        by x seconds
 \& \-\-skipOnPreSnapCmdFail skip snapshots if the pre\-snap\-command fails
 \& \-\-skipOnPreSendCmdFail skip replication if the pre\-send\-command fails
 .Ve
