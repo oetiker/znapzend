@@ -27,6 +27,7 @@ has nodestroy               => sub { 0 };
 has oracleMode              => sub { 0 };
 has recvu                   => sub { 0 };
 has compressed              => sub { 0 };
+has sendRaw                 => sub { 0 };
 has skipIntermediates       => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
@@ -65,7 +66,8 @@ has zZfs => sub {
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
         rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
-        zLog => $self->zLog, compressed => $self->compressed);
+        zLog => $self->zLog, compressed => $self->compressed,
+        sendRaw => $self->sendRaw);
 };
 
 has zTime => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp) };

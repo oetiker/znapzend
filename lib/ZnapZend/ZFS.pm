@@ -12,6 +12,7 @@ has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
 has compressed      => sub { 0 };
+has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
 has lowmemRecurse   => sub { 0 };
 has zfsGetType      => sub { 0 };
@@ -347,6 +348,7 @@ sub sendRecvSnapshots {
     my $recvOpt = $self->recvu ? '-uF' : '-F';
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
+    push @sendOpt, '-w' if $self->sendRaw;
 
     my $remote;
     my $mbufferPort;

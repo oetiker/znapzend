@@ -8,7 +8,7 @@ use Pod::Usage;
 
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed lowmemRecurse zfsGetType skipIntermediates);
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates);
 
 sub main {
     my $opts = {};
@@ -142,7 +142,7 @@ B<znapzend> [I<options>...]
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
-    oracleMode recvu compressed lowmemRecurse zfsGetType skipIntermediates
+    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -380,6 +380,17 @@ as reduces network bandwidth usage.
 
 The -L option is for large block support and -e is for embedded data
 support. These may require certain (Open)ZFS features to be enabled.
+
+=item sendRaw
+
+use 'sendRaw' to add option -w to zfs send commands
+
+For encrypted source datasets this instructs zfs not to decrypt
+before sending which results in a remote backup that can't be read
+without the encryption key/passphrase, useful when the remote isn't
+fully trusted or not physically secure. This option must be used
+consistently, raw incrementals cannot be based on non-raw snapshots
+and vice versa.
 
 =item skipIntermediates
 
