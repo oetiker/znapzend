@@ -262,6 +262,17 @@ as reduces network bandwidth usage.
 The -L option is for large block support and -e is for embedded data
 support. These may require certain (Open)ZFS features to be enabled.
 
+=item sendRaw
+
+use 'sendRaw' to add option -w to zfs send commands
+
+For encrypted source datasets this instructs zfs not to decrypt
+before sending which results in a remote backup that can't be read
+without the encryption key/passphrase, useful when the remote isn't
+fully trusted or not physically secure. This option must be used
+consistently, raw incrementals cannot be based on non-raw snapshots
+and vice versa.
+
 =item skipIntermediates
 
 Enable the 'skipIntermediates' feature to send a single increment
