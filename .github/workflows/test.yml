@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - "*"
+    tags-ignore:
+    - "*"
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl:
+        - "5.30"
+        - "5.26"
+        - "5.22"
+        - "5.18"
+        - "5.10"
+    name: Perl ${{ matrix.perl }}
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
+    - run: ./bootstrap.sh
+    - run: ./configure --prefix=$HOME/znapzend
+    - run: make install
+    - run: ./test.sh
+    - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
+    - run: perl -I./thirdparty/lib/perl5 thirdparty/bin/cover -report coveralls
