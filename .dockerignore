@@ -1,0 +1,9 @@
+/Dockerfile
+/*.md
+/.gitignore
+/AUTHORS
+/CHANGES
+/COPYRIGHT
+/LICENSE
+/.git
+/.github
