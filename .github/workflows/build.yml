@@ -1,0 +1,18 @@
+name: Build
+
+on:
+  push:
+    branches-ignore:
+    - master
+    tags-ignore:
+    - "*"
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run test within image
+      run: docker build --target test .

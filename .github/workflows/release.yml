@@ -1,0 +1,22 @@
+name: Release
+
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - "*"
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Login to image registry
+      run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - name: Build runtime image
+      run: docker build --target runtime -t ${{ github.repository }}:${GITHUB_REF#refs/heads/} .
+    - name: Run test within image
+      run: docker build --target test .
+    - name: Push runtime image
+      run: docker push ${{ github.repository }}:${GITHUB_REF#refs/heads/}

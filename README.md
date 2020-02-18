@@ -1,9 +1,11 @@
-ZnapZend 0.19.0
-===============
+ZnapZend
+========
 
-[![Build Status](https://travis-ci.org/oetiker/znapzend.svg?branch=master)](https://travis-ci.org/oetiker/znapzend)
+[![Build](https://github.com/oetiker/znapzend/workflows/Build/badge.svg)](https://github.com/oetiker/znapzend/actions?query=workflow%3ABuild)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend)
+[![Releases](https://img.shields.io/github/v/release/oetiker/znapzend)](https://github.com/oetiker/znapzend/releases)
+[![Docker images](https://img.shields.io/docker/pulls/oetiker/znapzend)](https://hub.docker.com/r/oetiker/znapzend/)
 
 ZnapZend is a ZFS centric backup tool to create snapshots and send them
 to backup locations. It relies on the ZFS tools snapshot, send and receive
@@ -165,6 +167,32 @@ In order to allow a non-privileged user to use it, the following permissions are
 
 Sending end: destroy,hold,mount,send,snapshot,userprop
 Receiving end: create,mount,receive,userprop
+
+Running in Container
+-----------------
+
+znapzend is also available as docker container image. It needs to be a privileged
+container depending on permissions.
+
+```sh
+docker run -d --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master
+```
+
+To configure znapzend, run in interactive mode:
+```sh
+docker exec -it znapzend /bin/sh
+$ znapzendzetup create ...
+# After exiting, restart znapzend container or send the HUP signal to reload config
+```
+
+By default, znapzend in container runs with `--logto /dev/stdout`. If you wish to add different arguments,
+overwrite them at the end of the command:
+
+```sh
+docker run --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master znapzend --logto /dev/stdout --runonce --debug
+```
+
+Be sure not to daemonize znapzend in the container, as that exits the container immediately.
 
 Troubleshooting
 ---------------
