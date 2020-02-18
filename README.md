@@ -1,7 +1,7 @@
 ZnapZend
 ========
 
-[![Build](https://github.com/oetiker/znapzend/workflows/Build/badge.svg)](https://github.com/oetiker/znapzend/actions?query=workflow%3ABuild)
+[![Build](https://img.shields.io/github/workflow/status/oetiker/znapzend/Release)](https://github.com/oetiker/znapzend/actions?query=workflow%3ABuild)
 [![Coverage Status](https://img.shields.io/coveralls/oetiker/znapzend.svg)](https://coveralls.io/r/oetiker/znapzend?branch=master)
 [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend)
 [![Releases](https://img.shields.io/github/v/release/oetiker/znapzend)](https://github.com/oetiker/znapzend/releases)
