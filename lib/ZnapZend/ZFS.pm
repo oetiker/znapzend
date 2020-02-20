@@ -272,8 +272,9 @@ sub createSnapshot {
     Mojo::Exception->throw("ERROR: cannot create snapshot $dataSet");
 }
 
-# known limitation: snapshots from subdatasets have to be destroyed individually
 sub destroySnapshots {
+    # known limitation: snapshots from subdatasets have to be
+    # destroyed individually on some ZFS implementations
     my $self = shift;
     my @toDestroy = ref($_[0]) eq "ARRAY" ? @{$_[0]} : ($_[0]);
     my %toDestroy;
