@@ -89,6 +89,17 @@ my $checkBackupSets = sub {
            next;
         }
 
+        if ( $dataSet =~ m/[\@]/ ) {
+            # If we are here, somebody fed us a snapshot in the list of
+            # datasets, which is likely a bug elsewhere in discovery.
+            # We do not want to fail whole backup below due to faulted
+            # dataSetExists() below, so just ignore this entry.
+            # If we really do get here, take a hard look at recursive
+            # and/or inherited modes for run-once.
+            print STDERR "#checkBackupSets# SKIP $backupSet->{src} because it is not a filesystem,volume. BUG: Should not get here.\n";# if $self->debug;
+            next;
+        }
+
         for my $prop (keys %{$self->mandProperties}){
             exists $backupSet->{$prop} || do {
                 $self->zLog->info("WARNING: property $prop not set on backup for " . $backupSet->{src} . ". Skipping to next dataset");
