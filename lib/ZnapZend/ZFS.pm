@@ -89,6 +89,9 @@ my $scrubZpool = sub {
 
 ### public methods ###
 sub dataSetExists {
+    # Note: Despite the "dataset" in the name, this routine only asks about
+    # the "live datasets" (filesystem,volume) and not snapshots which are
+    # also a type of dataset in ZFS terminology. See snapshotExists() below.
     my $self = shift;
     my $dataSet = shift;
     my $remote;
@@ -134,6 +137,9 @@ sub snapshotExists {
 }
 
 sub listDataSets {
+    # Note: Despite the "dataset" in the name, this routine only asks about
+    # the "live datasets" (filesystem,volume) and not snapshots which are
+    # also a type of dataset in ZFS terminology. See listSnapshots() below.
     my $self = shift;
     my $remote = shift;
     my $rootDataSets = shift; # May be not passed, or may be a string, or an array of strings
