@@ -26,8 +26,8 @@ the command is targeted at one dataset and impacts it and all its children,
 allowing to get a consistent point-in-time set of snapshots across multiple
 datasets.
 
-Complilation Inztructionz
--------------------------
+Compilation Inztructionz
+------------------------
 
 If your distribution does not provide a packaged version of znapzend, or if
 you want to get a custom-made copy of znapzend, you will need a compiler and
