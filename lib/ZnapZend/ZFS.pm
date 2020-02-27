@@ -541,7 +541,7 @@ sub getDataSetProperties {
                 }
             }
         } else {
-            # Assume a string, per usual invokation
+            # Assume a string, per usual invocation
             print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
