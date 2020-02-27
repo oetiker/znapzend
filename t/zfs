@@ -129,7 +129,7 @@ sub find_attr_source {
 
         my $parentSource = find_attr_source($parentSourceName);
         if (!defined($parentSource) || $parentSource eq '-' || $parentSource eq 'default') {
-            return 'default'; #...or shoul we return $parentSource here?
+            return 'default'; #...or should we return $parentSource here?
         }
 
         if ($parentSource eq 'local' || $parentSource eq 'received') {
@@ -344,7 +344,7 @@ for ($command){
                 } else {
                     # Non-recursive, print the requested dataset of any type
                     # unless constrained by non-snapshots explicitly
-#print STDERR "=== zfs list : nonrecursive\n";
+#print STDERR "=== zfs list : non-recursive\n";
                     if ( $srcds =~ /@/ && $listsnaps < 0 ) {
                         print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
                         exit 1;

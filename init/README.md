@@ -29,7 +29,7 @@ for an example plist.
 ## Solaris/Illumos
 
 For solaris/illumos OSes you can tell configure to install a znapzend
-service manifest into a partcular location (no default imposed) by
+service manifest into a particular location (no default imposed) by
 calling configure with the option like
 ```--enable-svcinstall=/var/svc/manifest/site```.
 You can also define the service name (defaults to ```oep/znapzend```)

@@ -159,7 +159,7 @@ sub getSnapshotsToDestroy {
     my %timeslots;
     my @toDestroy;
 
-    #initialise with maximum time to keep backups since we run from old to new backups
+    #initialize with maximum time to keep backups since we run from old to new backups
     my $maxAge = (sort { $a<=>$b } keys %$timePlan)[-1];
 
     for my $snapshot (@$snapshots){
@@ -239,7 +239,7 @@ sub checkTimeFormat {
     my $resultingTime = $self->$getSnapshotTimestamp("dummydataset\@$formattedTime", $timeFormat)
         or die "ERROR: timestamp format not valid. check your syntax\n";
 
-    return $timeToCheck == $resultingTime; #times schould be equal
+    return $timeToCheck == $resultingTime; #times should be equal
 }
 
 sub getSnapshotFilter {

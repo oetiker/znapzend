@@ -199,7 +199,7 @@ do all changes to the filesystem except destroying old snapshots
 .IP "\fB\-\-logto\fR={\fBsyslog::\fR\fIfacility\fR|\fIfilepath\fR}" 4
 .IX Item "--logto={syslog::facility|filepath}"
 send logs out to either syslog or a logfile. Default is to send logs to
-\&\fBsyslog::daemon\fR when runing daemonized. When running in debug mode, the
+\&\fBsyslog::daemon\fR when running daemonized. When running in debug mode, the
 logs will go to \s-1STDERR\s0 by default.
 .Sp
 Examples:
@@ -371,7 +371,7 @@ The multi snapshot destroy syntax is not available. So stick to destroying
 them individually.
 .IP "\(bu" 4
 Sometimes a snapshot can not be destroyed because of some oracle zfs bug.
-Only a reeboot seems to be able to fix this. So we just destroy the ones we
+Only a reboot seems to be able to fix this. So we just destroy the ones we
 can destroy. Logging an error about the problem
 .RE
 .RS 4

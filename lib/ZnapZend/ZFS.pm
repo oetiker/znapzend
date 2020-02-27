@@ -541,7 +541,7 @@ sub getDataSetProperties {
                 }
             }
         } else {
-            # Assume a string, per usual invokation
+            # Assume a string, per usual invocation
             print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
@@ -1080,7 +1080,7 @@ returns whether scrub is active on zpool or not
 
 =head2 usedBySnapshots
 
-returns the amount of storage space used by snapshots of a sepcific dataset
+returns the amount of storage space used by snapshots of a specific dataset
 
 =head1 COPYRIGHT
 

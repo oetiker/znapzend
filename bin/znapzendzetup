@@ -682,7 +682,7 @@ Specify the path to your copy of the mbuffer utility.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
-Specifiy the path to your copy of the mbuffer utility and the port used
+Specify the path to your copy of the mbuffer utility and the port used
 on the destination. Caution: znapzend will send the data directly
 from source mbuffer to destination mbuffer, thus data stream is B<not>
 encrypted.
