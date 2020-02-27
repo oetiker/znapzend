@@ -238,7 +238,7 @@ them individually.
 =item *
 
 Sometimes a snapshot can not be destroyed because of some oracle zfs bug.
-Only a reeboot seems to be able to fix this. So we just destroy the ones we
+Only a reboot seems to be able to fix this. So we just destroy the ones we
 can destroy. Logging an error about the problem
 
 =back
