@@ -67,7 +67,7 @@ do all changes to the filesystem except destroying old snapshots
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
 send logs out to either syslog or a logfile. Default is to send logs to
-B<syslog::daemon> when runing daemonized. When running in debug mode, the
+B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
 Examples:
