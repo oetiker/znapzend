@@ -1080,7 +1080,7 @@ returns whether scrub is active on zpool or not
 
 =head2 usedBySnapshots
 
-returns the amount of storage space used by snapshots of a sepcific dataset
+returns the amount of storage space used by snapshots of a specific dataset
 
 =head1 COPYRIGHT
 
