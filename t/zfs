@@ -129,7 +129,7 @@ sub find_attr_source {
 
         my $parentSource = find_attr_source($parentSourceName);
         if (!defined($parentSource) || $parentSource eq '-' || $parentSource eq 'default') {
-            return 'default'; #...or shoul we return $parentSource here?
+            return 'default'; #...or should we return $parentSource here?
         }
 
         if ($parentSource eq 'local' || $parentSource eq 'received') {

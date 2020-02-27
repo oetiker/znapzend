@@ -239,7 +239,7 @@ sub checkTimeFormat {
     my $resultingTime = $self->$getSnapshotTimestamp("dummydataset\@$formattedTime", $timeFormat)
         or die "ERROR: timestamp format not valid. check your syntax\n";
 
-    return $timeToCheck == $resultingTime; #times schould be equal
+    return $timeToCheck == $resultingTime; #times should be equal
 }
 
 sub getSnapshotFilter {
