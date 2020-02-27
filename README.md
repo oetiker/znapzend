@@ -17,7 +17,7 @@ itself.
 
 Note that while recursive configurations are well supported to set up
 backup and retention policies for a whole dataset subtree under the dataset
-to which you have applied explicit configuration, at this time prunning of
+to which you have applied explicit configuration, at this time pruning of
 such trees ("I want every dataset under var except var/tmp") is not supported.
 You probably do not want to enable ZnapZend against the root datasets of your
 pools due to that, but would have to be more fine-grained in your setup.
