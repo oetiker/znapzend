@@ -159,7 +159,7 @@ sub getSnapshotsToDestroy {
     my %timeslots;
     my @toDestroy;
 
-    #initialise with maximum time to keep backups since we run from old to new backups
+    #initialize with maximum time to keep backups since we run from old to new backups
     my $maxAge = (sort { $a<=>$b } keys %$timePlan)[-1];
 
     for my $snapshot (@$snapshots){
