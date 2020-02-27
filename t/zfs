@@ -344,7 +344,7 @@ for ($command){
                 } else {
                     # Non-recursive, print the requested dataset of any type
                     # unless constrained by non-snapshots explicitly
-#print STDERR "=== zfs list : nonrecursive\n";
+#print STDERR "=== zfs list : non-recursive\n";
                     if ( $srcds =~ /@/ && $listsnaps < 0 ) {
                         print STDERR "cannot open '$srcds': snapshot delimiter '\@' is not expected here\n";
                         exit 1;
