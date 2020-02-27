@@ -2992,8 +2992,8 @@ fi
 done
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnu make availablility" >&5
-$as_echo_n "checking for gnu make availablility... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnu make availability" >&5
+$as_echo_n "checking for gnu make availability... " >&6; }
 if  ( $GMAKE --version 2> /dev/null | $GREP GNU  > /dev/null 2>&1 );  then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GMAKE is GNU make" >&5
 $as_echo "$GMAKE is GNU make" >&6; }

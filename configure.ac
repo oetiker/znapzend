@@ -108,7 +108,7 @@ AC_PROG_GREP
 AC_ARG_VAR(GMAKE,   [Path to local GNU Make binary])
 AC_PATH_PROGS(GMAKE, [gnumake gmake make])
 
-AC_MSG_CHECKING([for gnu make availablility])
+AC_MSG_CHECKING([for gnu make availability])
 if  ( $GMAKE --version 2> /dev/null | $GREP GNU  > /dev/null 2>&1 );  then
     AC_MSG_RESULT([$GMAKE is GNU make])
 else
