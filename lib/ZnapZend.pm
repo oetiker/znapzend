@@ -606,7 +606,7 @@ my $createSnapshot = sub {
 
             # for each dataset: if the property "enabled" is set to "off", set the
             # newly created snapshot for removal
-            my @dataSetsExplicitelyDisabled = ();
+            my @dataSetsExplicitlyDisabled = ();
             for my $dataSet (@dataSetList){
 
                 # get the value for org.znapzend property
@@ -619,15 +619,15 @@ my $createSnapshot = sub {
                 $prop = <$prop> || "on";
                 chomp($prop);
                 if ( $prop eq 'off' ) {
-                    push(@dataSetsExplicitelyDisabled, $dataSet . '@' . $snapshotSuffix);
+                    push(@dataSetsExplicitlyDisabled, $dataSet . '@' . $snapshotSuffix);
                 }
             }
 
             # remove the snapshots previously marked
             # removal here is non-recursive to allow for fine-grained control
-            if ( @dataSetsExplicitelyDisabled ){
-               $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitelyDisabled));
-               $self->zZfs->destroySnapshots(@dataSetsExplicitelyDisabled, 0);
+            if ( @dataSetsExplicitlyDisabled ){
+               $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitlyDisabled));
+               $self->zZfs->destroySnapshots(@dataSetsExplicitlyDisabled, 0);
            }
         }
     }
