@@ -7,8 +7,7 @@ on:
     tags-ignore:
     - "*"
   pull_request:
-    types: [opened, reopened]
-
+    
 jobs:
   unit:
     runs-on: ubuntu-latest
