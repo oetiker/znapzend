@@ -1,4 +1,4 @@
-[01;31m[K=head1 NAME[m[K
+=head1 NAME
 
 znapzendzetup - znapzend setup utility
 

@@ -23,7 +23,7 @@ B<znapzend> [I<options>...]
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
-    oracleMode recvu compressed lowmemRecurse zfsGetType skipIntermediates
+    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
