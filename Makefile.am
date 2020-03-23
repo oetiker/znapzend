@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS =  foreign
 
 SUFFIXES = .1 .man .pm
 
-SUBDIRS = thirdparty lib
+SUBDIRS = lib thirdparty
 
 BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 PM :=  $(shell find lib/ -name "*.pm")
