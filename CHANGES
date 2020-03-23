@@ -1,3 +1,701 @@
+commit 7ed013577ac2f918ef4d159c70b65e4e0c3cc5e6
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Fri Feb 21 01:55:38 2020 -0500
+
+    Set up spell-checking action
+
+commit 7629a0243b587fe50215336bac41396e9388e759
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Feb 28 16:44:05 2020 +0100
+
+    run on all pullrequests
+
+commit 91cf4215a05965539ae1fabe05647664dbf95623
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Feb 28 16:28:53 2020 +0100
+
+    only run push on master
+
+commit 93a1cbc0c3334afd839791c457b3ec914e58a389
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Feb 28 16:27:00 2020 +0100
+
+    fix for regression introduced by 60e7afe as mentioned in #479
+
+commit ad2111fcff8eb1077c93d6fabbc9982dc4ee6cf3
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:30:18 2020 -0500
+
+    spelling: (en-US) initialize
+
+commit 962b57906ed88dfa1d532a97b3b4988ce23aebcb
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:48:54 2020 -0500
+
+    spelling: specify
+
+commit 829d62333b1fc67964385197b793ad5c2c0f994e
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:48:14 2020 -0500
+
+    spelling: pruning
+
+commit dec953b06b696300eb3c7790e2fce0a3881b20d7
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:46:44 2020 -0500
+
+    spelling: compilation
+
+commit f08ee29bde9f94d5c48f880b57f24832b6efddbf
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:45:59 2020 -0500
+
+    spelling: availability
+
+commit 9ffdea4639bef1758bc1fa8ba2e56016570ae622
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:36:39 2020 -0500
+
+    spelling: thinning
+
+commit 30229308e6f5c8ff1cc51d0c30560b91cf1f0904
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:35:06 2020 -0500
+
+    spelling: specific
+
+commit 49a3431e4b4b74dc55c45210bf4c6ebe8f73b9b6
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:34:48 2020 -0500
+
+    spelling: should
+
+commit c3c3243cac6a45865abe17bfbfc3731d5c9eba96
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:34:37 2020 -0500
+
+    spelling: running
+
+commit f44eb50643380e0a5778cf3a308cd8930b335aa5
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:34:22 2020 -0500
+
+    spelling: reboot
+
+commit 4215f231f12c2e59752fe820b3e7a0e1438b4e3d
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:33:37 2020 -0500
+
+    spelling: particular
+
+commit d886edb02d71b26e14f97076c513c730972ae31b
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:33:11 2020 -0500
+
+    spelling: non-recursive
+
+commit a962c86be613e6169ef0de5c24ba4ad64ea36009
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:32:37 2020 -0500
+
+    spelling: necessary
+
+commit 9f94fc7827a054ac98ac82eb38ab9726144806c4
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:30:47 2020 -0500
+
+    spelling: invocation
+
+commit d250d3c9f4a92c423b9271c82515f599798e4351
+Author: Josh Soref <jsoref@users.noreply.github.com>
+Date:   Wed Feb 26 21:28:15 2020 -0500
+
+    spelling: explicitly
+
+commit 60e7afe76ed375c0b3994c29cd2283c02e0f59c4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Feb 20 10:46:25 2020 +0100
+
+    lib/ZnapZend/Config.pm: fast-fail checkBackupSets() if called for snapshot
+
+commit 3ba170ad8654516ae96a60c51dd50947c72e3531
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Feb 20 10:41:29 2020 +0100
+
+    lib/ZnapZend/ZFS.pm: move and update comment for destroySnapshots()
+
+commit 0ebbc2ea2fe95a7c086da9d9c38f3f303f594d94
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Feb 20 10:41:10 2020 +0100
+
+    lib/ZnapZend/ZFS.pm: document for dataSetExists() and listDataSets() that they are not about snapshots
+
+commit 19ba6dca3120e6ccab535dd1ca0bd4a3071e844c
+Author: Chris <github.account@chrigel.net>
+Date:   Tue Feb 18 09:59:19 2020 +0100
+
+    Fix build badge
+
+commit 10f25cba18332ba669611b75478b834ed2d17b2f
+Author: Chris <github.account@chrigel.net>
+Date:   Wed Feb 12 20:59:35 2020 +0100
+
+    Update documentation for docker usage
+
+commit 2edc62d39decf35105203f6aaf9be2e6250f61cd
+Author: Chris <github.account@chrigel.net>
+Date:   Wed Feb 12 20:25:14 2020 +0100
+
+    Switch to Github Actions
+    
+    Better integration, better documented
+
+commit de85f723aa8827b524035729298131e01c9835c4
+Author: Chris <github.account@chrigel.net>
+Date:   Wed Feb 12 20:24:19 2020 +0100
+
+    Add Dockerfile
+
+commit 50824e21237981c981f3991f44e75695810f1f23
+Author: Peter Spikings <peter@spikings.com>
+Date:   Sat Jan 25 09:05:33 2020 +0000
+
+    Add sendRaw as a feature to enable sending encrypted datasets without decrypting to untrusted backup hosts
+
+commit e6c1d373ed8e097aef915dcdcae2500d20b11eed
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Dec 9 10:33:31 2019 +0100
+
+    Introduce "znapzend -i/-I" for simplicity vs. "zfs send -i/-I" calls
+
+commit cfc7616fb365d41313fadfde04984f2da41f2cb2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sun Dec 8 11:07:21 2019 +0100
+
+    Regenerate docs files
+
+commit bf47dee157479a0d1db3b24766d57519c4fcc4bb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sun Dec 8 11:06:39 2019 +0100
+
+    znapzend znapzendzetup : fit man synopsis (--help usage) in 80 columns
+
+commit a9b0e9e426b0b99343bac956bd4f88c021a4d741
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sun Dec 8 11:02:16 2019 +0100
+
+    znapzend znapzendzetup : change feature list to not expose deprecated pfexec/sudo
+
+commit 6491570d6a332f08bed75ca2de9cfb77d08d8650
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sun Dec 8 11:00:45 2019 +0100
+
+    znapzend znapzendzetup : change manpage to list features
+
+commit 270ee5cb52cb19609e0188d4bc21eed0bffe7a3c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 18:21:12 2019 +0100
+
+    t/zfs : introduce envval() and change quotations for ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots
+
+commit 97f9b8730277fbb3735831ab24b3d3a2b0299e2c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 18:20:24 2019 +0100
+
+    t/zfs : introduce envval() to check ENV entry definedness and optionally value
+
+commit e5df7fea72676bd4aa9c802fbf2943406a746bec
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 17:25:01 2019 +0100
+
+    t/znapzend.t : fix copy-paste typo in arg line (extra quote embedded as part of arg string)
+
+commit 8d1d89d8a3ce5c1d92a17d34ae858bd8ec105ce1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 19:41:20 2019 +0100
+
+    znapzend.t : tweak envvars
+
+commit a7e80a918749dccdcc023cc1a2e5120a56aecf1f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 19:20:06 2019 +0100
+
+    t/znapzend.t : cover some scenarios with ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots
+
+commit 5be719b9a5364efdd96bbd3aac88f5fd78f24a00
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 19:16:37 2019 +0100
+
+    t/zfs : introduce ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots
+
+commit 60fd997eca5e74a534371cb392fddea1731d309f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 18:49:38 2019 +0100
+
+    ZnapZend::Config : pass the zfsGetType feature setting
+
+commit cb1019ccba130887586c1750999d74ff6d7a7992
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 18:27:43 2019 +0100
+
+    t/zfs : "zfs get" CLI args can now display or filter out attributes for snapshots defined in dataSets array
+
+commit 12cd28c9505f6149fd40181f03298083b8032ee4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 18:13:45 2019 +0100
+
+    t/zfs : "zfs list" CLI args can now display or filter out snapshots defined in dataSets array
+
+commit f8125632250a49eb0b624a833a28fe8098f99e34
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 17:58:33 2019 +0100
+
+    t/zfs : refactor numerous `join(" ", @ARGV)` calls into common $ARGSTR
+
+commit 40aa7edbe78a682b7d9cef11aaaa1974cc76e0a5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 15:45:03 2019 +0100
+
+    t/zfs : add a snapshot into the dataset listing
+
+commit 77ccdb78aac41acebe36f42dbad32d81bb9337ef
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 13:54:49 2019 +0100
+
+    t/znapzend(zetup).t : try success stories before ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED fiddling
+
+commit 917cd194ff4d5e387ca6bf0b130527c6e115c5f6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 13:22:00 2019 +0100
+
+    t/znapzendzetup.t : test (recursive+) --inherited modes of operation with zfsGetType
+
+commit 89660f7fcc28d76010bc828087f2190ca5e204b0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 12:35:10 2019 +0100
+
+    ZnapZend/ZFS.pm : getDataSetProperties() : Filter away snapshot properties ASAP if we do not use zfsGetType feature
+
+commit 47fe8bf8c0926b1487bcf5063c80f33dbb2beced
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 12:07:18 2019 +0100
+
+    Reword the manpage notes about --features=zfsGetType again: Sol10 does "zfs get" snapshot properties
+
+commit 612e5fd7fca06f1038442b0176fb139be0d84a03
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 11:57:05 2019 +0100
+
+    Reword the manpage notes about --features=zfsGetType
+
+commit 10fd674f0a8a25348eccc2f041a444d7d0aae388
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 11 06:50:16 2019 +0100
+
+    Update docs for zfsGetType feature
+
+commit 313928190b84bfd368e92a607a91779747101c3d
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Nov 11 02:49:17 2019 +0300
+
+    Extend test suite for zfsGetType
+
+commit 5a371a5b43862f35318bb9a87840e3df6edd063e
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Nov 11 02:38:50 2019 +0300
+
+    ZnapZend/Config.pm : missed passing support for zfsGetType
+
+commit 2d0ced79d0b8ca7d7295d87ea231cb8940efa4fc
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Nov 11 01:42:19 2019 +0300
+
+    Introduce feature "zfsGetType" for "zfs get -t" support
+
+commit accabf26b653fee3d0b5b8dcaa26f0f807932371
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:26:10 2019 +0100
+
+    znapzendzetup.t enable-dst/disable-dst : typo in copypasted test descriptions
+
+commit 633d2c8f740381ba0d0642e10eb4b06d87859ecc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:25:30 2019 +0100
+
+    znapzendzetup.t enable-dst/disable-dst : support also "DST:key" spec same way as in "create" command
+
+commit c0690616b8667eb030211867a00b38c6f39d8b40
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:24:08 2019 +0100
+
+    znapzendzetup enable-dst/disable-dst : support also "DST:key" spec same way as in "create" command
+
+commit 8289a0cccd585894c3ac7bed3994e864724728dd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:15:49 2019 +0100
+
+    ZFS.pm : avoid the scare of uninitialized vars in setDataSetProperties() -- e.g. when we remove dst_N_enabled
+
+commit c3918f78df758694e66a20fddfda1a53909915c2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 16:43:18 2019 +0100
+
+    ZFS.pm : rewrite dst_N dataset value when reporting an inherited backup plan
+
+commit cbfc25f35bbeb18d581c8b08b47abb0fb6eed912
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 16:22:49 2019 +0100
+
+    ZFS.pm : clarify the reasoning about "SKIP ... because parent config is already listed"
+
+commit 95ed1f7114b433a951485be2e169f273dad1e851
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 16:18:09 2019 +0100
+
+    Invert sendIntermediates into skipIntermediates and so keep the original default in place (maybe safer on side of caution, and least-surprise for existing deployments and users)
+
+commit d308e7699e5c01798e1186c945440808a136cb3b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 12:50:46 2019 +0100
+
+    Doc: clarify that sendIntermediates is now optional, but was the default (and only) activity forever before
+
+commit 472b625718112476dea74a76fabd8ae84bdfdd41
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 09:26:19 2019 +0100
+
+    Introduce feature sendIntermediates (define, document, test)
+
+commit 052a49cd704e0d0d296aaf93f68b40cb2c2300cb
+Author: Lauri Tirkkonen <lauri@tuxera.com>
+Date:   Fri Nov 15 15:13:35 2019 +0200
+
+    do not send intermediate snapshots
+
+commit 814b8f4c9d4cf4421b1d00bc478087d1a04d0e5e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 25 11:05:59 2019 +0100
+
+    ZnapZend.pm : radical solution for snapSendFilter in view of forcedSnapshotSuffix
+
+commit b9f1754045a2924f0e1873239175ef68f2984e86
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 25 10:59:50 2019 +0100
+
+    ZFS.pm : remove help for missing sendRecvSnapshotsExec()
+
+commit a24e6a39957cff9d6319049a0f647eb22e25c802
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 25 10:59:09 2019 +0100
+
+    ZnapZend.pm : remove false alarm about cleaning up only one snapshot (it is not the last one remaining)
+
+commit 8fb1cd92649c240ffcc94ddf18fc6a0c8dd94732
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 25 10:35:18 2019 +0100
+
+    ZnapZend.pm : split "$backupSet->{snapFilter}" into snapSendFilter (maybe changed by forcedSnapshotSuffix) and snapCleanFilter (timestamp pattern)
+
+commit 5ce34d943d89c98ca8d7e6c386434c072aa9e719
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Nov 25 10:33:46 2019 +0100
+
+    Comment in Time.pm and znapzendztats about forcedSnapshotSuffix possible relation
+
+commit 9672f3e3893af7f4a4d550f90b221f25bf0ced65
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:44:42 2019 +0100
+
+    ZnapZend.pm : do not clean the last existing (just-created) snapshot, e.g. with policy like "1m=>1m"
+
+commit 4fc3ca14857a14dfacff557aee1447dbd25c0994
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 19:38:03 2019 +0100
+
+    ZnapZend.pm : include forcedSnapshotSuffix into snapFilter if used
+
+commit f1f8b66e3a00cda667a54a050bc34a982bc34d09
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 18:52:30 2019 +0100
+
+    znapzend.t : replace the skipped is() test by throws_ok{}
+
+commit e1a989c5122e5ce95469758798ce199244f42f0d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 18:31:47 2019 +0100
+
+    znapzend.t : skip the fault-test that exits
+
+commit 9b8547cf2bc6b4e81309ed9e253d6104d927d22f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 17:19:47 2019 +0100
+
+    ZnapZend.pm : burned by debug
+
+commit 86bc141e9f7e41ea7d754eead788f0d77dffd047
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 15:42:58 2019 +0100
+
+    znapzend : fix support for `znapzend --runonce` (with no dataset specified - should run all found backup plans once)
+
+commit 0e2acc1891ecd11473d7d9f3f07690c612c7d422
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 15:11:29 2019 +0100
+
+    t/zfs get : pay more attention to string value of the last argument (bad dataset or good keyword?)
+
+commit 6b0bfa971cdd4a6f047e49566ffe900e635b6d7b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 14:50:58 2019 +0100
+
+    t/zfs get : rearrange detection of $srcds (so we return reasonable data when no dataset was passed, like real zfs does)
+
+commit 31d250b048f6c7ca2e46e5c88c5c33808e292774
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 14:14:54 2019 +0100
+
+    t/zfs get : refactor $recursive into a variable
+
+commit db6218d1408fb4438dd22dee342685c77d1a1675
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 13:32:07 2019 +0100
+
+    znapzend.t : test the argument-less invokations of --runonce mode
+
+commit c8e75dc2c8c2d43f2722d35fabd526ab44fee379
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 18:27:43 2019 +0100
+
+    t/zfs : "zfs get" CLI args can now display or filter out attributes for snapshots defined in dataSets array
+
+commit bd2650e5b68d6ebf2336f48191a430f1190f4047
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 18:13:45 2019 +0100
+
+    t/zfs : "zfs list" CLI args can now display or filter out snapshots defined in dataSets array
+
+commit 6787a2bab8798892f03b45de884c616993b6eec0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 17:58:33 2019 +0100
+
+    t/zfs : refactor numerous `join(" ", @ARGV)` calls into common $ARGSTR
+
+commit 660253765a5be21a35766c247b63d3ca18cdab52
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 15:45:03 2019 +0100
+
+    t/zfs : add a snapshot into the dataset listing
+
+commit b47a46189947a1d0d95c1d57aadf4d2e8f9333da
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 14:12:43 2019 +0100
+
+    znapzendzetup.t : check processing codepath with dst_0_enabled present in zfs args
+
+commit 366a84e542c576f7824df3c27e2587f8f4b348d6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 14:09:48 2019 +0100
+
+    znapzendzetup.t : test invalid arg handling (should now do pod2usage() and die())
+
+commit df72a6d594a0413d7e550a1e9af633a948d8f46a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 13:45:54 2019 +0100
+
+    znapzendzetup : do not break into DST config sentence parser after all
+
+commit 1a54b7aafd387d051fa9ec3cf3dbca254817323c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 13:42:33 2019 +0100
+
+    t/zfs : handle tank/dest-disabled in ways expected by the tests
+
+commit b1faa2a1217f607c4b4d54e93a1a8157c5e6c2d4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 13:41:18 2019 +0100
+
+    t/zfs : add debugging aid (commented tracing)
+
+commit abcc12734ed1bb78166a95067e10db87128f6c02
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 21 13:14:30 2019 +0100
+
+    ZnapZend.pm znapzend.t : fix "undef varname" to "varname = undef"
+
+commit 74be90992edffb0245d7aeeecb6d06ab1697dfa7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 16:48:55 2019 +0100
+
+    ZnapZend.pm : clarify the check for if zend_delay attr is defined
+
+commit 29d2fd20c12b61f2995eba2f8edbc729381b3ee3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 16:35:41 2019 +0100
+
+    t/zfs t/znapzend.t : comment away data and tests with inherited-config tank/source/dest-disabled, it confuses other code at the moment
+
+commit 09f69144d913e68fe8ebe46d953ec256bf1ccdfd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 16:33:34 2019 +0100
+
+    ZnapZend.pm : report which value of "zend-delay" the code disliked
+
+commit 0d416e0e5949783b790996aac2d40480330cd50b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 16:07:54 2019 +0100
+
+    t/zfs t/znapzend.t : simplify the tested setup for disabled destination that is expected to work vs. complicated setup that is not (so far)
+
+commit 64f63037b5ae035c86fcf92d22831953ff33745b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:48:45 2019 +0100
+
+    t/zfs : fix undef deref in find_attr_source()
+
+commit 96423a1d9ed5bd75acd88b46d5a6ec70e3df3af9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:43:22 2019 +0100
+
+    ZnapZend.pm : do not run precmd/pstcmd for disabled destinations
+
+commit d87b3e1a2ae795c6625ebbfe0deb14a63c4d4bec
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:38:42 2019 +0100
+
+    t/znapzend.t : cover codepath with dst_0_enabled=off
+
+commit 5d2cb3add430a870ff0f475d0f56e0dd8768af48
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:37:52 2019 +0100
+
+    t/zfs : handle attr source for dst_0_enabled where needed
+
+commit 20629e6eeac7d9e90d1867fafd97e986d06aa407
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:23:34 2019 +0100
+
+    t/zfs : fix lookups for dst-disabled
+
+commit c8c093f5bc2e5a23d0fb5bed62e7473c7e5d7095
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:23:21 2019 +0100
+
+    t/zfs : fix indentation
+
+commit 7faa06b3f6f5ed17800226f03982028bc9e59e7d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 15:22:51 2019 +0100
+
+    t/zfs : add an enabled existing source with disabled destination
+
+commit 3cb8c92edf52af00fff8cc0f811739aba45565b8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:39:10 2019 +0100
+
+    znapzendzetup : eliminate harsh exits via pod2usage(1), replace with non-exiting calls and a die() with better error context
+
+commit 64ed0a61d555b077b40338262fc1ab195e8e364b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:22:55 2019 +0100
+
+    znapzendzetup.t : extend the coverage matrix for enable-dst/disable-dst and fix more typos in comments and whitespaces
+
+commit 15836710e020e36ba605fa544e0879332abf034d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:11:49 2019 +0100
+
+    znapzendzetup : fix copy-paste typo in disable-dst handling
+
+commit 5643443f76bab5c6876a7946dd74be1344f82e6e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:11:26 2019 +0100
+
+    znapzendzetup.t : extend the coverage matrix for enable-dst/disable-dst
+
+commit 01c75c3077dbc4da0dd37a879221ac109416270e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:07:20 2019 +0100
+
+    Self-tests : runCommand() : report the EXCEPTION caught
+
+commit a387f5062a978fade8c5ef6dccba944577b883ad
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 20 14:06:45 2019 +0100
+
+    Self-tests : markup cleanup
+
+commit 2a16421c4e67af9d9cd48152786e9e4b790dd5a1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Nov 19 20:08:52 2019 +0100
+
+    autoscrub.t : mark the end with done_testing()
+
+commit b2275001942c3a83b02f5d65f35c428bcadf5144
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 18:11:18 2019 +0100
+
+    znapzendzetup enable-dst/disable-dst : fix ARGV popping order
+
+commit 570d9b341d9db70ae2aca1a0731586fb30908777
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 17:45:42 2019 +0100
+
+    znapzendzetup.t : test enable-dst/disable-dst good and bad calls
+
+commit 6a59feb39360149a7387ea5581878d3f758ef133
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 17:36:11 2019 +0100
+
+    znapzendzetup : regenerate docs for enable-dst / disable-dst options
+
+commit 413f85eb60faca5e3ee90b2f8e0ee36c75ee285f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 16:56:55 2019 +0100
+
+    znapzendsetup : support dst_N_enable setting
+
+commit eb054e0c84dafeeee57219bc1d12d22fce0dd22d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 16:50:58 2019 +0100
+
+    ZnapZend.pm and t/zfs : allow to set dst_N_enabled=off to comment away targets without deleting definitions
+
+commit 69f19a4f377a45a20ce5a0c61d2f64574d864be1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Nov 14 15:27:30 2019 +0100
+
+    ZnapZend.pm : leading whitespace fix
+
+commit 573ee237815178ce9d69128f2419afdcfd684550
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 16:01:27 2019 +0100
+
+    znapzend.t : do not test with arg-less --runonce for now (fix for that is pending in #458)
+
+commit 8b2e5050f3923ef1180f0294b5338f175eac76b8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 13:43:22 2019 +0100
+
+    znapzend : note in manpage that user is responsible for conflict-less values of forcedSnapshotSuffix
+
+commit f057aa6ea65b0720e4e076b48139dd1542b60d1c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 13:42:28 2019 +0100
+
+    znapzend : comment about sanity checks for forced (and generated) snapshotSuffix values
+
+commit ed32e69ffaee97825756bf1f3fa7e1935c2686f2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 13:41:26 2019 +0100
+
+    znapzend : forcedSnapshotSuffix should be lax for leading @ in snapname (trim it)
+
+commit 1eb20870c1e58b2e117c86004a20a9e7c576581f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Nov 22 13:31:28 2019 +0100
+
+    znapzend : Introduce --forcedSnapshotSuffix=X option to --runonce
+
 commit b820aa81fb498954bee0ca0878908be482a2f095
 Author: Lauri Tirkkonen <lauri@tuxera.com>
 Date:   Fri Nov 8 12:48:05 2019 +0200
@@ -371,7 +1069,7 @@ Date:   Mon Oct 21 09:26:46 2019 +0200
     ZnapZend.pm : do not freak out if getBackupSet{Enabled}() returns "0" for errors finding stuff
 
 commit c6a8a409f40494230e77e594782a93a78148b2f4
-Author: Tamás Gérczei < <tamas@gerczei.eu>
+Author: Tamás Gérczei <tamas@gerczei.eu>
 Date:   Fri Oct 18 19:53:09 2019 +0200
 
     added information about the Gentoo ebuild

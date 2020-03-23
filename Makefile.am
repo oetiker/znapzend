@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS =  foreign
 
 SUFFIXES = .1 .man .pm
 
-SUBDIRS = thirdparty lib
+SUBDIRS = lib thirdparty
 
 BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
 PM :=  $(shell find lib/ -name "*.pm")
@@ -15,7 +15,7 @@ POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS PERL_MODULES $(BIN) $(PM) \
+EXTRA_DIST = VERSION COPYRIGHT NEWS.md README.md LICENSE CHANGES AUTHORS cpanfile $(BIN) $(PM) \
 	$(GENERATED_EXTRADIST) init/README.md init/org.znapzend.plist.in  init/znapzend.default  \
 	init/znapzend.service.in  init/znapzend.sysv.in  init/znapzend.upstart.in  init/znapzend.xml.in \
 	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
@@ -63,9 +63,7 @@ install-exec-hook:
 	[ "$(PERL5LIB)" = "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^use .*# LIBDIR}{use lib qw($(libdir)); # LIBDIR}' $(BIN)
 	cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{^#!.*perl.*}{#!$(PERL)};' $(BIN)
-	mkdir -p $(DESTDIR)$(libdir)
-	[ ! -d $(THIRDPARTY_DIR)/lib/perl5 ] || cp -fr $(THIRDPARTY_DIR)/lib/perl5/* $(DESTDIR)$(libdir)
-
+    
 check:
 	$(PERL) -Ithirdparty/lib/perl5 "-MExtUtils::Command::MM" "-e" "test_harness(0, 'lib','thirdparty/lib/perl5')" t/*.t
 

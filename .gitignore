@@ -9,6 +9,8 @@ Build.bat
 .last_cover_stats
 Makefile
 Makefile.old
+Makefile.in
+configure
 MANIFEST.bak
 META.yml
 MYMETA.yml
@@ -20,7 +22,7 @@ config.log
 config.status
 thirdparty/*
 !thirdparty/Makefile.am
-!thirdparty/Makefile.in
+!thirdparty/cpanfile*snapshot
 *.tar.gz
 init/znapzend.service
 init/znapzend.sysv
@@ -31,3 +33,5 @@ init/org.znapzend.plist
 znapzend*.pid
 dump.dmp
 *.selftest-rewritten
+*~
+conftools

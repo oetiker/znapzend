@@ -1,28 +1,52 @@
+#  Copyright (C) 2020 Tobias Oetiker
+
 AUTOMAKE_OPTIONS =  foreign
 
 THIRDPARTY_DIR := $(shell pwd)
 
-THIRDPARTY_DIST := $(shell test -d CPAN && find CPAN -type d -name ".??*" -prune -o -not -name ".*" -a -not -name "*~" -a -not -name "*.tmp"  -a -type f -print )
+CPANSNAPV := cpanfile-$(shell $(PERL) -MConfig -e 'print $$Config{version}').snapshot
 
-EXTRA_DIST = $(THIRDPARTY_DIST) $(wildcard bin/cpanm)
+#EXTRA_DIST = $(THIRDPARTY_DIST) $(wildcard bin/cpanm)
+EXTRA_DIST = bin/cpanm $(wildcard cpanfile*snapshot)
 
 all-local: touch
 
-touch: CPAN/touch ../config.status ../PERL_MODULES
-	$(AM_V_GEN)cat ../PERL_MODULES  | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)  --mirror file://$(THIRDPARTY_DIR)/CPAN --mirror-only
-	$(AM_V_GEN)touch touch
+touch:  bin/cpanm $(CPANSNAPV)
+	$(AM_V_at)echo "** Installing Dependencies using cpanm and $(CPANSNAPV)"
+	$(AM_V_at)cp $(CPANSNAPV) ../cpanfile.snapshot
+#	PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR) $(shell test -f ../cpanfile.snapshot && echo --mirror file://$(THIRDPARTY_DIR)/cache) --installdeps ..
+	PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR) --installdeps ..
+	$(AM_V_at)rm -f ../cpanfile.snapshot
+	$(AM_V_at)touch touch
 
-CPAN/touch: ../PERL_MODULES
-	echo "POPULATING OUR LOCAL micro CPAN"
-	$(AM_V_GEN)$(URL_CAT) https://cpanmin.us | PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) - -q --notest --local-lib $(THIRDPARTY_DIR) --save-dists $(THIRDPARTY_DIR)/CPAN --force App::cpanminus
-	$(AM_V_GEN)PERL5LIB=$(THIRDPARTY_DIR)/Ore/lib/perl5 PERL_CPANM_HOME=$(THIRDPARTY_DIR)/Ore $(THIRDPARTY_DIR)/bin/cpanm -q --notest  --local-lib $(THIRDPARTY_DIR)/Ore File::Which OrePAN
-	$(AM_V_GEN)cat ../PERL_MODULES | PERL_CPANM_HOME=$(THIRDPARTY_DIR) xargs $(PERL) $(THIRDPARTY_DIR)/bin/cpanm -q --self-contained --notest --local-lib-contained $(THIRDPARTY_DIR) --save-dists $(THIRDPARTY_DIR)/CPAN
-	$(AM_V_GEN)PERL5LIB=$(THIRDPARTY_DIR)/Ore/lib/perl5 $(THIRDPARTY_DIR)/Ore/bin/orepan_index.pl --repository $(THIRDPARTY_DIR)/CPAN
-	$(AM_V_GEN)gunzip -c CPAN/modules/02packages.details.txt.gz | perl -pe 's{^(DBI\s+)undef(\s+\S+/DBI-)(\d+\.\d+)(\.tar)}{$$1$$3$$2$$3$$4}' |  gzip | cat > x.gz && mv x.gz CPAN/modules/02packages.details.txt.gz
-	$(AM_V_GEN)touch CPAN/touch
+bin/cpanm:
+	$(AM_V_at)mkdir -p bin
+	$(URL_CAT) https://cpanmin.us > bin/cpanm
+	$(AM_V_at)chmod 755 bin/cpanm
+
+$(CPANSNAPV): ../cpanfile
+	$(AM_V_at)echo "** Installing Dependencies using Carton install"
+	$(AM_V_at)test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
+	$(AM_V_at)test -x carton/bin/carton || $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton
+	$(AM_V_at)PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+	$(AM_V_at)mv ../cpanfile.snapshot $(CPANSNAPV)
+	$(AM_V_at)touch touch
+#	PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton bundle
+#	rm -rf cache
+#	mv ../vendor/cache .
+
+update: $(CPANSNAPV)
+	$(AM_V_at)echo "** Updating Dependencies using Carton update"
+	$(AM_V_at)cp $(CPANSNAPV) ../cpanfile.snapshot
+	$(AM_V_at)PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton update
+	$(AM_V_at)mv ../cpanfile.snapshot $(CPANSNAPV)
 
 clean-local:
-	ls -1 | grep -v Makefile | grep -v bin | grep -v CPAN | xargs rm -rf
+#	ls -1 | grep -v Makefile | grep -v bin | grep -v cache | xargs rm -rf
+	ls -1 | grep -v Makefile | grep -v cpanfile | grep -v bin | xargs rm -rf
 
 distclean-local:
-	ls -1 | grep -v Makefile | xargs rm -rf
+	ls -1 | grep -v Makefile | grep -v cpanfile | xargs rm -rf
+
+install-exec-hook:
+	cp -fr lib/perl5/* $(DESTDIR)$(libdir)
