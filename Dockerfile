@@ -21,7 +21,7 @@ ARG PERL_VERSION=5.30.1-r0
 
 RUN \
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
-  apk add --no-cache zfs curl bash nano perl=${PERL_VERSION} openssh && \
+  apk add --no-cache zfs curl bash autoconf automake nano perl=${PERL_VERSION} openssh && \
   # mbuffer is not in main currently
   apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ mbuffer && \
   ln -s /dev/stdout /var/log/syslog && \
