@@ -15,7 +15,7 @@ POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS cpanfile $(BIN) $(PM) \
+EXTRA_DIST = VERSION COPYRIGHT NEWS.md README.md LICENSE CHANGES AUTHORS cpanfile $(BIN) $(PM) \
 	$(GENERATED_EXTRADIST) init/README.md init/org.znapzend.plist.in  init/znapzend.default  \
 	init/znapzend.service.in  init/znapzend.sysv.in  init/znapzend.upstart.in  init/znapzend.xml.in \
 	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
