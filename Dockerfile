@@ -9,6 +9,7 @@ WORKDIR /usr/local/src
 COPY . /usr/local/src
 
 RUN \
+  ./bootstrap.sh && \
   ./configure --prefix=/opt/znapzend && \
   make && \
   make install
