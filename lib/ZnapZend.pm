@@ -356,21 +356,20 @@ my $sendRecvCleanup = sub {
 
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
             {
-                local $@;
                 eval {
                     local $SIG{__DIE__};
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
                 };
-                if ($@){
+                if (my $err = $@){
                     $thisSendFailed = 1;
-                    if (blessed $@ && $@->isa('Mojo::Exception')){
-                        $self->zLog->warn($@->message);
-                        push (@sendFailed, $@->message);
+                    if (blessed $err && $err->isa('Mojo::Exception')){
+                        $self->zLog->warn($err->message);
+                        push (@sendFailed, $err->message);
                     }
                     else{
-                        $self->zLog->warn($@);
-                        push (@sendFailed, $@);
+                        $self->zLog->warn($err);
+                        push (@sendFailed, $err);
                     }
                 }
             }
