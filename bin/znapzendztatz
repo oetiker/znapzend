@@ -44,7 +44,7 @@ sub collectData {
     my %data;
     my $snapshots = $zZfs->listSnapshots($dataset, $snapFilter);
 
-    $data{usage} = $zZfs->usedBySnapshots($dataset);
+    $data{usage} = $zZfs->usedBySnapshots($dataset) // 0;
     my $lastSnap = $snapshots->[-1] // ' @No Snapshots Yet  ';
     ($data{last_snap}) = $lastSnap =~ /^.+\@([^\@]+)$/;
     $data{dataset} = $dataset;
