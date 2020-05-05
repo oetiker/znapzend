@@ -356,6 +356,8 @@ my $sendRecvCleanup = sub {
 
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
             {
+                local $@;
+                
                 eval {
                     local $SIG{__DIE__};
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
