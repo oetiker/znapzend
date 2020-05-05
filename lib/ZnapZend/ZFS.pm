@@ -960,7 +960,7 @@ sub usedBySnapshots {
     my $usedBySnap = <$prop>;
     chomp $usedBySnap if $usedBySnap;
 
-    return $usedBySnap;
+    return $usedBySnap // 0;
 }
 
 1;
