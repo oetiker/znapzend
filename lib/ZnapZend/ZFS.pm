@@ -958,9 +958,9 @@ sub usedBySnapshots {
         or Mojo::Exception->throw("ERROR: cannot get usedbysnapshot property of $dataSet");
 
     my $usedBySnap = <$prop>;
-    chomp $usedBySnap;
+    chomp $usedBySnap if $usedBySnap;
 
-    return $usedBySnap;
+    return $usedBySnap // 0;
 }
 
 1;
