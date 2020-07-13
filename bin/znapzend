@@ -21,7 +21,7 @@ sub main {
             # originally, or via shorthand -i/-I flags as mnemonical
             # for "zfs send", so the longer variants --skipIntermediates
             # vs. --sendIntermediates are not documented in the manpage.
-        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited)) or exit 1;
+        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s)) or exit 1;
 
     $opts->{version} && do {
         print "znapzend version $VERSION\n";
@@ -139,6 +139,7 @@ B<znapzend> [I<options>...]
  --runonce=[x]          run one round on the optionally provided dataset
  -r,--recursive         recurse from the given "run-once" dataset
  --inherited            allow "run-once" on dataset which only inherits a plan
+ --since=x              allow to consider a non-automatic common snapshot "x" as a starting point
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
@@ -227,6 +228,35 @@ This option is not valid if the run-once mode is not requested.
 While basic sanity checks are done, it is up to the caller to specify a
 correct string value according to the rules of their ZFS version, and to
 take care that it is unique (no snapshots with such suffix already exist).
+
+See also B<--since>=I<snapsuffix>
+
+=item B<--since>=I<snapsuffix>
+
+Enables to see a snapshot named I<snapsuffix> in the history of the dataset
+under source and target pools, which should be a common snapshot present on
+both (or only on the source pool), and may be their newest common snapshot
+(that would otherwise be blocking the sync as something that needs to be
+removed for a full auto-creation replication and/or a usual replication).
+
+If the target dataset does not have this named snapshot, but the otherwise
+discovered history of automatic snapshots allows to include it into the usual
+replication, it will be sent (and a newer automatically-named snapshot would
+be made and sent). In other cases, it is up to the systems administrator to
+make the original systems data consistent with that on their remote ZFS pool.
+
+Unlike the B<--forcedSnapshotSuffix>=I<snapsuffix>, this option does not
+define how the new snapshot made during this run would be called (it would
+be named by common timestamp-based pattern to not get in the way of subsequent
+regular replications).
+
+The dataset name provided in this argument will never be removed during this
+run-once (even if it matches the configured znapzend timestamp-based snapshot
+naming pattern and is old enough to rotate away in other circumstances).
+
+Example:
+
+  znapzend --runonce=rpool/ROOT --since=20200101-01-finallyStableSetup
 
 =item B<-r>, B<--recursive>
 

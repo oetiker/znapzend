@@ -36,6 +36,7 @@ has connectTimeout          => sub { 30 };
 has runonce                 => sub { 0 };
 has recursive               => sub { 0 };
 has inherited               => sub { 0 };
+has since                   => sub { 0 };
 has dataset                 => sub { undef };
 has daemonize               => sub { 0 };
 has loglevel                => sub { q{debug} };
@@ -205,6 +206,7 @@ my $refreshBackupPlans = sub {
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
         $backupSet->{snapCleanFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        if ($self->since) { $backupSet->{snapCleanFilter} = "(".$backupSet->{snapCleanFilter}."|".$self->since.")"; }
         # Due to support of possible intermediate snapshots named outside the
         # generated configured pattern (tsformat), to send (and not destroy on
         # destination) the arbitrary names, and find last common ones properly,
@@ -390,7 +392,7 @@ my $sendRecvCleanup = sub {
             # and are all committed at once.
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{$dst}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
+                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{$dst});
             {
@@ -421,7 +423,7 @@ my $sendRecvCleanup = sub {
             # cleanup according to backup schedule
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
+                         $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             next if (scalar (@{$toDestroy}) == 0);
 
@@ -475,7 +477,7 @@ my $sendRecvCleanup = sub {
 
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{src});
             {
@@ -504,7 +506,7 @@ my $sendRecvCleanup = sub {
 
             @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
-                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+                         $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             next if (scalar (@{$toDestroy}) == 0);
 
