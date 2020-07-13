@@ -361,8 +361,10 @@ recvu
 redhat
 regex
 respawn
+rpool
 RETVAL
 RHEL
+ROOT
 rmcmd
 rmdir
 rmprog
