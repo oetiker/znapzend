@@ -139,6 +139,12 @@ is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix=manual snap'),
 is (runCommand(qw(--runonce=tank/source), '--forcedSnapshotSuffix= '), 0, 'znapzend --runonce=tank/source --forcedSnapshotSuffix=" " fails (snapname becomes empty after chomp)');
 is (runCommand(qw(--forcedSnapshotSuffix=manualsnap)), 0, 'znapzend --forcedSnapshotSuffix=manualsnap fails (not in runonce mode)');
 
+# The --since=x argument currently does not really have failure modes
+# (a name might not be in the source dataset snapshot history, for whatever
+# reason), so we just need to test its codepath for coverage mostly
+is (runCommand(qw(--runonce=tank/source), '--since=20200101-stableSystem'), 1,
+   'znapzend --runonce=tank/source --since=20200101-stableSystem succeeds');
+
 # Series of tests over usual tank/source with different options
 is (runCommand(qw(--runonce=tank/source), '--features=oracleMode,recvu,compressed'),
     1, 'znapzend --features=oracleMode,recvu,compressed --runonce=tank/source succeeds');
