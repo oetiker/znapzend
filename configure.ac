@@ -63,14 +63,28 @@ fi
 AC_SUBST(URL_CAT)
 
 
-ac_perl_version="5.10.1"
+# Note: current Mojolicious as of mid-2020 requires even Perl 5.16+
+# Older versions needed 5.10.1+
+ac_perl_version="5.16.0"
 
 if test "x$PERL" != "x"; then
   AC_MSG_CHECKING(for perl version greater than or equal to $ac_perl_version)
   $PERL -e "use $ac_perl_version;" >/dev/null 2>&1
   if test $? -ne 0; then
     AC_MSG_RESULT(no);
-    AC_MSG_ERROR(at least version 5.10.1 is required to run mojolicious)
+    AC_MSG_WARN(at least version $ac_perl_version is required to run modern mojolicious)
+
+    # re-check for older distributions minimal support
+    ac_perl_version="5.10.1"
+
+    AC_MSG_CHECKING(for perl version greater than or equal to $ac_perl_version)
+    $PERL -e "use $ac_perl_version;" >/dev/null 2>&1
+    if test $? -ne 0; then
+        AC_MSG_RESULT(no);
+        AC_MSG_ERROR(at least version $ac_perl_version is required to run mojolicious at all)
+    else
+        AC_MSG_RESULT(ok);
+    fi
   else
     AC_MSG_RESULT(ok);
   fi
