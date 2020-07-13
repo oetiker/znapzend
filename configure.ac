@@ -84,7 +84,6 @@ if test "x$PERL" != "x"; then
         AC_MSG_ERROR(at least version $ac_perl_version is required to run mojolicious at all)
     else
         MOJOLICIOUS_VERSION_CONSTRAINT=", '< 8.44'"
-        AC_MSG_RESULT(ok);
     fi
   else
     AC_MSG_RESULT(ok);
@@ -94,7 +93,9 @@ else
   AC_MSG_ERROR(could not find perl)
 fi
 AC_SUBST(MOJOLICIOUS_VERSION_CONSTRAINT)
-
+if test -n "$MOJOLICIOUS_VERSION_CONSTRAINT" ; then
+    AC_MSG_WARN(The available Perl version limits mojolicious version$MOJOLICIOUS_VERSION_CONSTRAINT)
+fi
 
 AC_MSG_CHECKING(is perl reasonably complete)
 if $PERL -MExtUtils::MakeMaker -e '' 2>/dev/null; then
