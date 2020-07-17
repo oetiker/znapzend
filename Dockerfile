@@ -23,7 +23,7 @@ RUN \
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
   apk add --no-cache zfs curl bash autoconf automake nano perl=${PERL_VERSION} openssh && \
   # mbuffer is not in main currently
-  apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ mbuffer && \
+  apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ mbuffer && \
   ln -s /dev/stdout /var/log/syslog && \
   ln -s /usr/bin/perl /usr/local/bin/perl
 
