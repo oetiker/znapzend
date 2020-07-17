@@ -17,7 +17,7 @@ RUN \
 ##### Runtime image
 FROM docker.io/library/alpine:${ALPINE_VERSION} as runtime
 
-ARG PERL_VERSION=5.30.3-r2
+ARG PERL_VERSION=5.30.3-r0
 
 RUN \
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
