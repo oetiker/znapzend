@@ -17,13 +17,13 @@ RUN \
 ##### Runtime image
 FROM docker.io/library/alpine:${ALPINE_VERSION} as runtime
 
-ARG PERL_VERSION=5.30.1-r0
+ARG PERL_VERSION=5.30.3-r0
 
 RUN \
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
   apk add --no-cache zfs curl bash autoconf automake nano perl=${PERL_VERSION} openssh && \
   # mbuffer is not in main currently
-  apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ mbuffer && \
+  apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ mbuffer && \
   ln -s /dev/stdout /var/log/syslog && \
   ln -s /usr/bin/perl /usr/local/bin/perl
 
