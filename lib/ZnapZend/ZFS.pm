@@ -352,7 +352,8 @@ sub sendRecvSnapshots {
     my $mbuffer = shift;
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
-    my $recvOpt = $self->recvu ? '-uF' : '-F';
+    my @recvOpt = $self->recvu ? qw(-u) : ();
+    push @recvOpt, '-F' if !$self->sendRaw;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;
@@ -391,7 +392,7 @@ sub sendRecvSnapshots {
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', $recvOpt, $dstDataSetPath]);
+            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -458,7 +459,7 @@ sub sendRecvSnapshots {
     }
     else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
-        my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , $recvOpt, $dstDataSetPath];
+        my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , @recvOpt, $dstDataSetPath];
 
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
