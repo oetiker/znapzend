@@ -183,7 +183,7 @@ my $refreshBackupPlans = sub {
                 $backupSet->{"dst_$key" . '_valid'} =
                     $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                    if ($self->autoCreation) {
+                    if ($self->autoCreation && !$self->sendRaw) {
                         my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
                         # check if we can access destination zpool, if so create parent dataset
@@ -317,7 +317,7 @@ my $sendRecvCleanup = sub {
         }
 
         #recheck non valid dst as it might be online, now
-        if (!$backupSet->{"dst_$key" . '_valid'}) {
+        if (!$backupSet->{"dst_$key" . '_valid'} && !$self->sendRaw) {
 
             $backupSet->{"dst_$key" . '_valid'} =
                 $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
