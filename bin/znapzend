@@ -97,6 +97,12 @@ sub main {
         }
     }
 
+    if (defined($opts->{since})) {
+        # Chop off leading @ if any
+        chomp $opts->{since};
+        $opts->{since} =~ s/^[@]*// ;
+    }
+
     if (defined($opts->{forcedSnapshotSuffix}) && ($opts->{forcedSnapshotSuffix} ne '')) {
         chomp $opts->{forcedSnapshotSuffix};
         if ($opts->{forcedSnapshotSuffix} eq '') {
