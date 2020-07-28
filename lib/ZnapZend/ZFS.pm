@@ -371,7 +371,7 @@ sub sendRecvSnapshots {
     # For practical purposes, this can be used with --since=X mode to ensure
     # that "X" exists on destination if it does not yet (note that if there
     # are newer snapshots on destination, they would be removed to allow
-    # receiving "X", in this case).
+    # receiving "X", unless --forbidDestRollback is requested, in this case).
     my $lastSnapshotToSee = shift // undef;
     if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
 
