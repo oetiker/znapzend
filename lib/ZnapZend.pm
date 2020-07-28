@@ -205,12 +205,16 @@ my $refreshBackupPlans = sub {
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
         }
         $backupSet->{interval}   = $self->zTime->getInterval($backupSet->{srcPlanHash});
+        # NOTE that actual cleanup operations below exclude $self->since (as regex pattern) if defined.
         $backupSet->{snapCleanFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
-        if ($self->since) { $backupSet->{snapCleanFilter} = "(".$backupSet->{snapCleanFilter}."|".$self->since.")"; }
         # Due to support of possible intermediate snapshots named outside the
         # generated configured pattern (tsformat), to send (and not destroy on
         # destination) the arbitrary names, and find last common ones properly,
         # we should match all snap names here and there.
+        ### TODO: Revise the options commented away below, as they might only
+        ### apply to different situations.
+        ###   $backupSet->{snapSendFilter} = $self->zTime->getSnapshotFilter($backupSet->{tsformat});
+        ###   if ($self->since) { $backupSet->{snapSendFilter} = "(".$backupSet->{snapSendFilter}."|".$self->since.")"; }
         $backupSet->{snapSendFilter} = qr/.*/;
 #        $backupSet->{snapSendFilter} = $backupSet->{snapCleanFilter};
 #        if (defined($self->forcedSnapshotSuffix) && $self->forcedSnapshotSuffix ne '') {
