@@ -29,6 +29,7 @@ has recvu                   => sub { 0 };
 has compressed              => sub { 0 };
 has sendRaw                 => sub { 0 };
 has skipIntermediates       => sub { 0 };
+has forbidDestRollback      => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has zfsGetType              => sub { 0 };
@@ -68,7 +69,7 @@ has zZfs => sub {
         lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
         rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
         zLog => $self->zLog, compressed => $self->compressed,
-        sendRaw => $self->sendRaw);
+        sendRaw => $self->sendRaw, forbidDestRollback => $self->forbidDestRollback);
 };
 
 has zTime => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp) };

@@ -14,6 +14,7 @@ has recvu           => sub { 0 };
 has compressed      => sub { 0 };
 has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
+has forbidDestRollback => sub { 0 };
 has lowmemRecurse   => sub { 0 };
 has zfsGetType      => sub { 0 };
 has rootExec        => sub { q{} };
@@ -353,7 +354,7 @@ sub sendRecvSnapshots {
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
     my @recvOpt = $self->recvu ? qw(-u) : ();
-    push @recvOpt, '-F' if !$self->sendRaw;
+    push @recvOpt, '-F' if (!$self->sendRaw && !$self->forbidDestRollback);
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;

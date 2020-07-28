@@ -8,14 +8,14 @@ use Pod::Usage;
 
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates);
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates forbidDestRollback);
 
 sub main {
     my $opts = {};
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
         qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation version),
-        qw(forcedSnapshotSuffix=s),
+        qw(forcedSnapshotSuffix=s forbidDestRollback),
         qw(skipIntermediates|i sendIntermediates|I),
             # Note: the intended usage is either via feature as done
             # originally, or via shorthand -i/-I flags as mnemonical
@@ -68,6 +68,12 @@ sub main {
             # Effectively, recurse our whole ZFS namespace from its null root
             $opts->{recursive} = 1;
         }
+    }
+
+    if (defined($opts->{forbidDestRollback})) {
+        $opts->{forbidDestRollback} = 1;
+    } else {
+        $opts->{forbidDestRollback} = 0;
     }
 
     if (defined($opts->{forcedSnapshotSuffix}) && ($opts->{forcedSnapshotSuffix} ne '')) {
@@ -132,6 +138,8 @@ B<znapzend> [I<options>...]
  -n,--noaction          run in simulation mode: does no changes to filesystems
  --nodelay              if a backup plan has a zend_delay defined, ignore it
  --nodestroy            does all changes to the filesystem except destroy
+ --forbidDestRollback   forbids forcing destination dataset rollback and
+                        removal of datasets/snapshots not present on source
  --logto=x              select where to log (syslog::<facility> or <filepath>)
  --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
@@ -143,7 +151,7 @@ B<znapzend> [I<options>...]
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
-    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates forbidDestRollback
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -182,7 +190,21 @@ run them during experiments)
 
 =item B<--nodestroy>
 
-do all changes to the filesystem except destroying old snapshots
+do all changes to the filesystem except destroying old snapshots after
+a successful run to snapshot and replicate to backup destinations
+
+=item B<--forbidDestRollback>
+
+by default znapzend uses B<zfs recv -F> which rolls back destination to
+the most recent snapshot, and in case of incremental replication streams
+can also destroy snapshots and other child datasets not present in the
+source.
+
+The B<--forbidDestRollback> option allows to not enforce this mode, so
+znapzend would instead report errors if destination is not ready to
+receive data without applying such operations. This can be useful for
+maintenance of backup destinations, but can be counter-productive for
+regularly scheduled operations.
 
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
@@ -456,6 +478,11 @@ sysadmin marks certain data states via snapshots as special (e.g.
 
 The feature is recommended to be part of your 'znapzend' service
 setup for regular runs in stable storage/networking conditions.
+
+=item forbidDestRollback
+
+Avoid use of destructive 'zfs recv -F' in favor of failing to receive;
+more details in description of B<--forbidDestRollback> CLI option above.
 
 =item lowmemRecurse
 
