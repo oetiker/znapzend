@@ -76,6 +76,14 @@ sub main {
         $opts->{forbidDestRollback} = 0;
     }
 
+    if (defined($opts->{sinceForced}) && ($opts->{sinceForced} eq '')) {
+        delete $opts->{sinceForced};
+    }
+
+    if (defined($opts->{since}) && ($opts->{since} eq '')) {
+        delete $opts->{since};
+    }
+
     if (defined($opts->{sinceForced})) {
         chomp $opts->{sinceForced};
         $opts->{since} = $opts->{sinceForced};
