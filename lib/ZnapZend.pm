@@ -381,7 +381,9 @@ my $sendRecvCleanup = sub {
                     }
                     # Synchronize snapshot history from origin to destination
                     # starting from newest snapshot that they have in common
-                    # (or create/rewrite destination if it has no snapshots)
+                    # (or create/rewrite destination if it has no snapshots).
+                    # With "--since=X" option handled above, such newest common
+                    # snapshot can likely be this "X".
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
                         $backupSet->{snapSendFilter});
