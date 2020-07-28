@@ -376,13 +376,15 @@ my $sendRecvCleanup = sub {
                         # they would be removed to allow receiving "X" with
                         # the "--sinceForced=X" mode, but not with "--since=X".
                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                            $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter}, $self->since);
+                            $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                            $backupSet->{snapSendFilter}, $self->since);
                     }
                     # Synchronize snapshot history from origin to destination
                     # starting from newest snapshot that they have in common
                     # (or create/rewrite destination if it has no snapshots)
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                        $backupSet->{snapSendFilter});
                 };
                 if (my $err = $@){
                     $thisSendFailed = 1;
