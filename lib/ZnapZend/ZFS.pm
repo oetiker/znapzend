@@ -183,7 +183,9 @@ sub listDataSets {
 sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name, exact string
+    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
     my $remote;
     my @snapshots;
 
@@ -197,6 +199,14 @@ sub listSnapshots {
 
     while (my $snap = <$snapshots>){
         chomp $snap;
+        if (defined($lastSnapshotToSee)) {
+            if ($snap eq $lastSnapshotToSee) {
+                # Only add this name to list if it matches $snapshotFilter ...
+                push @snapshots, $snap if $snap =~ /^\Q$dataSet\E\@$snapshotFilter$/;
+                # ...but still stop iterating
+                last;
+            }
+        }
         next if $snap !~ /^\Q$dataSet\E\@$snapshotFilter$/;
         push @snapshots, $snap;
     }
@@ -328,10 +338,12 @@ sub lastAndCommonSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name, exact string
+    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
 
-    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
-    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
+    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter, $lastSnapshotToSee);
+    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter, $lastSnapshotToSee);
 
     return (undef, undef, undef) if !scalar @$srcSnapshots;
 
@@ -352,7 +364,17 @@ sub sendRecvSnapshots {
     my $dstDataSet = shift;
     my $mbuffer = shift;
     my $mbufferSize = shift;
-    my $snapFilter = $_[0] || qr/.*/;
+    my $snapFilter = shift // qr/.*/;
+
+    # Limit creation-ordered listing after registering this snapshot name,
+    # exact string (there may exist newer snapshots that would be not seen).
+    # For practical purposes, this can be used with --since=X mode to ensure
+    # that "X" exists on destination if it does not yet (note that if there
+    # are newer snapshots on destination, they would be removed to allow
+    # receiving "X", in this case).
+    my $lastSnapshotToSee = shift // undef;
+    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+
     my @recvOpt = $self->recvu ? qw(-u) : ();
     push @recvOpt, '-F' if (!$self->sendRaw && !$self->forbidDestRollback);
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
@@ -366,7 +388,7 @@ sub sendRecvSnapshots {
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
     my ($lastSnapshot, $lastCommon,$dstSnapCount)
-        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
+        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
     return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
