@@ -367,13 +367,14 @@ my $sendRecvCleanup = sub {
                 eval {
                     local $SIG{__DIE__};
                     if ($self->since) {
-                        # Make sure that if we use the "--since=X" option,
-                        # this named snapshot exists (or appears) in the
-                        # destination dataset history of snapshots.
+                        # Make sure that if we use the "--sinceForced=X" or
+                        # "--since=X" option, this named snapshot exists (or
+                        # appears) in the destination dataset history of
+                        # snapshots.
                         # Note if "X" does not yet exist on destination AND
                         # if there are newer than "X" snapshots on destination,
-                        # they would be removed to allow receiving "X", unless
-                        # the option --forbidDestRollback is also requested.
+                        # they would be removed to allow receiving "X" with
+                        # the "--sinceForced=X" mode, but not with "--since=X".
                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                             $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter}, $self->since);
                     }
