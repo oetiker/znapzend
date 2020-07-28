@@ -183,7 +183,7 @@ my $refreshBackupPlans = sub {
                 $backupSet->{"dst_$key" . '_valid'} =
                     $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                    if ($self->autoCreation) {
+                    if ($self->autoCreation && !$self->sendRaw) {
                         my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
                         # check if we can access destination zpool, if so create parent dataset
@@ -322,7 +322,7 @@ my $sendRecvCleanup = sub {
             $backupSet->{"dst_$key" . '_valid'} =
                 $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                if ($self->autoCreation) {
+                if ($self->autoCreation && !$self->sendRaw) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
                     # check if we can access destination zpool, if so create parent dataset
@@ -333,14 +333,14 @@ my $sendRecvCleanup = sub {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                     };
                 }
-                $backupSet->{"dst_$key" . '_valid'} or do {
+                ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline. ignoring it for this round...";
                     $self->zLog->warn($errmsg);
                     push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
+                    next;
                 };
-                next;
             };
         }
 
