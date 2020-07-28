@@ -374,16 +374,112 @@ my $sendRecvCleanup = sub {
                         # Note if "X" does not yet exist on destination AND
                         # if there are newer than "X" snapshots on destination,
                         # they would be removed to allow receiving "X" with
-                        # the "--sinceForced=X" mode, but not with "--since=X".
-                        $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
-                            $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
-                            $backupSet->{snapSendFilter}, $self->since);
-                    }
+                        # the "--sinceForced=X" mode, but not with "--since=X"
+                        # which would only add it if it is an intermediate snap.
+
+                        # FIXME: Implementation below seems wasteful for I/Os
+                        # doing many "zfs list" calls (at least metadata is
+                        # cached by the OSes involved). Luckily "--since=X"
+                        # is not default and for PoC this should be readable.
+                        # Largely copied from lastAndCommonSnapshots() and
+                        # listSnapshots() routines.
+
+                        # In some cases we do not have to actively replicate "X":
+                        # 1) "X" does not exist in history of src, no-op
+                        if ($self->zZfs->dataSetExists($srcDataSet, $self->since)) {
+                        # 2) "X" exists in history of both src and dst, no-op
+                            if (!$self->zZfs->dataSetExists($dstDataSet, $self->since)) {
+                        # ...So "X" exists in src and not in dst; where is it
+                        # in our history relative to latest common snapshot?
+                        # Is there one at all?
+
+                                ### Inspect ALL snapshots in this case, not just auto's
+                                ### my $snapSendFilter = $backupSet->{snapSendFilter};
+                                my $snapSendFilter = qr/.*/;
+
+                                my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapSendFilter);
+                                if (scalar @$srcSnapshots) {
+                                    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapSendFilter);
+
+                                    my ($i, $snapTime, $seenX, $lastCommon);
+                                    $lastCommon = undef;
+                                    $seenX = undef; # Flips to "i" if we saw "X" before (or as) the newest common snapshot, looking from newest snapshots in src
+                                    for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+                                        ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
+                                        $seenX = $i if $snapTime =~ m/^$self->since$/;
+                                        if ( grep { /$snapTime/ } @$dstSnapshots ) {
+                                            $lastCommon = ${$srcSnapshots}[$i];
+                                            last;
+                                        }
+                                    }
+
+                                    my $doPromote = 0;
+                        # 3) "X" in src is newer than the newest common snapshot
+                        #    or "X" exists in src and there is NO common snapshot
+                        #    => promote it into dst explicitly if we skipIntermediates
+                        #       and proceed to resync starting from "X" afterwards
+                        #       (if we do not skipIntermediates then no-op -
+                        #       it will be included in replication below from
+                        #       that older common point anyway)
+                                    if ($seenX) {
+                                        if ($self->skipIntermediates) {
+                                            if ($lastCommon) {
+                                                if ($lastCommon =~ m/\@$self->since$/ ) {
+                                                    warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='$self->since'";
+                                                } else {
+                                                    warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX])";
+                                                    $doPromote = 1;
+                                                }
+                                            } else {
+                                                if ( (scalar @$dstSnapshots) > 0) {
+                                                    if ($self->forbidDestRollback) {
+                                                        warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, but rollback of dest is forbidden";
+                                                    } else {
+                                                        warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, should try resync from scratch";
+                                                        $doPromote = 1;
+                                                    }
+                                                } else {
+                                                    warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, because there are no snapshots in dst, should try resync from scratch";
+                                                    $doPromote = 1;
+                                                }
+                                            }
+                                        } else {
+                                            warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
+                                        }
+                                    }
+
+                        # 4) "X" in src is older than the newest common snapshot
+                        #    => promote it into dst explicitly ONLY IF WE DO NOT
+                        #       forbidDestRollback (deleting whatever is newer
+                        #       on dst) and proceed to resync starting from "X"
+                        #       afterwards (if we forbidDestRollback honor that)
+                                    if (!$seenX && !$self->forbidDestRollback) {
+                                        warn "The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
+                                        $doPromote = 1;
+                                    } else {
+                                        warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
+                                    }
+
+                                    if ($doPromote > 0) {
+                                        warn "Making sure that snapshot '$self->since' exists in history of '$dstDataSet' ...";
+                                        $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                                                $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                                                $backupSet->{snapSendFilter}, $self->since);
+                                    } else {
+                                        warn "We considered '--since=$self->since' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
+                                    }
+                                } # if not scalar - no src snaps?
+                            } # if dst has "X"
+                        } # if src does not have "X"
+                    } # if have to care about "--since=X"
+
                     # Synchronize snapshot history from origin to destination
                     # starting from newest snapshot that they have in common
                     # (or create/rewrite destination if it has no snapshots).
                     # With "--since=X" option handled above, such newest common
                     # snapshot can likely be this "X".
+                    # Note this can fail if we forbidDestRollback and there are
+                    # snapshots or data on dst newer than the last common snap.
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
                         $backupSet->{snapSendFilter});
