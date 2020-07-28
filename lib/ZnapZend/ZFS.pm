@@ -347,6 +347,7 @@ sub lastAndCommonSnapshots {
 
     return (undef, undef, undef) if !scalar @$srcSnapshots;
 
+    # For default operations, snapshot name is the time-based pattern
     my ($i, $snapTime);
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
         ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
