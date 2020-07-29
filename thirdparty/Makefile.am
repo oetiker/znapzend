@@ -21,8 +21,9 @@ touch:  bin/cpanm $(CPANSNAPV)
 
 bin/cpanm:
 	$(AM_V_at)mkdir -p bin
-	$(URL_CAT) https://cpanmin.us > bin/cpanm
-	$(AM_V_at)chmod 755 bin/cpanm
+	$(URL_CAT) https://cpanmin.us > "$@" \
+	&& [ -s "$@" ] && chmod 755 "$@" \
+	|| { echo "FAILED to fetch $@" >&2; rm -f "$@" ; exit 2; }
 
 $(CPANSNAPV): ../cpanfile
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
