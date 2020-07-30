@@ -72,4 +72,10 @@ check:
 clean-selftest-rewritten:
 	$(RM) */*.selftest-rewritten */*/*.selftest-rewritten
 
-clean-local: clean-selftest-rewritten
+clean-pidfiles:
+	if test -n "`ls znapzend*.pid 2>/dev/null || true`" ; then \
+	    kill -15 `cat znapzend*.pid` || true ; \
+	    $(RM) znapzend*.pid ; \
+	fi
+
+clean-local: clean-selftest-rewritten clean-pidfiles
