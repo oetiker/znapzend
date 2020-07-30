@@ -822,7 +822,10 @@ my $daemonize = sub {
     if ($pid){
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  print STDERR "fork: znapzend ($$) returning not exiting from parent process during test.\n";
 ### RM_COMM_4_TEST ###  return;
+
+        #print STDERR "fork: znapzend ($$) exiting from parent process.\n";
 
         exit;
     }
