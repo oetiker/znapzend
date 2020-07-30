@@ -194,6 +194,8 @@ sub main {
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
+            #...and make sure test harness result is on its own line
+            if ($ZNAPZEND_TESTING) { print "\n"; }
             chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
@@ -262,7 +264,10 @@ sub main {
             dumpProperties([\%cfg]);
 
             print "Do you want to save this backup set [y/N]? ";
+            #bypass check if testing
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
+            #...and make sure test harness result is on its own line
+            if ($ZNAPZEND_TESTING) { print "\n"; }
             chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
@@ -304,6 +309,8 @@ sub main {
             print "Do you want to save this backup set [y/N]? ";
             #bypass check if testing
             my $check = $ZNAPZEND_TESTING ? 'y' : <STDIN>;
+            #...and make sure test harness result is on its own line
+            if ($ZNAPZEND_TESTING) { print "\n"; }
             chomp $check;
             if ($check =~ /^y(?:es)?$/i){
                 $zConfig->setBackupSet(\%cfg)
