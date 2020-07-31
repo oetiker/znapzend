@@ -458,11 +458,13 @@ my $sendRecvCleanup = sub {
                         #       forbidDestRollback (deleting whatever is newer
                         #       on dst) and proceed to resync starting from "X"
                         #       afterwards (if we forbidDestRollback honor that)
-                                    if (!$seenX && !$self->forbidDestRollback) {
-                                        warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
-                                        $doPromote = 1;
-                                    } else {
-                                        warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
+                                    if (!$seenX) {
+                                        if (!$self->forbidDestRollback) {
+                                            warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
+                                            $doPromote = 1;
+                                        } else {
+                                            warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
+                                        }
                                     } # // 4. if !seenX => "X" is too old
 
                                     if ($doPromote > 0) {
