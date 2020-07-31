@@ -21,10 +21,11 @@ touch:  bin/cpanm $(CPANSNAPV)
 
 bin/cpanm:
 	$(AM_V_at)mkdir -p bin
-	$(URL_CAT) https://cpanmin.us > bin/cpanm
-	$(AM_V_at)chmod 755 bin/cpanm
+	$(URL_CAT) https://cpanmin.us > "$@" \
+	&& [ -s "$@" ] && chmod 755 "$@" \
+	|| { echo "FAILED to fetch $@" >&2; rm -f "$@" ; exit 2; }
 
-$(CPANSNAPV): ../cpanfile
+carton/bin/carton $(CPANSNAPV): ../cpanfile
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
 	$(AM_V_at)test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
 	$(AM_V_at)test -x carton/bin/carton || $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton

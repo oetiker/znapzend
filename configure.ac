@@ -51,15 +51,40 @@ AC_ARG_WITH(svcname-smf,
 AC_MSG_RESULT([$SVCNAME_SMF])
 AC_SUBST(SVCNAME_SMF)
 
-URL_CAT="neither curl nor wget found"
-if test -x "$WGET"; then
-    URL_CAT="$WGET -O -"
-else
-    if test -x "$CURL"; then
-        URL_CAT="$CURL --location --insecure"
-    fi
-fi
+AC_MSG_CHECKING(for way to cat URLs)
+URL_CAT=""
+DEFAULT_URL_CAT_CURL="$CURL --location --insecure"
+DEFAULT_URL_CAT_WGET="$WGET -O -"
 
+AC_ARG_WITH(url-cat,
+    AC_HELP_STRING(
+        [--with-url-cat=(curl|wget)],
+        [use specified program (with further predefined arguments added as needed) to cat URLs]
+    ),
+    [AS_CASE("$withval",
+        [curl],[AS_IF([test -n "$CURL" && test -x "$CURL"],
+                    [URL_CAT="$DEFAULT_URL_CAT_CURL"],
+                    [AC_MSG_ERROR([Asked to preconfigure use of $withval but one is not in PATH])])],
+        [wget],[AS_IF([test -n "$WGET" && test -x "$WGET"],
+                    [URL_CAT="$DEFAULT_URL_CAT_WGET"],
+                    [AC_MSG_ERROR([Asked to preconfigure use of $withval but one is not in PATH])])],
+        [*],[AC_MSG_ERROR([Asked to preconfigure use of $withval which is not an URL cat-er we support])])],
+    [AC_ARG_WITH(url-cat-program,
+        AC_HELP_STRING(
+            [--with-url-cat-program=(/path/name --args)],
+                [use specified custom program with arguments to cat URLs]
+            ),
+        [URL_CAT="$withval"],
+        [
+        AS_IF([test -x "$WGET"],[URL_CAT="$DEFAULT_URL_CAT_WGET"],
+            [AS_IF([test -x "$CURL"],[URL_CAT="$DEFAULT_URL_CAT_CURL"])]
+        )])
+    ])
+
+AS_IF([test -z "$URL_CAT"],
+    [URL_CAT="false : neither curl nor wget found, nor --with-url-cat-program=... specified"])
+
+AC_MSG_RESULT([$URL_CAT])
 AC_SUBST(URL_CAT)
 
 
@@ -246,6 +271,7 @@ Settings:
   PERL5LIB = ${PERL5LIB:-"not set"}
   PERL = $PERL
   SVCINSTALLDIR = $SVCINSTALLDIR
+  URL_CAT = $URL_CAT
 
 The Makefiles use GNU make functionality.
 Continue installation with
