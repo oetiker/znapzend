@@ -451,7 +451,7 @@ my $sendRecvCleanup = sub {
                                         } else {
                                             warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
                                         }
-                                    }
+                                    } # // 3. if seenX
 
                         # 4) "X" in src is older than the newest common snapshot
                         #    => promote it into dst explicitly ONLY IF WE DO NOT
@@ -463,7 +463,7 @@ my $sendRecvCleanup = sub {
                                         $doPromote = 1;
                                     } else {
                                         warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
-                                    }
+                                    } # // 4. if !seenX => "X" is too old
 
                                     if ($doPromote > 0) {
                                         warn "### [--since mode]: Making sure that snapshot '$self->since' exists in history of '$dstDataSet' ...";
@@ -478,13 +478,13 @@ my $sendRecvCleanup = sub {
                                 } # if not scalar - no src snaps?
                             } else {
                                 warn "### [--since mode]: Destination dataset $dstDataSet already has a snapshot named by --since='" . $self->since . "'";
-                            } # if dst has "X"
+                            } # // 2. if dst has "X"
                         } else {
                             warn "### [--since mode]: Source dataset $srcDataSet does not have a snapshot named by --since='" . $self->since . "'";
                             if (!$self->forbidDestRollback) {
                                 die "User required --sinceForced='" . $self->since . "' but there is no match in source dataset $srcDataSet";
                             }
-                        } # if src does not have "X"
+                        } # // 1. if src does not have "X"
                     } # if have to care about "--since=X"
 
                     # Synchronize snapshot history from source to destination
