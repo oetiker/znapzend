@@ -302,7 +302,7 @@ sub destroySnapshots {
             my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
             my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
 
-            print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
             system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
                 if !($self->noaction || $self->nodestroy);
         }
@@ -328,7 +328,7 @@ sub destroySnapshots {
         my @ssh = $self->$buildRemote($remote ne 'local'
             ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}})]);
 
-        print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+        print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
         system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
             if !($self->noaction || $self->nodestroy);
     }
