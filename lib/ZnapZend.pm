@@ -430,26 +430,26 @@ my $sendRecvCleanup = sub {
                                         if ($self->skipIntermediates) {
                                             if ($lastCommon) {
                                                 if ($lastCommon =~ m/\@$self->since$/ ) {
-                                                    warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='$self->since'";
+                                                    warn "### Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='$self->since'";
                                                 } else {
-                                                    warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX])";
+                                                    warn "### Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX])";
                                                     $doPromote = 1;
                                                 }
                                             } else {
                                                 if ( (scalar @$dstSnapshots) > 0) {
                                                     if ($self->forbidDestRollback) {
-                                                        warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, but rollback of dest is forbidden";
+                                                        warn "### There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, but rollback of dest is forbidden";
                                                     } else {
-                                                        warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, should try resync from scratch";
+                                                        warn "### There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, should try resync from scratch";
                                                         $doPromote = 1;
                                                     }
                                                 } else {
-                                                    warn "There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, because there are no snapshots in dst, should try resync from scratch";
+                                                    warn "### There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='$self->since' match, because there are no snapshots in dst, should try resync from scratch";
                                                     $doPromote = 1;
                                                 }
                                             }
                                         } else {
-                                            warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
+                                            warn "### Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
                                         }
                                     }
 
@@ -459,19 +459,19 @@ my $sendRecvCleanup = sub {
                         #       on dst) and proceed to resync starting from "X"
                         #       afterwards (if we forbidDestRollback honor that)
                                     if (!$seenX && !$self->forbidDestRollback) {
-                                        warn "The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
+                                        warn "### The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
                                         $doPromote = 1;
                                     } else {
-                                        warn "Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
+                                        warn "### Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='$self->since' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
                                     }
 
                                     if ($doPromote > 0) {
-                                        warn "Making sure that snapshot '$self->since' exists in history of '$dstDataSet' ...";
+                                        warn "### Making sure that snapshot '$self->since' exists in history of '$dstDataSet' ...";
                                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                                                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
                                                 $backupSet->{snapSendFilter}, $self->since);
                                     } else {
-                                        warn "We considered '--since=$self->since' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
+                                        warn "### We considered '--since=$self->since' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
                                     }
                                 } # if not scalar - no src snaps?
                             } # if dst has "X"
