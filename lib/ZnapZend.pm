@@ -478,7 +478,7 @@ my $sendRecvCleanup = sub {
                         } # if src does not have "X"
                     } # if have to care about "--since=X"
 
-                    # Synchronize snapshot history from origin to destination
+                    # Synchronize snapshot history from source to destination
                     # starting from newest snapshot that they have in common
                     # (or create/rewrite destination if it has no snapshots).
                     # With "--since=X" option handled above, such newest common
