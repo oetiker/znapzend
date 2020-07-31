@@ -426,7 +426,9 @@ my $sendRecvCleanup = sub {
                         #       (if we do not skipIntermediates then no-op -
                         #       it will be included in replication below from
                         #       that older common point anyway)
-                                    if ($seenX) {
+                                    if (defined($seenX)) {
+                                        # Note: the value of a defined seenX is a number of
+                                        # that snapshot in our list, so may validly be zero
                                         if ($self->skipIntermediates) {
                                             if ($lastCommon) {
                                                 if ($lastCommon =~ m/\@$self->since$/ ) {
@@ -458,7 +460,7 @@ my $sendRecvCleanup = sub {
                         #       forbidDestRollback (deleting whatever is newer
                         #       on dst) and proceed to resync starting from "X"
                         #       afterwards (if we forbidDestRollback honor that)
-                                    if (!$seenX) {
+                                    if (!defined($seenX)) {
                                         if (!$self->forbidDestRollback) {
                                             warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
                                             $doPromote = 1;
