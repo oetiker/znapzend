@@ -366,6 +366,11 @@ my $sendRecvCleanup = sub {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
+                    $self->zLog->debug('Are we sending "--since"? '.
+                        'since=="' . $self->since . '"'.
+                        ', skipIntermediates=="' . $self->skipIntermediates . '"' .
+                        ', forbidDestRollback=="' . $self->forbidDestRollback . '"'
+                        );
                     if ($self->since) {
                         # Make sure that if we use the "--sinceForced=X" or
                         # "--since=X" option, this named snapshot exists (or
