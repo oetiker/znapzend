@@ -116,6 +116,8 @@ sub dataSetExists {
 
 sub snapshotExists {
     my $self = shift;
+    # Note: this is a fully qualified name of dataset@snapshot ZFS object,
+    # not just the snapname. May also be with remote destination ID.
     my $snapshot = shift;
     my $remote;
 

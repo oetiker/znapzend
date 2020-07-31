@@ -391,9 +391,9 @@ my $sendRecvCleanup = sub {
 
                         # In some cases we do not have to actively replicate "X":
                         # 1) "X" does not exist in history of src, no-op
-                        if ($self->zZfs->dataSetExists($srcDataSet, $self->since)) {
+                        if ($self->zZfs->snapshotExists($srcDataSet . "@" . $self->since)) {
                         # 2) "X" exists in history of both src and dst, no-op
-                            if (!$self->zZfs->dataSetExists($dstDataSet, $self->since)) {
+                            if (!$self->zZfs->snapshotExists($dstDataSet . "@" . $self->since)) {
                         # ...So "X" exists in src and not in dst; where is it
                         # in our history relative to latest common snapshot?
                         # Is there one at all?
