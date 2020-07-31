@@ -148,6 +148,8 @@ znapzend \- znapzend daemon
 \& \-n,\-\-noaction          run in simulation mode: does no changes to filesystems
 \& \-\-nodelay              if a backup plan has a zend_delay defined, ignore it
 \& \-\-nodestroy            does all changes to the filesystem except destroy
+\& \-\-forbidDestRollback   forbids forcing destination dataset rollback and
+\&                        removal of datasets/snapshots not present on source
 \& \-\-logto=x              select where to log (syslog::<facility> or <filepath>)
 \& \-\-loglevel=x           define the log level
 \& \-\-pidfile=x            write a pid file when running in daemon mode
@@ -158,7 +160,7 @@ znapzend \- znapzend daemon
 \& \-\-forcedSnapshotSuffix=x  use non\-generated snapshot suffix for this "run\-once"
 \& \-\-features=x           comma separated list of features to be enabled
 \&                        (detailed in man page):
-\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates forbidDestRollback
 \& \-i/\-I                  a "zfs send" compatible on/off for skipIntermediates
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges
 \&                        (sudo or pfexec)
@@ -191,7 +193,20 @@ debugging the backup plan configurations, without waiting for hours to
 run them during experiments)
 .IP "\fB\-\-nodestroy\fR" 4
 .IX Item "--nodestroy"
-do all changes to the filesystem except destroying old snapshots
+do all changes to the filesystem except destroying old snapshots after
+a successful run to snapshot and replicate to backup destinations
+.IP "\fB\-\-forbidDestRollback\fR" 4
+.IX Item "--forbidDestRollback"
+by default znapzend uses \fBzfs recv \-F\fR which rolls back destination to
+the most recent snapshot, and in case of incremental replication streams
+can also destroy snapshots and other child datasets not present in the
+source.
+.Sp
+The \fB\-\-forbidDestRollback\fR option allows to not enforce this mode, so
+znapzend would instead report errors if destination is not ready to
+receive data without applying such operations. This can be useful for
+maintenance of backup destinations, but can be counter-productive for
+regularly scheduled operations.
 .IP "\fB\-\-logto\fR={\fBsyslog::\fR\fIfacility\fR|\fIfilepath\fR}" 4
 .IX Item "--logto={syslog::facility|filepath}"
 send logs out to either syslog or a logfile. Default is to send logs to
@@ -433,6 +448,10 @@ sysadmin marks certain data states via snapshots as special (e.g.
 .Sp
 The feature is recommended to be part of your 'znapzend' service
 setup for regular runs in stable storage/networking conditions.
+.IP "forbidDestRollback" 4
+.IX Item "forbidDestRollback"
+Avoid use of destructive 'zfs recv \-F' in favor of failing to receive;
+more details in description of \fB\-\-forbidDestRollback\fR \s-1CLI\s0 option above.
 .IP "lowmemRecurse" 4
 .IX Item "lowmemRecurse"
 use 'lowmemRecurse' on systems where you have too many datasets,
