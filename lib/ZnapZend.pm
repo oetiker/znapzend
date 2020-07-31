@@ -458,6 +458,7 @@ my $sendRecvCleanup = sub {
                                                 }
                                             }
                                         } else {
+                                            # if (seenX && !skipIntermediates) :
                                             warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
                                         }
                                     } # // 3. if seenX
@@ -469,7 +470,7 @@ my $sendRecvCleanup = sub {
                         #       afterwards (if we forbidDestRollback honor that)
                                     if (!defined($seenX)) {
                                         if (!$self->forbidDestRollback) {
-                                            warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
+                                            warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
                                             $doPromote = 1;
                                         } else {
                                             warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
