@@ -51,6 +51,7 @@ Bpre
 bserv
 Bsyslog
 Bwarning
+Bzfs
 Bznapzend
 Bznapzendzetup
 Bznapzendztatz
