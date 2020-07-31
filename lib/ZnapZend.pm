@@ -421,6 +421,11 @@ my $sendRecvCleanup = sub {
                                     }
 
                                     my $doPromote = 0;
+
+                                    if (!defined($lastCommon)) {
+                                        warn "### [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet";
+                                    }
+
                         # 3) "X" in src is newer than the newest common snapshot
                         #    or "X" exists in src and there is NO common snapshot
                         #    => promote it into dst explicitly if we skipIntermediates
@@ -432,7 +437,7 @@ my $sendRecvCleanup = sub {
                                         # Note: the value of a defined seenX is a number of
                                         # that snapshot in our list, so may validly be zero
                                         if ($self->skipIntermediates) {
-                                            if ($lastCommon) {
+                                            if (defined($lastCommon) && $lastCommon ne '') {
                                                 if ($lastCommonNum == $seenX || $lastCommon =~ m/\@$self->since$/ ) {
                                                     warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'";
                                                 } else {
