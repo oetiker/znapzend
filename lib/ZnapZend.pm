@@ -473,8 +473,17 @@ my $sendRecvCleanup = sub {
                                     } else {
                                         warn "### [--since mode]: We considered '--since=$self->since' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
                                     }
+                                } else {
+                                    warn "### [--since mode]: Got an empty list, does source dataset $srcDataSet have any snapshots?";
                                 } # if not scalar - no src snaps?
+                            } else {
+                                warn "### [--since mode]: Destination dataset $dstDataSet already has a snapshot named by --since='" . $self->since . "'";
                             } # if dst has "X"
+                        } else {
+                            warn "### [--since mode]: Source dataset $srcDataSet does not have a snapshot named by --since='" . $self->since . "'";
+                            if (!$self->forbidDestRollback) {
+                                die "User required --sinceForced='" . $self->since . "' but there is no match in source dataset $srcDataSet";
+                            }
                         } # if src does not have "X"
                     } # if have to care about "--since=X"
 
