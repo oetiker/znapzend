@@ -406,13 +406,15 @@ my $sendRecvCleanup = sub {
                                 if (scalar @$srcSnapshots) {
                                     my $dstSnapshots = $self->zZfs->listSnapshots($dstDataSet, $snapSendFilter);
 
-                                    my ($i, $snapTime, $seenX, $lastCommon);
+                                    my ($i, $snapTime, $seenX, $lastCommon, $lastCommonNum);
                                     $lastCommon = undef;
+                                    $lastCommonNum = undef; # Flips to "i" if we had any common snapshots
                                     $seenX = undef; # Flips to "i" if we saw "X" before (or as) the newest common snapshot, looking from newest snapshots in src
                                     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
                                         ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
                                         $seenX = $i if $snapTime =~ m/^$self->since$/;
                                         if ( grep { /$snapTime/ } @$dstSnapshots ) {
+                                            $lastCommonNum = $i;
                                             $lastCommon = ${$srcSnapshots}[$i];
                                             last;
                                         }
@@ -431,7 +433,7 @@ my $sendRecvCleanup = sub {
                                         # that snapshot in our list, so may validly be zero
                                         if ($self->skipIntermediates) {
                                             if ($lastCommon) {
-                                                if ($lastCommon =~ m/\@$self->since$/ ) {
+                                                if ($lastCommonNum == $seenX || $lastCommon =~ m/\@$self->since$/ ) {
                                                     warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'";
                                                 } else {
                                                     warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])";
