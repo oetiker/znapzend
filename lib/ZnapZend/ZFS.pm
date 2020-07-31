@@ -206,6 +206,7 @@ sub listSnapshots {
                 # Only add this name to list if it matches $snapshotFilter ...
                 push @snapshots, $snap if $snap =~ /^\Q$dataSet\E\@$snapshotFilter$/;
                 # ...but still stop iterating
+                $self->zLog->debug("listSnapshots() : for dataSet='$dataSet' snapshotFilter='$snapshotFilter' lastSnapshotToSee='$lastSnapshotToSee' matched '$snap' and stopping the iteration");
                 last;
             }
         }
@@ -402,6 +403,10 @@ sub sendRecvSnapshots {
         and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
             . "found on source and destination "
             . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
+
+    if (defined($lastSnapshotToSee)) {
+        $self->zLog->debug("sendRecvSnapshots() : for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' GOT: lastSnapshot='$lastSnapshot' lastCommon='$lastCommon' dstSnapCount='$dstSnapCount'");
+    }
 
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
