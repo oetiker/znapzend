@@ -479,9 +479,13 @@ my $sendRecvCleanup = sub {
 
                                     if ($doPromote > 0) {
                                         warn "### [--since mode]: Making sure that snapshot '" . $self->since . "' exists in history of '$dstDataSet' ...";
+                                        my $lastSnapshotToSee = $self->since;
+                                        if (defined($seenX)) {
+                                            $lastSnapshotToSee = ${$srcSnapshots}[$seenX];
+                                        }
                                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
                                                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
-                                                $backupSet->{snapSendFilter}, $self->since);
+                                                $backupSet->{snapSendFilter}, $lastSnapshotToSee);
                                     } else {
                                         warn "### [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
                                     }

@@ -186,7 +186,7 @@ sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
     my $snapshotFilter = shift // qr/.*/;
-    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name, exact string
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name
     if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
     my $remote;
     my @snapshots;
@@ -202,7 +202,7 @@ sub listSnapshots {
     while (my $snap = <$snapshots>){
         chomp $snap;
         if (defined($lastSnapshotToSee)) {
-            if ($snap eq $lastSnapshotToSee) {
+            if ($snap  =~ /^\Q$dataSet\E\@$lastSnapshotToSee$/) {
                 # Only add this name to list if it matches $snapshotFilter ...
                 push @snapshots, $snap if $snap =~ /^\Q$dataSet\E\@$snapshotFilter$/;
                 # ...but still stop iterating
@@ -341,7 +341,7 @@ sub lastAndCommonSnapshots {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $snapshotFilter = shift // qr/.*/;
-    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name, exact string
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name
     if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
 
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter, $lastSnapshotToSee);
@@ -370,7 +370,7 @@ sub sendRecvSnapshots {
     my $snapFilter = shift // qr/.*/;
 
     # Limit creation-ordered listing after registering this snapshot name,
-    # exact string (there may exist newer snapshots that would be not seen).
+    # (there may exist newer snapshots that would be not seen and replicated).
     # For practical purposes, this can be used with --since=X mode to ensure
     # that "X" exists on destination if it does not yet (note that if there
     # are newer snapshots on destination, they would be removed to allow
