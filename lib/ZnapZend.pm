@@ -402,9 +402,9 @@ my $sendRecvCleanup = sub {
                                 ### my $snapSendFilter = $backupSet->{snapSendFilter};
                                 my $snapSendFilter = qr/.*/;
 
-                                my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapSendFilter);
+                                my $srcSnapshots = $self->zZfs->listSnapshots($srcDataSet, $snapSendFilter);
                                 if (scalar @$srcSnapshots) {
-                                    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapSendFilter);
+                                    my $dstSnapshots = $self->zZfs->listSnapshots($dstDataSet, $snapSendFilter);
 
                                     my ($i, $snapTime, $seenX, $lastCommon);
                                     $lastCommon = undef;
