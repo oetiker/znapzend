@@ -813,7 +813,8 @@ my $createSnapshot = sub {
         $self->zLog->info("checking for explicitly excluded ZFS dependent datasets under '$backupSet->{src}'");
 
         # restrict the list to the datasets that are descendant from the current
-        my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
+        ###my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
+        my @dataSetList = @{$self->zZfs->listDataSets(undef, $backupSet->{src}, 1)};
         if ( @dataSetList ) {
 
             # for each dataset: if the property "enabled" is set to "off", set the
