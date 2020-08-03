@@ -489,7 +489,7 @@ my $sendRecvCleanup = sub {
                 for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
                     my $dstDataSet = $backupSet->{src};
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
-                    my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst);
+                    my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
                     if ($recentCommon) {
                         $self->zLog->debug('not cleaning up ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet);
                         @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
@@ -549,7 +549,7 @@ my $sendRecvCleanup = sub {
             for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
                 my $dstDataSet = $srcDataSet;
                 $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
-                my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst);
+                my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
                 if ($recentCommon) {
                     $self->zLog->debug('not cleaning up ' . $recentCommon . ' because it is needed by ' . $dstDataSet);
                     @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};

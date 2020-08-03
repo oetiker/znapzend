@@ -349,18 +349,18 @@ sub mostRecentCommonSnapshot {
     # This is similar to lastAndCommonSnapshots() above, but considers not only
     # the "live" information from a currently accessible destination, but as a
     # fallback also the saved last-known-synced snapshot name.
-    # TODO: Add support for modifiable $snapshotFilter like appeared in master.
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $dstName = shift; # name of the znapzend policy => attribute prefix
+    my $snapshotFilter = $_[0] || qr/.*/;
 
     my $lastCommonSnapshot;
     {
         local $@;
         eval {
             local $SIG{__DIE__};
-            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet))[1];
+            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
         };
         if ($@){
             if (blessed $@ && $@->isa('Mojo::Exception')){
@@ -372,8 +372,10 @@ sub mostRecentCommonSnapshot {
         }
     }
     if (not $lastCommonSnapshot){
-        my $srcSnapshots = $self->listSnapshots($srcDataSet);
+        my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
         my $i;
+        # Go from newest snapshot down in history and find the first one
+        # to have a "non-false" value (e.g. "1") in its $dstName . '_synced'
         for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
             my $snapshot = ${$srcSnapshots}[$i];
             my $properties = $self->getSnapshotProperties($snapshot);
