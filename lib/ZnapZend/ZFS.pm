@@ -345,10 +345,83 @@ sub lastAndCommonSnapshots {
         ? ${$srcSnapshots}[$i] : undef), scalar @$dstSnapshots);
 }
 
+sub mostRecentCommonSnapshot {
+    # This is similar to lastAndCommonSnapshots() above, but considers not only
+    # the "live" information from a currently accessible destination, but as a
+    # fallback also the saved last-known-synced snapshot name.
+    my $self = shift;
+    my $srcDataSet = shift;
+    my $dstDataSet = shift;
+    my $dstName = shift; # name of the znapzend policy => attribute prefix
+    my $snapshotFilter = shift;
+    if (!defined($snapshotFilter) || !$snapshotFilter) {
+        $snapshotFilter = qr/.*/;
+    }
+
+    # We can recurse from sendRecvCleanup() when looking for protected children
+    # while preparing for a recursive cleanup of root backed-up source dataset.
+    # NOTE that it is then up to zfs command to either return only data for the
+    # snapshot named in the argument, or also same-named snapshots in children
+    # of the dataset this is a snapshot of, so this flag may be effectively
+    # ignored by OS.
+    my $recurse = shift; # May be not passed => undef
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
+    # We do not have callers for the "inherit" argument at this time.
+    # However we can have users replicating partial trees inheriting a policy.
+    # Current call stack for sendRecvCleanup (primary user of this routine)
+    # does not provide info whether this mode is used, so to be safer about
+    # deletion of "protected" last-known-synced snapshots, we consider both
+    # local and inherited values of the dst_X_synced flag, if present.
+    # NOTE that some versions of zfs do not inherit values from same-named
+    # snapshot of a parent dataset, but only from a "real" dataset higher
+    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    my $inherit = shift; # May be not passed => undef
+    if (!defined($inherit)) {
+        $inherit = 1;
+    }
+
+    my $lastCommonSnapshot;
+    {
+        local $@;
+        eval {
+            local $SIG{__DIE__};
+            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
+        };
+        if ($@){
+            if (blessed $@ && $@->isa('Mojo::Exception')){
+                $self->zLog->warn($@->message);
+            }
+            else{
+                $self->zLog->warn($@);
+            }
+        }
+    }
+    if (not $lastCommonSnapshot){
+        my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
+        my $i;
+        # Go from newest snapshot down in history and find the first one
+        # to have a "non-false" value (e.g. "1") in its $dstName . '_synced'
+        for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+            my $snapshot = ${$srcSnapshots}[$i];
+            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit);
+            if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstName . '_synced'}){
+                $lastCommonSnapshot = $snapshot;
+                last;
+            }
+        }
+    }
+    return $lastCommonSnapshot;
+}
+
+
 sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
+    my $dstName = shift; # name of the znapzend policy => attribute prefix
     my $mbuffer = shift;
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
@@ -367,8 +440,14 @@ sub sendRecvSnapshots {
     my ($lastSnapshot, $lastCommon,$dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
 
+    my %snapshotSynced = ($dstName, $dstDataSet,
+        $dstName . '_synced', 1);
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
-    return 1 if !$lastSnapshot || (defined $lastCommon && ($lastSnapshot eq $lastCommon));
+    return 1 if !$lastSnapshot;
+    if (defined $lastCommon && ($lastSnapshot eq $lastCommon)){
+        $self->setSnapshotProperties($lastCommon, \%snapshotSynced);
+        return 1;
+    }
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
@@ -470,6 +549,7 @@ sub sendRecvSnapshots {
             . ($remote ? " on $remote" : '')) if !$self->noaction;
     }
 
+    $self->setSnapshotProperties($lastSnapshot, \%snapshotSynced);
     return 1;
 }
 
@@ -855,6 +935,79 @@ sub deleteDataSetProperties {
     return 1;
 }
 
+sub getSnapshotProperties {
+    # Note: this code originated as a clone of getDataSetProperties() but
+    # that routine grew a lot since then to support recursive, inherited,
+    # lowmem and other optional scenarios, and considering dataSet arg as
+    # an array of names. Some of those traits may get ported here at least
+    # for consistency, where they make sense for ZFS snapshot dataset type.
+    my $self = shift;
+    my $snapshot = shift;
+
+    # NOTE that it is then up to zfs command to either return only data for the
+    # snapshot named in the argument, or also same-named snapshots in children
+    # of the dataset this is a snapshot of, so this flag may be effectively
+    # ignored by OS.
+    my $recurse = shift; # May be not passed => undef
+
+    # NOTE that some versions of zfs do not inherit values from same-named
+    # snapshot of a parent dataset, but only from a "real" dataset higher
+    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    my $inherit = shift; # May be not passed => undef
+
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
+    if (!defined($inherit)) {
+        $inherit = 0;
+    }
+
+    my %properties;
+    my $propertyPrefix = $self->propertyPrefix;
+
+    my @cmd = (@{$self->priv}, qw(zfs get -H));
+    if ($inherit) {
+        push (@cmd, qw(-s), 'local,inherited');
+    } else {
+        push (@cmd, qw(-s local));
+    }
+    if ($self->zfsGetType) {
+        push (@cmd, qw(-t snapshot));
+    }
+    if ($recurse) {
+        push (@cmd, qw(-r));
+    }
+    push (@cmd, qw(-o), 'property,value', 'all', $snapshot);
+
+    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+    while (my $prop = <$props>){
+        chomp $prop;
+        my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
+        $properties{$key} = $value;
+    }
+
+    return \%properties;
+}
+
+sub setSnapshotProperties {
+    my $self = shift;
+    my $snapshot = shift;
+    my $properties = shift;
+    my $propertyPrefix = $self->propertyPrefix;
+
+    return 0 if !$self->snapshotExists($snapshot);
+    for my $prop (keys %$properties){
+        my @cmd = (@{$self->priv}, qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $snapshot);
+        print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
+        system(@cmd)
+            && Mojo::Exception->throw("ERROR: could not set property $prop on $snapshot") if !$self->noaction;
+    }
+
+    return 1;
+}
+
 sub deleteBackupDestination {
     my $self = shift;
     my $dataSet = shift;
@@ -1035,6 +1188,10 @@ destroys a single snapshot or a list of snapshots on localhost or a remote host,
 
 lists the last snapshot on source and the last common snapshot an source and destination and the number of snapshots found on the destination host
 
+=head2 mostRecentCommonSnapshot
+
+gets the name of the most recent common snapshot between source and destination, first by trying to get the actual snapshots, then by checking the dst_*_synced property on each source snapshot if the destination is offline
+
 =head2 sendRecvSnapshots
 
 sends snapshots to a different destination on localhost or a remote host
@@ -1050,6 +1207,14 @@ sets dataset properties
 =head2 deleteDataSetProperties
 
 deletes dataset properties
+
+=head2 getSnapshotProperties
+
+gets snapshot properties
+
+=head2 setSnapshotProperties
+
+sets snapshot properties
 
 =head2 deleteBackupDestination
 

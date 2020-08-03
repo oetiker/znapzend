@@ -49,6 +49,7 @@ has timeWarp                => sub { undef };
 has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
+has cleanOffline            => sub { 0 };
 has backupSets              => sub { [] };
 
 has zConfig => sub {
@@ -359,7 +360,7 @@ my $sendRecvCleanup = sub {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
-                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet,
+                    $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
                 };
                 if (my $err = $@){
@@ -392,7 +393,7 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp);
 
-            $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{$dst});
+            $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
             {
                 local $@;
                 eval {
@@ -408,7 +409,7 @@ my $sendRecvCleanup = sub {
                     }
                 }
             }
-            $self->zLog->debug('now will look if there is anything to clean in children of ' . $backupSet->{$dst});
+            $self->zLog->debug('now will look if there is anything to clean in children of destination ' . $backupSet->{$dst});
         }
 
         #cleanup children of current destination
@@ -425,7 +426,7 @@ my $sendRecvCleanup = sub {
 
             next if (scalar (@{$toDestroy}) == 0);
 
-            $self->zLog->debug('cleaning up snapshots on ' . $dstDataSet);
+            $self->zLog->debug('cleaning up snapshots on destination ' . $dstDataSet);
             {
                 local $@;
                 eval {
@@ -455,14 +456,15 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    if (scalar(@sendFailed) > 0) {
+    if (scalar(@sendFailed) > 0 and not $self->cleanOffline) {
         $self->zLog->warn('ERROR: suspending cleanup source dataset because '
             . scalar(@sendFailed) . ' send task(s) failed:');
         foreach my $errmsg (@sendFailed) {
             $self->zLog->warn(' +-->   ' . $errmsg);
         }
     }
-    else{
+    else {
+        # If "not sendFailed" or "cleanOffline requested"...
         # cleanup source according to backup schedule
         if ($backupSet->{recursive} eq 'on') {
             # First we try to recursively (and atomically quickly)
@@ -477,28 +479,63 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
-            $self->zLog->debug('cleaning up snapshots recursively under ' . $backupSet->{src});
-            {
-                local $@;
-                eval {
-                    local $SIG{__DIE__};
-                    $self->zZfs->destroySnapshots($toDestroy, 1);
-                };
-                if ($@){
-                    if (blessed $@ && $@->isa('Mojo::Exception')){
-                        $self->zLog->warn($@->message);
-                    }
-                    else{
-                        $self->zLog->warn($@);
+            # preserve most recent common snapshots for each destination
+            # (including offline destinations for which last-known sync
+            # snapshot name is saved in properties of the source policy)
+            my $doClean = 1;
+
+            if (scalar($toDestroy) > 0) {
+                # Check if any death-rowed snapshots need protection
+                for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+                    my $dstDataSet = $backupSet->{src};
+                    $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+                    my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on') );
+                    if ($recentCommon) {
+                        $self->zLog->debug('not cleaning up source ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet);
+                        @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                    } elsif (scalar(@sendFailed) > 0) {
+                        # If we are here, "--cleanOffline" was requested,
+                        # and at least one destination is indeed offline,
+                        # but it is not safe in current situation regarding
+                        # last known sync points...
+                        $self->zLog->warn('ERROR: suspending recursive cleanup of source ' . $backupSet->{src} . ' because a send task failed and no common snapshot was found for at least ' . $dstDataSet);
+                        $doClean = 0;
                     }
                 }
             }
-            $self->zLog->debug('now will look if there is anything to clean in children of ' . $backupSet->{src});
+
+            if (scalar($toDestroy) == 0) {
+                $self->zLog->debug('got an empty toDestroy list for cleaning up source snapshots recursively under ' . $backupSet->{src});
+                $doClean = 0;
+            }
+
+            if ($doClean) {
+                $self->zLog->debug('cleaning up source snapshots recursively under ' . $backupSet->{src});
+                {
+                    local $@;
+                    eval {
+                        local $SIG{__DIE__};
+                        $self->zZfs->destroySnapshots($toDestroy, 1);
+                    };
+                    if ($@){
+                        if (blessed $@ && $@->isa('Mojo::Exception')){
+                            $self->zLog->warn($@->message);
+                        }
+                        else{
+                            $self->zLog->warn($@);
+                        }
+                    }
+                } # scope
+            } else {
+                $self->zLog->debug('NOT cleaning up source snapshots recursively under ' . $backupSet->{src});
+            }
+            $self->zLog->debug('now will look if there is anything to clean in children of source ' . $backupSet->{src});
         }
 
         # See if there is anything remaining to clean up in child
         # datasets (if recursive snapshots are enabled) or just
         # this one dataset.
+        SRC_SET:
         for my $srcDataSet (@$srcSubDataSets){
             next if ($backupSet->{recursive} eq 'on' && $srcDataSet eq $backupSet->{src});
 
@@ -506,9 +543,32 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
-            next if (scalar (@{$toDestroy}) == 0);
+            # preserve most recent common snapshots for each destination
+            # (including offline destinations for which last-known sync
+            # snapshot name is saved in properties of the source policy)
+            for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+                my $dstDataSet = $srcDataSet;
+                $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
+                my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
+                if ($recentCommon) {
+                    $self->zLog->debug('not cleaning up source ' . $recentCommon . ' because it is needed by ' . $dstDataSet);
+                    @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                } elsif (scalar(@sendFailed) > 0) {
+                    # If we are here, "--cleanOffline" was requested,
+                    # and at least one destination is indeed offline,
+                    # but it is not safe in current situation regarding
+                    # last known sync points...
+                    $self->zLog->warn('ERROR: suspending cleanup of source ' . $srcDataSet . ' because a send task failed and no common snapshot was found for at least ' . $dstDataSet);
+                    next SRC_SET;
+                }
+            }
 
-            $self->zLog->debug('cleaning up snapshots on ' . $srcDataSet);
+            if (scalar (@{$toDestroy}) == 0) {
+                $self->zLog->debug('got nothing to clean in children of source ' . $backupSet->{src});
+                next;
+            }
+
+            $self->zLog->debug('cleaning up snapshots on source ' . $srcDataSet);
             {
                 local $@;
                 eval {
