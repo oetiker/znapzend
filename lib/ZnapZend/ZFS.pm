@@ -938,7 +938,7 @@ sub setSnapshotProperties {
     return 0 if !$self->snapshotExists($snapshot);
     for my $prop (keys %$properties){
         my @cmd = (@{$self->priv}, qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $snapshot);
-        print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+        print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd)
             && Mojo::Exception->throw("ERROR: could not set property $prop on $snapshot") if !$self->noaction;
     }
