@@ -489,7 +489,7 @@ my $sendRecvCleanup = sub {
                 for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
                     my $dstDataSet = $backupSet->{src};
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
-                    my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
+                    my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on') );
                     if ($recentCommon) {
                         $self->zLog->debug('not cleaning up source ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet);
                         @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};

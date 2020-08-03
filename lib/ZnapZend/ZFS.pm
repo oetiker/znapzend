@@ -353,7 +353,35 @@ sub mostRecentCommonSnapshot {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $dstName = shift; # name of the znapzend policy => attribute prefix
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift;
+    if (!defined($snapshotFilter) || !$snapshotFilter) {
+        $snapshotFilter = qr/.*/;
+    }
+
+    # We can recurse from sendRecvCleanup() when looking for protected children
+    # while preparing for a recursive cleanup of root backed-up source dataset.
+    # NOTE that it is then up to zfs command to either return only data for the
+    # snapshot named in the argument, or also same-named snapshots in children
+    # of the dataset this is a snapshot of, so this flag may be effectively
+    # ignored by OS.
+    my $recurse = shift; # May be not passed => undef
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
+    # We do not have callers for the "inherit" argument at this time.
+    # However we can have users replicating partial trees inheriting a policy.
+    # Current call stack for sendRecvCleanup (primary user of this routine)
+    # does not provide info whether this mode is used, so to be safer about
+    # deletion of "protected" last-known-synced snapshots, we consider both
+    # local and inherited values of the dst_X_synced flag, if present.
+    # NOTE that some versions of zfs do not inherit values from same-named
+    # snapshot of a parent dataset, but only from a "real" dataset higher
+    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    my $inherit = shift; # May be not passed => undef
+    if (!defined($inherit)) {
+        $inherit = 1;
+    }
 
     my $lastCommonSnapshot;
     {
@@ -378,7 +406,7 @@ sub mostRecentCommonSnapshot {
         # to have a "non-false" value (e.g. "1") in its $dstName . '_synced'
         for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
             my $snapshot = ${$srcSnapshots}[$i];
-            my $properties = $self->getSnapshotProperties($snapshot);
+            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit);
             if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstName . '_synced'}){
                 $lastCommonSnapshot = $snapshot;
                 last;
@@ -913,11 +941,18 @@ sub getSnapshotProperties {
     # lowmem and other optional scenarios, and considering dataSet arg as
     # an array of names. Some of those traits may get ported here at least
     # for consistency, where they make sense for ZFS snapshot dataset type.
-    # Note: Currently the inherit and recursive options are not passed by
-    # callers == mostRecentCommonSnapshot().
     my $self = shift;
     my $snapshot = shift;
+
+    # NOTE that it is then up to zfs command to either return only data for the
+    # snapshot named in the argument, or also same-named snapshots in children
+    # of the dataset this is a snapshot of, so this flag may be effectively
+    # ignored by OS.
     my $recurse = shift; # May be not passed => undef
+
+    # NOTE that some versions of zfs do not inherit values from same-named
+    # snapshot of a parent dataset, but only from a "real" dataset higher
+    # in the data hierarchy, so this flag may be effectively ignored by OS.
     my $inherit = shift; # May be not passed => undef
 
     if (!defined($recurse)) {
