@@ -352,7 +352,7 @@ sub mostRecentCommonSnapshot {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $dstName = shift; # name of the znapzend policy => attribute prefix
+    my $dstName = shift; # name of the znapzend policy => property prefix
     my $snapshotFilter = shift;
     if (!defined($snapshotFilter) || !$snapshotFilter) {
         $snapshotFilter = qr/.*/;
@@ -421,7 +421,7 @@ sub sendRecvSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $dstName = shift; # name of the znapzend policy => attribute prefix
+    my $dstName = shift; # name of the znapzend policy => property prefix
     my $mbuffer = shift;
     my $mbufferSize = shift;
     my $snapFilter = $_[0] || qr/.*/;
@@ -602,7 +602,7 @@ sub getDataSetProperties {
     # Note that listDataSets(), optionally used below for either full
     # or selective listing of datasets seen by the system, does not
     # have a say in this dilemma ("zfs list" does not care about the
-    # "source" of an attribute, only "zfs get" used in this routine does).
+    # "source" of a property, only "zfs get" used in this routine does).
     #
     if (defined($dataSet) && $dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
@@ -711,8 +711,8 @@ sub getDataSetProperties {
             }
             # NOTE: This regex assumes the dataset names do not have trailing whitespaces
             my ($srcds, $key, $value, $sourcetype, $tail) = $prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from )(.*)$/ or next; ### |received|default|-
-            # If we are here, the attribute name (key) is under $propertyPrefix
-            # namespace. So this dataset has at least one "interesting" attr...
+            # If we are here, the property name (key) is under $propertyPrefix
+            # namespace. So this dataset has at least one "interesting" prop...
 
             # Check if we have inherit mode and should spend time
             # and memory about cached data (selective trimming)
@@ -745,7 +745,7 @@ sub getDataSetProperties {
                     # TODO/THINK: Do we assume that a configured dataset has ALL fields
                     # "local" via e.g. znapzendzetup, or if in case of recursion we can
                     # have a mix of inherited and local? Sounds probable for "enabled"
-                    # attribute at least. Maybe we should not chop this away right here,
+                    # property at least. Maybe we should not chop this away right here,
                     # but do a smarter analysis below in SAVE/SAVE-LAST blocks instead.
                     %properties = ();
                     next;
@@ -769,7 +769,7 @@ sub getDataSetProperties {
                         # We've just had a successful save of 1+ attrs we chose
                         # to keep, so should trim descendants above.
                         # TODO: Track somehow else? We effectively save the
-                        # source of last seen attr here, but are really
+                        # source of last seen property here, but are really
                         # interested if this dataset is end of tree walk
                         # (as far as non-local attrs go)...
                         # TODO! Even worse, we now check the new line's source
@@ -783,15 +783,15 @@ sub getDataSetProperties {
             }
             # We are okay to use this dataset if:
             # * sourcetype == local (any inheritance value)
-            # * sourcetype == inherited* and the tail names a dataset whose value for the attribute is local (and inheritance is allowed)
+            # * sourcetype == inherited* and the tail names a dataset whose value for the property is local (and inheritance is allowed)
             # A bit of optimization (speed vs mem tradeoff) is to cache seen
-            # attr sources (as magic int values); do not bother if not in
+            # property sources (as magic int values); do not bother if not in
             # inheritance mode at all.
             my $inheritKey = "$srcds\t$key"; # TODO: lowmemInherit => "$srcds" ?
             if ($inherit) {
                 if (!defined($cachedInheritance{$inheritKey})) {
                     if ($sourcetype eq 'local') {
-                        # this DS defines this attr
+                        # this DS defines this property
                         $cachedInheritance{$inheritKey} = 1;
                     } else {
                         # inherited from something... technically there are other
@@ -840,7 +840,7 @@ sub getDataSetProperties {
                             print STDERR "=== getDataSetProperties(): FOUND ORIGIN: '$inh_srcds' => '$inh_key' == '$inh_value' (source: '${inh_sourcetype}${inh_tail}')\n" if $self->debug;
                             my $inh_inheritKey = "$inh_srcds\t$inh_key"; # TODO: lowmemInherit => "$inh_srcds" ?
                             if ($inh_sourcetype eq 'local') {
-                                # this DS defines this attr
+                                # this DS defines this property
                                 $cachedInheritance{$inh_inheritKey} = 1;
                             } else {
                                 # inherited from something... technically there are other
@@ -853,7 +853,7 @@ sub getDataSetProperties {
 #                        print STDERR "NAL: '$tail_inheritKey' already defined: " . $cachedInheritance{$tail_inheritKey} . "\n" if $self->debug;
                     }
                     if (defined($cachedInheritance{$tail_inheritKey}) && 1 == $cachedInheritance{$tail_inheritKey}) {
-                        # This attr comes from a local source
+                        # This property comes from a local source
                         if ( $key =~ /^dst_[^_]+$/ ) {
                             # Rewrite destination dataset name shifted same as
                             # this inherited source ($srcds) compared to its
