@@ -80,7 +80,7 @@ my $scrubZpool = sub {
     my @cmd = (@{$self->priv}, ($startstop ? qw(zpool scrub) : qw(zpool scrub -s)));
 
     my @ssh = $self->$buildRemote($remote, [@cmd, $zpool]);
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @ssh) . "\n" if $self->debug;
     system(@ssh) && Mojo::Exception->throw('ERROR: cannot '
         . ($startstop ? 'start' : 'stop') . " scrub on $zpool") if !$self->noaction;
 
@@ -216,7 +216,7 @@ sub createDataSet {
     my @ssh = $self->$buildRemote($remote,
         [@{$self->priv}, qw(zfs create -p), $dataSet]);
 
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @ssh) . "\n" if $self->debug;
 
     #return if 'noaction' or dataset creation successful
     return 1 if $self->noaction || !system(@ssh);
@@ -260,7 +260,7 @@ sub createSnapshot {
     my ($remote, $dataSet) = $splitHostDataSet->($hostAndDataSet);
     my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs snapshot), @recursive, $dataSet]);
 
-    print STDERR '# ' .  join(' ', @ssh) . "\n" if $self->debug;
+    print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) .  join(' ', @ssh) . "\n" if $self->debug;
 
     #return if 'noaction' or snapshot creation successful
     return 1 if $self->noaction || !system(@ssh);
@@ -289,7 +289,7 @@ sub destroySnapshots {
             my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
             my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
 
-            print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
             system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
                 if !($self->noaction || $self->nodestroy);
         }
@@ -315,7 +315,7 @@ sub destroySnapshots {
         my @ssh = $self->$buildRemote($remote ne 'local'
             ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}})]);
 
-        print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+        print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
         system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
             if !($self->noaction || $self->nodestroy);
     }
@@ -404,7 +404,7 @@ sub sendRecvSnapshots {
                 my $debug = shift;
                 my $noaction = shift;
 
-                print STDERR "# $cmd\n" if $debug;
+                print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $debug;
 
                 system($cmd)
                     && Mojo::Exception->throw('ERROR: executing receive process') if !$noaction;
@@ -433,7 +433,7 @@ sub sendRecvSnapshots {
 
                 $cmd = $shellQuote->(@cmd);
 
-                print STDERR "# $cmd\n" if $self->debug;
+                print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;
                 return if $self->noaction;
 
                 my $retryCounter = int($self->connectTimeout / $self->sendDelay) + 1;
@@ -464,7 +464,7 @@ sub sendRecvSnapshots {
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
-        print STDERR "# $cmd\n" if $self->debug;
+        print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;
 
         system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
             . ($remote ? " on $remote" : '')) if !$self->noaction;
@@ -827,7 +827,7 @@ sub setDataSetProperties {
         next if !defined($properties->{$prop});
 
         my @cmd = (@{$self->priv}, qw(zfs set), "$propertyPrefix:$prop=$properties->{$prop}", $dataSet);
-        print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+        print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd)
             && Mojo::Exception->throw("ERROR: could not set property $prop on $dataSet") if !$self->noaction;
     }
@@ -847,7 +847,7 @@ sub deleteDataSetProperties {
 
     for my $prop (keys %{$properties->[0]}){
         my @cmd = (@{$self->priv}, qw(zfs inherit), "$propertyPrefix:$prop", $dataSet);
-        print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+        print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
         system(@cmd)
             && Mojo::Exception->throw("ERROR: could not reset property $prop on $dataSet") if !$self->noaction;
     }
@@ -863,11 +863,11 @@ sub deleteBackupDestination {
     return 0 if !$self->dataSetExists($dataSet);
 
     my @cmd = (@{$self->priv}, qw(zfs inherit), $dst, $dataSet);
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
     system(@cmd)
         && Mojo::Exception->throw("ERROR: could not reset property on $dataSet") if !$self->noaction;
     @cmd = (@{$self->priv}, qw(zfs inherit), $dst . '_plan', $dataSet);
-    print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+    print STDERR '# ' . ($self->noaction ? "WOULD # " : "" ) . join(' ', @cmd) . "\n" if $self->debug;
     system(@cmd)
         && Mojo::Exception->throw("ERROR: could not reset property on $dataSet") if !$self->noaction;
 
