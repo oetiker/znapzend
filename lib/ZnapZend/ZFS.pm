@@ -554,7 +554,7 @@ sub sendRecvSnapshots {
 
 sub getDataSetProperties {
     # This routine finds properties of datasets (filesystem, volume) that
-    # are namespaced with our propertyPrefix (e.g. "org.znapzend:...")
+    # are name-spaced with our propertyPrefix (e.g. "org.znapzend:...")
     my $self = shift;
     my $dataSet = shift;
     my $recurse = shift; # May be not passed => undef
@@ -937,7 +937,7 @@ sub deleteDataSetProperties {
 }
 
 sub getSnapshotProperties {
-    # This routine finds properties of snapshots that are namespaced with
+    # This routine finds properties of snapshots that are name-spaced with
     # our propertyPrefix (e.g. "org.znapzend:...")
 
     # Note: this code originated as a clone of getDataSetProperties() but
@@ -1252,25 +1252,25 @@ sends snapshots to a different destination on localhost or a remote host
 
 =head2 getDataSetProperties
 
-gets dataset (filesystem, volume) properties namespaced with propertyPrefix
+gets dataset (filesystem, volume) properties name-spaced with propertyPrefix
 
 =head2 setDataSetProperties
 
-sets dataset (filesystem, volume) properties namespaced with propertyPrefix
+sets dataset (filesystem, volume) properties name-spaced with propertyPrefix
 
 =head2 deleteDataSetProperties
 
-deletes dataset (filesystem, volume) properties namespaced with propertyPrefix
-by inheriting the value from parent (or undefining the property if no parent
+deletes dataset (filesystem, volume) properties name-spaced with propertyPrefix
+by inheriting the value from parent (or un-defining the property if no parent
 has it)
 
 =head2 getSnapshotProperties
 
-gets snapshot properties namespaced with propertyPrefix
+gets snapshot properties name-spaced with propertyPrefix
 
 =head2 setSnapshotProperties
 
-sets snapshot properties namespaced with propertyPrefix
+sets snapshot properties name-spaced with propertyPrefix
 
 =head2 deleteBackupDestination
 
