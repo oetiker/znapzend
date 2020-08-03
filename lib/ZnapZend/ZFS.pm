@@ -346,10 +346,14 @@ sub lastAndCommonSnapshots {
 }
 
 sub mostRecentCommonSnapshot {
+    # This is similar to lastAndCommonSnapshots() above, but considers not only
+    # the "live" information from a currently accessible destination, but as a
+    # fallback also the saved last-known-synced snapshot name.
+    # TODO: Add support for modifiable $snapshotFilter like appeared in master.
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $dstName = shift;
+    my $dstName = shift; # name of the znapzend policy => attribute prefix
 
     my $lastCommonSnapshot;
     {
@@ -902,6 +906,12 @@ sub deleteDataSetProperties {
 }
 
 sub getSnapshotProperties {
+    # Note: this code originated as a clone of getDataSetProperties() but
+    # that routine grew a lot since then to support recursive, inherited,
+    # lowmem and other optional scenarios, and considering dataSet arg as
+    # an array of names. Some of those traits may get ported here at least
+    # for consistency, where they make sense for ZFS snapshot dataset type.
+    # TODO: Port inherit, recursive, zfsGetType options as applicable.
     my $self = shift;
     my $snapshot = shift;
     my %properties;
