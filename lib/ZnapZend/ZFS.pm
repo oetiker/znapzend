@@ -1011,7 +1011,7 @@ sub getSnapshotProperties {
 
     if ($self->debug) {
         if ($numProps > 0) {
-            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot : " .Dumper(%properties);
+            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot :\n" .Dumper(%properties);
         }
     }
 
@@ -1026,8 +1026,9 @@ sub getSnapshotProperties {
         # level "real" datasets vs. redefinitions in nearer-level snapshots?
         my $parentSnapshot = $snapshot;
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
-        if ($parentSnapshot eq $snapshot) {
-            if ($self->snapshotExists($snapshot)) {
+        #print STDERR "=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot\n" if $self->debug;
+        if ($parentSnapshot ne $snapshot) {
+            if ($self->snapshotExists($parentSnapshot)) {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
