@@ -966,6 +966,13 @@ sub getSnapshotProperties {
     #   3 = local + inherit as defined by zfs + iterate into parent
     my $inherit = shift; # May be not passed => undef
 
+    print STDERR "=== getSnapshotProperties():"
+        . "\n\trecurse=" . Dumper($recurse)
+        . "\n\tinherit=" . Dumper($inherit)
+        . "\n\tsnapshot=" . Dumper($snapshot)
+#        . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
+             if $self->debug;
+
     if (!defined($recurse)) {
         $recurse = 0;
     }
@@ -978,16 +985,13 @@ sub getSnapshotProperties {
             $inherit = 1; # caller DID set something...
         }
     }
+    my $inhMode = 'local';
+    if ($inherit == 1 || $inherit == 3) { $inhMode .= ',inherited'; }
 
     my %properties;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my @cmd = (@{$self->priv}, qw(zfs get -H));
-    if ($inherit == 1 || $inherit == 3) {
-        push (@cmd, qw(-s), 'local,inherited');
-    } else {
-        push (@cmd, qw(-s local));
-    }
+    my @cmd = (@{$self->priv}, qw(zfs get -H -s), $inhMode);
     if ($self->zfsGetType) {
         push (@cmd, qw(-t snapshot));
     }
@@ -1002,6 +1006,13 @@ sub getSnapshotProperties {
         chomp $prop;
         my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
         $properties{$key} = $value;
+    }
+    my $numProps = keys %properties;
+
+    if ($self->debug) {
+        if ($numProps > 0) {
+            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot : " .Dumper(%properties);
+        }
     }
 
     if ($inherit == 2 || $inherit == 3) {
@@ -1022,8 +1033,11 @@ sub getSnapshotProperties {
                 # that is not locally defined properties of a parent (or its parent).
                 my %parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, 2);
 
-                # Merge arrays, use existing values as overrides in case of conflict:
-                %properties = (%parentProperties, %properties);
+                my $numParentProps = keys %parentProperties;
+                if ($numParentProps > 0) {
+                    # Merge hash arrays, use existing values as overrides in case of conflict:
+                    %properties = (%parentProperties, %properties);
+                }
             } # else  End of line, we inherited from the previous (deeper) step
         } # else  Got to root, and it was inspected above
     }
