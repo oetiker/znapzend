@@ -913,13 +913,38 @@ sub getSnapshotProperties {
     # lowmem and other optional scenarios, and considering dataSet arg as
     # an array of names. Some of those traits may get ported here at least
     # for consistency, where they make sense for ZFS snapshot dataset type.
-    # TODO: Port inherit, recursive, zfsGetType options as applicable.
+    # Note: Currently the inherit and recursive options are not passed by
+    # callers == mostRecentCommonSnapshot().
     my $self = shift;
     my $snapshot = shift;
+    my $recurse = shift; # May be not passed => undef
+    my $inherit = shift; # May be not passed => undef
+
+    if (!defined($recurse)) {
+        $recurse = 0;
+    }
+
+    if (!defined($inherit)) {
+        $inherit = 0;
+    }
+
     my %properties;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my @cmd = (@{$self->priv}, qw(zfs get -H -s local -o), 'property,value', 'all', $snapshot);
+    my @cmd = (@{$self->priv}, qw(zfs get -H));
+    if ($inherit) {
+        push (@cmd, qw(-s), 'local,inherited');
+    } else {
+        push (@cmd, qw(-s local));
+    }
+    if ($self->zfsGetType) {
+        push (@cmd, qw(-t snapshot));
+    }
+    if ($recurse) {
+        push (@cmd, qw(-r));
+    }
+    push (@cmd, qw(-o), 'property,value', 'all', $snapshot);
+
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
     while (my $prop = <$props>){
