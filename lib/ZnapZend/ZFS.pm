@@ -375,12 +375,11 @@ sub mostRecentCommonSnapshot {
     # does not provide info whether this mode is used, so to be safer about
     # deletion of "protected" last-known-synced snapshots, we consider both
     # local and inherited values of the dst_X_synced flag, if present.
-    # NOTE that some versions of zfs do not inherit values from same-named
-    # snapshot of a parent dataset, but only from a "real" dataset higher
-    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    # See definition of recognized $inherit values for this context in
+    # getSnapshotProperties() code.
     my $inherit = shift; # May be not passed => undef
     if (!defined($inherit)) {
-        $inherit = 1;
+        $inherit = 3; # 3 = local + zfs inherited + recurse into same-named snapshot of parent(s)
     }
 
     my $lastCommonSnapshot;
@@ -953,11 +952,18 @@ sub getSnapshotProperties {
     # snapshot named in the argument, or also same-named snapshots in children
     # of the dataset this is a snapshot of, so this flag may be effectively
     # ignored by OS.
+    # TODO: Make magic like for inherit below, to drill into same-named
+    # snapshots of datasets that are children of one that $snapshot is a
+    # zfs snapshot of.
     my $recurse = shift; # May be not passed => undef
 
     # NOTE that some versions of zfs do not inherit values from same-named
     # snapshot of a parent dataset, but only from a "real" dataset higher
     # in the data hierarchy, so this flag may be effectively ignored by OS.
+    #   0 = only local
+    #   1 = local + inherit as defined by zfs
+    #   2 = local + recurse into parent that has same snapname
+    #   3 = local + inherit as defined by zfs + iterate into parent
     my $inherit = shift; # May be not passed => undef
 
     if (!defined($recurse)) {
@@ -966,13 +972,18 @@ sub getSnapshotProperties {
 
     if (!defined($inherit)) {
         $inherit = 0;
+    } else {
+        if ( !(($inherit >= 0) && ($inherit <= 3)) ) {
+            warn "getSnapshotProperties(): inherit flag is not a number between 0 and 3";
+            $inherit = 1; # caller DID set something...
+        }
     }
 
     my %properties;
     my $propertyPrefix = $self->propertyPrefix;
 
     my @cmd = (@{$self->priv}, qw(zfs get -H));
-    if ($inherit) {
+    if ($inherit == 1 || $inherit == 3) {
         push (@cmd, qw(-s), 'local,inherited');
     } else {
         push (@cmd, qw(-s local));
@@ -986,11 +997,35 @@ sub getSnapshotProperties {
     push (@cmd, qw(-o), 'property,value', 'all', $snapshot);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-    open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties');
+    open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties of ' . $snapshot);
     while (my $prop = <$props>){
         chomp $prop;
         my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
         $properties{$key} = $value;
+    }
+
+    if ($inherit == 2 || $inherit == 3) {
+        # For the context we have, inheriting means that we go up through
+        # parent datasets that have same-named snapshots as this one, and
+        # check if these snapshots have locally defined properties.
+        # The value defined nearest to current snapshot is most preferred,
+        # so we do not check those "parent snapshots" for what they could
+        # have inherited from "real datasets".
+        # TOTHINK: Is there a loophole for properties defined by some higher
+        # level "real" datasets vs. redefinitions in nearer-level snapshots?
+        my $parentSnapshot = $snapshot;
+        $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
+        if ($parentSnapshot eq $snapshot) {
+            if ($self->snapshotExists($snapshot)) {
+                # Go up to root of the pool, without recursing into other children
+                # of the parent datasets/snapshots, and without inheriting stuff
+                # that is not locally defined properties of a parent (or its parent).
+                my %parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, 2);
+
+                # Merge arrays, use existing values as overrides in case of conflict:
+                %properties = (%parentProperties, %properties);
+            } # else  End of line, we inherited from the previous (deeper) step
+        } # else  Got to root, and it was inspected above
     }
 
     return \%properties;
