@@ -564,7 +564,7 @@ my $sendRecvCleanup = sub {
             }
 
             if (scalar (@{$toDestroy}) == 0) {
-                $self->zLog->debug('got nothing to clean in children of source ' . $backupSet->{src});
+                $self->zLog->debug('got nothing to clean in source ' . $srcDataSet);
                 next;
             }
 
