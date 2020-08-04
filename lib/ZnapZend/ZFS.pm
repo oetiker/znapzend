@@ -399,8 +399,8 @@ sub mostRecentCommonSnapshot {
         }
     }
 
-    my $dstSyncedPropname = $dstName . '_synced';
     if (not $lastCommonSnapshot){
+        my $dstSyncedPropname = $dstName . '_synced';
         my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
         my $i;
         # Go from newest snapshot down in history and find the first one
