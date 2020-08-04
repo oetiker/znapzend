@@ -1042,9 +1042,10 @@ sub getSnapshotProperties {
 
     print STDERR "=== getSnapshotProperties():"
         . "\n\trecurse=" . Dumper($recurse)
-        . "\n\tinherit=" . Dumper($inherit)
-        . "\n\tsnapshot=" . Dumper($snapshot)
-#        . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
+        . "\tinherit=" . Dumper($inherit)
+        . "\tsnapshot=" . Dumper($snapshot)
+        . "\tpropnames=" . Dumper($propnames)
+#        . "\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
              if $self->debug;
 
     if (!defined($recurse)) {
@@ -1085,7 +1086,7 @@ sub getSnapshotProperties {
 
     if ($self->debug) {
         if ($numProps > 0) {
-            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot :\n" .Dumper(%properties);
+            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot : " .Dumper(\%properties);
         }
     }
 
@@ -1111,7 +1112,13 @@ sub getSnapshotProperties {
                 my $numParentProps = keys %parentProperties;
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in case of conflict:
+                    print STDERR "=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
+                        '\t' . Dumper(%$parentProperties) .
+                        '\t' . Dumper(\%properties)
+                        if $self->debug;
                     %properties = (%parentProperties, %properties);
+                    print STDERR "=== getSnapshotProperties(): Merging returned one property list :" .
+                        Dumper(\%properties) if $self->debug;
                 }
             } # else  End of line, we inherited from the previous (deeper) step
         } # else  Got to root, and it was inspected above
