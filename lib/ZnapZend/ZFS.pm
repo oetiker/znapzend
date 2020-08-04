@@ -1109,14 +1109,14 @@ sub getSnapshotProperties {
                 # that is not locally defined properties of a parent (or its parent).
                 my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, 2, $propnames);
 
-                my $numParentProps = keys %parentProperties;
+                my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in case of conflict:
                     print STDERR "=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         '\t' . Dumper(%$parentProperties) .
                         '\t' . Dumper(\%properties)
                         if $self->debug;
-                    %properties = (%parentProperties, %properties);
+                    %properties = (%$parentProperties, %properties);
                     print STDERR "=== getSnapshotProperties(): Merging returned one property list :" .
                         Dumper(\%properties) if $self->debug;
                 }
