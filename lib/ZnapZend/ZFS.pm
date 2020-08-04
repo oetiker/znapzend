@@ -401,11 +401,16 @@ sub lastAndCommonSnapshots {
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
         ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
 
-        last if grep { /$snapTime/ } @$dstSnapshots;
+        last if grep { /\@$snapTime$/ } @$dstSnapshots;
     }
 
-    return (${$srcSnapshots}[-1], ((grep { /$snapTime/ } @$dstSnapshots)
-        ? ${$srcSnapshots}[$i] : undef), scalar @$dstSnapshots);
+    ### print STDERR "LASTCOMMON: i=$i snapName=$snapTime\n" if $self->debug;
+    # returns: ($lastSnapshot, $lastCommon, $dstSnapCount)
+    return (
+        ${$srcSnapshots}[-1],
+        ( ($i >= 0 && grep { /\@$snapTime$/ } @$dstSnapshots) ? ${$srcSnapshots}[$i] : undef),
+        scalar @$dstSnapshots
+        );
 }
 
 sub mostRecentCommonSnapshot {
