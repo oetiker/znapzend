@@ -1098,9 +1098,66 @@ sub getSnapshotProperties {
         # check if these snapshots have locally defined properties.
         # The value defined nearest to current snapshot is most preferred,
         # so we do not check those "parent snapshots" for what they could
-        # have inherited from "real datasets".
+        # have inherited from "real datasets" => will recurse with mode "2".
+
         # TOTHINK: Is there a loophole for properties defined by some higher
         # level "real" datasets vs. redefinitions in nearer-level snapshots?
+        # Perhaps we should first iterate for properties locally defined in
+        # a same-named snapshot at some layer of the zfs tree, and only then
+        # append what the current (top) target inherits into spots not yet
+        # known?
+
+        # First check if we SHOULD recurse, or if from this dataset we have
+        # got all the data we were looking for? Probably it is only useful
+        # for getting one named property, or if several are named at once
+        # by code elsewhere, but still...
+
+        if ( ($propnames ne 'all') && ($numProps > 0) ) {
+            # Note that here we only check for our name-spaced properties!
+            my @wantedPropnames = grep { /^$propertyPrefix:/ } split(',', $propnames);
+            for (@wantedPropnames) {
+                s/^$propertyPrefix:// ;
+            }
+            # we want to see uniq items, if someone listed same thing twice:
+            my %seenPropnames = map{$_ => 0} @wantedPropnames;
+            @wantedPropnames = keys %seenPropnames;
+
+            print STDERR "=== getSnapshotProperties(): check wantedPropnames: " .
+                Dumper(@wantedPropnames) . " vs properties: " .
+                Dumper(keys %properties) if $self->debug;
+
+            if (scalar(@wantedPropnames) == $numProps) {
+                # We look for certain property names, and we have the same
+                # amount of items in %properties hash, let's dig deeper...
+                ###     `use v5.10.1;` or newer for ~~ smartmatch operator
+                ### Still warns about experimental perl feature in 5.22...
+                #if ($] >= 5.010001) {
+                #    if (@wantedPropnames ~~ \%properties) {
+                #        $inherit = 0;
+                #    }
+                #} else {
+                    # Old ways...
+                    my $uniqHits = 0;
+                    foreach my $key (keys %properties) {
+                        if (exists($seenPropnames{$key})) {
+                            if ($seenPropnames{$key} == 0) {
+                                $uniqHits++;
+                            }
+                            $seenPropnames{$key}++;
+                        }
+                    }
+                    if ($uniqHits == $numProps) {
+                        $inherit = 0;
+                    }
+                #}
+            }
+        }
+        if ($inherit == 0) {
+            print STDERR "=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed\n" if $self->debug;
+        }
+    }
+
+    if ($inherit == 2 || $inherit == 3) {
         my $parentSnapshot = $snapshot;
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
         #print STDERR "=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot\n" if $self->debug;
