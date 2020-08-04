@@ -398,6 +398,8 @@ sub mostRecentCommonSnapshot {
             }
         }
     }
+
+    my $dstSyncedPropname = $dstName . '_synced';
     if (not $lastCommonSnapshot){
         my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
         my $i;
@@ -406,7 +408,7 @@ sub mostRecentCommonSnapshot {
         for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
             my $snapshot = ${$srcSnapshots}[$i];
             my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit);
-            if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstName . '_synced'}){
+            if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstSyncedPropname}){
                 $lastCommonSnapshot = $snapshot;
                 last;
             }
