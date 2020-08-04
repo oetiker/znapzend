@@ -509,6 +509,7 @@ yacc
 Ymd
 yml
 yy
+ZConfig
 zetup
 zfs
 zfsutils
