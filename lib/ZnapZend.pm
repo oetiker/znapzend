@@ -485,11 +485,13 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
             # Save the names we have seen, to not revisit them below for children
-            for my $snapname (@snapshots) {
+            for (@snapshots) {
+                my $snapname = $_;
                 $snapname =~ s/^.*\@//;
                 $snapnamesRecursive{$snapname} = 1;
             }
-            for my $snapname (@{$toDestroy}) {
+            for (@{$toDestroy}) {
+                my $snapname = $_;
                 $snapname =~ s/^.*\@//;
                 $snapnamesRecursive{$snapname} = 2;
             }
@@ -560,7 +562,8 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
-            for my $snapname (@{$toDestroy}) {
+            for (@{$toDestroy}) {
+                my $snapname = $_;
                 $snapname =~ s/^.*\@//;
                 if ($snapnamesRecursive{$snapname}) {
                     $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode');
