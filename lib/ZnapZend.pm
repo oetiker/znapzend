@@ -253,14 +253,14 @@ my $sendRecvCleanup = sub {
     $SIG{HUP} = 'IGNORE';
 
     if ($self->nodelay && $backupSet->{zend_delay}) {
-        warn "CLI option --nodelay was requested, so ignoring backup plan option 'zend-delay' (was $backupSet->{zend_delay}) on backupSet $backupSet->{src}";
+        $self->zLog->warn("CLI option --nodelay was requested, so ignoring backup plan option 'zend-delay' (was $backupSet->{zend_delay}) on backupSet $backupSet->{src}");
         $backupSet->{zend_delay} = undef;
     }
 
     if (defined($backupSet->{zend_delay})) {
         chomp $backupSet->{zend_delay};
         if (!($backupSet->{zend_delay} =~ /^\d+$/)) {
-            warn "Backup plan option 'zend-delay' has an invalid value ('$backupSet->{zend_delay}' is not a number) on backupSet $backupSet->{src}, ignored";
+            $self->zLog->warn("Backup plan option 'zend-delay' has an invalid value ('$backupSet->{zend_delay}' is not a number) on backupSet $backupSet->{src}, ignored");
             $backupSet->{zend_delay} = undef;
         } else {
             if($backupSet->{zend_delay} > 0) {

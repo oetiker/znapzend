@@ -586,19 +586,19 @@ sub filterPropertyNames {
                     chomp $propname;
 
                     if ($propname eq '') {
-                        warn "=== getSnapshotProperties(): got an empty propname in array";
+                        $self->zLog->warn("=== getSnapshotProperties(): got an empty propname in array");
                         next;
                     }
 
                     if ($propname eq 'all') {
-                        warn "=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot";
+                        $self->zLog->warn("=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot");
                         return 'all';
                     }
 
                     if ( $propname =~ /^$propertyPrefix\:/ ) {
                         1; # no-op, all good, use as is
                     } elsif ( $propname =~ /:/ ) {
-                        warn "=== getSnapshotProperties(): got a propname not from our namespace: $propname";
+                        $self->zLog->warn("=== getSnapshotProperties(): got a propname not from our namespace: $propname");
                     } else {
                         $propname = $propertyPrefix . ':' . $propname;
                     }
@@ -1063,7 +1063,7 @@ sub getSnapshotProperties {
         $inherit = 0;
     } else {
         if ( !(($inherit >= 0) && ($inherit <= 3)) ) {
-            warn "getSnapshotProperties(): inherit flag is not a number between 0 and 3";
+            $self->zLog->warn("getSnapshotProperties(): inherit flag is not a number between 0 and 3");
             $inherit = 1; # caller DID set something...
         }
     }
