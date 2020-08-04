@@ -21,7 +21,8 @@ sub main {
             # originally, or via shorthand -i/-I flags as mnemonical
             # for "zfs send", so the longer variants --skipIntermediates
             # vs. --sendIntermediates are not documented in the manpage.
-        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s)) or exit 1;
+
+        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s cleanOffline)) or exit 1;
 
     $opts->{version} && do {
         print "znapzend version $VERSION\n";
@@ -154,6 +155,7 @@ B<znapzend> [I<options>...]
                         by x seconds
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
  --skipOnPreSendCmdFail skip replication if the pre-send-command fails
+ --cleanOffline         clean up source snapshots even if a destination was offline
 
 =head1 DESCRIPTION
 
@@ -523,6 +525,13 @@ defined and the command returns a non-zero exit code or is killed by a signal.
 Prevent snapshots of a dataset from being replicated to a destination when
 it has a B<pre-snap-command> defined and the command returns a non-zero exit
 code or is killed by a signal.
+
+=item B<--cleanOffline>
+
+Clean snapshots of a source dataset even if one or more destination datasets failed during replication.
+The most recent common snapshot for each destination will not be deleted, but this is a
+potentially dangerous option. If the preserved snapshot somehow gets deleted from the
+destination, it may require a full re-replication the next time it is online.
 
 =back
 
