@@ -582,8 +582,13 @@ sub filterPropertyNames {
             if (scalar(@$propnames) > 0) {
                 my $propstring = '';
                 for my $propname (@$propnames) {
-                    next unless $propname;
+                    next if !defined($propname);
                     chomp $propname;
+
+                    if ($propname eq '') {
+                        warn "=== getSnapshotProperties(): got an empty propname in array";
+                        next;
+                    }
 
                     if ($propname eq 'all') {
                         warn "=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot";
@@ -596,11 +601,6 @@ sub filterPropertyNames {
                         warn "=== getSnapshotProperties(): got a propname not from our namespace: $propname";
                     } else {
                         $propname = $propertyPrefix . ':' . $propname;
-                    }
-
-                    if ($propname eq '') {
-                        warn "=== getSnapshotProperties(): got an empty propname in array";
-                        next;
                     }
 
                     if ($propstring eq '') {
