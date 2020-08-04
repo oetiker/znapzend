@@ -508,7 +508,7 @@ my $sendRecvCleanup = sub {
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                     my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on') );
                     if ($recentCommon) {
-                        $self->zLog->debug('not cleaning up source ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet);
+                        $self->zLog->debug('not cleaning up source ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet) if $self->debug;
                         @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
                     } elsif (scalar(@sendFailed) > 0) {
                         # If we are here, "--cleanOffline" was requested,
@@ -584,7 +584,7 @@ my $sendRecvCleanup = sub {
                 $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                 my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
                 if ($recentCommon) {
-                    $self->zLog->debug('not cleaning up source ' . $recentCommon . ' because it is needed by ' . $dstDataSet);
+                    $self->zLog->debug('not cleaning up source ' . $recentCommon . ' because it is needed by ' . $dstDataSet) if $self->debug;
                     @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
                 } elsif (scalar(@sendFailed) > 0) {
                     # If we are here, "--cleanOffline" was requested,
