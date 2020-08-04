@@ -487,7 +487,13 @@ sub sendRecvSnapshots {
             . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
 
     if (defined($lastSnapshotToSee)) {
-        $self->zLog->debug("sendRecvSnapshots() : for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' GOT: lastSnapshot='$lastSnapshot' lastCommon='$lastCommon' dstSnapCount='$dstSnapCount'");
+        $self->zLog->debug("sendRecvSnapshots() : " .
+            "for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' " .
+            "snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' ".
+            "GOT: lastSnapshot='$lastSnapshot' " .
+            "lastCommon=" . ($lastCommon ? "'$lastCommon'" : "undef") . " " .
+            "dstSnapCount='$dstSnapCount'"
+            );
     }
 
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
