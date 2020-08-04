@@ -346,6 +346,8 @@ prefork
 PREREQ
 printf
 printsrc
+propname
+propstring
 propval
 psgi
 pstcmd
@@ -381,6 +383,7 @@ SIGHUP
 SIGINT
 SIGKILL
 SIGTERM
+smartmatch
 smf
 snapname
 snapsuffix
@@ -494,6 +497,7 @@ workflow
 wu
 www
 wx
+Xproperties
 xargs
 xcode
 xf
