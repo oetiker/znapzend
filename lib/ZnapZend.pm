@@ -466,6 +466,10 @@ my $sendRecvCleanup = sub {
     else {
         # If "not sendFailed" or "cleanOffline requested"...
         # cleanup source according to backup schedule
+
+        # Remember which snapnames we already decided about in first phase
+        my %snapnamesRecursive = ();
+
         if ($backupSet->{recursive} eq 'on') {
             # First we try to recursively (and atomically quickly)
             # remove snapshots of "root" dataset with the recursive
@@ -479,6 +483,16 @@ my $sendRecvCleanup = sub {
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
+            # Save the names we have seen, to not revisit them below for children
+            foreach my $snapname (@snapshots) {
+                $snapname =~ s/^.*\@//;
+                $snapnamesRecursive{$snapname} = 1;
+            }
+            foreach my $snapname (@{$toDestroy}) {
+                $snapname =~ s/^.*\@//;
+                $snapnamesRecursive{$snapname} = 2;
+            }
 
             # preserve most recent common snapshots for each destination
             # (including offline destinations for which last-known sync
@@ -545,6 +559,14 @@ my $sendRecvCleanup = sub {
             @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
+
+            foreach my $snapname (@{$toDestroy}) {
+                $snapname =~ s/^.*\@//;
+                if ($snapnamesRecursive{$snapname}) {
+                    $self->zLog->debug('not considering source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode');
+                    @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                }
+            }
 
             # preserve most recent common snapshots for each destination
             # (including offline destinations for which last-known sync
