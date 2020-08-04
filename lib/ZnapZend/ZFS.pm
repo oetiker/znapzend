@@ -401,14 +401,14 @@ sub mostRecentCommonSnapshot {
 
     if (not $lastCommonSnapshot){
         my $dstSyncedPropname = $dstName . '_synced';
+        my @dstSyncedProps = [$dstSyncedPropname, $dstName];
         my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
         my $i;
         # Go from newest snapshot down in history and find the first one
         # to have a "non-false" value (e.g. "1") in its $dstName . '_synced'
         for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
             my $snapshot = ${$srcSnapshots}[$i];
-            # Note: pass [$dstSyncedPropname] as array to have the prefix added automagically!
-            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, [$dstSyncedPropname] );
+            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, @dstSyncedProps);
             if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstSyncedPropname}){
                 $lastCommonSnapshot = $snapshot;
                 last;
