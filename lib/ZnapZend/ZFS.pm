@@ -454,14 +454,14 @@ sub mostRecentCommonSnapshot {
         # 3 = local + zfs inherited + recurse into same-named snapshot of parent(s)
     }
 
-    my $lastCommonSnapshot;
+    my ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount);
     ### DEBUG: Uncomment next line to enforce going through getSnapshotProperties() below
     #if(0)
     {
         local $@;
         eval {
             local $SIG{__DIE__};
-            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
+            ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount) = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
         };
         if ($@){
             if (blessed $@ && $@->isa('Mojo::Exception')){
