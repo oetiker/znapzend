@@ -1086,7 +1086,7 @@ sub getSnapshotProperties {
 
     if ($self->debug) {
         if ($numProps > 0) {
-            print STDERR "=== getSnapshotProperties(): GOT $inhMode properties of $snapshot : " .Dumper(\%properties);
+            print STDERR "=== getSnapshotProperties(): GOT $inhMode (#$inherit) properties of $snapshot : " .Dumper(\%properties);
         }
     }
 
