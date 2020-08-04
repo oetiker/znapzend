@@ -650,12 +650,12 @@ sub getDataSetProperties {
     my $propertyPrefix = $self->propertyPrefix;
 
     my @list;
-    print STDERR "=== getDataSetProperties():"
-        . "\n\trecurse=" . Dumper($recurse)
-        . "\n\tinherit=" . Dumper($inherit)
-        . "\n\tDS=" . Dumper($dataSet)
-        . "\n\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
-             if $self->debug;
+    $self->zLog->debug("=== getDataSetProperties():\n"
+        . "\trecurse=" . Dumper($recurse)
+        . "\tinherit=" . Dumper($inherit)
+        . "\tDS=" . Dumper($dataSet)
+        . "\tlowmemRecurse=" . $self->lowmemRecurse
+        ) if $self->debug;
 
     if (!defined($recurse)) {
         $recurse = 0;
@@ -691,11 +691,11 @@ sub getDataSetProperties {
     #
     if (defined($dataSet) && $dataSet) {
         if (ref($dataSet) eq 'ARRAY') {
-            print STDERR "=== getDataSetProperties(): Is array...\n" if $self->debug;
+            $self->zLog->debug("=== getDataSetProperties(): Is array...") if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
                 if (scalar(@{$listds}) == 0) {
-                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    $self->zLog->debug("=== getDataSetProperties(): Failed to get data from listDataSets()") if $self->debug;
                     return \@propertyList;
                 }
                 push (@list, @{$listds});
@@ -705,16 +705,16 @@ sub getDataSetProperties {
                 if ( (scalar(@$dataSet) > 0) && (defined(@$dataSet[0])) ) {
                     push (@list, @$dataSet);
                 } else {
-                    print STDERR "=== getDataSetProperties(): skip array context: value(s) inside undef...\n" if $self->debug;
+                    $self->zLog->debug("=== getDataSetProperties(): skip array context: value(s) inside undef...") if $self->debug;
                 }
             }
         } else {
             # Assume a string, per usual invocation
-            print STDERR "=== getDataSetProperties(): Is string...\n" if $self->debug;
+            $self->zLog->debug("=== getDataSetProperties(): Is string...") if $self->debug;
             if ($self->lowmemRecurse && $recurse) {
                 my $listds = $self->listDataSets(undef, $dataSet, $recurse);
                 if (scalar(@{$listds}) == 0) {
-                    print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+                    $self->zLog->debug("=== getDataSetProperties(): Failed to get data from listDataSets()") if $self->debug;
                     return \@propertyList;
                 }
                 push (@list, @{$listds});
@@ -724,19 +724,19 @@ sub getDataSetProperties {
                 if ($dataSet ne '') {
                     push (@list, ($dataSet));
                 } else {
-                    print STDERR "=== getDataSetProperties(): skip string context: value inside is empty...\n" if $self->debug;
+                    $self->zLog->debug("=== getDataSetProperties(): skip string context: value inside is empty...") if $self->debug;
                 }
             }
         }
     } else {
-        print STDERR "=== getDataSetProperties(): no dataSet argument passed\n" if $self->debug;
+        $self->zLog->debug("=== getDataSetProperties(): no dataSet argument passed") if $self->debug;
     }
 
     if (scalar(@list) == 0) {
-        print STDERR "=== getDataSetProperties(): List all local datasets on the system...\n" if $self->debug;
+        $self->zLog->debug("=== getDataSetProperties(): List all local datasets on the system...") if $self->debug;
         my $listds = $self->listDataSets();
         if (scalar(@{$listds}) == 0) {
-            print STDERR "=== getDataSetProperties(): Failed to get data from listDataSets()\n" if $self->debug;
+            $self->zLog->debug("=== getDataSetProperties(): Failed to get data from listDataSets()") if $self->debug;
             return \@propertyList;
         }
         push (@list, @{$listds});
@@ -760,9 +760,9 @@ sub getDataSetProperties {
     # inside a tree that has one above, and/or good grounds for conflicts.
     my %cachedInheritance; # Cache datasets that we know to define znapzend attrs (if inherit mode is used)
     for my $listElem (@list){
-        print STDERR "=== getDataSetProperties(): Looking under '$listElem' with "
+        $self->zLog->debug("=== getDataSetProperties(): Looking under '$listElem' with "
             . "zfsGetType='" . $self->zfsGetType . "', "
-            . "'$recurse' recursion mode and '$inherit' inheritance mode\n"
+            . "'$recurse' recursion mode and '$inherit' inheritance mode")
             if $self->debug;
         my %properties;
         # TODO : support "inherit-from-local" mode
@@ -790,8 +790,8 @@ sub getDataSetProperties {
             chomp $prop;
             if ( (!$self->zfsGetType) && ($prop =~ /^\S+@\S+\s/) ) {
                 # Filter away snapshot properties ASAP
-                #print STDERR "=== getDataSetProperties(): SKIP: '$prop' "
-                #    . "because it is a snapshot property\n" if $self->debug;
+                #$self->zLog->debug("=== getDataSetProperties(): SKIP: '$prop' "
+                #    . "because it is a snapshot property") if $self->debug;
                 next;
             }
             # NOTE: This regex assumes the dataset names do not have trailing whitespaces
@@ -808,8 +808,8 @@ sub getDataSetProperties {
                 if (defined($cachedInheritance{"$srcds\tattr:source"})) {
                     # We've already seen a line of this and decided to skip it
                     if ($prevSkipped_srcds ne $srcds && $self->debug) {
-                        print STDERR "=== getDataSetProperties(): SKIP: '$srcds' "
-                            . "because it is already skipped\n";
+                        $self->zLog->debug("=== getDataSetProperties(): SKIP: '$srcds' "
+                            . "because it is already skipped");
                     }
                     $prevSkipped_srcds = $srcds;
                     next;
@@ -821,9 +821,9 @@ sub getDataSetProperties {
                         # Even if we recurse+inherit, we do not need to return
                         # dozens of backup configurations, one for each child.
                         # The backup activity would recurse from the topmost.
-                        print STDERR "=== getDataSetProperties(): SKIP: '$srcds' "
+                        $self->zLog->debug("=== getDataSetProperties(): SKIP: '$srcds' "
                             . "because parent config '$srcdsParent' is already listed ("
-                            . $cachedInheritance{"$srcdsParent\tattr:source"} .")\n";
+                            . $cachedInheritance{"$srcdsParent\tattr:source"} .")");
                     }
                     $cachedInheritance{"$srcds\tattr:source"} = "${sourcetype}${tail}";
                     $prevSkipped_srcds = $srcds;
@@ -837,11 +837,11 @@ sub getDataSetProperties {
                 }
             }
 
-            print STDERR "=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value' (source: '${sourcetype}${tail}')\n" if $self->debug;
+            $self->zLog->debug("=== getDataSetProperties(): FOUND: '$srcds' => '$key' == '$value' (source: '${sourcetype}${tail}')") if $self->debug;
             if ($srcds ne $prev_srcds) {
                 if (%properties && $prev_srcds ne ""){
                     # place source dataset on list, too. so we know where the properties are from...
-                    print STDERR "=== getDataSetProperties(): SAVE: '$prev_srcds'\n" if $self->debug;
+                    $self->zLog->debug("=== getDataSetProperties(): SAVE: '$prev_srcds'") if $self->debug;
                     $properties{src} = $prev_srcds;
                     # Note: replacing %properties completely proved hard,
                     # it just pushed references to same object for many
@@ -897,9 +897,9 @@ sub getDataSetProperties {
 
                     if (!defined($cachedInheritance{$tail_inheritKey})) {
                         # Call zfs get for $tail, fetch all interesting attrs while at it
-                        print STDERR "=== getDataSetProperties(): "
+                        $self->zLog->debug("=== getDataSetProperties(): "
                             . "Looking for '$key' under inheritance source "
-                            . "'$tail' to see if it is local there\n"
+                            . "'$tail' to see if it is local there")
                                 if $self->debug;
                         my @inh_cmd = (@{$self->priv}, qw(zfs get -H -s local));
                         if ($self->zfsGetType) {
@@ -915,14 +915,14 @@ sub getDataSetProperties {
                             chomp $inh_prop;
                             if ( (!$self->zfsGetType) && ($inh_prop =~ /^\S+@\S+\s/) ) {
                                 # Filter away snapshot properties ASAP
-                                #print STDERR "=== getDataSetProperties(): SKIP: inherited '$inh_prop' "
-                                #    . "because it is a snapshot property\n" if $self->debug;
+                                #$self->zLog->debug("=== getDataSetProperties(): SKIP: inherited '$inh_prop' "
+                                #    . "because it is a snapshot property") if $self->debug;
                                 next;
                             }
                             my ($inh_srcds, $inh_key, $inh_value, $inh_sourcetype, $inh_tail) =
                                 $inh_prop =~ /^(.+)\s+\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/
                                     or next;
-                            print STDERR "=== getDataSetProperties(): FOUND ORIGIN: '$inh_srcds' => '$inh_key' == '$inh_value' (source: '${inh_sourcetype}${inh_tail}')\n" if $self->debug;
+                            $self->zLog->debug("=== getDataSetProperties(): FOUND ORIGIN: '$inh_srcds' => '$inh_key' == '$inh_value' (source: '${inh_sourcetype}${inh_tail}')") if $self->debug;
                             my $inh_inheritKey = "$inh_srcds\t$inh_key"; # TODO: lowmemInherit => "$inh_srcds" ?
                             if ($inh_sourcetype eq 'local') {
                                 # this DS defines this property
@@ -945,7 +945,7 @@ sub getDataSetProperties {
                             # ancestor which the config is inherited from ($tail
                             # in the currently active sanity-checked conditions).
                             if ($srcds =~ /^$tail\/(.+)$/) {
-                                print STDERR "=== getDataSetProperties(): Shifting destination name in config for dataset '$srcds' with configuration inherited from '$tail' : after '$value' will append '/$1'\n" if $self->debug;
+                                $self->zLog->debug("=== getDataSetProperties(): Shifting destination name in config for dataset '$srcds' with configuration inherited from '$tail' : after '$value' will append '/$1'") if $self->debug;
                                 $properties{$key} = $value . "/" . $1;
                             } else {
                                 # Abort if we can not decide well (better sadly
@@ -966,14 +966,14 @@ sub getDataSetProperties {
         if (%properties){
             # place source dataset on list, too. so we know where the properties are from...
             # the last-used dataset is prev_srcds
-            print STDERR "=== getDataSetProperties(): SAVE LAST: '$prev_srcds'\n" if $self->debug;
+            $self->zLog->debug("=== getDataSetProperties(): SAVE LAST: '$prev_srcds'") if $self->debug;
             $properties{src} = $prev_srcds;
             my %newProps = %properties;
             push @propertyList, \%newProps;
         }
     }
 
-    print STDERR "=== getDataSetProperties():\n\tCollected: " . Dumper(@propertyList) . "\n" if $self->debug;
+    $self->zLog->debug("=== getDataSetProperties():\n\tCollected: " . Dumper(@propertyList) ) if $self->debug;
 
     return \@propertyList;
 }
@@ -1057,13 +1057,13 @@ sub getSnapshotProperties {
     my $propnames = shift; # May be not passed => undef
     $propnames = $self->filterPropertyNames($propnames); # Returns a string to pass into `zfs get`
 
-    print STDERR "=== getSnapshotProperties():"
-        . "\n\trecurse=" . Dumper($recurse)
+    $self->zLog->debug("=== getSnapshotProperties():\n"
+        . "\trecurse=" . Dumper($recurse)
         . "\tinherit=" . Dumper($inherit)
         . "\tsnapshot=" . Dumper($snapshot)
         . "\tpropnames=" . Dumper($propnames)
-#        . "\tlowmemRecurse=" . $self->lowmemRecurse . "\n"
-             if $self->debug;
+#        . "\tlowmemRecurse=" . $self->lowmemRecurse
+        ) if $self->debug;
 
     if (!defined($recurse)) {
         $recurse = 0;
@@ -1103,7 +1103,7 @@ sub getSnapshotProperties {
 
     if ($self->debug) {
         if ($numProps > 0) {
-            print STDERR "=== getSnapshotProperties(): GOT $inhMode (#$inherit) properties of $snapshot : " .Dumper(\%properties);
+            $self->zLog->debug("=== getSnapshotProperties(): GOT $inhMode (#$inherit) properties of $snapshot : " .Dumper(\%properties) );
         }
     }
 
@@ -1137,9 +1137,10 @@ sub getSnapshotProperties {
             my %seenPropnames = map{$_ => 0} @wantedPropnames;
             @wantedPropnames = keys %seenPropnames;
 
-            print STDERR "=== getSnapshotProperties(): check wantedPropnames: " .
+            $self->zLog->debug("=== getSnapshotProperties(): check wantedPropnames: " .
                 Dumper(@wantedPropnames) . " vs properties: " .
-                Dumper(keys %properties) if $self->debug;
+                Dumper(keys %properties)
+                ) if $self->debug;
 
             if (scalar(@wantedPropnames) == $numProps) {
                 # We look for certain property names, and we have the same
@@ -1168,14 +1169,14 @@ sub getSnapshotProperties {
             }
         }
         if ($inherit == 0) {
-            print STDERR "=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed\n" if $self->debug;
+            $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed") if $self->debug;
         }
     }
 
     if ($inherit == 2 || $inherit == 3) {
         my $parentSnapshot = $snapshot;
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
-        #print STDERR "=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot\n" if $self->debug;
+        #$self->zLog->debug("=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot") if $self->debug;
         if ($parentSnapshot ne $snapshot) {
             # Check quietly
             if ($self->snapshotExists($parentSnapshot, 1)) {
@@ -1187,16 +1188,16 @@ sub getSnapshotProperties {
                 my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in case of conflict:
-                    print STDERR "=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
+                    $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         "\t" . Dumper(%$parentProperties) .
                         "\t" . Dumper(\%properties)
-                        if $self->debug;
+                        ) if $self->debug;
                     %properties = (%$parentProperties, %properties);
-                    print STDERR "=== getSnapshotProperties(): Merging returned one property list :" .
-                        Dumper(\%properties) if $self->debug;
+                    $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list :" .
+                        Dumper(\%properties) ) if $self->debug;
                 }
             } else {
-                print STDERR "=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist\n" if $self->debug;
+                $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist") if $self->debug;
             }
         } # else  Got to root, and it was inspected above
     }
