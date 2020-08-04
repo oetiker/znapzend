@@ -464,6 +464,7 @@ umask
 umontreal
 uncomment
 unconfigured
+UNCONSIDER
 undef
 undef'ed
 Unicode
