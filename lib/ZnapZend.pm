@@ -191,10 +191,10 @@ my $refreshBackupPlans = sub {
 
                         # check if we can access destination zpool, if so create parent dataset
                         $self->zZfs->dataSetExists($zpool) && do {
+                            $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+
                             $backupSet->{"dst_$key" . '_valid'} =
                                 $self->zZfs->createDataSet($backupSet->{"dst_$key"});
-
-                            $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                         };
                     }
                     $backupSet->{"dst_$key" . '_valid'} or
@@ -335,10 +335,10 @@ my $sendRecvCleanup = sub {
 
                     # check if we can access destination zpool, if so create parent dataset
                     $self->zZfs->dataSetExists($zpool) && do {
+                        $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+
                         $backupSet->{"dst_$key" . '_valid'} =
                             $self->zZfs->createDataSet($backupSet->{"dst_$key"});
-
-                        $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
                     };
                 }
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
