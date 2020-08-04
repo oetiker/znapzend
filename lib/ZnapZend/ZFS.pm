@@ -487,9 +487,9 @@ sub sendRecvSnapshots {
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
     !$lastCommon and $dstSnapCount
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
-            . "found on source and destination "
-            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
+        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but '
+            . 'no common found on source and destination: clean up destination '
+            . $dstDataSet . ' (i.e. destroy existing snapshots)');
 
     if (defined($lastSnapshotToSee)) {
         $self->zLog->debug("sendRecvSnapshots() : " .
