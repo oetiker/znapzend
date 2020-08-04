@@ -591,6 +591,12 @@ sub filterPropertyNames {
                     }
 
                     if ($propname eq 'all') {
+                        # TOTHINK: Note that this short-circuiting "as is"
+                        # forbids a scenario where we would fetch all zfs
+                        # properties to cache them, and then iterate looking
+                        # that all specific names have been discovered.
+                        # If such needs arise, redefine this here and in
+                        # callers checking for 'all' to also handle split(',').
                         $self->zLog->warn("=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot");
                         return 'all';
                     }
