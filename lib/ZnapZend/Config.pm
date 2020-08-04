@@ -37,7 +37,8 @@ has zfs  => sub {
         rootExec => $self->rootExec,
         debug => $self->debug,
         lowmemRecurse => $self->lowmemRecurse,
-        zfsGetType => $self->zfsGetType
+        zfsGetType => $self->zfsGetType,
+        zLog => $self->zLog
     );
 };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
