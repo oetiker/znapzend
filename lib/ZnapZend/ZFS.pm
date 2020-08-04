@@ -116,6 +116,10 @@ sub dataSetExists {
 sub snapshotExists {
     my $self = shift;
     my $snapshot = shift;
+    my $quiet = shift; # Maybe we expect it to not be there?
+    if (!defined($quiet)) { $quiet = 0; }
+    my $quietStr = ( $quiet ? '2>/dev/null' : '');
+
     my $remote;
 
     #just in case if someone asks to check '';
@@ -125,7 +129,8 @@ sub snapshotExists {
     my @ssh = $self->$buildRemote($remote,
         [@{$self->priv}, qw(zfs list -H -o name -t snapshot), $snapshot]);
 
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
+    print STDERR '# ' . join(' ', @ssh, $quietStr) . "\n" if $self->debug;
+    # FIXME : Find a way to really use $quietStr here safely... backticks?
     open my $snapshots, '-|', @ssh
         or Mojo::Exception->throw('ERROR: cannot get snapshots'
             . ($remote ? " on $remote" : ''));
@@ -1162,7 +1167,8 @@ sub getSnapshotProperties {
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
         #print STDERR "=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot\n" if $self->debug;
         if ($parentSnapshot ne $snapshot) {
-            if ($self->snapshotExists($parentSnapshot)) {
+            # Check quietly
+            if ($self->snapshotExists($parentSnapshot, 1)) {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
