@@ -474,6 +474,7 @@ my $sendRecvCleanup = sub {
             # operations - so one destroy operation takes ages...
             # but hundreds of queued operations take the same time
             # and are all committed at once.
+            $self->zLog->debug('checking to clean up snapshots recursively from source '. $backupSet->{src});
 
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{src}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
@@ -538,6 +539,8 @@ my $sendRecvCleanup = sub {
         SRC_SET:
         for my $srcDataSet (@$srcSubDataSets){
             next if ($backupSet->{recursive} eq 'on' && $srcDataSet eq $backupSet->{src});
+
+            $self->zLog->debug('checking to clean up snapshots of source '. $srcDataSet);
 
             @snapshots = @{$self->zZfs->listSnapshots($srcDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
