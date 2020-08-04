@@ -452,8 +452,11 @@ sub sendRecvSnapshots {
     my $lastSnapshotToSee = shift // undef;
     if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
 
+    my $allowDestRollback = shift // undef;
+    if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
+
     my @recvOpt = $self->recvu ? qw(-u) : ();
-    push @recvOpt, '-F' if (!$self->sendRaw && !$self->forbidDestRollback);
+    push @recvOpt, '-F' if $allowDestRollback;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;

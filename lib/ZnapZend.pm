@@ -378,7 +378,8 @@ my $sendRecvCleanup = sub {
                     $self->zLog->debug('Are we sending "--since"? '.
                         'since=="' . $self->since . '"'.
                         ', skipIntermediates=="' . $self->skipIntermediates . '"' .
-                        ', forbidDestRollback=="' . $self->forbidDestRollback . '"'
+                        ', forbidDestRollback=="' . $self->forbidDestRollback . '"' .
+                        ', justCreated=="' . ( $backupSet->{"dst_$key" . '_justCreated'} ? "true" : "false" ) . '"'
                         ) if $self->debug;
                     if ($self->since) {
                         # Make sure that if we use the "--sinceForced=X" or
@@ -494,7 +495,9 @@ my $sendRecvCleanup = sub {
                                         }
                                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
                                                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
-                                                $backupSet->{snapSendFilter}, $lastSnapshotToSee);
+                                                $backupSet->{snapSendFilter}, $lastSnapshotToSee,
+                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
+                                            );
                                     } else {
                                         $self->zLog->debug("sendRecvCleanup() [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet");
                                     }
@@ -521,7 +524,9 @@ my $sendRecvCleanup = sub {
                     # snapshots or data on dst newer than the last common snap.
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
                         $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
-                        $backupSet->{snapSendFilter});
+                        $backupSet->{snapSendFilter}, undef,
+                        ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
+                        );
                 };
                 if (my $err = $@){
                     $thisSendFailed = 1;
