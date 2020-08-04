@@ -1189,11 +1189,11 @@ sub getSnapshotProperties {
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in case of conflict:
                     $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
-                        "\t" . Dumper(%$parentProperties) .
+                        "\t" . Dumper(\%$parentProperties) .
                         "\t" . Dumper(\%properties)
                         ) if $self->debug;
                     %properties = (%$parentProperties, %properties);
-                    $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list :" .
+                    $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list : " .
                         Dumper(\%properties) ) if $self->debug;
                 }
             } else {
