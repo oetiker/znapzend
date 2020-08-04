@@ -215,6 +215,10 @@ is (runCommand(qw(--runonce=tank/source), '--features=zfsGetType'),
 $ENV{'ZNAPZENDTEST_ZFS_GET_TYPE_UNHANDLED'} = undef;
 $ENV{'ZNAPZENDTEST_ZPOOL_DEFAULT_listsnapshots'} = undef;
 
+# Test codepath for cleaning of snapshots even if destination is offline
+is (runCommand(qw(--cleanOffline --debug)),
+    1, 'znapzend --cleanOffline succeeds');
+
 # Note: test for daemonized mode are offloaded to another file
 
 done_testing;
