@@ -577,12 +577,12 @@ sub filterPropertyNames {
 
     my $propertyPrefix = $self->propertyPrefix;
 
-    if (defined($propnames) && $propnames) {
+    if ($propnames) {
         if (ref($propnames) eq 'ARRAY') {
             if (scalar(@$propnames) > 0) {
                 my $propstring = '';
                 for my $propname (@$propnames) {
-                    next if !defined($propname);
+                    next unless $propname;
                     chomp $propname;
 
                     if ($propname eq 'all') {
@@ -1144,7 +1144,7 @@ sub getSnapshotProperties {
                     # Old ways...
                     my $uniqHits = 0;
                     for my $key (keys %properties) {
-                        if (exists($seenPropnames{$key})) {
+                        if (defined($seenPropnames{$key})) {
                             if ($seenPropnames{$key} == 0) {
                                 $uniqHits++;
                             }
