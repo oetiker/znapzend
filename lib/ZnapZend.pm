@@ -10,6 +10,7 @@ use POSIX qw(setsid SIGTERM SIGKILL WNOHANG);
 use Scalar::Util qw(blessed);
 use Sys::Syslog;
 use File::Basename;
+use Data::Dumper;
 
 ### loglevels ###
 my %logLevels = (
@@ -509,7 +510,9 @@ my $sendRecvCleanup = sub {
                     my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on') );
                     if ($recentCommon) {
                         $self->zLog->debug('not cleaning up source ' . $recentCommon . ' recursively because it is needed by ' . $dstDataSet) if $self->debug;
+                        #print STDERR "SOURCE RECURSIVE CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                         @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                        #print STDERR "SOURCE RECURSIVE CLEAN: AFTER: " . Dumper($toDestroy) if $self->debug;
                     } elsif (scalar(@sendFailed) > 0) {
                         # If we are here, "--cleanOffline" was requested,
                         # and at least one destination is indeed offline,
@@ -528,6 +531,7 @@ my $sendRecvCleanup = sub {
 
             if ($doClean) {
                 $self->zLog->debug('cleaning up source snapshots recursively under ' . $backupSet->{src});
+                $self->zLog->debug(Dumper(@{$toDestroy})) if $self->debug;
                 {
                     local $@;
                     eval {
@@ -572,7 +576,9 @@ my $sendRecvCleanup = sub {
                 $snapname =~ s/^.*\@//;
                 if ($snapnamesRecursive{$snapname}) {
                     $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
+                    #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                     @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                    #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                 }
             }
 
@@ -585,7 +591,9 @@ my $sendRecvCleanup = sub {
                 my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter});
                 if ($recentCommon) {
                     $self->zLog->debug('not cleaning up source ' . $recentCommon . ' because it is needed by ' . $dstDataSet) if $self->debug;
+                    #print STDERR "SOURCE CHILD CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                     @{$toDestroy} = grep { $recentCommon ne $_ } @{$toDestroy};
+                    #print STDERR "SOURCE CHILD CLEAN: AFTER: " . Dumper($toDestroy) if $self->debug;
                 } elsif (scalar(@sendFailed) > 0) {
                     # If we are here, "--cleanOffline" was requested,
                     # and at least one destination is indeed offline,
@@ -602,6 +610,7 @@ my $sendRecvCleanup = sub {
             }
 
             $self->zLog->debug('cleaning up snapshots on source ' . $srcDataSet);
+            $self->zLog->debug(Dumper(@{$toDestroy})) if $self->debug;
             {
                 local $@;
                 eval {
