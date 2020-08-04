@@ -459,7 +459,7 @@ my $sendRecvCleanup = sub {
     if (scalar(@sendFailed) > 0 and not $self->cleanOffline) {
         $self->zLog->warn('ERROR: suspending cleanup source dataset because '
             . scalar(@sendFailed) . ' send task(s) failed:');
-        foreach my $errmsg (@sendFailed) {
+        for my $errmsg (@sendFailed) {
             $self->zLog->warn(' +-->   ' . $errmsg);
         }
     }
@@ -485,11 +485,11 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
             # Save the names we have seen, to not revisit them below for children
-            foreach my $snapname (@snapshots) {
+            for my $snapname (@snapshots) {
                 $snapname =~ s/^.*\@//;
                 $snapnamesRecursive{$snapname} = 1;
             }
-            foreach my $snapname (@{$toDestroy}) {
+            for my $snapname (@{$toDestroy}) {
                 $snapname =~ s/^.*\@//;
                 $snapnamesRecursive{$snapname} = 2;
             }
@@ -560,7 +560,7 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp);
 
-            foreach my $snapname (@{$toDestroy}) {
+            for my $snapname (@{$toDestroy}) {
                 $snapname =~ s/^.*\@//;
                 if ($snapnamesRecursive{$snapname}) {
                     $self->zLog->debug('not considering source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode');
