@@ -571,7 +571,7 @@ my $sendRecvCleanup = sub {
                 my $snapname = $_;
                 $snapname =~ s/^.*\@//;
                 if ($snapnamesRecursive{$snapname}) {
-                    $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode');
+                    $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                     @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
                 }
             }
