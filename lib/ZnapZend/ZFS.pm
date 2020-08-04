@@ -25,7 +25,11 @@ has sshCmdArray     => sub { [qw(ssh),
 has mbufferParam    => sub { [qw(-q -s 256k -W 600 -m)] }; #don't remove the -m as the buffer size will be added
 has scrubInProgress => sub { qr/scrub in progress/ };
 
-has zLog            => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
+has zLog            => sub {
+    my $stack = "";
+    for (my $i = 0; my @r = caller($i); $i++) { $stack .= "$r[1]:$r[2] $r[3]\n"; }
+    Mojo::Exception->throw('ZFS::zLog must be specified at creation time!' . "\n$stack");
+};
 has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $self->rootExec) : ()] };
 
 ### private functions ###
