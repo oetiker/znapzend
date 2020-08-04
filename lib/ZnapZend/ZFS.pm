@@ -397,18 +397,19 @@ sub lastAndCommonSnapshots {
 
     return (undef, undef, undef) if !scalar @$srcSnapshots;
 
-    my ($i, $snapTime);
+    # For default operations, snapshot name is the time-based pattern
+    my ($i, $snapName);
     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
-        ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
+        ($snapName) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapshotFilter)/;
 
-        last if grep { /\@$snapTime$/ } @$dstSnapshots;
+        last if grep { /\@$snapName$/ } @$dstSnapshots;
     }
 
-    ### print STDERR "LASTCOMMON: i=$i snapName=$snapTime\n" if $self->debug;
+    ### print STDERR "LASTCOMMON: i=$i snapName=$snapName\n" if $self->debug;
     # returns: ($lastSnapshot, $lastCommon, $dstSnapCount)
     return (
         ${$srcSnapshots}[-1],
-        ( ($i >= 0 && grep { /\@$snapTime$/ } @$dstSnapshots) ? ${$srcSnapshots}[$i] : undef),
+        ( ($i >= 0 && grep { /\@$snapName$/ } @$dstSnapshots) ? ${$srcSnapshots}[$i] : undef),
         scalar @$dstSnapshots
         );
 }
