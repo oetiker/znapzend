@@ -358,6 +358,7 @@ sub lastAndCommonSnapshots {
         last if grep { /$snapTime/ } @$dstSnapshots;
     }
 
+    # returns: ($lastSnapshot, $lastCommon, $dstSnapCount)
     return (${$srcSnapshots}[-1], ((grep { /$snapTime/ } @$dstSnapshots)
         ? ${$srcSnapshots}[$i] : undef), scalar @$dstSnapshots);
 }
@@ -467,7 +468,7 @@ sub sendRecvSnapshots {
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
-    my ($lastSnapshot, $lastCommon,$dstSnapCount)
+    my ($lastSnapshot, $lastCommon, $dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
     my %snapshotSynced = ($dstName, $dstDataSet,
