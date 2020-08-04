@@ -383,6 +383,8 @@ sub mostRecentCommonSnapshot {
     }
 
     my $lastCommonSnapshot;
+    ### DEBUG: Uncomment next line to enforce going through getSnapshotProperties() below
+    #if(0)
     {
         local $@;
         eval {
