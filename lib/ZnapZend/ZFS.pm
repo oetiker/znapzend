@@ -1179,7 +1179,9 @@ sub getSnapshotProperties {
                     print STDERR "=== getSnapshotProperties(): Merging returned one property list :" .
                         Dumper(\%properties) if $self->debug;
                 }
-            } # else  End of line, we inherited from the previous (deeper) step
+            } else {
+                print STDERR "=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist\n" if $self->debug;
+            }
         } # else  Got to root, and it was inspected above
     }
 
