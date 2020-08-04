@@ -371,7 +371,7 @@ my $sendRecvCleanup = sub {
                         'since=="' . $self->since . '"'.
                         ', skipIntermediates=="' . $self->skipIntermediates . '"' .
                         ', forbidDestRollback=="' . $self->forbidDestRollback . '"'
-                        );
+                        ) if $self->debug;
                     if ($self->since) {
                         # Make sure that if we use the "--sinceForced=X" or
                         # "--since=X" option, this named snapshot exists (or
@@ -424,7 +424,7 @@ my $sendRecvCleanup = sub {
                                     my $doPromote = 0;
 
                                     if (!defined($lastCommon)) {
-                                        warn "### [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet";
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet");
                                     }
 
                         # 3) "X" in src is newer than the newest common snapshot
@@ -440,27 +440,27 @@ my $sendRecvCleanup = sub {
                                         if ($self->skipIntermediates) {
                                             if (defined($lastCommon) && $lastCommon ne '') {
                                                 if ($lastCommonNum == $seenX || $lastCommon =~ m/\@$self->since$/ ) {
-                                                    warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'";
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'");
                                                 } else {
-                                                    warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])";
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])");
                                                     $doPromote = 1;
                                                 }
                                             } else {
                                                 if ( (scalar @$dstSnapshots) > 0) {
                                                     if ($self->forbidDestRollback) {
-                                                        warn "### [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, but rollback of dest is forbidden";
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, but rollback of dest is forbidden");
                                                     } else {
-                                                        warn "### [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, should try resync from scratch";
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, should try resync from scratch");
                                                         $doPromote = 1;
                                                     }
                                                 } else {
-                                                    warn "### [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, because there are no snapshots in dst, should try resync from scratch";
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, because there are no snapshots in dst, should try resync from scratch");
                                                     $doPromote = 1;
                                                 }
                                             }
                                         } else {
                                             # if (seenX && !skipIntermediates) :
-                                            warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway";
+                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway");
                                         }
                                     } # // 3. if seenX
 
@@ -471,15 +471,15 @@ my $sendRecvCleanup = sub {
                         #       afterwards (if we forbidDestRollback honor that)
                                     if (!defined($seenX)) {
                                         if (!$self->forbidDestRollback) {
-                                            warn "### [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point";
+                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: The common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), would try to resync from previous common point");
                                             $doPromote = 1;
                                         } else {
-                                            warn "### [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination";
+                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we forbidDestRollback so will not ensure it appears on destination");
                                         }
                                     } # // 4. if !seenX => "X" is too old
 
                                     if ($doPromote > 0) {
-                                        warn "### [--since mode]: Making sure that snapshot '" . $self->since . "' exists in history of '$dstDataSet' ...";
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: Making sure that snapshot '" . $self->since . "' exists in history of '$dstDataSet' ...");
                                         my $lastSnapshotToSee = $self->since;
                                         if (defined($seenX)) {
                                             $lastSnapshotToSee = ${$srcSnapshots}[$seenX];
@@ -488,16 +488,16 @@ my $sendRecvCleanup = sub {
                                                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
                                                 $backupSet->{snapSendFilter}, $lastSnapshotToSee);
                                     } else {
-                                        warn "### [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet";
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet");
                                     }
                                 } else {
-                                    warn "### [--since mode]: Got an empty list, does source dataset $srcDataSet have any snapshots?";
+                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Got an empty list, does source dataset $srcDataSet have any snapshots?");
                                 } # if not scalar - no src snaps?
                             } else {
-                                warn "### [--since mode]: Destination dataset $dstDataSet already has a snapshot named by --since='" . $self->since . "'";
+                                $self->zLog->debug("sendRecvCleanup() [--since mode]: Destination dataset $dstDataSet already has a snapshot named by --since='" . $self->since . "'");
                             } # // 2. if dst has "X"
                         } else {
-                            warn "### [--since mode]: Source dataset $srcDataSet does not have a snapshot named by --since='" . $self->since . "'";
+                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Source dataset $srcDataSet does not have a snapshot named by --since='" . $self->since . "'");
                             if (!$self->forbidDestRollback) {
                                 die "User required --sinceForced='" . $self->since . "' but there is no match in source dataset $srcDataSet";
                             }
