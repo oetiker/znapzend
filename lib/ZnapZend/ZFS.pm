@@ -407,7 +407,8 @@ sub mostRecentCommonSnapshot {
         # to have a "non-false" value (e.g. "1") in its $dstName . '_synced'
         for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
             my $snapshot = ${$srcSnapshots}[$i];
-            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit);
+            # Note: pass [$dstSyncedPropname] as array to have the prefix added automagically!
+            my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, [$dstSyncedPropname] );
             if ($properties->{$dstName} and ($properties->{$dstName} eq $dstDataSet) and $properties->{$dstSyncedPropname}){
                 $lastCommonSnapshot = $snapshot;
                 last;
@@ -552,6 +553,72 @@ sub sendRecvSnapshots {
 
     $self->setSnapshotProperties($lastSnapshot, \%snapshotSynced);
     return 1;
+}
+
+sub filterPropertyNames {
+    # This routine is a helper for getXproperties to allow easy passing of
+    # specific properties we are interested to `zfs get`, to optimize some
+    # code around that. As an input it can get either:
+    # * string that would be passed through as is (after some sanitization);
+    # * array of strings that would be concatenated into a comma-separated
+    #   string with our name-space propertyPrefix (e.g. "org.znapzend:...")
+    #   prepended if needed;
+    # * undef for defaulting to 'all'
+    # Returns a string safe to pass into `zfs get`
+    my $self = shift;
+    my $propnames = shift;
+
+    my $propertyPrefix = $self->propertyPrefix;
+
+    if (defined($propnames) && $propnames) {
+        if (ref($propnames) eq 'ARRAY') {
+            if (scalar(@$propnames) > 0) {
+                my $propstring = '';
+                foreach my $propname (@$propnames) {
+                    next if !defined($propname);
+                    chomp $propname;
+
+                    if ($propname eq 'all') {
+                        warn "=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot";
+                        return 'all';
+                    }
+
+                    if ( $propname =~ /^$propertyPrefix\:/ ) {
+                        1; # no-op, all good, use as is
+                    } elsif ( $propname =~ /:/ ) {
+                        warn "=== getSnapshotProperties(): got a propname not from our namespace: $propname";
+                    } else {
+                        $propname = $propertyPrefix . ':' . $propname;
+                    }
+
+                    if ($propname eq '') {
+                        warn "=== getSnapshotProperties(): got an empty propname in array";
+                        next;
+                    }
+
+                    if ($propstring eq '') {
+                        $propstring = $propname;
+                    } else {
+                        $propstring .= ',' . $propname;
+                    }
+                }
+                $propnames = $propstring;
+                $propnames =~ s/[\s]+//g;
+            } else {
+                # Got an array, but it was empty
+                $propnames = undef; # default below
+            }
+        } else {
+            # Assume string, pass verbatim; strip whitespaces for safety
+            $propnames =~ s/[\s]+//g ;
+        }
+    }
+
+    if ( !(defined($propnames)) || !($propnames) || ($propnames eq '') ) {
+        $propnames = 'all';
+    }
+
+    return $propnames;
 }
 
 sub getDataSetProperties {
@@ -968,6 +1035,11 @@ sub getSnapshotProperties {
     #   3 = local + inherit as defined by zfs + iterate into parent
     my $inherit = shift; # May be not passed => undef
 
+    # Limit the request to `zfs get` to only pick out certain properties
+    # and save time not-processing stuff the caller will ignore?..
+    my $propnames = shift; # May be not passed => undef
+    $propnames = $self->filterPropertyNames($propnames); # Returns a string to pass into `zfs get`
+
     print STDERR "=== getSnapshotProperties():"
         . "\n\trecurse=" . Dumper($recurse)
         . "\n\tinherit=" . Dumper($inherit)
@@ -1000,7 +1072,7 @@ sub getSnapshotProperties {
     if ($recurse) {
         push (@cmd, qw(-r));
     }
-    push (@cmd, qw(-o), 'property,value', 'all', $snapshot);
+    push (@cmd, qw(-o), 'property,value', $propnames, $snapshot);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties of ' . $snapshot);
@@ -1034,7 +1106,7 @@ sub getSnapshotProperties {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
-                my %parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, 2);
+                my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, 2, $propnames);
 
                 my $numParentProps = keys %parentProperties;
                 if ($numParentProps > 0) {
