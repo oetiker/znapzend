@@ -1178,8 +1178,8 @@ sub getSnapshotProperties {
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in case of conflict:
                     print STDERR "=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
-                        '\t' . Dumper(%$parentProperties) .
-                        '\t' . Dumper(\%properties)
+                        "\t" . Dumper(%$parentProperties) .
+                        "\t" . Dumper(\%properties)
                         if $self->debug;
                     %properties = (%$parentProperties, %properties);
                     print STDERR "=== getSnapshotProperties(): Merging returned one property list :" .
