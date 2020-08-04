@@ -1032,7 +1032,7 @@ sub getSnapshotProperties {
     #   0 = only local
     #   1 = local + inherit as defined by zfs
     #   2 = local + recurse into parent that has same snapname
-    #   3 = local + inherit as defined by zfs + iterate into parent
+    #   3 = local + inherit as defined by zfs + recurse into parent
     my $inherit = shift; # May be not passed => undef
 
     # Limit the request to `zfs get` to only pick out certain properties
