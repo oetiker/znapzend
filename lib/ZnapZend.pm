@@ -195,6 +195,10 @@ my $refreshBackupPlans = sub {
 
                             $backupSet->{"dst_$key" . '_valid'} =
                                 $self->zZfs->createDataSet($backupSet->{"dst_$key"});
+
+                            if ($backupSet->{"dst_$key" . '_valid'}) {
+                                $backupSet->{"dst_$key" . '_justCreated'} = 1;
+                            }
                         };
                     }
                     $backupSet->{"dst_$key" . '_valid'} or
@@ -339,6 +343,10 @@ my $sendRecvCleanup = sub {
 
                         $backupSet->{"dst_$key" . '_valid'} =
                             $self->zZfs->createDataSet($backupSet->{"dst_$key"});
+
+                        if ($backupSet->{"dst_$key" . '_valid'}) {
+                            $backupSet->{"dst_$key" . '_justCreated'} = 1;
+                        }
                     };
                 }
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
