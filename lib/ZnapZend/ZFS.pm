@@ -401,12 +401,12 @@ sub mostRecentCommonSnapshot {
         $inherit = 1;
     }
 
-    my $lastCommonSnapshot;
+    my ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount);
     {
         local $@;
         eval {
             local $SIG{__DIE__};
-            $lastCommonSnapshot = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
+            ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount) = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
         };
         if ($@){
             if (blessed $@ && $@->isa('Mojo::Exception')){
