@@ -552,8 +552,13 @@ my $sendRecvCleanup = sub {
         # See if there is anything remaining to clean up in child
         # datasets (if recursive snapshots are enabled) or just
         # this one dataset.
+        # Note: we apply reverse sorting by dataset names, so any
+        # "custom" child dataset snapshots (made with --inherited
+        # mode starting from mid-tree) are deleted first, parents
+        # last, and we do not lose track of mostRecentCommonSnapshot
+        # if we have to iterate up to root to find dst_X_synced.
         SRC_SET:
-        for my $srcDataSet (@$srcSubDataSets){
+        for my $srcDataSet (sort {$b cmp $a} @$srcSubDataSets){
             next if ($backupSet->{recursive} eq 'on' && $srcDataSet eq $backupSet->{src});
 
             $self->zLog->debug('checking to clean up snapshots of source '. $srcDataSet);
