@@ -468,6 +468,11 @@ my $sendRecvCleanup = sub {
                                             ) if $self->debug;
                                     }
 
+                                    # Flag for whether we should run an extra sendRecvSnapshots()
+                                    # to get the "X" snapshot into history of destination.
+                                    # A value of 2 enforces this, allowing to destroy snapshots
+                                    # on destination to allow repopulation of that dataset with
+                                    # new history if user said --sinceForced=X
                                     my $doPromote = 0;
                                     if (defined($seenD)) {
                                         # if seenD - skip the below decisions; note it also means seenX and that "X" is among common snapshots
@@ -489,8 +494,17 @@ my $sendRecvCleanup = sub {
                                                         if ($lastCommonNum == $seenX || $lastCommon =~ m/\@$self->since$/ ) {
                                                             $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'");
                                                         } else {
-                                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])");
-                                                            $doPromote = 1;
+                                                            if ($lastCommonNum < $seenX) {
+                                                                $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])");
+                                                                $doPromote = 1;
+                                                            } else {
+                                                                if (!$self->forbidDestRollback) { # || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --sinceForced='" . $self->since . "' match (${$srcSnapshots}[$seenX]), should try to roll back and resync from that");
+                                                                    $doPromote = 2;
+                                                                } else {
+                                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but rollback of dest is forbidden");
+                                                                }
+                                                            }
                                                         }
                                                     } else {
                                                         if ( (scalar @$dstSnapshots) > 0) {
@@ -498,11 +512,11 @@ my $sendRecvCleanup = sub {
                                                                 $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, but rollback of dest is forbidden");
                                                             } else {
                                                                 $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, should try resync from scratch");
-                                                                $doPromote = 1;
+                                                                $doPromote = 2;
                                                             }
                                                         } else {
                                                             $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, because there are no snapshots in dst, should try resync from scratch");
-                                                            $doPromote = 1;
+                                                            $doPromote = 2;
                                                         }
                                                     }
                                                 } else {
@@ -525,11 +539,11 @@ my $sendRecvCleanup = sub {
                                                     # We should have looked through whole SRC
                                                     # history to get here. And not seenX. Fishy!
                                                     if ($firstCommonNum == $lastCommonNum) {
-                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest (and oldest) common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point");
-                                                        $doPromote = 1;
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest (and oldest) common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point or from scratch");
+                                                        $doPromote = 2;
                                                     } else {
-                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon', and the oldest is '$firstCommon', and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point");
-                                                        $doPromote = 1;
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon', and the oldest is '$firstCommon', and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point or from scratch");
+                                                        $doPromote = 2;
                                                     }
                                                 } else {
                                                     $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (if any), but we forbidDestRollback so will not ensure it appears on destination");
@@ -547,7 +561,7 @@ my $sendRecvCleanup = sub {
                                                 if (!$self->forbidDestRollback) { # || ($backupSet->{"dst_$key" . '_justCreated'})) {
                         # 5b) There are discardable snapshots on destination...
                                                     $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet, and we may roll it back");
-                                                    $doPromote = 1;
+                                                    $doPromote = 2;
                                                 } else {
                                                     $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet, but we may not roll it back");
                                                 }
@@ -575,7 +589,7 @@ my $sendRecvCleanup = sub {
                                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
                                                 $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
                                                 $backupSet->{snapSendFilter}, $lastSnapshotToSee,
-                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
+                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : ($doPromote > 1 ? $doPromote : undef ) )
                                             );
                                     } else {
                                         $self->zLog->debug("sendRecvCleanup() [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet");

@@ -466,6 +466,8 @@ sub sendRecvSnapshots {
         else { $lastSnapshotToSee =~ s/^.*\@// ; }
     }
 
+    # In certain cases, callers can set this argument to explicitly
+    # forbid (0), allow (1) or enforce if needed (2) a rollback of dest.
     my $allowDestRollback = shift // undef;
     if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
 
@@ -504,10 +506,41 @@ sub sendRecvSnapshots {
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
-    !$lastCommon and $dstSnapCount
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but '
+    if (!$lastCommon and $dstSnapCount) {
+        if ($allowDestRollback == 2) {
+            # Asked to enforce if needed... is needed now
+            $self->zLog->warn('WARNING: snapshot(s) exist on destination, but '
+                . 'no common found on source and destination: was requested '
+                . 'to clean up destination ' . $dstDataSet . ' (i.e. destroy '
+                . 'existing snapshots that match the znapzend filter)');
+            # TOTHINK: Maybe a "zfs rollback" to the oldest dst snapshot
+            # and then removing it in one act is better for performance?
+            # Can be destructive for man-named snapshots (if any) though...
+            $self->destroySnapshots ($self->listSnapshots($dstDataSet, $snapFilter, undef));
+            # If there are any manually created snapshots, with names not
+            # matched by filter, `zfs recv -F` below would likely fail.
+            # Still it is up to admins/users then to clean what they made,
+            # we only mutilate automatically what we made automatically.
+
+            # Reevaluate what is there now and look at all snapshots,
+            # e.g. the manually named snapshots may be common to src
+            # and dst, to have a starting point for such resync
+            ($lastSnapshot, $lastCommon, $dstSnapCount)
+                = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, qr/.*/, $lastSnapshotToSee);
+            my $dstSnapCountAll = scalar($self->listSnapshots($dstDataSet, qr/.*/, undef));
+            # We do not throw/error here because snapshots may help sync
+            $self->zLog->warn('ERROR: some snapshot(s) not covered '
+                    . 'by znapzend filter still exist on destination: '
+                    . 'this should be judged and fixed by the sysadmin '
+                    . '(i.e. destroy manually named snapshots); '
+                    . 'the zfs send+receive would likely fail below!'
+                    ) if (!$lastCommon && $dstSnapCountAll>0);
+        } else {
+            Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but '
             . 'no common found on source and destination: clean up destination '
             . $dstDataSet . ' (i.e. destroy existing snapshots)');
+        }
+    }
 
     if (defined($lastSnapshotToSee)) {
         $self->zLog->debug("sendRecvSnapshots() : " .
