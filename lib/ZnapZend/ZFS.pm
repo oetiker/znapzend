@@ -490,6 +490,16 @@ sub sendRecvSnapshots {
     my ($lastSnapshot, $lastCommon, $dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
+    if (defined($lastSnapshotToSee)) {
+        $self->zLog->debug("sendRecvSnapshots() : " .
+            "for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' " .
+            "snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' ".
+            "GOT: lastSnapshot='$lastSnapshot' " .
+            "lastCommon=" . ($lastCommon ? "'$lastCommon'" : "undef") . " " .
+            "dstSnapCount='$dstSnapCount'"
+            );
+    }
+
     # We would set these source snapshot properties to mark that
     # this snapshot has been delivered to destination, to keep the
     # newest such snapshot if destination is unreachable currently.
@@ -540,16 +550,6 @@ sub sendRecvSnapshots {
             . 'no common found on source and destination: clean up destination '
             . $dstDataSet . ' (i.e. destroy existing snapshots)');
         }
-    }
-
-    if (defined($lastSnapshotToSee)) {
-        $self->zLog->debug("sendRecvSnapshots() : " .
-            "for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' " .
-            "snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' ".
-            "GOT: lastSnapshot='$lastSnapshot' " .
-            "lastCommon=" . ($lastCommon ? "'$lastCommon'" : "undef") . " " .
-            "dstSnapCount='$dstSnapCount'"
-            );
     }
 
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
