@@ -405,8 +405,8 @@ sub lastAndCommonSnapshots {
         last if grep { /\@$snapName$/ } @$dstSnapshots;
     }
 
-    ### print STDERR "LASTCOMMON: i=$i snapName=$snapName\n" if $self->debug;
-    # returns: ($lastSnapshot, $lastCommon, $dstSnapCount)
+    ### print STDERR "LASTCOMMON: i=$i snapName=$snapName\nSRC: " . Dumper($srcSnapshots) . "DST: ". Dumper($dstSnapshots) . "LastToSee: " . Dumper($lastSnapshotToSee) if $self->debug;
+    # returns: ($lastSrcSnapshotName, $lastCommonSnapshotName, $dstSnapCount)
     return (
         ${$srcSnapshots}[-1],
         ( ($i >= 0 && grep { /\@$snapName$/ } @$dstSnapshots) ? ${$srcSnapshots}[$i] : undef),
