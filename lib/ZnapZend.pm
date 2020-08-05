@@ -416,14 +416,15 @@ my $sendRecvCleanup = sub {
                                 if (scalar @$srcSnapshots) {
                                     my $dstSnapshots = $self->zZfs->listSnapshots($dstDataSet, $snapSendFilter);
 
-                                    my ($i, $snapTime, $seenX, $lastCommon, $lastCommonNum);
-                                    $lastCommon = undef;
+                                    my ($i, $snapName, $seenX, $lastCommon, $lastCommonNum);
+                                    $lastCommon = undef; # track the newest common snapshot, if any
                                     $lastCommonNum = undef; # Flips to "i" if we had any common snapshots
                                     $seenX = undef; # Flips to "i" if we saw "X" before (or as) the newest common snapshot, looking from newest snapshots in src
+                                    # Note that depending on conditions, we might not look through ALL snapnames and stop earlier when we saw enough
                                     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
-                                        ($snapTime) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
-                                        $seenX = $i if $snapTime =~ m/^$self->since$/;
-                                        if ( grep { /$snapTime/ } @$dstSnapshots ) {
+                                        ($snapName) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
+                                        $seenX = $i if $snapName =~ m/^$self->since$/;
+                                        if ( grep { /$snapName/ } @$dstSnapshots ) {
                                             $lastCommonNum = $i;
                                             $lastCommon = ${$srcSnapshots}[$i];
                                             last;
