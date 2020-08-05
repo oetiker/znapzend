@@ -481,6 +481,10 @@ sub sendRecvSnapshots {
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
+    # As seen through filter:
+    # * Last existing snapshot on source,
+    # * Last common snapshot between source and this destination,
+    # * Overall count of snapshots on destination.
     my ($lastSnapshot, $lastCommon, $dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
