@@ -416,10 +416,11 @@ my $sendRecvCleanup = sub {
                                 if (scalar @$srcSnapshots) {
                                     my $dstSnapshots = $self->zZfs->listSnapshots($dstDataSet, $snapSendFilter);
 
-                                    my ($i, $snapName, $seenX, $lastCommon, $lastCommonNum);
+                                    my ($i, $snapName, $seenX, $seenD, $lastCommon, $lastCommonNum);
                                     $lastCommon = undef; # track the newest common snapshot, if any
                                     $lastCommonNum = undef; # Flips to "i" if we had any common snapshots
                                     $seenX = undef; # Flips to "i" if we saw "X" before (or as) the newest common snapshot, looking from newest snapshots in src
+                                    $seenD = undef; # Flips to "i" if we saw "X" in DST during this search
                                     # Note that depending on conditions, we might not look through ALL snapnames and stop earlier when we saw enough
                                     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
                                         ($snapName) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
@@ -429,6 +430,10 @@ my $sendRecvCleanup = sub {
                                             print STDERR "+++ SEENSRC: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
                                         }
                                         if ( grep { /$snapName/ } @$dstSnapshots ) {
+                                            if ( $snapName eq $self->since || $snapName =~ m/^$self->since$/ ) {
+                                                $seenD = $i;
+                                                print STDERR "+++ SEENDST: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                            }
                                             print STDERR "||| COMMON : #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
                                             $lastCommonNum = $i;
                                             $lastCommon = ${$srcSnapshots}[$i];
