@@ -488,8 +488,13 @@ sub sendRecvSnapshots {
     my ($lastSnapshot, $lastCommon, $dstSnapCount)
         = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
-    my %snapshotSynced = ($dstName, $dstDataSet,
-        $dstName . '_synced', 1);
+    # We would set these source snapshot properties to mark that
+    # this snapshot has been delivered to destination, to keep the
+    # newest such snapshot if destination is unreachable currently.
+    my %snapshotSynced = (
+        $dstName,               $dstDataSet,
+        $dstName . '_synced',   1
+        );
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
     return 1 if !$lastSnapshot;
     if (defined $lastCommon && ($lastSnapshot eq $lastCommon)){
