@@ -2,6 +2,7 @@ ABuild
 acconfig
 acinclude
 aclocal
+admins
 Affero
 aix
 alpinelinux
@@ -171,6 +172,7 @@ fnord
 foced
 foreach
 forkcall
+FQSN
 fsf
 gerczei
 Getopt
@@ -379,6 +381,8 @@ rw
 sbin
 sbindir
 scriptversion
+SEENSRC
+SEENDST
 selftest
 setsid
 shellwords
