@@ -423,8 +423,13 @@ my $sendRecvCleanup = sub {
                                     # Note that depending on conditions, we might not look through ALL snapnames and stop earlier when we saw enough
                                     for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
                                         ($snapName) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
-                                        $seenX = $i if $snapName =~ m/^$self->since$/;
+                                        #print STDERR "=== LOOKING: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                        if ( $snapName eq $self->since || $snapName =~ m/^$self->since$/ ) {
+                                            $seenX = $i;
+                                            print STDERR "+++ SEENSRC: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                        }
                                         if ( grep { /$snapName/ } @$dstSnapshots ) {
+                                            print STDERR "||| COMMON : #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
                                             $lastCommonNum = $i;
                                             $lastCommon = ${$srcSnapshots}[$i];
                                             last;
