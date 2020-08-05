@@ -186,8 +186,11 @@ sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
     my $snapshotFilter = shift // qr/.*/;
-    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name
-    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
     my $remote;
     my @snapshots;
 
@@ -342,8 +345,11 @@ sub lastAndCommonSnapshots {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $snapshotFilter = shift // qr/.*/;
-    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name
-    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
 
     my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter, $lastSnapshotToSee);
     my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter, $lastSnapshotToSee);
@@ -454,8 +460,11 @@ sub sendRecvSnapshots {
     # that "X" exists on destination if it does not yet (note that if there
     # are newer snapshots on destination, they would be removed to allow
     # receiving "X", unless --forbidDestRollback is requested, in this case).
-    my $lastSnapshotToSee = shift // undef;
-    if (defined($lastSnapshotToSee) && $lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
 
     my $allowDestRollback = shift // undef;
     if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
