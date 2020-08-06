@@ -409,13 +409,19 @@ my $sendRecvCleanup = sub {
             for (@{$self->zZfs->extractSnapshotNames(@snapshots)}) {
                 $snapnamesRecursive{$_} = 1;
             }
-            for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
-                $snapnamesRecursive{$_} = 2;
-            }
+            # Note to devs: move extractSnapshotNames(toDestroy) up here
+            # if you would introduce logic that cleans that array.
 
             if (scalar($toDestroy) == 0) {
                 $self->zLog->debug('got an empty toDestroy list for cleaning up destination snapshots recursively under ' . $backupSet->{dst});
             } else {
+                # Note to devs: Unlike code for sources, here we only extract
+                # snapnames when we know the @toDestroy array is not empty -
+                # and it was not cleaned by any (missing) logic above.
+                for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                    $snapnamesRecursive{$_} = 2;
+                }
+
                 $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
                 {
                     local $@;
