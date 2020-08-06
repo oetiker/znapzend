@@ -6,12 +6,12 @@ use ZnapZend::Time;
 use Text::ParseWords qw(shellwords);
 
 ### attributes ###
-has debug    => sub { 0 };
-has lowmemRecurse => sub { 0 };
-has zfsGetType => sub { 0 };
-has noaction => sub { 0 };
-has rootExec => sub { q{} };
-has timeWarp => sub { undef };
+has debug           => sub { 0 };
+has lowmemRecurse   => sub { 0 };
+has zfsGetType      => sub { 0 };
+has noaction        => sub { 0 };
+has rootExec        => sub { q{} };
+has timeWarp        => sub { undef };
 has zLog            => sub {
     my $stack = "";
     for (my $i = 0; my @r = caller($i); $i++) { $stack .= "$r[1]:$r[2] $r[3]\n"; }
