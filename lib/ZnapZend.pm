@@ -413,19 +413,23 @@ my $sendRecvCleanup = sub {
                 $snapnamesRecursive{$_} = 2;
             }
 
-            $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
-            {
-                local $@;
-                eval {
-                    local $SIG{__DIE__};
-                    $self->zZfs->destroySnapshots($toDestroy, 1);
-                };
-                if ($@){
-                    if (blessed $@ && $@->isa('Mojo::Exception')){
-                        $self->zLog->warn($@->message);
-                    }
-                    else{
-                        $self->zLog->warn($@);
+            if (scalar($toDestroy) == 0) {
+                $self->zLog->debug('got an empty toDestroy list for cleaning up destination snapshots recursively under ' . $backupSet->{dst});
+            } else {
+                $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
+                {
+                    local $@;
+                    eval {
+                        local $SIG{__DIE__};
+                        $self->zZfs->destroySnapshots($toDestroy, 1);
+                    };
+                    if ($@){
+                        if (blessed $@ && $@->isa('Mojo::Exception')){
+                            $self->zLog->warn($@->message);
+                        }
+                        else{
+                            $self->zLog->warn($@);
+                        }
                     }
                 }
             }
