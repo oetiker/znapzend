@@ -219,7 +219,7 @@ sub extractSnapshotNames($array) {
     # matching we need to compare just the "snapname" lists.
     my @ret;
     for (@$array){
-        /\@(.+)/ and push @ret, $1;
+        /\@(.+)$/ and push @ret, $1;
     }
     return \@ret;
 }
