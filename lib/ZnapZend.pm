@@ -423,6 +423,7 @@ my $sendRecvCleanup = sub {
                 }
 
                 $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
+                $self->zLog->debug(Dumper(\@{$toDestroy})) if $self->debug;
                 {
                     local $@;
                     eval {
@@ -468,6 +469,7 @@ my $sendRecvCleanup = sub {
             next if (scalar (@{$toDestroy}) == 0);
 
             $self->zLog->debug('cleaning up snapshots on destination ' . $dstDataSet);
+            $self->zLog->debug(Dumper(\@{$toDestroy})) if $self->debug;
             {
                 local $@;
                 eval {
@@ -569,7 +571,7 @@ my $sendRecvCleanup = sub {
 
             if ($doClean) {
                 $self->zLog->debug('cleaning up ' . scalar (@{$toDestroy}) . ' source snapshots recursively under ' . $backupSet->{src});
-                $self->zLog->debug(Dumper(@{$toDestroy})) if $self->debug;
+                $self->zLog->debug(Dumper(\@{$toDestroy})) if $self->debug;
                 {
                     local $@;
                     eval {
@@ -648,7 +650,7 @@ my $sendRecvCleanup = sub {
             }
 
             $self->zLog->debug('cleaning up ' . scalar (@{$toDestroy}) . ' snapshots on source ' . $srcDataSet);
-            $self->zLog->debug(Dumper(@{$toDestroy})) if $self->debug;
+            $self->zLog->debug(Dumper(\@{$toDestroy})) if $self->debug;
             {
                 local $@;
                 eval {
