@@ -225,6 +225,7 @@ sub extractSnapshotNames {
             /\@(.+)$/ and push @ret, $1;
         }
     }
+    #print STDERR "=== extractSnapshotNames:\n\tGOT: " . Dumper(@array) . "\tMADE: " . Dumper(@ret) if $self->debug;
     return \@ret;
 }
 
