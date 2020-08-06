@@ -389,7 +389,7 @@ my $sendRecvCleanup = sub {
 
         # Remember which snapnames we already decided about in first phase
         # (recursive cleanup from top backupSet-dst) if we did run it indeed.
-        # Do so with hash array for faster lookups into snapname existance.
+        # Do so with hash array for faster lookups into snapname existence.
         my %snapnamesRecursive = ();
 
         #cleanup current destination
@@ -512,7 +512,7 @@ my $sendRecvCleanup = sub {
 
         # Remember which snapnames we already decided about in first phase
         # (recursive cleanup from top backupSet-src) if we did run it indeed.
-        # Do so with hash array for faster lookups into snapname existance.
+        # Do so with hash array for faster lookups into snapname existence.
         my %snapnamesRecursive = ();
 
         if ($backupSet->{recursive} eq 'on') {

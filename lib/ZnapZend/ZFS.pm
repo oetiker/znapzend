@@ -9,7 +9,7 @@ use Data::Dumper;
 ### that (need to) care about these nuances beyond a boolean.
 ### Primarily intended for getSnapshotProperties() to get props
 ### defined by snapshots of parent datasets with same snapnames.
-### For "ususal" datasets (filesystem,volume) `zfs` returns the
+### For "usual" datasets (filesystem,volume) `zfs` returns the
 ### properties inherited from higher level datasets; but for
 ### snapshots it only returns the same - not from higher snaps.
 my %inheritLevels = {
