@@ -213,6 +213,17 @@ sub listSnapshots {
     return \@snapshots;
 }
 
+sub extractSnapshotNames($array) {
+    # Routines like listSnapshots() operate with fully qualified
+    # "dataset@snapname" strings as returned by ZFS. For some data
+    # matching we need to compare just the "snapname" lists.
+    my @ret;
+    for (@$array){
+        /\@(.+)/ and push @ret, $1;
+    }
+    return \@ret;
+}
+
 sub createDataSet {
     my $self = shift;
     my $dataSet = shift;
@@ -1385,6 +1396,11 @@ lists datasets on (remote-)host
 =head2 listSnapshots
 
 returns a list of all snapshots of the dataset
+
+=head2 extractSnapshotNames($array)
+
+returns a list of all snapnames (tags after the "@" character) extracted
+from provided array of "dataset@snapshot" values
 
 =head2 listSubDataSets
 
