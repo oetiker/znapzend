@@ -630,7 +630,7 @@ sub filterPropertyNames {
                     chomp $propname;
 
                     if ($propname eq '') {
-                        $self->zLog->warn("=== getSnapshotProperties(): got an empty propname in array");
+                        $self->zLog->warn("=== filterPropertyNames(): got an empty propname in array");
                         next;
                     }
 
@@ -641,14 +641,14 @@ sub filterPropertyNames {
                         # that all specific names have been discovered.
                         # If such needs arise, redefine this here and in
                         # callers checking for 'all' to also handle split(',').
-                        $self->zLog->warn("=== getSnapshotProperties(): got an 'all' propname in array, any filtering will be moot");
+                        $self->zLog->warn("=== filterPropertyNames(): got an 'all' propname in array, any filtering will be moot");
                         return 'all';
                     }
 
                     if ( $propname =~ /^$propertyPrefix\:/ ) {
                         1; # no-op, all good, use as is
                     } elsif ( $propname =~ /:/ ) {
-                        $self->zLog->warn("=== getSnapshotProperties(): got a propname not from our namespace: $propname");
+                        $self->zLog->warn("=== filterPropertyNames(): got a propname not from our namespace: $propname");
                     } else {
                         $propname = $propertyPrefix . ':' . $propname;
                     }
