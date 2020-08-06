@@ -218,16 +218,40 @@ sub extractSnapshotNames {
     # "dataset@snapname" strings as returned by ZFS. For some data
     # matching we need to compare just the "snapname" lists.
     my $self = shift;
-    my @array = shift;
+    my ($array) = @_; # Note: call with extractSnapshotNames(\@arrVarName) !
     my @ret;
-    if (scalar(@array)) {
-        for (@array) {
-            /\@(.+)$/ and push @ret, $1;
+    if (ref($array) eq 'ARRAY') {
+        if (scalar(@$array)) {
+            for (@$array) {
+                /\@(.+)$/ and push @ret, $1;
+            }
         }
+    } else {
+#        return \@ret if (!$array);
+#        eval { return \@ret if ($array == 1); };
+
+        # String or unprocessed whitespace separated series?
+        #print STDERR "=== extractSnapshotNames:\n\tGOT '" . ref($array) . "', will recurse: " . Dumper($array) if $self->debug;
+        if ($array =~ m/\s+/) {
+            my @tmp = split(/\s+/, $array);
+            print STDERR "=== extractSnapshotNames:\n\tTMP: " . Dumper(\@tmp) if $self->debug;
+            return $self->extractSnapshotNames(\@tmp);
+        }
+        return $self->extractSnapshotNames( [$array] );
     }
-    #print STDERR "=== extractSnapshotNames:\n\tGOT: " . Dumper(@array) . "\tMADE: " . Dumper(@ret) if $self->debug;
+    #print STDERR "=== extractSnapshotNames:\n\tGOT '" . ref($array) . "': " . Dumper($array) . "\tMADE: " . Dumper(\@ret) if $self->debug;
     return \@ret;
 }
+
+### Works:
+# $self->zZfs->extractSnapshotNames( [ 'dsa@test1', 'dsa@test2', 'dsa@test3' ] );
+# $self->zZfs->extractSnapshotNames('ds@test1 ds@test2
+#   ds@test3');
+
+### Does not work;
+# $self->zZfs->extractSnapshotNames( qw(dsq@test1 dsq@test2 dsq@test3) );
+
+
 
 sub createDataSet {
     my $self = shift;
