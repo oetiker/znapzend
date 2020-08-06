@@ -406,7 +406,7 @@ my $sendRecvCleanup = sub {
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             # Save the names we have seen, to not revisit them below for children
-            for (@{$self->zZfs->extractSnapshotNames(@snapshots)}) {
+            for (@{$self->zZfs->extractSnapshotNames(\@snapshots)}) {
                 $snapnamesRecursive{$_} = 1;
             }
             # Note to devs: move extractSnapshotNames(toDestroy) up here
@@ -418,7 +418,7 @@ my $sendRecvCleanup = sub {
                 # Note to devs: Unlike code for sources, here we only extract
                 # snapnames when we know the @toDestroy array is not empty -
                 # and it was not cleaned by any (missing) logic above.
-                for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                for (@{$self->zZfs->extractSnapshotNames(\@{$toDestroy})}) {
                     $snapnamesRecursive{$_} = 2;
                 }
 
@@ -455,7 +455,7 @@ my $sendRecvCleanup = sub {
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             if (scalar(%snapnamesRecursive) > 0) {
-                for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                for my $snapname (@{$self->zZfs->extractSnapshotNames(\@{$toDestroy})}) {
                     if ($snapnamesRecursive{$snapname}) {
                         $self->zLog->debug('not considering whether to clean destination ' . $dstDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                         #print STDERR "DESTINATION CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
@@ -528,10 +528,10 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             # Save the names we have seen, to not revisit them below for children
-            for (@{$self->zZfs->extractSnapshotNames(@snapshots)}) {
+            for (@{$self->zZfs->extractSnapshotNames(\@snapshots)}) {
                 $snapnamesRecursive{$_} = 1;
             }
-            for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+            for (@{$self->zZfs->extractSnapshotNames(\@{$toDestroy})}) {
                 $snapnamesRecursive{$_} = 2;
             }
 
@@ -610,7 +610,7 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             if (scalar(%snapnamesRecursive) > 0) {
-                for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                for my $snapname (@{$self->zZfs->extractSnapshotNames(\@{$toDestroy})}) {
                     if ($snapnamesRecursive{$snapname}) {
                         $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                         #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
