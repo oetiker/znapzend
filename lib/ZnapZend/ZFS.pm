@@ -220,8 +220,10 @@ sub extractSnapshotNames {
     my $self = shift;
     my @array = shift;
     my @ret;
-    for (@$array){
-        /\@(.+)$/ and push @ret, $1;
+    if (scalar(@array)) {
+        for (@array) {
+            /\@(.+)$/ and push @ret, $1;
+        }
     }
     return \@ret;
 }
