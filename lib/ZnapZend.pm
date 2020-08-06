@@ -492,15 +492,11 @@ my $sendRecvCleanup = sub {
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
             # Save the names we have seen, to not revisit them below for children
-            for (@snapshots) {
-                my $snapname = $_;
-                $snapname =~ s/^.*\@//;
-                $snapnamesRecursive{$snapname} = 1;
+            for (@{$self->zZfs->extractSnapshotNames(@snapshots)}) {
+                $snapnamesRecursive{$_} = 1;
             }
-            for (@{$toDestroy}) {
-                my $snapname = $_;
-                $snapname =~ s/^.*\@//;
-                $snapnamesRecursive{$snapname} = 2;
+            for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                $snapnamesRecursive{$_} = 2;
             }
 
             # preserve most recent common snapshots for each destination
@@ -577,9 +573,7 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
-            for (@{$toDestroy}) {
-                my $snapname = $_;
-                $snapname =~ s/^.*\@//;
+            for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
                 if ($snapnamesRecursive{$snapname}) {
                     $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                     #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
