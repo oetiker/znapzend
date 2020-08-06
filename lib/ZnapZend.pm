@@ -387,6 +387,11 @@ my $sendRecvCleanup = sub {
         # do not destroy data sets on the destination, or run post-send-command, unless all operations have been successful
         next if ($thisSendFailed);
 
+        # Remember which snapnames we already decided about in first phase
+        # (recursive cleanup from top backupSet-dst) if we did run it indeed.
+        # Do so with hash array for faster lookups into snapname existance.
+        my %snapnamesRecursive = ();
+
         #cleanup current destination
         if ($backupSet->{recursive} eq 'on') {
             # First we try to recursively (and atomically quickly)
@@ -399,6 +404,14 @@ my $sendRecvCleanup = sub {
             @snapshots = @{$self->zZfs->listSnapshots($backupSet->{$dst}, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
+
+            # Save the names we have seen, to not revisit them below for children
+            for (@{$self->zZfs->extractSnapshotNames(@snapshots)}) {
+                $snapnamesRecursive{$_} = 1;
+            }
+            for (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                $snapnamesRecursive{$_} = 2;
+            }
 
             $self->zLog->debug('cleaning up snapshots recursively under destination ' . $backupSet->{$dst});
             {
@@ -430,6 +443,17 @@ my $sendRecvCleanup = sub {
             @snapshots = @{$self->zZfs->listSnapshots($dstDataSet, $backupSet->{snapCleanFilter})};
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{"dst$key" . 'PlanHash'}, $backupSet->{tsformat}, $timeStamp, $self->since);
+
+            if (scalar(%snapnamesRecursive) > 0) {
+                for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                    if ($snapnamesRecursive{$snapname}) {
+                        $self->zLog->debug('not considering whether to clean destination ' . $dstDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
+                        #print STDERR "DESTINATION CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
+                        @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                        #print STDERR "DESTINATION CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
+                    }
+                }
+            }
 
             next if (scalar (@{$toDestroy}) == 0);
 
@@ -475,7 +499,7 @@ my $sendRecvCleanup = sub {
         # cleanup source according to backup schedule
 
         # Remember which snapnames we already decided about in first phase
-        # (recursive cleanup from top backupSet) if we did run it indeed.
+        # (recursive cleanup from top backupSet-src) if we did run it indeed.
         # Do so with hash array for faster lookups into snapname existance.
         my %snapnamesRecursive = ();
 
