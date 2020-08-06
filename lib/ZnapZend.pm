@@ -575,12 +575,14 @@ my $sendRecvCleanup = sub {
             $toDestroy = $self->zTime->getSnapshotsToDestroy(\@snapshots,
                          $backupSet->{srcPlanHash}, $backupSet->{tsformat}, $timeStamp, $self->since);
 
-            for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
-                if ($snapnamesRecursive{$snapname}) {
-                    $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
-                    #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
-                    @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
-                    #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
+            if (scalar(%snapnamesRecursive) > 0) {
+                for my $snapname (@{$self->zZfs->extractSnapshotNames(@{$toDestroy})}) {
+                    if ($snapnamesRecursive{$snapname}) {
+                        $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
+                        #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
+                        @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                        #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
+                    }
                 }
             }
 
