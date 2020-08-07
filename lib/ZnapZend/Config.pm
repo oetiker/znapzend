@@ -89,7 +89,7 @@ my $checkBackupSets = sub {
            next;
         }
 
-        if ( $dataSet =~ m/[\@]/ ) {
+        if ( $backupSet->{src} =~ m/[\@]/ ) {
             # If we are here, somebody fed us a snapshot in the list of
             # datasets, which is likely a bug elsewhere in discovery.
             # We do not want to fail whole backup below due to faulted
