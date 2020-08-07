@@ -460,7 +460,7 @@ my $sendRecvCleanup = sub {
                     if ($snapnamesRecursive{$snapname}) {
                         $self->zLog->debug('not considering whether to clean destination ' . $dstDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                         #print STDERR "DESTINATION CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
-                        @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                        @{$toDestroy} = grep { ($dstDataSet . '@' . $snapname) ne $_ } @{$toDestroy};
                         #print STDERR "DESTINATION CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                     }
                 }
@@ -616,7 +616,7 @@ my $sendRecvCleanup = sub {
                     if ($snapnamesRecursive{$snapname}) {
                         $self->zLog->debug('not considering whether to clean source ' . $srcDataSet . '@' . $snapname . ' as it was already processed in recursive mode') if $self->debug;
                         #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
-                        @{$toDestroy} = grep { $snapname ne $_ } @{$toDestroy};
+                        @{$toDestroy} = grep { ($srcDataSet . '@' . $snapname) ne $_ } @{$toDestroy};
                         #print STDERR "SOURCE CHILD UNCONSIDER CLEAN: BEFORE: " . Dumper($toDestroy) if $self->debug;
                     }
                 }
