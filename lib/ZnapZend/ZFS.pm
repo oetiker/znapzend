@@ -12,12 +12,12 @@ use Data::Dumper;
 ### For "usual" datasets (filesystem,volume) `zfs` returns the
 ### properties inherited from higher level datasets; but for
 ### snapshots it only returns the same - not from higher snaps.
-my %inheritLevels = {
+my %inheritLevels = (
     local_only => 0,
     local_zfsinherit => 1,
     local_recurseparent => 2,
     local_recurseparent_zfsinherit => 3,
-};
+);
 
 ### attributes ###
 has debug           => sub { 0 };
