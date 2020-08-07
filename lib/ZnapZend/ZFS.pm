@@ -248,7 +248,7 @@ sub extractSnapshotNames {
         #print STDERR "=== extractSnapshotNames:\n\tGOT '" . ref($array) . "', will recurse: " . Dumper($array) if $self->debug;
         if ($array =~ m/\s+/) {
             my @tmp = split(/\s+/, $array);
-            print STDERR "=== extractSnapshotNames:\n\tTMP: " . Dumper(\@tmp) if $self->debug;
+            #print STDERR "=== extractSnapshotNames:\n\tTMP: " . Dumper(\@tmp) if $self->debug;
             return $self->extractSnapshotNames(\@tmp);
         }
         return $self->extractSnapshotNames( [$array] );
