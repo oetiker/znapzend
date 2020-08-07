@@ -232,7 +232,7 @@ sub extractSnapshotNames {
     # "dataset@snapname" strings as returned by ZFS. For some data
     # matching we need to compare just the "snapname" lists.
     my $self = shift;
-    my ($array) = @_; # Note: call with extractSnapshotNames(\@arrVarName) !
+    my $array = shift; # Note: call with extractSnapshotNames(\@arrVarName) !
     my @ret;
     if (ref($array) eq 'ARRAY') {
         if (scalar(@$array)) {
