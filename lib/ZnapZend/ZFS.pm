@@ -1199,7 +1199,7 @@ sub getSnapshotProperties {
             @wantedPropnames = keys %seenPropnames;
 
             $self->zLog->debug("=== getSnapshotProperties(): check wantedPropnames: " .
-                Dumper(@wantedPropnames) . " vs properties: " .
+                Dumper(@wantedPropnames) . " vs collected properties: " .
                 Dumper(keys %properties)
                 ) if $self->debug;
 
