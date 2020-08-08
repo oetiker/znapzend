@@ -7,6 +7,7 @@ use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
 
 use Mojo::Base -strict;
+use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 my $VERSION = '0.dev'; #VERSION
@@ -67,8 +68,12 @@ sub main {
         $opts->{rootExec} = 'sudo';
     }
 
-    $zZfs = ZnapZend::ZFS->new(rootExec => $opts->{rootExec});
-    $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, timeWarp=> $opts->{timeWarp});
+    my $zLog = Mojo::Log->new();
+    $zZfs = ZnapZend::ZFS->new(zLog => $zLog,
+        rootExec => $opts->{rootExec});
+    $zConfig = ZnapZend::Config->new(zLog => $zLog,
+        rootExec => $opts->{rootExec},
+        timeWarp => $opts->{timeWarp});
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
