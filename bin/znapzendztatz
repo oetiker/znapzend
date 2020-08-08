@@ -58,7 +58,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r only-enabled inherited pfexec sudo rootExec=s man timeWarp=i setup)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled inherited pfexec debug sudo rootExec=s man timeWarp=i setup)) or exit 1;
 
     if ($opts->{pfexec}) {
         warn "--pfexec is deprecated. Use --rootExec=pfexec instead\n";
@@ -68,12 +68,20 @@ sub main {
         $opts->{rootExec} = 'sudo';
     }
 
+    if (defined($opts->{debug})) {
+        $opts->{debug} = ( $opts->{debug} eq 'off' ? 0 : 1 );
+    } else {
+        $opts->{debug} = 0;
+    }
+
     my $zLog = Mojo::Log->new();
     $zZfs = ZnapZend::ZFS->new(zLog => $zLog,
-        rootExec => $opts->{rootExec});
+        rootExec => $opts->{rootExec},
+        debug => $opts->{debug});
     $zConfig = ZnapZend::Config->new(zLog => $zLog,
         rootExec => $opts->{rootExec},
-        timeWarp => $opts->{timeWarp});
+        timeWarp => $opts->{timeWarp},
+        debug => $opts->{debug});
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -153,6 +161,7 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
+ --debug        print debugging details from some library routines
  -H             do not print headers and separate fields by a single tab
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
