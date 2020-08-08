@@ -109,7 +109,7 @@ sub main {
     #print header
     if (!$opts->{H}) {
         my $padlen = (24 - length($dummyTime));
-        $padlen = 0 if ($padlen < 0);
+        $padlen = 1 if ($padlen < 1);
         print 'USED    LAST SNAPSHOT' . ' ' x $padlen . "DATASET";
         if ($opts->{setup}) {
             print '        SETUP FS       SETUP KEY';
