@@ -8,6 +8,7 @@ use Pod::Usage;
 use File::Temp qw(tempfile);
 use Scalar::Util qw(blessed);
 use Mojo::Base -strict;
+use Mojo::Log;
 use ZnapZend::Config;
 my $VERSION = '0.dev'; #VERSION
 
@@ -163,7 +164,9 @@ sub main {
         $opts->{zfsGetType} = 0;
     }
 
-    my $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, debug => $opts->{debug}, lowmemRecurse => $opts->{lowmemRecurse}, zfsGetType => $opts->{zfsGetType});
+    my $zConfig = ZnapZend::Config->new( zLog => Mojo::Log->new(),
+        rootExec => $opts->{rootExec}, debug => $opts->{debug},
+        lowmemRecurse => $opts->{lowmemRecurse}, zfsGetType => $opts->{zfsGetType});
 
     for ($mainOpt){
 
