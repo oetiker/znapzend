@@ -185,7 +185,7 @@ sub getSnapshotsToDestroy {
         $maxAge > 0 or die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n";
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
-            push @toDestroy, $snapshot;
+            push @toDestroy, $snapshot if $snapshotTimestamp != $time; #make sure, latest snapshot won't be deleted
             next;
         }
         #calculate timeslot
