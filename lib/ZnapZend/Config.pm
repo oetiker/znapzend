@@ -85,13 +85,28 @@ my $checkBackupSets = sub {
 
     for my $backupSet (@{$self->backupSets}){
 
-        # in case there is only one property on this dataset, which is the "enabled" and is set to "off"
-        # consider it a normal situation and do not even notify it. This situation will appear
-        # when there are descendants of recursive ZFS dataset that should be skipped.
-        # Note: backupSets will have at least the key "Src". Therefore, we need to skip the
-        # dataset if there are two properties and one of them is "enabled".
+        # In case there is only one property on this dataset, which is the
+        # "enabled" flag and is set to "off"; consider it a normal situation
+        # and do not even notify it. This situation will appear when there
+        # are descendants of recursive ZFS dataset that should be skipped.
+        # Note: backupSets will have at least the key "src". Therefore, we
+        # need to skip the dataset if there are two properties and one of
+        # them is "enabled".
         if (keys(%{$backupSet}) eq 2 && exists($backupSet->{"enabled"})){
            next;
+        }
+
+        if ( $backupSet->{src} =~ m/[\@]/ ) {
+            # If we are here, somebody fed us a snapshot in the list of
+            # datasets, which is likely a bug elsewhere in discovery.
+            # We do not want to fail whole backup below due to faulted
+            # dataSetExists() below, so just ignore this entry.
+            # If we really do get here, take a hard look at recursive
+            # and/or inherited modes for run-once.
+            $self->zLog->error( "#checkBackupSets# SKIP backupSet='"
+                . $backupSet->{src} ."' because it is not a filesystem,volume. "
+                . "BUG: Should not get here.");# if $self->debug;
+            next;
         }
 
         for my $prop (keys %{$self->mandProperties}){
