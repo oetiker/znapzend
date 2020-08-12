@@ -77,7 +77,8 @@ cd znapzend-${ZNAPVER}
 NOTE: to get the current state of `master` branch without using git tools,
 you should fetch https://github.com/oetiker/znapzend/archive/master.zip
 
-If configure finds anything noteworthy, it will tell you about it.
+If the `configure` script finds anything noteworthy, it will tell you about it.
+
 If any perl modules are found to be missing, they get installed locally into
 the znapzend installation. Your system perl installation will not be modified!
 
@@ -95,7 +96,7 @@ NOTE: there is also a `make check` but currently its implementation fails for
 daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
 
 Optionally (but recommended) put symbolic links to the installed binaries
-in the system PATH.
+in the system PATH, e.g.:
 
 ```sh
 ZNAPVER=0.20.0
