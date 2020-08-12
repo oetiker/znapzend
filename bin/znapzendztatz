@@ -7,6 +7,7 @@ use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
 
 use Mojo::Base -strict;
+use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
 my $VERSION = '0.dev'; #VERSION
@@ -17,6 +18,7 @@ my $zTime = ZnapZend::Time->new();
 sub dumpStats {
     my $stats = shift;
     my $tabs = shift;
+    my $setup = shift;
 
     if (! $tabs) {
        print ' ' x (5 - length($stats->{usage}));
@@ -25,10 +27,19 @@ sub dumpStats {
     print ($tabs ? "\t" : "   ");
     print "$stats->{last_snap}";
     print ($tabs ? "\t" : "   ");
-    print "$stats->{dataset}\n";
+    print "$stats->{dataset}";
+    if ($setup) {
+       print ($tabs ? "\t" : "   ");
+       print "$stats->{definitionDataset}";
+       print ($tabs ? "\t" : "   ");
+       print "$stats->{key}";
+    }
+    print "\n";
 }
 
 sub collectData {
+    my $definitionDataset = shift;
+    my $key = shift;
     my $dataset = shift;
     my $snapFilter = shift;
     my %data;
@@ -38,6 +49,8 @@ sub collectData {
     my $lastSnap = $snapshots->[-1] // ' @No Snapshots Yet  ';
     ($data{last_snap}) = $lastSnap =~ /^.+\@([^\@]+)$/;
     $data{dataset} = $dataset;
+    $data{definitionDataset} = $definitionDataset;
+    $data{key} = $key;
 
     return \%data;
 }
@@ -45,7 +58,7 @@ sub collectData {
 sub main {
     my $opts = {};
 
-    GetOptions($opts, qw(H help|h recursive|r only-enabled pfexec sudo rootExec=s man timeWarp=i)) or exit 1;
+    GetOptions($opts, qw(H help|h recursive|r only-enabled inherited pfexec debug sudo rootExec=s man timeWarp=i setup)) or exit 1;
 
     if ($opts->{pfexec}) {
         warn "--pfexec is deprecated. Use --rootExec=pfexec instead\n";
@@ -55,8 +68,20 @@ sub main {
         $opts->{rootExec} = 'sudo';
     }
 
-    $zZfs = ZnapZend::ZFS->new(rootExec => $opts->{rootExec});
-    $zConfig = ZnapZend::Config->new(rootExec => $opts->{rootExec}, timeWarp=> $opts->{timeWarp});
+    if (defined($opts->{debug})) {
+        $opts->{debug} = ( $opts->{debug} eq 'off' ? 0 : 1 );
+    } else {
+        $opts->{debug} = 0;
+    }
+
+    my $zLog = Mojo::Log->new();
+    $zZfs = ZnapZend::ZFS->new(zLog => $zLog,
+        rootExec => $opts->{rootExec},
+        debug => $opts->{debug});
+    $zConfig = ZnapZend::Config->new(zLog => $zLog,
+        rootExec => $opts->{rootExec},
+        timeWarp => $opts->{timeWarp},
+        debug => $opts->{debug});
 
     $opts->{help} && do {
         pod2usage(-exitval => 'NOEXIT');
@@ -69,7 +94,11 @@ sub main {
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     # MAYBE make $enabledOnly parameter public in Config.pm
-    my $backupSets = ($opts->{"only-enabled"} ? $zConfig->getBackupSetEnabled(pop @ARGV) : $zConfig->getBackupSet(pop @ARGV))
+    my $recurse = (defined($opts->{"recursive"}));
+    my $inherit = (defined($opts->{"inherited"}));
+    my $backupSets = ($opts->{"only-enabled"}
+        ? $zConfig->getBackupSetEnabled($recurse, $inherit, pop @ARGV)
+        : $zConfig->getBackupSet($recurse, $inherit, pop @ARGV))
         or die "ERROR: cannot list backup config\n";
 
     #check if there is at least one valid backup set
@@ -78,18 +107,26 @@ sub main {
     my $dummyTime = $zTime->createSnapshotTime(time + ($opts->{timeWarp} // 0), $backupSets->[0]->{tsformat});
 
     #print header
-    print 'USED    LAST SNAPSHOT' . ' ' x (24 - length($dummyTime))
-        . "DATASET\n" if !$opts->{H};
+    if (!$opts->{H}) {
+        my $padlen = (length($dummyTime) - length('LAST SNAPSHOT'));;
+        $padlen = 0 if ($padlen < 0);
+        print 'USED    LAST SNAPSHOT' . ' ' x $padlen . ($opts->{H} ? "\t" : "   ") . "DATASET";
+        if ($opts->{setup}) {
+            print '        SETUP FS       SETUP KEY';
+        }
+        print "\n";
+    }
 
     for my $backupSet (@$backupSets){
         my $datasets = $backupSet->{recursive} eq 'on' && $opts->{recursive}
             ? $zZfs->listSubDataSets($backupSet->{src}) : [$backupSet->{src}];
 
+        # TOTHINK: Consider forcedSnapshotSuffix here? Not really known outside of bin/znapzend anyway...
         my $snapFilter = $zTime->getSnapshotFilter($backupSet->{tsformat});
 
         #source dataset
         for my $dataset (@$datasets){
-            dumpStats(collectData($dataset, $snapFilter), $opts->{H});
+            dumpStats(collectData($backupSet->{src}, "src", $dataset, $snapFilter), $opts->{H}, $opts->{setup});
 
             #destination datasets
             for (keys %$backupSet){
@@ -103,7 +140,7 @@ sub main {
                 else{
                     my $dstDataSet = $dataset;
                     $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
-                    dumpStats(collectData($dstDataSet, $snapFilter), $opts->{H});
+                    dumpStats(collectData($backupSet->{src}, $key, $dstDataSet, $snapFilter), $opts->{H}, $opts->{setup});
                 }
             }
 
@@ -126,10 +163,13 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
+ --debug        print debugging details from some library routines
  -H             do not print headers and separate fields by a single tab
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets
+ --inherited    allow to specify a dataset which just inherits a backup plan
  --only-enabled only show statistics for enabled datasets
+ --setup        show the configuration key and the filesystem that defined the configuration
  --rootExec=x   exec zfs with this command to obtain root privileges (sudo or pfexec)
  --timeWarp=x   act as if you were shifted by x seconds into the future
  --man          show man-page and exit

@@ -26,7 +26,7 @@ for ($command){
         }
         exit;
     };
-    
+
     /^status$/ && do {
         exit if !exists $dataSets{$ARGV[-1]};
         my $time = localtime(int(time / 60) * 60 - 3600);

@@ -45,6 +45,7 @@ has scrubTimeFilter => sub { qr/[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\d
 has scrubTimeFormat => sub { q{%b %d %H:%M:%S %Y} };
 has timeWarp        => sub { undef };
 
+### private methods ###
 my $intervalToTimestamp = sub {
     my $time = shift;
     my $interval = shift;
@@ -64,6 +65,7 @@ my $getSnapshotTimestamp = sub {
     my $snapshot = shift;
     my $timeFormat = shift;
 
+    # TOTHINK: Consider forcedSnapshotSuffix here? We do not clean these anyway...
     my $snapFilter = $self->getSnapshotFilter($timeFormat);
 
     if (my ($snapshotTimestamp) = $snapshot =~ /^.+\@($snapFilter)$/){
@@ -119,7 +121,7 @@ sub backupPlanToHash {
 sub useUTC {
     my $self = shift;
     my $timeFormat = shift;
-    
+
     return $timeFormat =~ /Z$/;
 }
 
@@ -154,13 +156,21 @@ sub getSnapshotsToDestroy {
     my $timePlan = shift;
     my $timeFormat = shift;
     my $time = $_[0] || $self->getTimestamp($self->useUTC($timeFormat));
+    my $keepPattern = $_[1];
+    if ( !defined($keepPattern) || ! $keepPattern ) { $keepPattern = "" ; }
     my %timeslots;
     my @toDestroy;
 
-    #initialise with maximum time to keep backups since we run from old to new backups
+    #initialize with maximum time to keep backups since we run from old to new backups
     my $maxAge = (sort { $a<=>$b } keys %$timePlan)[-1];
 
     for my $snapshot (@$snapshots){
+        if ($keepPattern ne "") {
+            if ($snapshot =~ $keepPattern) {
+                next;
+            }
+        }
+
         #get snapshot age
         my $snapshotTimestamp = $self->$getSnapshotTimestamp($snapshot, $timeFormat);
         my $snapshotAge = $time - $snapshotTimestamp;
@@ -175,7 +185,7 @@ sub getSnapshotsToDestroy {
         $maxAge > 0 or die "ERROR: snapshot maximum age is 0! this would delete all your snapshots.\n";
         #check if snapshot is older than the maximum age; removes all snapshots that are older than the maximum time to keep
         if ($snapshotAge > $maxAge){
-            push @toDestroy, $snapshot;
+            push @toDestroy, $snapshot if $snapshotTimestamp != $time; #make sure, latest snapshot won't be deleted
             next;
         }
         #calculate timeslot
@@ -226,7 +236,7 @@ sub checkTimeFormat {
     my $self = shift;
     my $timeFormat = shift;
 
-    $timeFormat =~ /^(?:%[YmdHMS]|[\w\-.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
+    $timeFormat =~ /^(?:%[YmdHMSz]|[\w\-.:])+$/ or die "ERROR: timestamp format not valid. check your syntax\n";
 
     #just a made-up timestamp to check if strftime and strptime work
     my $timeToCheck = 1014416542;
@@ -237,7 +247,7 @@ sub checkTimeFormat {
     my $resultingTime = $self->$getSnapshotTimestamp("dummydataset\@$formattedTime", $timeFormat)
         or die "ERROR: timestamp format not valid. check your syntax\n";
 
-    return $timeToCheck == $resultingTime; #times schould be equal
+    return $timeToCheck == $resultingTime; #times should be equal
 }
 
 sub getSnapshotFilter {
@@ -246,6 +256,7 @@ sub getSnapshotFilter {
 
     $timeFormat =~ s/%[mdHMS]/\\d{2}/g;
     $timeFormat =~ s/%Y/\\d{4}/g;
+    $timeFormat =~ s/%z/[-+]\\d{4}/g;
 
     # escape dot ('.') character
     $timeFormat =~ s/\./\\./g;

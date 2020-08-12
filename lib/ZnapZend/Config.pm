@@ -6,12 +6,19 @@ use ZnapZend::Time;
 use Text::ParseWords qw(shellwords);
 
 ### attributes ###
-has debug    => sub { 0 };
-has noaction => sub { 0 };
-has rootExec => sub { q{} };
-has timeWarp => sub { undef };
+has debug           => sub { 0 };
+has lowmemRecurse   => sub { 0 };
+has zfsGetType      => sub { 0 };
+has noaction        => sub { 0 };
+has rootExec        => sub { q{} };
+has timeWarp        => sub { undef };
+has zLog            => sub {
+    my $stack = "";
+    for (my $i = 0; my @r = caller($i); $i++) { $stack .= "$r[1]:$r[2] $r[3]\n"; }
+    Mojo::Exception->throw('ZConfig::zLog must be specified at creation time!' . "\n$stack" );
+};
 
-#mandatory properties
+### mandatory properties ###
 has mandProperties => sub {
     {
         enabled       => 'on|off',
@@ -24,13 +31,24 @@ has mandProperties => sub {
     }
 };
 
-has zfs  => sub { my $self = shift; ZnapZend::ZFS->new(rootExec => $self->rootExec); };
+has zfs  => sub {
+    my $self = shift;
+    ZnapZend::ZFS->new(
+        rootExec => $self->rootExec,
+        debug => $self->debug,
+        lowmemRecurse => $self->lowmemRecurse,
+        zfsGetType => $self->zfsGetType,
+        zLog => $self->zLog
+    );
+};
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
 
 has backupSets => sub { [] };
 
 ### private functions ###
-my $splitHostDataSet = sub { return ($_[0] =~ /^(?:([^:]+):)?([^:]+)$/); };
+my $splitHostDataSet = sub {
+    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+};
 
 ### private methods ###
 my $checkBackupPlan = sub {
@@ -66,10 +84,37 @@ my $checkBackupSets = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
+
+        # In case there is only one property on this dataset, which is the
+        # "enabled" flag and is set to "off"; consider it a normal situation
+        # and do not even notify it. This situation will appear when there
+        # are descendants of recursive ZFS dataset that should be skipped.
+        # Note: backupSets will have at least the key "src". Therefore, we
+        # need to skip the dataset if there are two properties and one of
+        # them is "enabled".
+        if (keys(%{$backupSet}) eq 2 && exists($backupSet->{"enabled"})){
+           next;
+        }
+
+        if ( $backupSet->{src} =~ m/[\@]/ ) {
+            # If we are here, somebody fed us a snapshot in the list of
+            # datasets, which is likely a bug elsewhere in discovery.
+            # We do not want to fail whole backup below due to faulted
+            # dataSetExists() below, so just ignore this entry.
+            # If we really do get here, take a hard look at recursive
+            # and/or inherited modes for run-once.
+            $self->zLog->error( "#checkBackupSets# SKIP backupSet='"
+                . $backupSet->{src} ."' because it is not a filesystem,volume. "
+                . "BUG: Should not get here.");# if $self->debug;
+            next;
+        }
+
         for my $prop (keys %{$self->mandProperties}){
-            exists $backupSet->{$prop}
-                or die "ERROR: property $prop not set on backup for " . $backupSet->{src} . "\n";
-                
+            exists $backupSet->{$prop} || do {
+                $self->zLog->info("WARNING: property $prop not set on backup for " . $backupSet->{src} . ". Skipping to next dataset");
+                last;
+            };
+
             for ($self->mandProperties->{$prop}){
                 #check mandatory properties
                 /^###backupplan###$/ && do {
@@ -88,7 +133,7 @@ my $checkBackupSets = sub {
                 };
                 /^###command###$/ && do {
                     last if $backupSet->{$prop} eq 'off';
-                    
+
                     my $file = (shellwords($backupSet->{$prop}))[0];
                     $self->zfs->fileExistsAndExec($file)
                         or die "ERROR: property $prop: executable '$file' does not exist or can't be executed\n";
@@ -132,7 +177,7 @@ my $checkBackupSets = sub {
         #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan
         for my $dst (grep { /^dst_[^_]+_plan$/ } keys %$backupSet){
             $dst =~ s/_plan//; #remove trailing '_plan' so we get destination
-            
+
             #remove destination plan if destination is not specified
             exists $backupSet->{$dst} or delete $backupSet->{$dst . '_plan'};
         }
@@ -143,17 +188,58 @@ my $checkBackupSets = sub {
 my $getBackupSet = sub {
     my $self = shift;
     my $enabledOnly = shift;
-    my $dataSet = shift;
-    
-    #get all backup sets and check if valid
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet));
+    # The recursion setting allows to find datasets under the named one
+    # (e.g. a pool root DS that might not necessarily have a znapzend
+    # configuration by itself). Similar to listing ALL configs when no
+    # dataset was passed, but no impact of looking at the whole system.
+    my $recurse = shift;
+    # By default znapzend tools look only at datasets that have their
+    # "org.znapzend:*" attributes in a "local" source (so as to not add
+    # confusion with local backups that would have such attributes
+    # "received" via ZFS replication). This option allows to look also
+    # at child datasets that have the backup plan attributes inherited
+    # from a dataset that has it defined locally, allowing in particular
+    # for quicker "run once" backup re-runs of a small subtree.
+    my $inherit = shift;
+
+    # Get all backup sets and check if valid, from remainder of ARGV.
+    # If both recurse and inherit are specified, behavior depends on
+    # the dataset(s) whose name is passed. If the dataset has a local
+    # or inherited-from-local backup plan, the recursion stops here.
+    # If it has no plan (e.g. pool root dataset), we should recurse and
+    # report all children with a "local" backup plan (ignore inherit).
+    if (scalar(@_) > 0) {
+        $self->backupSets($self->zfs->getDataSetProperties(\@_, $recurse, $inherit));
+    } else {
+        # Not that recursion makes much sense for "undef" (=> list everything)
+        $self->backupSets($self->zfs->getDataSetProperties(undef, $recurse, $inherit));
+    }
     $self->$checkBackupSets();
+
+    printf STDERR "=== getBackupSet() : got "
+        . scalar(@{$self->backupSets}) . " dataset(s) with a local "
+        . ($inherit ? "or inherited " : "")
+        . "backup plan\n"
+            if $self->debug;
+    # Note/FIXME? If there were ZFS errors getting some of several
+    # requested datasets, but at least one succeeded, the result is OK.
+    if (scalar(@{$self->backupSets}) == 0) {
+        return 0; # false
+    }
 
     if ($enabledOnly){
         my @backupSets;
 
         for my $backupSet (@{$self->backupSets}){
             push @backupSets, $backupSet if $backupSet->{enabled} eq 'on';
+        }
+        printf STDERR "=== getBackupSet() : got "
+            . scalar(@backupSets) . " enabled-only dataset(s) with a local "
+            . ($inherit ? "or inherited " : "")
+            . "backup plan\n"
+                if $self->debug;
+        if (not @backupSets) {
+            return 0; # false
         }
         #return enabled only backup sets
         return \@backupSets;
@@ -162,15 +248,20 @@ my $getBackupSet = sub {
     return $self->backupSets;
 };
 
+### public methods ###
 sub getBackupSet {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (false)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(0, @_);
 }
 
 sub getBackupSetEnabled {
     my $self = shift;
 
+    # Enforce the $enabledOnly flag (true)
+    # Pass the arguments (see the routine definition above for supported list)
     return $self->$getBackupSet(1, @_);
 }
 
@@ -187,7 +278,7 @@ sub checkBackupSet {
 sub setBackupSet {
     my $self = shift;
     my $cfg = shift;
-    
+
     #main program should check backup set prior to set it. anyway, check again just to be sure
     $self->checkBackupSet($cfg);
 
@@ -221,10 +312,12 @@ sub deleteBackupDestination {
 sub enableBackupSet {
     my $self = shift;
     my $dataSet = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
 
     $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet));
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
@@ -240,14 +333,109 @@ sub enableBackupSet {
 sub disableBackupSet {
     my $self = shift;
     my $dataSet = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
 
     $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
 
-    $self->backupSets($self->zfs->getDataSetProperties($dataSet));
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
 
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
         $cfg{enabled} = 'off';
+        $self->setBackupSet(\%cfg);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+sub enableBackupSetDst {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dest = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
+
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
+
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
+
+    if (@{$self->backupSets}){
+        my %cfg = %{$self->backupSets->[0]};
+
+        if ( !($dest =~ /^dst_[^_]+$/) ) {
+            if ($cfg{'dst_' . $dest}) {
+                # User passed valid key of the destination config,
+                # convert to zfs attribute/perl struct name part
+                $dest = 'dst_' . $dest;
+            } elsif ($dest =~ /^DST:/) {
+                my $desttemp = $dest;
+                $desttemp =~ s/^DST:// ;
+                if ($cfg{'dst_' . $desttemp}) {
+                    # User passed valid key of the destination config,
+                    # convert to zfs attribute/perl struct name part
+                    $dest = 'dst_' . $desttemp;
+                }
+            }
+            # TODO: Else search by value of 'dst_N' as a "(remote@)dataset"
+        }
+
+        if ($cfg{$dest}) {
+            if ($cfg{$dest . '_enabled'}) {
+                $cfg{$dest . '_enabled'} = undef;
+            } else {
+                # Already not set => default is "on"
+                return 1;
+            }
+        } else {
+            die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
+        }
+        $self->setBackupSet(\%cfg);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+sub disableBackupSetDst {
+    my $self = shift;
+    my $dataSet = shift;
+    my $dest = shift;
+    my $recurse = shift; # may be undef
+    my $inherit = shift; # may be undef
+
+    $self->zfs->dataSetExists($dataSet) or die "ERROR: dataset $dataSet does not exist\n";
+
+    $self->backupSets($self->zfs->getDataSetProperties($dataSet, $recurse, $inherit));
+
+    if (@{$self->backupSets}){
+        my %cfg = %{$self->backupSets->[0]};
+
+        if ( !($dest =~ /^dst_[^_]+$/) ) {
+            if ($cfg{'dst_' . $dest}) {
+                # User passed valid key of the destination config,
+                # convert to zfs attribute/perl struct name part
+                $dest = 'dst_' . $dest;
+            } elsif ($dest =~ /^DST:/) {
+                my $desttemp = $dest;
+                $desttemp =~ s/^DST:// ;
+                if ($cfg{'dst_' . $desttemp}) {
+                    # User passed valid key of the destination config,
+                    # convert to zfs attribute/perl struct name part
+                    $dest = 'dst_' . $desttemp;
+                }
+            }
+            # TODO: Else search by value of 'dst_N' as a "(remote@)dataset"
+        }
+
+        if ($cfg{$dest}) {
+            $cfg{$dest . '_enabled'} = 'off';
+        } else {
+            die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
+        }
         $self->setBackupSet(\%cfg);
 
         return 1;
@@ -293,7 +481,8 @@ keeps the backup configuration to be set
 
 =head2 getBackupSet
 
-returns the backup settings for a dataset or all datasets if dataset is omitted
+returns the backup settings for a dataset, it and/or children
+if called as recursive, or all datasets if dataset is omitted
 
 =head2 getBackupSetEnabled
 

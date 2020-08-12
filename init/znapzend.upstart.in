@@ -1,0 +1,19 @@
+# znapzend: upstart file at /etc/init/znapzend.conf
+
+description "znapzend"
+
+respawn
+
+start on [2345]
+stop on runlevel [06]
+
+expect fork
+reload signal HUP
+
+script
+  set -a
+  if [ -e /etc/default/znapzend ]; then
+    . /etc/default/znapzend
+  fi
+  @BINDIR@/znapzend --daemonize $ZNAPZENDOPTIONS
+end script
