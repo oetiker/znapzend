@@ -334,7 +334,9 @@ OBJC
 OBJCXX
 oep
 oetiker
+oi
 ojo
+openindiana
 openlog
 openssh
 padlen
@@ -405,6 +407,7 @@ scriptversion
 selftest
 setsid
 shellwords
+shtml
 SIGHUP
 SIGINT
 SIGKILL
@@ -461,6 +464,7 @@ sysconfdir
 syslog
 systemctl
 systemd
+sysutils
 sysv
 SZ
 tabledata
@@ -504,6 +508,7 @@ Uplevel
 URL
 usbbackup
 usedbysnapshot
+userland
 username
 userprop
 usr
