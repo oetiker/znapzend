@@ -180,7 +180,8 @@ znapzend is also available as docker container image. It needs to be a
 privileged container depending on permissions.
 
 ```sh
-docker run -d --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master
+docker run -d --name znapzend --device /dev/zfs --privileged \
+    oetiker/znapzend:master
 ```
 
 To configure znapzend, run in interactive mode:
@@ -195,7 +196,8 @@ By default, znapzend in container runs with `--logto /dev/stdout`. If you
 wish to add different arguments, overwrite them at the end of the command:
 
 ```sh
-docker run --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master znapzend --logto /dev/stdout --runonce --debug
+docker run --name znapzend --device /dev/zfs --privileged \
+    oetiker/znapzend:master znapzend --logto /dev/stdout --runonce --debug
 ```
 
 Be sure not to daemonize znapzend in the container, as that exits the
