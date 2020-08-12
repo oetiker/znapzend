@@ -50,7 +50,7 @@ On OmniOS/SmartOS you will need perl and gnu-make.
 On macOS, if you have not already installed the Xcode command line tools,
 you can get them from the command line (Terminal app) with:
 
-    xcode-select --install (or just install the full Xcode app from the Apple app store).
+    xcode-select --install  ### ...or just install the full Xcode app from the Apple app store
 
 With that in place you can now utter:
 
