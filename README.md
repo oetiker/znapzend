@@ -226,11 +226,11 @@ If you want to know how much space your backups are using, try the
 
 Support and Contributions
 -------------------------
-If you find a problem with znapzend, please open an Issue on GitHub.
+If you find a problem with znapzend, please [open an Issue on GitHub](https://github.com/oetiker/znapzend/issues/).
 
 If you'd like to get in touch, come to [![Gitter](https://badges.gitter.im/oetiker/znapzend.svg)](https://gitter.im/oetiker/znapzend).
 
-And if you have a contribution, please send a pull request.
+And if you have a contribution, please [send a pull request](https://github.com/oetiker/znapzend/pulls/).
 
 Enjoy!
 
