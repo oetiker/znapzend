@@ -47,8 +47,8 @@ since the installed perl version is probably very old.
 
 On OmniOS/SmartOS you will need perl and gnu-make.
 
-On macOS, if you have not already installed the Xcode command line tools, you can
-get them from the command line (Terminal app) with:
+On macOS, if you have not already installed the Xcode command line tools,
+you can get them from the command line (Terminal app) with:
 
     xcode-select --install (or just install the full Xcode app from the Apple app store).
 
@@ -61,17 +61,17 @@ cd znapzend-0.19.2
 ./configure --prefix=/opt/znapzend-0.19.2
 ```
 
-If configure finds anything noteworthy, it will tell you about it.  If any
-perl modules are found to be missing, they get installed locally into the znapzend
-installation. Your perl installation will not get modified!
+If configure finds anything noteworthy, it will tell you about it.
+If any perl modules are found to be missing, they get installed locally into
+the znapzend installation. Your system perl installation will not be modified!
 
 ```sh
 make
 make install
 ```
 
-Optionally (but recommended) put symbolic links to the installed binaries in the
-system PATH.
+Optionally (but recommended) put symbolic links to the installed binaries
+in the system PATH.
 
 ```sh
 for x in /opt/znapzend-0.19.2/bin/*; do ln -s $x /usr/local/bin; done
@@ -85,14 +85,18 @@ can be found at https://github.com/Gregy/znapzend-debian
 
 An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
-For Fedora specifically there's also a [copr repository](https://copr.fedorainfracloud.org/coprs/spike/znapzend/) by [spike](https://copr.fedorainfracloud.org/coprs/spike/) (sources at https://gitlab.com/copr_spike/znapzend):
+For Fedora specifically there's also a
+[copr repository](https://copr.fedorainfracloud.org/coprs/spike/znapzend/)
+by [spike](https://copr.fedorainfracloud.org/coprs/spike/) (sources at
+https://gitlab.com/copr_spike/znapzend):
 
 ```
 dnf copr enable spike/znapzend
 dnf install znapzend
 ```
 
-For Gentoo there's an ebuild in the [gerczei overlay](https://git.gerczei.eu/tgerczei/gentoo-overlay).
+For Gentoo there's an ebuild in the
+[gerczei overlay](https://git.gerczei.eu/tgerczei/gentoo-overlay).
 
 Configuration
 -------------
@@ -163,7 +167,8 @@ for some inspiration.
 Running by an unprivileged user
 -------------------------------
 
-In order to allow a non-privileged user to use it, the following permissions are required on the ZFS filesystems:
+In order to allow a non-privileged user to use it, the following permissions
+are required on the ZFS filesystems (which you cat assign with `zfs allow`):
 
 Sending end: destroy,hold,mount,send,snapshot,userprop
 Receiving end: create,mount,receive,userprop
@@ -171,8 +176,8 @@ Receiving end: create,mount,receive,userprop
 Running in Container
 -----------------
 
-znapzend is also available as docker container image. It needs to be a privileged
-container depending on permissions.
+znapzend is also available as docker container image. It needs to be a
+privileged container depending on permissions.
 
 ```sh
 docker run -d --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master
@@ -182,17 +187,19 @@ To configure znapzend, run in interactive mode:
 ```sh
 docker exec -it znapzend /bin/sh
 $ znapzendzetup create ...
-# After exiting, restart znapzend container or send the HUP signal to reload config
+# After exiting, restart znapzend container or send the HUP signal to
+# reload config
 ```
 
-By default, znapzend in container runs with `--logto /dev/stdout`. If you wish to add different arguments,
-overwrite them at the end of the command:
+By default, znapzend in container runs with `--logto /dev/stdout`. If you
+wish to add different arguments, overwrite them at the end of the command:
 
 ```sh
 docker run --name znapzend --device /dev/zfs --privileged oetiker/znapzend:master znapzend --logto /dev/stdout --runonce --debug
 ```
 
-Be sure not to daemonize znapzend in the container, as that exits the container immediately.
+Be sure not to daemonize znapzend in the container, as that exits the
+container immediately.
 
 Troubleshooting
 ---------------
