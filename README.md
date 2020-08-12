@@ -76,7 +76,7 @@ in the system PATH.
 
 ```sh
 ZNAPVER=0.19.2
-for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -s $x /usr/local/bin; done
+for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -fs ../../../$x /usr/local/bin/; done
 ```
 
 Packages
