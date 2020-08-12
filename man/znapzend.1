@@ -268,6 +268,7 @@ discovered history of automatic snapshots allows to include it into the usual
 replication, it will be sent (and a newer automatically-named snapshot would
 be made and sent). In other cases, it is up to the systems administrator to
 make the original systems data consistent with that on their remote \s-1ZFS\s0 pool.
+.Sp
 One could then use \fB\-\-sinceForced\fR=\fIsnapsuffix\fR variant that can remove
 from destination any snapshots that are newer than \fIsnapsuffix\fR to make way
 if needed, and ensure that this snapshot appears in destination's history;

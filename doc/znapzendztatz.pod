@@ -6,6 +6,7 @@ znapzendztatz - znapzend statistics utility
 
 B<znapzendztatz> [I<options>...] [src_dataset]
 
+ --debug        print debugging details from some library routines
  -H             do not print headers and separate fields by a single tab
                 instead of arbitrary white space
  -r,--recursive show statistics for dataset and sub datasets

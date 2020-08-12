@@ -13,6 +13,8 @@ B<znapzend> [I<options>...]
  -n,--noaction          run in simulation mode: does no changes to filesystems
  --nodelay              if a backup plan has a zend_delay defined, ignore it
  --nodestroy            does all changes to the filesystem except destroy
+ --forbidDestRollback   forbids forcing destination dataset rollback and
+                        removal of datasets/snapshots not present on source
  --logto=x              select where to log (syslog::<facility> or <filepath>)
  --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
@@ -20,10 +22,14 @@ B<znapzend> [I<options>...]
  --runonce=[x]          run one round on the optionally provided dataset
  -r,--recursive         recurse from the given "run-once" dataset
  --inherited            allow "run-once" on dataset which only inherits a plan
+ --since=x              allow to consider a non-automatic common snapshot "x" as a starting point
+ --sinceForced=x        same as --since=x but also make sure "x" exists on
+                        destination (can cause removal of newer snapshots)
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
-    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
+    skipIntermediates sendIntermediates forbidDestRollback
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -63,7 +69,21 @@ run them during experiments)
 
 =item B<--nodestroy>
 
-do all changes to the filesystem except destroying old snapshots
+do all changes to the filesystem except destroying old snapshots after
+a successful run to snapshot and replicate to backup destinations
+
+=item B<--forbidDestRollback>
+
+by default znapzend uses B<zfs recv -F> which rolls back destination to
+the most recent snapshot, and in case of incremental replication streams
+can also destroy snapshots and other child datasets not present in the
+source.
+
+The B<--forbidDestRollback> option allows to not enforce this mode, so
+znapzend would instead report errors if destination is not ready to
+receive data without applying such operations. This can be useful for
+maintenance of backup destinations, but can be counter-productive for
+regularly scheduled operations.
 
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
@@ -109,6 +129,40 @@ This option is not valid if the run-once mode is not requested.
 While basic sanity checks are done, it is up to the caller to specify a
 correct string value according to the rules of their ZFS version, and to
 take care that it is unique (no snapshots with such suffix already exist).
+
+See also B<--since>=I<snapsuffix>
+
+=item B<--since>=I<snapsuffix>, B<--sinceForced>=I<snapsuffix>
+
+Enables to see a snapshot named I<snapsuffix> in the history of the dataset
+under source and target pools, which should be a common snapshot present on
+both (or only on the source pool), and may be their newest common snapshot
+(that would otherwise be blocking the sync as something that needs to be
+removed for a full auto-creation replication and/or a usual replication).
+
+If the target dataset does not have this named snapshot, but the otherwise
+discovered history of automatic snapshots allows to include it into the usual
+replication, it will be sent (and a newer automatically-named snapshot would
+be made and sent). In other cases, it is up to the systems administrator to
+make the original systems data consistent with that on their remote ZFS pool.
+
+One could then use B<--sinceForced>=I<snapsuffix> variant that can remove
+from destination any snapshots that are newer than I<snapsuffix> to make way
+if needed, and ensure that this snapshot appears in destination's history;
+by default with B<--since>=I<snapsuffix> such removals should not happen.
+
+Unlike the B<--forcedSnapshotSuffix>=I<snapsuffix>, this option does not
+define how the new snapshot made during this run would be called (it would
+be named by common timestamp-based pattern to not get in the way of subsequent
+regular replications).
+
+The dataset name provided in this argument will never be removed during this
+run-once (even if it matches the configured znapzend timestamp-based snapshot
+naming pattern and is old enough to rotate away in other circumstances).
+
+Example:
+
+  znapzend --runonce=rpool/ROOT --since=20200101-01-finallyStableSetup
 
 =item B<-r>, B<--recursive>
 
@@ -274,6 +328,12 @@ fully trusted or not physically secure. This option must be used
 consistently, raw incrementals cannot be based on non-raw snapshots
 and vice versa.
 
+=item sendIntermediates
+
+The opposite of I<skipIntermediates>, detailed in the next section.
+This is the default mode of operation, and only included here to
+allow for completeness and explicitness of your configurations.
+
 =item skipIntermediates
 
 Enable the 'skipIntermediates' feature to send a single increment
@@ -283,13 +343,20 @@ and it should skip snapshots not managed by znapzend. Normally for
 online destinations, the new snapshot is sent as soon as it is
 created on the source, so there are no automatic increments to skip.
 
-By default 'znapzend' uses the '-I' option on the sending end (so to
-include all intermediate snapshots), rather than '-i', to keep the
-destination zfs dataset history similar to the source's one.
+By default 'znapzend' uses the 'zfs send -I' option on the sending
+end (so to include all intermediate snapshots), rather than '-i'
+(which would send a single big increment), to keep the destination
+zfs dataset history similar to the source's one. This implies the
+-I<sendIntermediates> mode of operation.
 
 Note: it was the default from beginning of 'znapzend' to make sure
 that in case a send operation takes too long, we still get all the
 intermediate snapshots sent to the destination.
+Beware or benefit that this can deliver not only automatic, but also
+manually named snapshots to your destination which would have to be
+cleaned manually when no longer wanted there, but that they can be
+used as common snapshots to repair broken syncs e.g. with I<--since=X>
+options.
 
 With the 'skipIntermediates' feature disabled, all snapshots between
 the latest common one and the newly created one on the source would
@@ -308,6 +375,11 @@ sysadmin marks certain data states via snapshots as special (e.g.
 
 The feature is recommended to be part of your 'znapzend' service
 setup for regular runs in stable storage/networking conditions.
+
+=item forbidDestRollback
+
+Avoid use of destructive 'zfs recv -F' in favor of failing to receive;
+more details in description of B<--forbidDestRollback> CLI option above.
 
 =item lowmemRecurse
 
