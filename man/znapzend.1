@@ -158,7 +158,8 @@ znapzend \- znapzend daemon
 \& \-\-forcedSnapshotSuffix=x  use non\-generated snapshot suffix for this "run\-once"
 \& \-\-features=x           comma separated list of features to be enabled
 \&                        (detailed in man page):
-\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
+\&    skipIntermediates sendIntermediates
 \& \-i/\-I                  a "zfs send" compatible on/off for skipIntermediates
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges
 \&                        (sudo or pfexec)
@@ -399,6 +400,11 @@ without the encryption key/passphrase, useful when the remote isn't
 fully trusted or not physically secure. This option must be used
 consistently, raw incrementals cannot be based on non-raw snapshots
 and vice versa.
+.IP "sendIntermediates" 4
+.IX Item "sendIntermediates"
+The opposite of \fIskipIntermediates\fR, detailed in the next section.
+This is the default mode of operation, and only included here to
+allow for completeness and explicitness of your configurations.
 .IP "skipIntermediates" 4
 .IX Item "skipIntermediates"
 Enable the 'skipIntermediates' feature to send a single increment
@@ -408,13 +414,20 @@ and it should skip snapshots not managed by znapzend. Normally for
 online destinations, the new snapshot is sent as soon as it is
 created on the source, so there are no automatic increments to skip.
 .Sp
-By default 'znapzend' uses the '\-I' option on the sending end (so to
-include all intermediate snapshots), rather than '\-i', to keep the
-destination zfs dataset history similar to the source's one.
+By default 'znapzend' uses the 'zfs send \-I' option on the sending
+end (so to include all intermediate snapshots), rather than '\-i'
+(which would send a single big increment), to keep the destination
+zfs dataset history similar to the source's one. This implies the
+\&\-\fIsendIntermediates\fR mode of operation.
 .Sp
 Note: it was the default from beginning of 'znapzend' to make sure
 that in case a send operation takes too long, we still get all the
 intermediate snapshots sent to the destination.
+Beware or benefit that this can deliver not only automatic, but also
+manually named snapshots to your destination which would have to be
+cleaned manually when no longer wanted there, but that they can be
+used as common snapshots to repair broken syncs e.g. with \fI\-\-since=X\fR
+options.
 .Sp
 With the 'skipIntermediates' feature disabled, all snapshots between
 the latest common one and the newly created one on the source would
