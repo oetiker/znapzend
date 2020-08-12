@@ -155,10 +155,12 @@ znapzend \- znapzend daemon
 \& \-\-runonce=[x]          run one round on the optionally provided dataset
 \& \-r,\-\-recursive         recurse from the given "run\-once" dataset
 \& \-\-inherited            allow "run\-once" on dataset which only inherits a plan
+\& \-\-since=x              allow to consider a non\-automatic common snapshot "x" as a starting point
 \& \-\-forcedSnapshotSuffix=x  use non\-generated snapshot suffix for this "run\-once"
 \& \-\-features=x           comma separated list of features to be enabled
 \&                        (detailed in man page):
-\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+\&    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
+\&    skipIntermediates sendIntermediates
 \& \-i/\-I                  a "zfs send" compatible on/off for skipIntermediates
 \& \-\-rootExec=x           exec zfs with this command to obtain root privileges
 \&                        (sudo or pfexec)
@@ -169,6 +171,7 @@ znapzend \- znapzend daemon
 \&                        by x seconds
 \& \-\-skipOnPreSnapCmdFail skip snapshots if the pre\-snap\-command fails
 \& \-\-skipOnPreSendCmdFail skip replication if the pre\-send\-command fails
+\& \-\-cleanOffline         clean up source snapshots even if a destination was offline
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
@@ -233,6 +236,36 @@ This option is not valid if the run-once mode is not requested.
 While basic sanity checks are done, it is up to the caller to specify a
 correct string value according to the rules of their \s-1ZFS\s0 version, and to
 take care that it is unique (no snapshots with such suffix already exist).
+.Sp
+See also \fB\-\-since\fR=\fIsnapsuffix\fR
+.IP "\fB\-\-since\fR=\fIsnapsuffix\fR" 4
+.IX Item "--since=snapsuffix"
+Enables to see a snapshot named \fIsnapsuffix\fR in the history of the dataset
+under source and target pools, which should be a common snapshot present on
+both (or only on the source pool), and may be their newest common snapshot
+(that would otherwise be blocking the sync as something that needs to be
+removed for a full auto-creation replication and/or a usual replication).
+.Sp
+If the target dataset does not have this named snapshot, but the otherwise
+discovered history of automatic snapshots allows to include it into the usual
+replication, it will be sent (and a newer automatically-named snapshot would
+be made and sent). In other cases, it is up to the systems administrator to
+make the original systems data consistent with that on their remote \s-1ZFS\s0 pool.
+.Sp
+Unlike the \fB\-\-forcedSnapshotSuffix\fR=\fIsnapsuffix\fR, this option does not
+define how the new snapshot made during this run would be called (it would
+be named by common timestamp-based pattern to not get in the way of subsequent
+regular replications).
+.Sp
+The dataset name provided in this argument will never be removed during this
+run-once (even if it matches the configured znapzend timestamp-based snapshot
+naming pattern and is old enough to rotate away in other circumstances).
+.Sp
+Example:
+.Sp
+.Vb 1
+\&  znapzend \-\-runonce=rpool/ROOT \-\-since=20200101\-01\-finallyStableSetup
+.Ve
 .IP "\fB\-r\fR, \fB\-\-recursive\fR" 4
 .IX Item "-r, --recursive"
 when backing up a particular dataset with \fB\-\-runonce\fR=[\fIdataset\fR], do not
@@ -399,6 +432,11 @@ without the encryption key/passphrase, useful when the remote isn't
 fully trusted or not physically secure. This option must be used
 consistently, raw incrementals cannot be based on non-raw snapshots
 and vice versa.
+.IP "sendIntermediates" 4
+.IX Item "sendIntermediates"
+The opposite of \fIskipIntermediates\fR, detailed in the next section.
+This is the default mode of operation, and only included here to
+allow for completeness and explicitness of your configurations.
 .IP "skipIntermediates" 4
 .IX Item "skipIntermediates"
 Enable the 'skipIntermediates' feature to send a single increment
@@ -408,13 +446,20 @@ and it should skip snapshots not managed by znapzend. Normally for
 online destinations, the new snapshot is sent as soon as it is
 created on the source, so there are no automatic increments to skip.
 .Sp
-By default 'znapzend' uses the '\-I' option on the sending end (so to
-include all intermediate snapshots), rather than '\-i', to keep the
-destination zfs dataset history similar to the source's one.
+By default 'znapzend' uses the 'zfs send \-I' option on the sending
+end (so to include all intermediate snapshots), rather than '\-i'
+(which would send a single big increment), to keep the destination
+zfs dataset history similar to the source's one. This implies the
+\&\-\fIsendIntermediates\fR mode of operation.
 .Sp
 Note: it was the default from beginning of 'znapzend' to make sure
 that in case a send operation takes too long, we still get all the
 intermediate snapshots sent to the destination.
+Beware or benefit that this can deliver not only automatic, but also
+manually named snapshots to your destination which would have to be
+cleaned manually when no longer wanted there, but that they can be
+used as common snapshots to repair broken syncs e.g. with \fI\-\-since=X\fR
+options.
 .Sp
 With the 'skipIntermediates' feature disabled, all snapshots between
 the latest common one and the newly created one on the source would
@@ -493,6 +538,12 @@ defined and the command returns a non-zero exit code or is killed by a signal.
 Prevent snapshots of a dataset from being replicated to a destination when
 it has a \fBpre-snap-command\fR defined and the command returns a non-zero exit
 code or is killed by a signal.
+.IP "\fB\-\-cleanOffline\fR" 4
+.IX Item "--cleanOffline"
+Clean snapshots of a source dataset even if one or more destination datasets failed during replication.
+The most recent common snapshot for each destination will not be deleted, but this is a
+potentially dangerous option. If the preserved snapshot somehow gets deleted from the
+destination, it may require a full re-replication the next time it is online.
 .SH "EXAMPLE"
 .IX Header "EXAMPLE"
 To test a new config:
