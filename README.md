@@ -38,21 +38,30 @@ The Git checkout includes a pregenerated `configure` script. For a rebuild
 of a checkout from scratch you may also want to `./bootstrap.sh` and then
 would need the autoconf/automake stack.
 
-    yum install perl-core
+* On RedHat you get the necessaries with:
+```sh
+yum install perl-core
+```
 
-On Ubuntu / Debian with:
+* On Ubuntu / Debian with:
+```sh
+apt-get install perl unzip
+```
+To also bootstrap on Ubuntu / Debian you may need:
+```sh
+apt-get install autoconf carton
+```
 
-    apt-get install perl unzip autoconf carton
-
-On Solaris you may need the C compiler from Solaris Studio and gnu-make
+* On Solaris you may need the C compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old.
 
-On OmniOS/SmartOS you will need perl and gnu-make.
+* On OmniOS/SmartOS you will need perl and gnu-make packages.
 
-On macOS, if you have not already installed the Xcode command line tools,
+* On macOS, if you have not already installed the Xcode command line tools,
 you can get them from the command line (Terminal app) with:
-
-    xcode-select --install  ### ...or just install the full Xcode app from the Apple app store
+```sh
+xcode-select --install  ### ...or just install the full Xcode app from the Apple app store
+```
 
 With that in place you can now utter:
 
