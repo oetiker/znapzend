@@ -350,6 +350,7 @@ pid
 pidfile
 pipefail
 Pipely
+pkg
 pkglicense
 pkgname
 pkgonly

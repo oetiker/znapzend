@@ -108,6 +108,10 @@ http://pkg.openindiana.org/hipster/en/search.shtml?token=znapzend&action=Search
 made with the recipe at
 https://github.com/OpenIndiana/oi-userland/tree/oi/hipster/components/sysutils/znapzend
 
+```sh
+pkg install backup/znapzend
+```
+
 Configuration
 -------------
 
