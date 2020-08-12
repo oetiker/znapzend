@@ -231,6 +231,25 @@ znapzend --debug --runonce=<src_dataset>/failed/child --inherited
 to get ideas about fixing that. See the manual page about `--recursive` and
 `--inherited` modifiers to `--runonce` mode for more information.
 
+Typical issues include:
+
+* At least one destination is offline;
+* At least one destination is full and can not be written into;
+* A destination on SAN (iSCSI) or local device had transport issues and
+  ZFS suspended all write operations until you fix and `zpool clear` it;
+* Source is full (or exceeded quota) and can not be written into, so the
+  new snapshots to send can not be made until you delete older ones;
+* There are snapshots on destination, but none common with the source
+  so incremental replication can not proceed without destroying much
+  or all of the destination. Note this can be looking at snapshot names
+  filtered by the pattern your backup schedule would create, and other
+  znapzend options and/or a run of native `zfs send|zfs recv` would help
+  if your destination has manually named snapshots that are common with
+  your source.
+
+NOTE: Do not forget to re-enable the znapzend service after you have
+rectified the problem that prevented normal functionality.
+
 In case you tinkered with ZFS attributes that store ZnapZend retention
 policies, or potentially if you have a severe version mismatch of ZnapZend
 (e.g. update from a PoC or very old version), ```znapzendzetup list``` is
