@@ -6,13 +6,17 @@ use ZnapZend::Time;
 use Text::ParseWords qw(shellwords);
 
 ### attributes ###
-has debug    => sub { 0 };
-has lowmemRecurse => sub { 0 };
-has zfsGetType => sub { 0 };
-has noaction => sub { 0 };
-has rootExec => sub { q{} };
-has timeWarp => sub { undef };
-has zLog => sub { Mojo::Exception->throw('zLog must be specified at creation time!') };
+has debug           => sub { 0 };
+has lowmemRecurse   => sub { 0 };
+has zfsGetType      => sub { 0 };
+has noaction        => sub { 0 };
+has rootExec        => sub { q{} };
+has timeWarp        => sub { undef };
+has zLog            => sub {
+    my $stack = "";
+    for (my $i = 0; my @r = caller($i); $i++) { $stack .= "$r[1]:$r[2] $r[3]\n"; }
+    Mojo::Exception->throw('ZConfig::zLog must be specified at creation time!' . "\n$stack" );
+};
 
 ### mandatory properties ###
 has mandProperties => sub {
@@ -33,7 +37,8 @@ has zfs  => sub {
         rootExec => $self->rootExec,
         debug => $self->debug,
         lowmemRecurse => $self->lowmemRecurse,
-        zfsGetType => $self->zfsGetType
+        zfsGetType => $self->zfsGetType,
+        zLog => $self->zLog
     );
 };
 has time => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp); };
