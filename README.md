@@ -250,6 +250,21 @@ Typical issues include:
 NOTE: Do not forget to re-enable the znapzend service after you have
 rectified the problem that prevented normal functionality.
 
+One known problem relates to automated backups of datasets whose source
+can get cloned, renamed and promoted - typically boot environments (the
+rootfs of your OS installation and ZBE for local zones on illumos/Solaris
+systems behave this way to benefit from snapshots during upgrades and to
+allow easily switching back to older version if an update went bad).
+At this time (see [issue #503](https://github.com/oetiker/znapzend/issues/503))
+znapzend does not handle such datasets as branches of a larger ZFS tree
+and with `--autoCreation` mode in place just makes new complete datasets
+on the destination pool. On one hand this is wasteful for space (unless
+you use deduplication which comes with other costs), and on another the
+histories of snapshots seen in the same-named source and destination
+datasets can eventually no longer expose a "last-common snapshot" and
+this causes an error like `snapshot(s) exist on destination, but no common
+found on source and destination`.
+
 In case you tinkered with ZFS attributes that store ZnapZend retention
 policies, or potentially if you have a severe version mismatch of ZnapZend
 (e.g. update from a PoC or very old version), ```znapzendzetup list``` is
