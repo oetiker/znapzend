@@ -259,6 +259,11 @@ Typical issues include:
   ZFS suspended all write operations until you fix and `zpool clear` it;
 * Source is full (or exceeded quota) and can not be written into, so the
   new snapshots to send can not be made until you delete older ones;
+* There are too many snapshots to clean up on source or destination, and
+  the operation fails because the command line becomes too long. You can
+  try running with `--features=oracleMode` to process each snapshot name
+  as a separate command, that would be slower but more reliable in such
+  situation;
 * There are snapshots on destination, but none common with the source
   so incremental replication can not proceed without destroying much
   or all of the destination. Note this can be looking at snapshot names
