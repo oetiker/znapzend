@@ -74,6 +74,14 @@ make
 make install
 ```
 
+To make sure your resulting set of znapzend and dependencies plays well
+together, you can run unit-tests with:
+```sh
+./test.sh
+```
+* Note there is also a `make check` but currently its implementation fails for
+daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
+
 Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH.
 
