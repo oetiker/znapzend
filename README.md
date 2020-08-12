@@ -74,8 +74,8 @@ cd znapzend-${ZNAPVER}
 ./configure --prefix=/opt/znapzend-${ZNAPVER}
 ```
 
-NOTE: to get the current state of `master` branch without using git tools,
-you should fetch https://github.com/oetiker/znapzend/archive/master.zip
+> NOTE: to get the current state of `master` branch without using git tools,
+> you should fetch https://github.com/oetiker/znapzend/archive/master.zip
 
 If the `configure` script finds anything noteworthy, it will tell you about it.
 
@@ -92,8 +92,8 @@ together, you can run unit-tests with:
 ```sh
 ./test.sh
 ```
-NOTE: there is also a `make check` but currently its implementation fails for
-daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
+> NOTE: there is also a `make check` but currently its implementation fails for
+> daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
 
 Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH, e.g.:
@@ -285,8 +285,8 @@ Typical issues include:
   if your destination has manually named snapshots that are common with
   your source.
 
-NOTE: Do not forget to re-enable the znapzend service after you have
-rectified the problem that prevented normal functionality.
+> NOTE: Do not forget to re-enable the znapzend service after you have
+> rectified the problem that prevented normal functionality.
 
 One known problem relates to automated backups of datasets whose source
 can get cloned, renamed and promoted - typically boot environments (the
