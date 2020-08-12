@@ -8,7 +8,7 @@ use Pod::Usage;
 
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates);
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates);
 
 sub main {
     my $opts = {};
@@ -47,6 +47,11 @@ sub main {
         if ( (defined($opts->{skipIntermediates})) && ($opts->{skipIntermediates} != 0) ) {
             warn "Options skipIntermediates and sendIntermediates are exclusive; and sendIntermediates wins!";
         }
+        # Note that the legacy default is to sendIntermediates.
+        # Beware or benefit that this can deliver manually named
+        # snapshots to your destination that would have to be
+        # cleaned manually when no longer wanted there, but that
+        # can be used as common snapshots to repair broken syncs.
         $opts->{skipIntermediates} = 0;
         delete $opts->{sendIntermediates};
     }
@@ -144,7 +149,8 @@ B<znapzend> [I<options>...]
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
-    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates
+    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
+    skipIntermediates sendIntermediates
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -424,6 +430,12 @@ fully trusted or not physically secure. This option must be used
 consistently, raw incrementals cannot be based on non-raw snapshots
 and vice versa.
 
+=item sendIntermediates
+
+The opposite of I<skipIntermediates>, detailed in the next section.
+This is the default mode of operation, and only included here to
+allow for completeness and explicitness of your configurations.
+
 =item skipIntermediates
 
 Enable the 'skipIntermediates' feature to send a single increment
@@ -433,13 +445,20 @@ and it should skip snapshots not managed by znapzend. Normally for
 online destinations, the new snapshot is sent as soon as it is
 created on the source, so there are no automatic increments to skip.
 
-By default 'znapzend' uses the '-I' option on the sending end (so to
-include all intermediate snapshots), rather than '-i', to keep the
-destination zfs dataset history similar to the source's one.
+By default 'znapzend' uses the 'zfs send -I' option on the sending
+end (so to include all intermediate snapshots), rather than '-i'
+(which would send a single big increment), to keep the destination
+zfs dataset history similar to the source's one. This implies the
+-I<sendIntermediates> mode of operation.
 
 Note: it was the default from beginning of 'znapzend' to make sure
 that in case a send operation takes too long, we still get all the
 intermediate snapshots sent to the destination.
+Beware or benefit that this can deliver not only automatic, but also
+manually named snapshots to your destination which would have to be
+cleaned manually when no longer wanted there, but that they can be
+used as common snapshots to repair broken syncs e.g. with I<--since=X>
+options.
 
 With the 'skipIntermediates' feature disabled, all snapshots between
 the latest common one and the newly created one on the source would
