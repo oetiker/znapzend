@@ -214,6 +214,23 @@ the first place to look. Alternately, you can set up the service manifest
 to start the daemon with other logging configuration (e.g. to a file or
 to stderr) and perhaps with debug level enabled.
 
+If your snapshots on the source dataset begin to pile up and not cleaned
+according to your expectations from the schedule you have defined, look
+into the logs particularly for summaries like `ERROR: suspending cleanup
+source dataset because X send task(s) failed` followed by each failed
+dataset name and a short verdict (e.g. `snapshot(s) exist on destination,
+but no common found on source and destination`). See above in the logs
+for more details, and/or disable the znapzend service temporarily (to
+avoid run-time conflicts) and run a manual replication:
+
+```sh
+znapzend --debug --runonce=<src_dataset>/failed/child --inherited
+```
+
+...to collect even more under-the-hood details about what is happening and
+to get ideas about fixing that. See the manual page about `--recursive` and
+`--inherited` modifiers to `--runonce` mode for more information.
+
 In case you tinkered with ZFS attributes that store ZnapZend retention
 policies, or potentially if you have a severe version mismatch of ZnapZend
 (e.g. update from a PoC or very old version), ```znapzendzetup list``` is
