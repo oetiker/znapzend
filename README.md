@@ -40,7 +40,7 @@ On RedHat you get the necessaries with:
 
 On Ubuntu / Debian with:
 
-    apt-get install perl unzip
+    apt-get install perl unzip autoconf carton
 
 On Solaris you may need the C compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old.
