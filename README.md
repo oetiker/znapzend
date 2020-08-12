@@ -103,6 +103,11 @@ dnf install znapzend
 For Gentoo there's an ebuild in the
 [gerczei overlay](https://git.gerczei.eu/tgerczei/gentoo-overlay).
 
+For OpenIndiana there is an IPS package at
+http://pkg.openindiana.org/hipster/en/search.shtml?token=znapzend&action=Search
+made with the recipe at
+https://github.com/OpenIndiana/oi-userland/tree/oi/hipster/components/sysutils/znapzend
+
 Configuration
 -------------
 
