@@ -103,9 +103,9 @@ my $checkBackupSets = sub {
             # dataSetExists() below, so just ignore this entry.
             # If we really do get here, take a hard look at recursive
             # and/or inherited modes for run-once.
-            print STDERR "#checkBackupSets# SKIP backupSet='" . $backupSet->{src} .
-                "' because it is not a filesystem,volume. " .
-                "BUG: Should not get here.\n";# if $self->debug;
+            $self->zLog->error( "#checkBackupSets# SKIP backupSet='"
+                . $backupSet->{src} ."' because it is not a filesystem,volume. "
+                . "BUG: Should not get here.");# if $self->debug;
             next;
         }
 
