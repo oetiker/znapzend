@@ -74,7 +74,7 @@ cd znapzend-${ZNAPVER}
 ./configure --prefix=/opt/znapzend-${ZNAPVER}
 ```
 
-* Note: to get the current state of `master` branch without using git tools,
+NOTE: to get the current state of `master` branch without using git tools,
 you should fetch https://github.com/oetiker/znapzend/archive/master.zip
 
 If configure finds anything noteworthy, it will tell you about it.
@@ -91,7 +91,7 @@ together, you can run unit-tests with:
 ```sh
 ./test.sh
 ```
-* Note there is also a `make check` but currently its implementation fails for
+NOTE: there is also a `make check` but currently its implementation fails for
 daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
 
 Optionally (but recommended) put symbolic links to the installed binaries
