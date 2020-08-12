@@ -34,7 +34,9 @@ you want to get a custom-made copy of znapzend, you will need a compiler and
 stuff to build some of the prerequisite perl modules into binary libraries
 for the target OS and architecture. For run-time you will need just perl.
 
-On RedHat you get the necessaries with:
+The Git checkout includes a pregenerated `configure` script. For a rebuild
+of a checkout from scratch you may also want to `./bootstrap.sh` and then
+would need the autoconf/automake stack.
 
     yum install perl-core
 
@@ -59,6 +61,7 @@ ZNAPVER=0.20.0
 wget https://github.com/oetiker/znapzend/releases/download/v${ZNAPVER}/znapzend-${ZNAPVER}.tar.gz
 tar zxvf znapzend-${ZNAPVER}.tar.gz
 cd znapzend-${ZNAPVER}
+### ./bootstrap.sh
 ./configure --prefix=/opt/znapzend-${ZNAPVER}
 ```
 
