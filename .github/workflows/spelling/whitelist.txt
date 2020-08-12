@@ -237,6 +237,8 @@ Irecursive
 IRIX
 iro
 isa
+Isend
+Iskip
 Isnapshots
 Isnapsuffix
 Isources
