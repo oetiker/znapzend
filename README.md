@@ -62,6 +62,9 @@ cd znapzend-${ZNAPVER}
 ./configure --prefix=/opt/znapzend-${ZNAPVER}
 ```
 
+* Note: to get the current state of `master` branch without using git tools,
+you should fetch https://github.com/oetiker/znapzend/archive/master.zip
+
 If configure finds anything noteworthy, it will tell you about it.
 If any perl modules are found to be missing, they get installed locally into
 the znapzend installation. Your system perl installation will not be modified!
@@ -270,6 +273,12 @@ policies, or potentially if you have a severe version mismatch of ZnapZend
 (e.g. update from a PoC or very old version), ```znapzendzetup list``` is
 quite useful to non-intrusively discover whatever your current version can
 consider to be discrepancies in your active configuration.
+
+Finally note that yet-unreleased code from the master branch may include
+fixes to problems you face (see
+[recent commits](https://github.com/oetiker/znapzend/commits/master) and
+[closed pull requests](https://github.com/oetiker/znapzend/pulls?q=is%3Apr+is%3Aclosed)),
+but also may introduce new bugs.
 
 Statistics
 ----------
