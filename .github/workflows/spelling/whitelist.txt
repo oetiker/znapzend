@@ -2,6 +2,7 @@ ABuild
 acconfig
 acinclude
 aclocal
+Aclosed
 adata
 Affero
 aix
@@ -551,6 +552,7 @@ ZFSW
 ZFSZONEROOTS
 ZL
 znap
+ZNAPVER
 znapzend
 ZNAPZENDOPTIONS
 znapzendsetup
