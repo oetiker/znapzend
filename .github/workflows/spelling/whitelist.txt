@@ -2,6 +2,7 @@ ABuild
 acconfig
 acinclude
 aclocal
+adata
 Affero
 aix
 alpinelinux
@@ -24,6 +25,7 @@ autom
 automake
 autoreconf
 autoscrub
+autotarget
 Autotools
 Backend
 backupplan
@@ -31,6 +33,7 @@ backupset
 badkey
 bak
 Balert
+bashisms
 Bcreate
 Bdebug
 Bdelete
@@ -107,6 +110,7 @@ daemonize
 daemonized
 DAGOLDEN
 datadir
+de'u
 debian
 defn
 defun
@@ -115,7 +119,6 @@ dest
 DESTDIR
 destfail
 desttemp
-de'u
 dirname
 distclean
 distdir
@@ -123,6 +126,7 @@ distro
 dmp
 dnf
 dnl
+DNO
 Dockerfile
 DOCTYPE
 DOITPROG
@@ -138,6 +142,7 @@ DTRT
 dummydataset
 ebuild
 eckels
+egrep
 elif
 elsif
 enableval
@@ -164,6 +169,7 @@ filehandle
 filepath
 fileset
 filesystem
+firstsnap
 FIXME
 fmri
 fnord
@@ -190,6 +196,7 @@ Hassler
 Heitm
 heitmueller
 HMSz
+Honame
 html
 http
 Hypnotoad
@@ -246,6 +253,7 @@ JB
 JBERGER
 JSON
 killproc
+Klimov
 launchctl
 launchd
 Lce
@@ -290,6 +298,8 @@ mkdirprog
 modled
 mojolicious
 Morbo
+mountpoint
+MPTZONEROOTS
 mvcmd
 mvprog
 MYMETA
@@ -298,6 +308,7 @@ NAL
 namespace
 nano
 newcfgdata
+newestbe
 nf
 nh
 noaction
@@ -312,6 +323,7 @@ nostdinc
 notest
 NOTMAKE
 nroff
+nvpool
 nytprof
 OBJC
 OBJCXX
@@ -328,6 +340,7 @@ pfexec
 php
 pid
 pidfile
+pipefail
 Pipely
 pkglicense
 pkgname
@@ -360,22 +373,25 @@ recv
 recvu
 redhat
 regex
+RESFINAL
 respawn
 resync
-rpool
 RETVAL
 RHEL
-ROOT
 rmcmd
 rmdir
 rmprog
 rmtmp
 ron
+rootfs
+rootfs'es
+rpool
 runlevel
 runonce
 rw
 sbin
 sbindir
+screation
 scriptversion
 selftest
 setsid
@@ -387,6 +403,7 @@ SIGTERM
 smf
 snapname
 snapsuffix
+SNO
 solaris
 sourced
 sourceforge
@@ -403,6 +420,7 @@ srcfile
 srcname
 srcsuffix
 ssh
+standalone
 startd
 startstop
 stderr
@@ -426,6 +444,7 @@ SVCINSTALLDIR
 svcname
 svg
 symlink
+synczbe
 Sys
 sysadmin
 sysconfdir
@@ -443,6 +462,7 @@ templated
 testsuite
 texi
 texinfo
+tfilesystem
 tgerczei
 thirdparty
 timeslot
@@ -456,6 +476,7 @@ todo
 TOTHINK
 troff
 tsformat
+tsnapshot
 tzoffset
 Ubuntu
 uid
@@ -486,6 +507,7 @@ versio
 VOS
 VPATH
 vroff
+vue
 waitpid
 wget
 whitespaces
@@ -507,10 +529,14 @@ yacc
 Ymd
 yml
 yy
+zbe
 zetup
 zfs
 zfsutils
 zfsutilsdep
+ZFSW
+ZFSZONEROOTS
+ZL
 znap
 znapzend
 ZNAPZENDOPTIONS
@@ -518,5 +544,7 @@ znapzendsetup
 ZNAPZENDTEST
 znapzendzetup
 znapzendztatz
+zoneadm
+zoneroots
 zpool
 zxvf
