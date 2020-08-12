@@ -55,10 +55,11 @@ you can get them from the command line (Terminal app) with:
 With that in place you can now utter:
 
 ```sh
-wget https://github.com/oetiker/znapzend/releases/download/v0.19.2/znapzend-0.19.2.tar.gz
-tar zxvf znapzend-0.19.2.tar.gz
-cd znapzend-0.19.2
-./configure --prefix=/opt/znapzend-0.19.2
+ZNAPVER=0.19.2
+wget https://github.com/oetiker/znapzend/releases/download/v${ZNAPVER}/znapzend-${ZNAPVER}.tar.gz
+tar zxvf znapzend-${ZNAPVER}.tar.gz
+cd znapzend-${ZNAPVER}
+./configure --prefix=/opt/znapzend-${ZNAPVER}
 ```
 
 If configure finds anything noteworthy, it will tell you about it.
@@ -74,7 +75,8 @@ Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH.
 
 ```sh
-for x in /opt/znapzend-0.19.2/bin/*; do ln -s $x /usr/local/bin; done
+ZNAPVER=0.19.2
+for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -s $x /usr/local/bin; done
 ```
 
 Packages
