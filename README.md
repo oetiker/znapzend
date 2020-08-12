@@ -55,7 +55,7 @@ you can get them from the command line (Terminal app) with:
 With that in place you can now utter:
 
 ```sh
-ZNAPVER=0.19.2
+ZNAPVER=0.20.0
 wget https://github.com/oetiker/znapzend/releases/download/v${ZNAPVER}/znapzend-${ZNAPVER}.tar.gz
 tar zxvf znapzend-${ZNAPVER}.tar.gz
 cd znapzend-${ZNAPVER}
@@ -75,7 +75,7 @@ Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH.
 
 ```sh
-ZNAPVER=0.19.2
+ZNAPVER=0.20.0
 for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -fs ../../../$x /usr/local/bin/; done
 ```
 
