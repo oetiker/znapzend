@@ -39,7 +39,7 @@ DR="backup-adata/snapshots/$SR"
 ZFSW="echo ###WOULD### :; zfs"
 [ "$DEBUG" = no ] && ZFSW=zfs \
 && echo "WARNING: zfs operations for changing pool data are ENABLED, be sure to NOT HAVE znapzend service RUNNING!" >&2 \
-|| echo "WARNING: debug mode by default, zfs operations for changing pool data are DISABLED: >&2"
+|| echo "WARNING: debug mode by default, zfs operations for changing pool data are DISABLED" >&2
 
 case "$SR" in
     */ROOT) ;;
@@ -123,10 +123,25 @@ for Z in $DZ ; do
     echo "$Z => $O .. $L" >&2
     # We got listing for 3b up here
 
+    # NOTE: For rootfs with children, check that all children on src and dst
+	# are present and have in common the same-named snapshots, so a later
+	# replication stream can continue from a single snapshot name of the parent
+	# dataset (rootfs). This is a highly likely condition ensured by `beadm`
+	# but may be lacking on dataset subtrees cloned and promoted on source
+	# pool by other means.
+
     if [ -z "$O" -o "$O" = "-" ] ; then
         echo "=== SKIP a history owner: $Z" >&2
         continue
     fi
+
+    if [ "$DEBUG" = quick ]; then
+        if [ -z "$L" ] ; then
+            echo "=== $Z is a recent clone (has no snaps yet on src)" >&2
+        fi
+        continue
+    fi
+
 
     # OS is snapname, but useful is OSD with ZBE/rootfs name relative to ROOT/
     #OS="`echo "$O" | sed 's/^.*@//'`"
@@ -149,13 +164,13 @@ for Z in $DZ ; do
         # PoC NOTE: Assumes GNU date or compatible with +%s to add uniqueness to the snapname string
         L="$SR/$Z@auto-firstsnap-`date -u +%s || date -u | tr '[ ,:@_\.]' '-'`-$$-$RANDOM"
         echo "=== SNAP a recent clone (has no snaps yet on src): $Z => make '$L' to sync" >&2
-        $ZFSW snapshot "$L"
+        $ZFSW snapshot -r "$L"
         #continue
     fi
 
     #LS="`echo "$L" | sed 's/^.*@//'`"
 
-    # NOTE: For rootfs with children, have all children clones prepared before zfs send/recv
+    # NOTE: NO LONGER RELEVANT: (was: For rootfs with children, have all children clones prepared before zfs send/recv)
 
     echo "=== Update the new destination + create dst clone: increment '$O' => '$L', write into autotarget under '$DR' (overwrite with -F if needed?)" >&2
     echo ":; time zfs send -R -I '$O' '$L' | mbuffer -m 128M | zfs recv -vue '$DR'"
