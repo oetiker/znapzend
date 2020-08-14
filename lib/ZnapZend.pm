@@ -30,6 +30,7 @@ has recvu                   => sub { 0 };
 has compressed              => sub { 0 };
 has sendRaw                 => sub { 0 };
 has skipIntermediates       => sub { 0 };
+has forbidDestRollback      => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has zfsGetType              => sub { 0 };
@@ -70,7 +71,7 @@ has zZfs => sub {
         lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
         rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
         zLog => $self->zLog, compressed => $self->compressed,
-        sendRaw => $self->sendRaw);
+        sendRaw => $self->sendRaw, forbidDestRollback => $self->forbidDestRollback);
 };
 
 has zTime => sub { ZnapZend::Time->new(timeWarp=>shift->timeWarp) };
@@ -191,10 +192,14 @@ my $refreshBackupPlans = sub {
 
                         # check if we can access destination zpool, if so create parent dataset
                         $self->zZfs->dataSetExists($zpool) && do {
+                            $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+
                             $backupSet->{"dst_$key" . '_valid'} =
                                 $self->zZfs->createDataSet($backupSet->{"dst_$key"});
 
-                            $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+                            if ($backupSet->{"dst_$key" . '_valid'}) {
+                                $backupSet->{"dst_$key" . '_justCreated'} = 1;
+                            }
                         };
                     }
                     $backupSet->{"dst_$key" . '_valid'} or
@@ -335,10 +340,14 @@ my $sendRecvCleanup = sub {
 
                     # check if we can access destination zpool, if so create parent dataset
                     $self->zZfs->dataSetExists($zpool) && do {
+                        $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+
                         $backupSet->{"dst_$key" . '_valid'} =
                             $self->zZfs->createDataSet($backupSet->{"dst_$key"});
 
-                        $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
+                        if ($backupSet->{"dst_$key" . '_valid'}) {
+                            $backupSet->{"dst_$key" . '_justCreated'} = 1;
+                        }
                     };
                 }
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
@@ -367,8 +376,252 @@ my $sendRecvCleanup = sub {
                 local $@;
                 eval {
                     local $SIG{__DIE__};
+                    $self->zLog->debug('Are we sending "--since"? '.
+                        'since=="' . $self->since . '"'.
+                        ', skipIntermediates=="' . $self->skipIntermediates . '"' .
+                        ', forbidDestRollback=="' . $self->forbidDestRollback . '"' .
+                        ', justCreated=="' . ( $backupSet->{"dst_$key" . '_justCreated'} ? "true" : "false" ) . '"'
+                        ) if $self->debug;
+                    if ($self->since) {
+                        # Make sure that if we use the "--sinceForced=X" or
+                        # "--since=X" option, this named snapshot exists (or
+                        # appears) in the destination dataset history of
+                        # snapshots.
+                        # Note if "X" does not yet exist on destination AND
+                        # if there are newer than "X" snapshots on destination,
+                        # they would be removed to allow receiving "X" with
+                        # the "--sinceForced=X" mode, but not with "--since=X"
+                        # which would only add it if it is an intermediate snap.
+
+                        # FIXME: Implementation below seems wasteful for I/Os
+                        # doing many "zfs list" calls (at least metadata is
+                        # cached by the OSes involved). Luckily "--since=X"
+                        # is not default and for PoC this should be readable.
+                        # Largely copied from lastAndCommonSnapshots() and
+                        # listSnapshots() routines.
+
+                        # In some cases we do not have to actively replicate "X":
+                        # 1) "X" does not exist in history of src, no-op
+                        if ($self->zZfs->snapshotExists($srcDataSet . "@" . $self->since)) {
+                        # 2) "X" exists in history of both src and dst, no-op
+                            if (!$self->zZfs->snapshotExists($dstDataSet . "@" . $self->since)) {
+                        # ...So "X" exists in src and not in dst; where is it
+                        # in our history relative to latest common snapshot?
+                        # Is there one at all?
+
+                                ### Inspect ALL snapshots in this case, not just auto's
+                                ### my $snapSendFilter = $backupSet->{snapSendFilter};
+                                my $snapSendFilter = qr/.*/;
+
+                                my $srcSnapshots = $self->zZfs->listSnapshots($srcDataSet, $snapSendFilter);
+                                if (scalar @$srcSnapshots) {
+                                    my $dstSnapshots = $self->zZfs->listSnapshots($dstDataSet, $snapSendFilter);
+
+                                    my $i;
+                                    my $snapName;
+                                    my $lastCommon; # track the newest common snapshot, if any
+                                    my $lastCommonNum; # Flips to "i" if we had any common snapshots
+                                    my $firstCommon; # track the oldest known common snapshot (if we can roll back to use it)
+                                    my $firstCommonNum ; # Flips to "i" if we had any common snapshots
+                                    my $seenX; # Flips to "i" if we saw "X" before (or as) the newest common snapshot, looking from newest snapshots in src
+                                    my $seenD; # Flips to "i" if we saw "X" in DST during this search
+                                    # Note that depending on conditions, we might not look through ALL snapnames and stop earlier when we saw enough
+                                    for ($i = $#{$srcSnapshots}; $i >= 0; $i--){
+                                        ($snapName) = ${$srcSnapshots}[$i] =~ /^\Q$srcDataSet\E\@($snapSendFilter)/;
+                                        #print STDERR "=== LOOKING: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                        if ( $snapName eq $self->since || $snapName =~ m/^$self->since$/ ) {
+                                            $seenX = $i;
+                                            print STDERR "+++ SEENSRC: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                        }
+                                        if ( grep { /\@$snapName$/ } @$dstSnapshots ) {
+                                            if ( $snapName eq $self->since || $snapName =~ m/^$self->since$/ ) {
+                                                $seenD = $i;
+                                                print STDERR "+++ SEENDST: #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                            }
+                                            $firstCommonNum = $i;
+                                            $firstCommon = ${$srcSnapshots}[$i];
+                                            print STDERR "||| COMMON : #$i : FQSN: ${$srcSnapshots}[$i] => '$snapName' cf. '" . $self->since ."'\n" if $self->debug;
+                                            if (!defined($lastCommon)) {
+                                                # This may be our last iteration here, or not...
+                                                $lastCommonNum = $i;
+                                                $lastCommon = ${$srcSnapshots}[$i];
+                                                # Handle the situation when we have a --sinceForced=X
+                                                # request, so the "X" has to be (or appear) in history
+                                                # of destination dataset. Even if we found the newest
+                                                # common snapshot, it may be newer than "X" and there
+                                                # might be no common snapshots older than "X" - then
+                                                # we would have to roll back to replicate from scratch.
+                                                last if defined($seenX); # lastCommon is same or older than X
+                                                last if ($self->forbidDestRollback && !($backupSet->{"dst_$key" . '_justCreated'})); # not asked to/can't roll back anyway... well we're unlikely to see snaps in a justCreated destination as well
+                                                $self->zLog->debug("sendRecvCleanup() [--since mode]: found a newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' that matches --since='" . $self->since . "', but have not seen a --sinceForced='" . $self->since . "' match so keep looking where we can roll back to");
+                                            }
+                                            last if defined($seenX); # firstCommon is same or older than X
+                                        }
+                                    }
+
+                                    if ($i < 0) {
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: looked through all snapshots of $srcDataSet;"
+                                            . " seenX=" . (defined($seenX) ? $seenX : "undef")
+                                            . " seenD=" . (defined($seenD) ? $seenD : "undef")
+                                            . " lastCommonNum=" . (defined($lastCommonNum) ? $lastCommonNum : "undef")
+                                            . " lastCommon=" . (defined($lastCommon) ? $lastCommon : "undef")
+                                            . " firstCommonNum=" . (defined($firstCommonNum) ? $firstCommonNum : "undef")
+                                            . " firstCommon=" . (defined($firstCommon) ? $firstCommon : "undef")
+                                            ) if $self->debug;
+                                    }
+
+                                    # Flag for whether we should run an extra sendRecvSnapshots()
+                                    # to get the "X" snapshot into history of destination.
+                                    # A value of 2 enforces this, allowing to destroy snapshots
+                                    # on destination to allow repopulation of that dataset with
+                                    # new history if user said --sinceForced=X
+                                    my $doPromote = 0;
+                                    if (defined($seenD)) {
+                                        # if seenD - skip the below decisions; note it also means seenX and that "X" is among common snapshots
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: A common snapshot between $srcDataSet and $dstDataSet that already matches --since='" . $self->since . "' is '${$srcSnapshots}[$seenX]'");
+                                    } else {
+                                        if (defined($lastCommon)) { # also means defined firstCommon
+                        # 3) "X" in src is newer than the newest common snapshot
+                        #    or "X" exists in src and there is NO common snapshot
+                        #    => promote it into dst explicitly if we skipIntermediates
+                        #       and proceed to resync starting from "X" afterwards
+                        #       (if we do not skipIntermediates then no-op -
+                        #       it will be included in replication below from
+                        #       that older common point anyway)
+                                            if (defined($seenX)) {
+                                                # Note: the value of a defined seenX is a number of
+                                                # that snapshot in our list, so may validly be zero
+                                                if ($self->skipIntermediates) {
+                                                    if (defined($lastCommon) && $lastCommon ne '') {
+                                                        if ($lastCommonNum == $seenX || $lastCommon =~ m/\@$self->since$/ ) {
+                                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and already matches --since='" . $self->since . "'");
+                                                        } else {
+                                                            if ($lastCommonNum < $seenX) {
+                                                                $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX])");
+                                                                $doPromote = 1;
+                                                            } else {
+                                                                if (!$self->forbidDestRollback) { # || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --sinceForced='" . $self->since . "' match (${$srcSnapshots}[$seenX]), should try to roll back and resync from that");
+                                                                    $doPromote = 2;
+                                                                } else {
+                                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but rollback of dest is forbidden");
+                                                                }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        if ( (scalar @$dstSnapshots) > 0) {
+                                                            if ($self->forbidDestRollback && !($backupSet->{"dst_$key" . '_justCreated'})) {
+                                                                $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, but rollback of dest is forbidden");
+                                                            } else {
+                                                                $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, should try resync from scratch");
+                                                                $doPromote = 2;
+                                                            }
+                                                        } else {
+                                                            $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet to compare with a --since='" . $self->since . "' match, because there are no snapshots in dst, should try resync from scratch");
+                                                            $doPromote = 2;
+                                                        }
+                                                    }
+                                                } else {
+                                                    # if (seenX && !skipIntermediates) :
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and older than a --since='" . $self->since . "' match (${$srcSnapshots}[$seenX]), but we would send a complete replication stream with all intermediates below anyway");
+                                                }
+                                            } # // 3. if seenX
+
+                        # 4) "X" in src is older than the newest common snapshot
+                        #    => promote it into dst explicitly ONLY IF WE DO NOT
+                        #       forbidDestRollback (deleting whatever is newer
+                        #       on dst) and proceed to resync starting from "X"
+                        #       afterwards (if we forbidDestRollback honor that)
+                                            if (!defined($seenX)) {
+                                            # Did not see "X" as we went through history of SRC
+                                            # Either it is not there (should not happen here per
+                                            # checks done above), or is older than the newest
+                                            # common snapshot and we did not intend to roll back
+                                                if (!$self->forbidDestRollback || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                                                    # We should have looked through whole SRC
+                                                    # history to get here. And not seenX. Fishy!
+                                                    if ($firstCommonNum == $lastCommonNum) {
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest (and oldest) common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point or from scratch");
+                                                        $doPromote = 2;
+                                                    } else {
+                                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: The newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon', and the oldest is '$firstCommon', and there is no --sinceForced='" . $self->since . "' match in destination, would try to resync from previous common point or from scratch");
+                                                        $doPromote = 2;
+                                                    }
+                                                } else {
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Newest common snapshot between $srcDataSet and $dstDataSet is '$lastCommon' and newer than a --since='" . $self->since . "' match (if any), but we forbidDestRollback so will not ensure it appears on destination");
+                                                }
+                                            } # // 4. if !seenX => "X" is too old or absent
+
+                                        } else { ### =>  if (!defined($lastCommon)) ...
+                        # 5) There may be no common snapshot at all.
+                        # There may be no snapshots on destination at all.
+                        # Destination may be "justCreated" and/or a value
+                        # for forbidDestRollback==false can permit us to
+                        # rewrite any contents of that destination (live
+                        # data or existing "unneeded" snapshots).
+                                            if (scalar(@$dstSnapshots) > 0) {
+                                                if (!$self->forbidDestRollback) { # || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                        # 5b) There are discardable snapshots on destination...
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet, and we may roll it back");
+                                                    $doPromote = 2;
+                                                } else {
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: There is no common snapshot between $srcDataSet and $dstDataSet, but we may not roll it back");
+                                                }
+                                            } else {
+                        # 5a) There are no snapshots on destination...
+                                            # TODO: Find a way to state that destination is empty
+                                            # de-facto (e.g. created last run) and can be rolled
+                                            # back without loss of data because there are none...
+                                                if (!$self->forbidDestRollback || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: There are no snapshots on destination $dstDataSet, and we may roll it back");
+                                                    $doPromote = 1;
+                                                } else {
+                                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: There are no snapshots on destination $dstDataSet, but we may not roll it back");
+                                                }
+                                            } # // 5a. No dest snaps at all
+                                        } # // 5. No common snapshots at all
+                                    } # // seenD => "X" is a common snapshot already
+
+                                    if ($doPromote > 0) {
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: Making sure that snapshot '" . $self->since . "' exists in history of '$dstDataSet' ...");
+                                        my $lastSnapshotToSee = $self->since;
+                                        if (defined($seenX)) {
+                                            $lastSnapshotToSee = ${$srcSnapshots}[$seenX];
+                                        }
+                                        $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
+                                                $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                                                $backupSet->{snapSendFilter}, $lastSnapshotToSee,
+                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : ($doPromote > 1 ? $doPromote : undef ) )
+                                            );
+                                    } else {
+                                        $self->zLog->debug("sendRecvCleanup() [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet");
+                                    }
+                                } else {
+                                    $self->zLog->debug("sendRecvCleanup() [--since mode]: Got an empty list, does source dataset $srcDataSet have any snapshots?");
+                                } # if not scalar - no src snaps?
+                            } else {
+                                $self->zLog->debug("sendRecvCleanup() [--since mode]: Destination dataset $dstDataSet already has a snapshot named by --since='" . $self->since . "'");
+                            } # // 2. if dst has "X"
+                        } else {
+                            $self->zLog->debug("sendRecvCleanup() [--since mode]: Source dataset $srcDataSet does not have a snapshot named by --since='" . $self->since . "'");
+                            if (!$self->forbidDestRollback) { # || ($backupSet->{"dst_$key" . '_justCreated'})) {
+                                die "User required --sinceForced='" . $self->since . "' but there is no match in source dataset $srcDataSet";
+                            }
+                        } # // 1. if src does not have "X"
+                    } # if have to care about "--since=X"
+
+                    # Synchronize snapshot history from source to destination
+                    # starting from newest snapshot that they have in common
+                    # (or create/rewrite destination if it has no snapshots).
+                    # With "--since=X" option handled above, such newest common
+                    # snapshot can likely be this "X".
+                    # Note this can fail if we forbidDestRollback and there are
+                    # snapshots or data on dst newer than the last common snap.
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size}, $backupSet->{snapSendFilter});
+                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                        $backupSet->{snapSendFilter}, undef,
+                        ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
+                        );
                 };
                 if (my $err = $@){
                     $thisSendFailed = 1;

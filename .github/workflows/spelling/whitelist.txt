@@ -2,6 +2,7 @@ ABuild
 acconfig
 acinclude
 aclocal
+admins
 Aclosed
 adata
 Affero
@@ -56,6 +57,7 @@ Bpre
 bserv
 Bsyslog
 Bwarning
+Bzfs
 Bznapzend
 Bznapzendzetup
 Bznapzendztatz
@@ -180,6 +182,7 @@ fnord
 foced
 foreach
 forkcall
+FQSN
 fsf
 gerczei
 Getopt
@@ -407,6 +410,8 @@ sbin
 sbindir
 screation
 scriptversion
+SEENSRC
+SEENDST
 selftest
 setsid
 shellwords

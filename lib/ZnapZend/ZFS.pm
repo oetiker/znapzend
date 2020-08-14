@@ -28,6 +28,7 @@ has recvu           => sub { 0 };
 has compressed      => sub { 0 };
 has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
+has forbidDestRollback => sub { 0 };
 has lowmemRecurse   => sub { 0 };
 has zfsGetType      => sub { 0 };
 has rootExec        => sub { q{} };
@@ -133,6 +134,8 @@ sub dataSetExists {
 
 sub snapshotExists {
     my $self = shift;
+    # Note: this is a fully qualified name of dataset@snapshot ZFS object,
+    # not just the snapname. May also be with remote destination ID.
     my $snapshot = shift;
     my $quiet = shift; # Maybe we expect it to not be there?
     if (!defined($quiet)) { $quiet = 0; }
@@ -205,7 +208,12 @@ sub listDataSets {
 sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
     my $remote;
     my @snapshots;
 
@@ -219,6 +227,15 @@ sub listSnapshots {
 
     while (my $snap = <$snapshots>){
         chomp $snap;
+        if (defined($lastSnapshotToSee)) {
+            if ($snap  =~ /^\Q$dataSet\E\@$lastSnapshotToSee$/) {
+                # Only add this name to list if it matches $snapshotFilter ...
+                push @snapshots, $snap if $snap =~ /^\Q$dataSet\E\@$snapshotFilter$/;
+                # ...but still stop iterating
+                $self->zLog->debug("listSnapshots() : for dataSet='$dataSet' snapshotFilter='$snapshotFilter' lastSnapshotToSee='$lastSnapshotToSee' matched '$snap' and stopping the iteration");
+                last;
+            }
+        }
         next if $snap !~ /^\Q$dataSet\E\@$snapshotFilter$/;
         push @snapshots, $snap;
     }
@@ -390,10 +407,15 @@ sub lastAndCommonSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
 
-    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
-    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
+    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter, $lastSnapshotToSee);
+    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter, $lastSnapshotToSee);
 
     return (undef, undef, undef) if !scalar @$srcSnapshots;
 
@@ -500,9 +522,27 @@ sub sendRecvSnapshots {
     my $dstName = shift; # name of the znapzend policy => property prefix
     my $mbuffer = shift;
     my $mbufferSize = shift;
-    my $snapFilter = $_[0] || qr/.*/;
+    my $snapFilter = shift // qr/.*/;
+
+    # Limit creation-ordered listing after registering this snapshot name,
+    # (there may exist newer snapshots that would be not seen and replicated).
+    # For practical purposes, this can be used with --since=X mode to ensure
+    # that "X" exists on destination if it does not yet (note that if there
+    # are newer snapshots on destination, they would be removed to allow
+    # receiving "X", unless --forbidDestRollback is requested, in this case).
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
+
+    # In certain cases, callers can set this argument to explicitly
+    # forbid (0), allow (1) or enforce if needed (2) a rollback of dest.
+    my $allowDestRollback = shift // undef;
+    if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
+
     my @recvOpt = $self->recvu ? qw(-u) : ();
-    push @recvOpt, '-F' if !$self->sendRaw;
+    push @recvOpt, '-F' if $allowDestRollback;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;
@@ -513,11 +553,30 @@ sub sendRecvSnapshots {
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
-    my ($lastSnapshot, $lastCommon,$dstSnapCount)
-        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
+    # As seen through filter:
+    # * Last existing snapshot on source,
+    # * Last common snapshot between source and this destination,
+    # * Overall count of snapshots on destination.
+    my ($lastSnapshot, $lastCommon, $dstSnapCount)
+        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
-    my %snapshotSynced = ($dstName, $dstDataSet,
-        $dstName . '_synced', 1);
+    if (defined($lastSnapshotToSee)) {
+        $self->zLog->debug("sendRecvSnapshots() : " .
+            "for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' " .
+            "snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' ".
+            "GOT: lastSnapshot='$lastSnapshot' " .
+            "lastCommon=" . ($lastCommon ? "'$lastCommon'" : "undef") . " " .
+            "dstSnapCount='$dstSnapCount'"
+            );
+    }
+
+    # We would set these source snapshot properties to mark that
+    # this snapshot has been delivered to destination, to keep the
+    # newest such snapshot if destination is unreachable currently.
+    my %snapshotSynced = (
+        $dstName,               $dstDataSet,
+        $dstName . '_synced',   1
+        );
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
     return 1 if !$lastSnapshot;
     if (defined $lastCommon && ($lastSnapshot eq $lastCommon)){
@@ -527,10 +586,41 @@ sub sendRecvSnapshots {
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
-    !$lastCommon and $dstSnapCount
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
-            . "found on source and destination "
-            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
+    if (!$lastCommon and $dstSnapCount) {
+        if ($allowDestRollback == 2) {
+            # Asked to enforce if needed... is needed now
+            $self->zLog->warn('WARNING: snapshot(s) exist on destination, but '
+                . 'no common found on source and destination: was requested '
+                . 'to clean up destination ' . $dstDataSet . ' (i.e. destroy '
+                . 'existing snapshots that match the znapzend filter)');
+            # TOTHINK: Maybe a "zfs rollback" to the oldest dst snapshot
+            # and then removing it in one act is better for performance?
+            # Can be destructive for man-named snapshots (if any) though...
+            $self->destroySnapshots ($self->listSnapshots($dstDataSet, $snapFilter, undef));
+            # If there are any manually created snapshots, with names not
+            # matched by filter, `zfs recv -F` below would likely fail.
+            # Still it is up to admins/users then to clean what they made,
+            # we only mutilate automatically what we made automatically.
+
+            # Reevaluate what is there now and look at all snapshots,
+            # e.g. the manually named snapshots may be common to src
+            # and dst, to have a starting point for such resync
+            ($lastSnapshot, $lastCommon, $dstSnapCount)
+                = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, qr/.*/, $lastSnapshotToSee);
+            my $dstSnapCountAll = scalar($self->listSnapshots($dstDataSet, qr/.*/, undef));
+            # We do not throw/error here because snapshots may help sync
+            $self->zLog->warn('ERROR: some snapshot(s) not covered '
+                    . 'by znapzend filter still exist on destination: '
+                    . 'this should be judged and fixed by the sysadmin '
+                    . '(i.e. destroy manually named snapshots); '
+                    . 'the zfs send+receive would likely fail below!'
+                    ) if (!$lastCommon && $dstSnapCountAll>0);
+        } else {
+            Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but '
+            . 'no common found on source and destination: clean up destination '
+            . $dstDataSet . ' (i.e. destroy existing snapshots)');
+        }
+    }
 
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
