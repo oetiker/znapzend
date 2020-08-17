@@ -83,6 +83,9 @@ sub runCommand_canThrow {
 use Test::Builder;
 use Test::More;
 use Test::Exception;
+use Test::SharedFork; ### NOTE: Conflicts with ithreads
+
+use POSIX ":sys_wait_h";
 
 # Succeed the Test::More part...
 use_ok 'ZnapZend';
@@ -91,51 +94,47 @@ use_ok 'ZnapZend';
 @ARGV = qw(--help);
 do 'znapzend' or die "ERROR: loading program znapzend\n";
 
+# For tests below we run the real forking and daemonization and test how it
+# behaves. Thanks to Test::SharedFork above these are counted correctly -
+# mind that after forking inside znapzend code, we have two outcomes in log.
+# Note that for child processes the test harness intercepts and hides their
+# STDERR and STDOUT streams, and the parent process with many tests runs
+# quickly. The tests for pidfile conflict detection (#1b and #3) rely on
+# this so are a bit prone to race condition like cases.
+# As for exit codes, we expect "1" for normal completion of a daemon (which
+# runs one loop for tests), or "254" for parent process "fake-exit()", or
+# "255" for pre-forking "fake-die()" due to pidfile conflict. Due to this
+# tests below expect "(1 or 254)" for normal daemonization or "(1 or 255)"
+# where we accept that pidfile conflict might not happen in fact.
 
-# Forked/daemonized subprocess can return "ok"/"not ok" twice, for parent
-# and child, so we use a Test::Builder to disable numbering the tests which
-# otherwise confuses the runner.
-my $Test = Test::Builder->create;
-$Test->use_numbers(0);
+# Check that pidfile conflict detection works
+    is ( runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
+        qw(--pidfile=znapzend.pid)), (1 or 254), 'Daemons be here: znapzend --daemonize #1a');
 
-# We do not predefine a test count
-$Test->no_plan;
-
-# We want to see helpful blurbs from the test suite
-$Test->no_header(0);
-$Test->no_ending(0);
-$Test->no_diag(0);
-
-
-# Do not run usual tests after daemonize, to avoid conflicts...
-eval {
-    $Test->is_num (1, runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
-        qw(--pidfile=znapzend.pid)), 'Daemons be here: znapzend --daemonize #1a');
-
-    #...but do try to cover these error codepaths ;)
     # IF daemon #1 is still alive, we can check if we conflict in pidfile:
-    $Test->is_num (1, runCommand_canThrow(qw(--daemonize),'-n',
-        qw(--pidfile=znapzend.pid)), 'Daemons be here: znapzend --daemonize #1b');
-};
+    is ( runCommand_canThrow(qw(--daemonize),'-n',
+        qw(--pidfile=znapzend.pid)), (1 or 255), 'Daemons be here: znapzend --daemonize #1b');
 
 # There should be no conflict for different PID file though
 # (Note in real life two znapzends not given paths to work on
 # would discover same datasets and policies and conflict while
 # sending/receiving stuff)
-eval {
-    $Test->is_num (1, runCommand_canThrow(qw(--daemonize --debug),'--features=compressed',
-        qw(--pidfile=znapzend2.pid)), 'Daemons be here: znapzend --daemonize #2');
-};
+    is ( runCommand_canThrow(qw(--daemonize --debug),'--features=compressed',
+        qw(--pidfile=znapzend2.pid)), (1 or 254), 'Daemons be here: znapzend --daemonize #2');
 
 # ASSUMPTION: Eval and time should cover up the users for that pidfile
 # For coverage, test also the daemon mode doing nothing R/W wise
-eval {
-    $Test->is_num (1, runCommand_canThrow(qw(--daemonize),'-n',
-        qw(--pidfile=znapzend.pid)), 'Daemons be here: znapzend --daemonize #3');
-};
+    is ( runCommand_canThrow(qw(--daemonize),'-n',
+        qw(--pidfile=znapzend.pid)), (1 or 255), 'Daemons be here: znapzend --daemonize #3');
 
-# Presumably also covers Test::More done_testing()... at least conflicts with it ;)
-$Test->done_testing;
-eval { done_testing(); };
+print STDERR "=== Parent test launcher is done, waiting for child daemons...\n";
+
+# From https://perldoc.perl.org/functions/waitpid.html suggestions:
+my $kid;
+do {
+    $kid = waitpid(-1, WNOHANG);
+} while $kid > 0;
+
+done_testing();
 
 1;
