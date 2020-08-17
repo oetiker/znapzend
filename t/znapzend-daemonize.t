@@ -32,7 +32,7 @@ unshift @INC, sub {
         $module_text =~ s/(.*?package\s+\S+)(.*)__END__/$1sub classWrapper {$2} classWrapper();/s;
 
         # uncomment testing code
-        $module_text =~ s/### RM_COMM_4_TEST ###//sg;
+        $module_text =~ s/### RM_COMM_4_TEST(|_main) ###//sg;
 
         # unhide private methods to avoid "Variable will not stay shared"
         # warnings that appear due to change of applicable scoping rules
@@ -76,7 +76,7 @@ sub runCommand {
 sub runCommand_canThrow {
     @ARGV = @_;
 
-    main();
+    return main();
 }
 
 ### use threads;

@@ -146,6 +146,10 @@ sub main {
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     my $znapzend = ZnapZend->new($opts);
+
+### RM_COMM_4_TEST_main ###  # remove ### RM_COMM_4_TEST_main ### comments for testing purpose.
+### RM_COMM_4_TEST_main ###  return $znapzend->start;
+
     $znapzend->start;
 
     return 1;
