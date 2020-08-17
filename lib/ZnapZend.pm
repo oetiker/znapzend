@@ -1242,9 +1242,13 @@ my $daemonize = sub {
             }
         }
         setsid or die "Can't start a new session: $!";
-        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
+
         open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  if (0) {
+        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
         open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
+### RM_COMM_4_TEST ###  }
 
         # send warnings and die messages to log
         $SIG{__WARN__} = sub { $self->zLog->warn(shift) };
