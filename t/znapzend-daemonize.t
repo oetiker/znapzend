@@ -84,7 +84,6 @@ sub runCommand_canThrow {
 }
 
 ### use threads;
-use Test::Builder;
 use Test::More;
 use Test::Exception;
 use Test::SharedFork; ### NOTE: Conflicts with ithreads
