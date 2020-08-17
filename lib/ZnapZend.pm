@@ -1288,10 +1288,10 @@ sub start {
         $self->$createWorkers;
     };
 
-    print STDERR "znapzend (PID=$$) Refreshing backup plans...\n";
+    print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
     $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
 
-    print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n";
+    print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
     $self->$createWorkers;
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
@@ -1306,7 +1306,7 @@ sub start {
     #start eventloop
     Mojo::IOLoop->start;
 
-    print STDERR "znapzend (PID=$$) is done.\n";
+    print STDERR "znapzend (PID=$$) is done.\n" if $self->debug;
     return 1;
 }
 
