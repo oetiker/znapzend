@@ -111,25 +111,88 @@ do 'znapzend' or die "ERROR: loading program znapzend\n";
 # tests below expect "(1 or 254)" for normal daemonization or "(1 or 255)"
 # where we accept that pidfile conflict might not happen in fact.
 
-# Check that pidfile conflict detection works
-    is ( runCommand_canThrow(qw(--daemonize --debug),'--features=oracleMode,recvu',
-        qw(--pidfile=znapzend.pid)), (1 or 254), 'Daemons be here: znapzend --daemonize #1a');
+# Allow testing forkedTest() itself :)
+sub myprint {
+    print STDERR "=====> '" . join(',', @_) . "'\n";
+    return 1;
+}
 
-    # IF daemon #1 is still alive, we can check if we conflict in pidfile:
-    is ( runCommand_canThrow(qw(--daemonize),'-n',
-        qw(--pidfile=znapzend.pid)), (1 or 255), 'Daemons be here: znapzend --daemonize #1b');
+sub forkedTest {
+    # Args are similar to those passed into Test->is_num():
+    # $0 = expected code for child (primary worker)
+    # $1 = expected code for parent (dies just after fork, or in sanity checks before)
+    # $2 = comment to print about the test
+    # $3 = routine to use for testing
+    # @4 = args to that call (array)
+    my ($expResChild) = $_[0]; # can be undef, number or array ref
+    my ($expResParent) = $_[1];
+    my ($expTxt) = $_[2];
+    my ($expCall) = $_[3];
+    my (@expCallArgs) = @{$_[4]};
+
+    # Usually forked/daemonized subprocess can return "ok"/"not ok" twice,
+    # for parent and child, so we use a trick to run the tested routine
+    # first, and then report on how that went in child and parent processes
+    # (assuming the child does fork).
+    my $testPID = $$;
+
+    # Small debug of test routine
+    print STDERR "=== BEGIN test in parent $$ before forking: '$expTxt'\n";
+    myprint(@expCallArgs);
+
+    # This can fork
+    my $res = &{$expCall}(@expCallArgs);
+
+    if ( $$ != $testPID ) {
+        # Make a test verdict for one leg of the forked tests, the daemon
+        if (ref($expResChild) eq 'ARRAY') {
+            print STDERR "=== INTERPRET test in child $$ (res=$res, exp in '" . join(" or ", @$expResChild) . "'): '$expTxt'\n";
+            ok( scalar(grep{$res == $_} @$expResChild) == 1, $expTxt . " (child)" );
+        } else {
+            print STDERR "=== INTERPRET test in child $$ (res=$res, exp=$expResChild): '$expTxt'\n";
+            is($res, $expResChild, $expTxt . " (child)" );
+        }
+        print STDERR "=== ENDED test in child with $res: '$expTxt'\n";
+        exit();
+    } else {
+        # Make a test verdict for parent which is usually nearly no-op
+        if (ref($expResParent) eq 'ARRAY') {
+            print STDERR "=== INTERPRET test in parent $$ (res=$res, exp in '" . join(" or ", @$expResParent) . "'): '$expTxt'\n";
+            ok( scalar(grep{$res == $_} @$expResParent) == 1, $expTxt . " (parent)" );
+        } else {
+            print STDERR "=== INTERPRET test in parent $$ (res=$res, exp=$expResParent): '$expTxt'\n";
+            is($res, $expResParent, $expTxt . " (parent)" );
+        }
+    }
+}
+
+
+#    forkedTest (undef, 1, 'Testing test framework',
+#        \&myprint, [ '--daemonize', '--debug', '--features=oracleMode,recvu',
+#        '--pidfile=znapzend.pid' ] );
+
+# Check that pidfile conflict detection works
+    forkedTest (1, 254, 'Daemons be here: znapzend --daemonize #1a',
+        \&runCommand_canThrow, [ '--daemonize', '--debug', '--features=oracleMode,recvu',
+        '--pidfile=znapzend.pid' ] );
+
+    # IF daemon #1 is still alive, we can check if we conflict in pidfile
+    # (255 before forking) or work normally (1 in child, 254 in parent):
+    my @expResConflict = (255, 254);
+    forkedTest (1, \@expResConflict, 'Daemons be here: znapzend --daemonize #1b',
+        \&runCommand_canThrow, [ '--daemonize', '--debug', '-n', '--pidfile=znapzend.pid' ] );
 
 # There should be no conflict for different PID file though
 # (Note in real life two znapzends not given paths to work on
 # would discover same datasets and policies and conflict while
 # sending/receiving stuff)
-    is ( runCommand_canThrow(qw(--daemonize --debug),'--features=compressed',
-        qw(--pidfile=znapzend2.pid)), (1 or 254), 'Daemons be here: znapzend --daemonize #2');
+    forkedTest (1, 254, 'Daemons be here: znapzend --daemonize #2',
+        \&runCommand_canThrow, [ '--daemonize', '--debug', '--features=compressed', '--pidfile=znapzend2.pid' ] );
 
 # ASSUMPTION: Eval and time should cover up the users for that pidfile
 # For coverage, test also the daemon mode doing nothing R/W wise
-    is ( runCommand_canThrow(qw(--daemonize),'-n',
-        qw(--pidfile=znapzend.pid)), (1 or 255), 'Daemons be here: znapzend --daemonize #3');
+    forkedTest (1, \@expResConflict, 'Daemons be here: znapzend --daemonize #3',
+        \&runCommand_canThrow, [ '--daemonize', '-n', '--pidfile=znapzend.pid' ] );
 
 print STDERR "=== Parent test launcher is done, waiting for child daemons...\n";
 
