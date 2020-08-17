@@ -11,6 +11,10 @@ BEGIN {
     $buildDir = shift @ARGV // "$FindBin::Bin/../";
 }
 
+# Track child PIDs spawned by test
+our @test_arr_children = ();
+sub test_arr_children { \@test_arr_children };
+
 # PERL5LIB
 use lib "$FindBin::Bin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
@@ -130,10 +134,20 @@ do 'znapzend' or die "ERROR: loading program znapzend\n";
 print STDERR "=== Parent test launcher is done, waiting for child daemons...\n";
 
 # From https://perldoc.perl.org/functions/waitpid.html suggestions:
-my $kid;
-do {
-    $kid = waitpid(-1, WNOHANG);
-} while $kid > 0;
+#my $kid;
+#do {
+#    $kid = waitpid(-1, WNOHANG);
+#} while $kid > 0;
+
+while (scalar(@test_arr_children)) {
+    ####SPAMALOT### print STDERR "=== REMAINS : " . @test_arr_children . " : " . join (', ', @test_arr_children) . "\n";
+    for my $kid (@test_arr_children) {
+        if ( $kid == waitpid($kid, WNOHANG) ) {
+            print STDERR "=== Parent reaped child daemon PID=$kid\n";
+            @test_arr_children = grep { $kid != $_ } @test_arr_children;
+        }
+    }
+}
 
 done_testing();
 

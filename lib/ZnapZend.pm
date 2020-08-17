@@ -1223,6 +1223,7 @@ my $daemonize = sub {
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  print STDERR "fork: znapzend ($$) returning not exiting from parent process during test.\n";
+### RM_COMM_4_TEST ###  eval { if (defined(\@main::test_arr_children)) { print STDERR "PUSH!\n" ; push (@main::test_arr_children, $pid); }; };
 ### RM_COMM_4_TEST ###  return 254;
 
         #print STDERR "fork: znapzend ($$) exiting from parent process.\n";
