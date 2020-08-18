@@ -1288,7 +1288,7 @@ sub getSnapshotProperties {
 
     if ($self->debug) {
         if ($numProps > 0) {
-            $self->zLog->debug("=== getSnapshotProperties(): GOT $inhMode (".Dumper($inherit).") properties of $snapshot : " .Dumper(\%properties) );
+            $self->zLog->debug("=== getSnapshotProperties(): GOT '$inhMode' properties of $snapshot : " .Dumper(\%properties) );
         }
     }
 
@@ -1355,7 +1355,7 @@ sub getSnapshotProperties {
                 #}
             }
         }
-        if ($inherit->zfs_local) {
+        if (!$inherit->snapshot_recurse_parent) {
             $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed") if $self->debug;
         }
     }
@@ -1377,7 +1377,10 @@ sub getSnapshotProperties {
 
                 my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
-                    # Merge hash arrays, use existing values as overrides in case of conflict:
+                    # Merge hash arrays, use existing values as overrides in
+                    # case of same-name conflict; note that currently a prop
+                    # zfs-inherited from backupSet can win (was seen earlier)
+                    # over another prop set in a "nearer" parent dataset snapshot:
                     $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         "\t" . Dumper(\%$parentProperties) .
                         "\t" . Dumper(\%properties)
