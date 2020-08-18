@@ -26,8 +26,8 @@ the command is targeted at one dataset and impacts it and all its children,
 allowing to get a consistent point-in-time set of snapshots across multiple
 datasets.
 
-Compilation Inztructionz
-------------------------
+Compilation and Installation from source Inztructionz
+-----------------------------------------------------
 
 If your distribution does not provide a packaged version of znapzend, or if
 you want to get a custom-made copy of znapzend, you will need a compiler and
@@ -87,14 +87,6 @@ make
 make install
 ```
 
-To make sure your resulting set of znapzend and dependencies plays well
-together, you can run unit-tests with:
-```sh
-./test.sh
-```
-> NOTE: there is also a `make check` but currently its implementation fails for
-> daemonized tests per [issue #500](https://github.com/oetiker/znapzend/issues/500)
-
 Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH, e.g.:
 
@@ -102,6 +94,26 @@ in the system PATH, e.g.:
 ZNAPVER=0.20.0
 for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -fs ../../../$x /usr/local/bin/; done
 ```
+
+Verification Inztructionz
+-------------------------
+
+To make sure your resulting set of znapzend code and dependencies plays well
+together, you can run unit-tests with:
+
+```sh
+make check
+```
+
+or
+
+```sh
+./test.sh
+```
+
+> NOTE: the two methods run same testing scripts with different handling, so
+> might behave differently. While that can happen in practice, that would be
+> a bug to report and pursue fixing.
 
 Packages
 --------
