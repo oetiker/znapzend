@@ -1204,8 +1204,12 @@ my $daemonize = sub {
         open my $fh, $pidFile or die "ERROR: pid file '$pidFile' exists but is not readable\n";
         chomp(my $pid = <$fh>);
         close $fh;
-        #pid is not empty and is numeric
-        if ($pid && ($pid = int($pid)) && kill 0, $pid){
+        #pid is not empty and is numeric, and is running
+        if ($pid && ($pid = int($pid)) && (1 == kill 0, $pid) ){
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  print STDERR "die: I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n"
+### RM_COMM_4_TEST ###             . "die: znapzend ($$) returning not exiting from parent process during test.\n";
+### RM_COMM_4_TEST ###  return 255;
             die "I Quit! Another copy of znapzend ($pid) seems to be running. See $pidFile\n";
         }
     }
@@ -1219,7 +1223,8 @@ my $daemonize = sub {
 
 ### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
 ### RM_COMM_4_TEST ###  print STDERR "fork: znapzend ($$) returning not exiting from parent process during test.\n";
-### RM_COMM_4_TEST ###  return;
+### RM_COMM_4_TEST ###  eval { if (defined(\@main::test_arr_children)) { print STDERR "PUSH!\n" ; push (@main::test_arr_children, $pid); }; };
+### RM_COMM_4_TEST ###  return 254;
 
         #print STDERR "fork: znapzend ($$) exiting from parent process.\n";
 
@@ -1237,15 +1242,20 @@ my $daemonize = sub {
             }
         }
         setsid or die "Can't start a new session: $!";
-        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
+
         open STDIN, '</dev/null' or die "ERROR: Redirecting STDIN from /dev/null: $!";
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  if (0) {
+        open STDOUT, '>/dev/null' or die "ERROR: Redirecting STDOUT to /dev/null: $!";
         open STDERR, '>/dev/null' or die "ERROR: Redirecting STDERR to /dev/null: $!";
+### RM_COMM_4_TEST ###  }
 
         # send warnings and die messages to log
         $SIG{__WARN__} = sub { $self->zLog->warn(shift) };
         $SIG{__DIE__}  = sub { return if $^S; $self->zLog->error(shift); exit 1 };
 
     }
+    return 1;
 };
 
 ### public methods ###
@@ -1254,7 +1264,15 @@ sub start {
 
     $self->zLog->info("znapzend (PID=$$) starting up ...");
 
-    $self->$daemonize if $self->daemonize;
+    if ($self->daemonize) {
+        my $resDaemonize = $self->$daemonize;
+### RM_COMM_4_TEST ###  # remove ### RM_COMM_4_TEST ### comments for testing purpose.
+### RM_COMM_4_TEST ###  if ($resDaemonize == 255) { return 255; } # die on pidfile clash
+### RM_COMM_4_TEST ###  if ($resDaemonize == 254) { return 254; } # parent exit
+        if ($resDaemonize != 1) {
+            die "znapzend ($$) failed to daemonize: $resDaemonize !";
+        }
+    }
 
     # set signal handlers
     $SIG{INT}  = sub { $self->zLog->debug('SIGINT received.'); $self->$killThemAll; };
@@ -1270,8 +1288,10 @@ sub start {
         $self->$createWorkers;
     };
 
+    print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
     $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
 
+    print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
     $self->$createWorkers;
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
@@ -1286,6 +1306,7 @@ sub start {
     #start eventloop
     Mojo::IOLoop->start;
 
+    print STDERR "znapzend (PID=$$) is done.\n" if $self->debug;
     return 1;
 }
 

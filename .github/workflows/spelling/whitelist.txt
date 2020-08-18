@@ -110,6 +110,7 @@ CWORD
 CXX
 cygpath
 cygwin
+daemonization
 daemonize
 daemonized
 DAGOLDEN
@@ -253,6 +254,7 @@ Isources
 isrc
 Itank
 Ithirdparty
+ithreads
 Itimeout
 Iusbbackup
 Iuser
@@ -313,6 +315,7 @@ MPTZONEROOTS
 mvcmd
 mvprog
 MYMETA
+myprint
 mysql
 NAL
 namespace
@@ -349,6 +352,7 @@ pak
 passphrase
 passwordless
 perl
+perldoc
 pfexec
 php
 pid
@@ -430,6 +434,7 @@ sourced
 sourceforge
 sourcemissing
 sourcetype
+SPAMALOT
 src
 srcame
 srcdir
