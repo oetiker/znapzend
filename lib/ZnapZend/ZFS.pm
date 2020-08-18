@@ -4,26 +4,7 @@ use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::ForkCall;
 use Data::Dumper;
-use Class::Struct;
-
-### Property inheritance levels - how deep we go in routines
-### that (need to) care about these nuances beyond a boolean.
-### Primarily intended for getSnapshotProperties() to get props
-### defined by snapshots of parent datasets with same snapnames.
-### For "usual" datasets (filesystem,volume) `zfs` returns the
-### properties inherited from higher level datasets; but for
-### snapshots it only returns the same - not from higher snaps.
-struct ('inheritLevels' => {
-    zfs_local => '$', # set to ask for properties defined locally in dataset
-    zfs_inherit => '$', # set to ask for properties inherited from higher datasets
-    ### zfs_received => '$', # set to ask for properties received during "zfs send|recv" (no-op for now, mentioned for completeness)
-    snapshot_recurse_parent => '$' # "manually" (not via zfs tools) look in same-named snapshots of parent datasets
-    } ) ;
-#    local_only => 0,
-#    local_zfsinherit => 1,
-#    local_recurseparent => 2,
-#    local_recurseparent_zfsinherit => 3,
-#);
+use inheritLevels;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -1214,7 +1195,7 @@ sub getSnapshotProperties {
     #   1 = local + inherit as defined by zfs
     #   2 = local + recurse into parent that has same snapname
     #   3 = local + inherit as defined by zfs + recurse into parent
-    # See struct inheritLevels above for reusable definitions.
+    # See struct inheritLevels for reusable definitions.
     my $inherit = shift; # May be not passed => undef => will make a new inheritLevels instance below
 
     # Limit the request to `zfs get` to only pick out certain properties
@@ -1240,27 +1221,17 @@ sub getSnapshotProperties {
     } else {
         # Data type check
         if ( ! $inherit->isa('inheritLevels') ) {
-            # TODO : Convert from legacy magic numbers?
-            # We want to eradicate them so just drop the value...
-            # caller DID set something, so set a default... local_zfsinherit
             $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct inheritLevels");
-            $inherit = new inheritLevels;
-            $inherit->zfs_local(1);
-            $inherit->zfs_inherit(1);
+            my $newInherit = new inheritLevels;
+            if (!$newInherit->reset($inherit)) {
+                # caller DID set something, so set a default... local_zfsinherit
+                $newInherit->zfs_local(1);
+                $newInherit->zfs_inherit(1);
+            }
+            $inherit = $newInherit;
         }
     }
-    # TODO: Need method to return a string based on the flags
-    my $inhMode = '';
-    if ($inherit->zfs_local) {
-        $inhMode .= 'local';
-    }
-    if ($inherit->zfs_inherit) {
-        if ($inhMode eq '') {
-            $inhMode = 'inherited';
-        } else {
-            $inhMode .= ',inherited';
-        }
-    }
+    my $inhMode = $inherit->getInhMode();
 
     my %properties;
     my $propertyPrefix = $self->propertyPrefix;
@@ -1334,8 +1305,7 @@ sub getSnapshotProperties {
                 ### Still warns about experimental perl feature in 5.22...
                 #if ($] >= 5.010001) {
                 #    if (@wantedPropnames ~~ \%properties) {
-                #        $inherit = new inheritLevels; # TODO: Need method to reset an existing object
-                #        $inherit->zfs_local(1);
+                #        $inherit->reset('zfs_local');
                 #    }
                 #} else {
                     # Old ways...
@@ -1349,8 +1319,7 @@ sub getSnapshotProperties {
                         }
                     }
                     if ($uniqHits == $numProps) {
-                        $inherit = new inheritLevels; # TODO: Need method to reset an existing object
-                        $inherit->zfs_local(1);
+                        $inherit->reset('zfs_local');
                     }
                 #}
             }
