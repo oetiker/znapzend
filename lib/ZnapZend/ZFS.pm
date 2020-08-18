@@ -476,6 +476,9 @@ sub mostRecentCommonSnapshot {
     # getSnapshotProperties() code and struct inheritLevels.
     my $inherit = shift; # May be not passed => undef
     if (!defined($inherit)) {
+        # We leave defined but invalid values of $inherit to
+        # getSnapshotProperties() to figure out and complain,
+        # but for this routine's purposes set a specific default.
         $inherit = new inheritLevels;
         $inherit->zfs_local(1);
         $inherit->zfs_inherit(1);
@@ -1262,7 +1265,10 @@ sub getSnapshotProperties {
     my %properties;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my @cmd = (@{$self->priv}, qw(zfs get -H -s), $inhMode);
+    my @cmd = (@{$self->priv}, qw(zfs get -H));
+    if ($inhMode ne '') {
+        push (@cmd, qw(-s), $inhMode);
+    }
     if ($self->zfsGetType) {
         push (@cmd, qw(-t snapshot));
     }
