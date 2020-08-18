@@ -320,6 +320,7 @@ myprint
 mysql
 NAL
 namespace
+namespaced
 nano
 newcfgdata
 newestbe
@@ -435,6 +436,7 @@ sourced
 sourceforge
 sourcemissing
 sourcetype
+sourcing
 SPAMALOT
 src
 srcame
