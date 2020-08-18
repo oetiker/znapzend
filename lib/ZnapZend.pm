@@ -811,7 +811,12 @@ my $sendRecvCleanup = sub {
                         # and at least one destination is indeed offline,
                         # but it is not safe in current situation regarding
                         # last known sync points...
-                        $self->zLog->warn('ERROR: suspending recursive cleanup of source ' . $backupSet->{src} . ' because a send task failed and no common snapshot was found for at least ' . $dstDataSet);
+                        # Note this includes a case where source dataset has
+                        # NO snapshots (message is misleading but true then).
+                        # This should not happen in normal runs since znapzend
+                        # would create something, but can happen in --noaction
+                        # experiments for example.
+                        $self->zLog->warn('ERROR: suspending recursive cleanup of source ' . $backupSet->{src} . ' because a send task failed and no common snapshot was found for at least destination ' . $dstDataSet);
                         $doClean = 0;
                     }
                 }
@@ -892,7 +897,12 @@ my $sendRecvCleanup = sub {
                     # and at least one destination is indeed offline,
                     # but it is not safe in current situation regarding
                     # last known sync points...
-                    $self->zLog->warn('ERROR: suspending cleanup of source ' . $srcDataSet . ' because a send task failed and no common snapshot was found for at least ' . $dstDataSet);
+                    # Note this includes a case where source dataset has
+                    # NO snapshots (message is misleading but true then).
+                    # This should not happen in normal runs since znapzend
+                    # would create something, but can happen in --noaction
+                    # experiments for example.
+                    $self->zLog->warn('ERROR: suspending cleanup of source ' . $srcDataSet . ' because a send task failed and no common snapshot was found for at least destination ' . $dstDataSet);
                     next SRC_SET;
                 }
             }
