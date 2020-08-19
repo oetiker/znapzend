@@ -1234,6 +1234,7 @@ sub getSnapshotProperties {
     my $inhMode = $inherit->getInhMode();
 
     my %properties;
+    my %propertiesInherited;
     my $propertyPrefix = $self->propertyPrefix;
 
     my @cmd = (@{$self->priv}, qw(zfs get -H));
@@ -1246,14 +1247,28 @@ sub getSnapshotProperties {
     if ($recurse) {
         push (@cmd, qw(-r));
     }
-    push (@cmd, qw(-o), 'property,value', $propnames, $snapshot);
+    push (@cmd, qw(-o), 'property,value,source', $propnames, $snapshot);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties of ' . $snapshot);
     while (my $prop = <$props>){
         chomp $prop;
-        my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
-        $properties{$key} = $value;
+        my ($key, $value, $sourcetype, $tail) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/ or next;
+        if ($inherit->zfs_inherit and $inherit->snapshot_recurse_parent and $sourcetype =~ /inherited from/) {
+            # If we are not doing "snapshot_recurse_parent" then either it
+            # is okay to put all values into one bucket initially, or we
+            # run on a system where "zfs get" does the snapshot property
+            # inheritance the way we need it to here, so manual iteration
+            # is not needed (TODO: Make it a user selectable feature).
+            # This also impacts the precedence of values set in a snapshot
+            # or its recursed same-named snapshots of parent dataset(s)
+            # over values that "zfs get" reports as "inherited" (lowest prio).
+            # Note we should not have any hits here if zfs_inherit mode
+            # is not enabled in the first place, so we filter by that too.
+            $propertiesInherited{$key} = $value;
+        } else {
+            $properties{$key} = $value;
+        }
     }
     my $numProps = keys %properties;
 
@@ -1347,9 +1362,7 @@ sub getSnapshotProperties {
                 my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
                     # Merge hash arrays, use existing values as overrides in
-                    # case of same-name conflict; note that currently a prop
-                    # zfs-inherited from backupSet can win (was seen earlier)
-                    # over another prop set in a "nearer" parent dataset snapshot:
+                    # case of same-name conflict:
                     $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         "\t" . Dumper(\%$parentProperties) .
                         "\t" . Dumper(\%properties)
@@ -1362,6 +1375,18 @@ sub getSnapshotProperties {
                 $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist") if $self->debug;
             }
         } # else  Got to root, and it was inspected above
+    }
+
+    my $numPropertiesInherited = keys %propertiesInherited;
+    if ($numPropertiesInherited > 0) {
+        $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists - collected from '$snapshot' and same-named snapshots of parent datasets, and what ZFS claims as inherited from ancestors :\n" .
+            "\t" . Dumper(\%properties) .
+            "\t" . Dumper(\%propertiesInherited)
+            ) if $self->debug;
+        # Inherited values have lower priority than those local to snapshot or its parents
+        %properties = (%propertiesInherited, %properties);
+        $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list : " .
+            Dumper(\%properties) ) if $self->debug;
     }
 
     return \%properties;
