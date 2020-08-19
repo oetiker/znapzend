@@ -752,14 +752,25 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    if (scalar(@sendFailed) > 0 and not $self->cleanOffline) {
-        $self->zLog->warn('ERROR: suspending cleanup source dataset because '
-            . scalar(@sendFailed) . ' send task(s) failed:');
-        for my $errmsg (@sendFailed) {
+    #we want the message summarizing errors regardless of continuing to cleanup
+    if (scalar(@sendFailed) > 0) {
+        my $errmsg;
+        if ($self->cleanOffline) {
+            # Note: this is about all transfer failures, such as offline dest
+            # or it is full, or read-only, or source too full to make a snap...
+            $errmsg = 'ERROR: ' . scalar(@sendFailed) . ' send task(s) below failed,' .
+                ' but "cleanOffline" mode is on so proceeding to cleanup source dataset carefully:' ;
+        } else {
+            $errmsg = 'ERROR: suspending cleanup source dataset because ' .
+                scalar(@sendFailed) . ' send task(s) failed:' ;
+        }
+        $self->zLog->warn($errmsg);
+        for $errmsg (@sendFailed) {
             $self->zLog->warn(' +-->   ' . $errmsg);
         }
     }
-    else {
+
+    if (scalar(@sendFailed) == 0 or $self->cleanOffline) {
         # If "not sendFailed" or "cleanOffline requested"...
         # cleanup source according to backup schedule
 
