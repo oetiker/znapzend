@@ -104,3 +104,72 @@ __END__
 
 inheritLevels - helper struct for various options of ZFS property inheritance
 
+=head1 SYNOPSIS
+
+use inheritLevels;
+use ZnapZend::ZFS;
+...
+my $inherit = new inheritLevels;
+$inherit->zfs_local(1);
+$inherit->zfs_inherit(1);
+my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, @dstSyncedProps);
+...
+
+=head1 DESCRIPTION
+
+this object makes zfs property request inheritance settings easier to use
+
+currently used by ZnapZend::ZFS routines getSnapshotProperties and
+mostRecentCommonSnapshot but not really useful for getDataSetProperties
+so not yet utilized there
+
+=head1 ATTRIBUTES
+
+=head2 zfs_local
+
+ask for values defined locally in a dataset or snapshot itself
+
+=head2 zfs_inherit
+
+ask for values defined in parents of dataset or snapshot itself
+as reported by "zfs get" command on the current system; this may
+not include values defined in snapshots of a parent dataset's that
+are named same as the snapshot you are requesting properties of
+
+=head2 zfs_received
+
+ask for values defined by receiving a dataset or snapshot
+by "zfs send|zfs recv"
+
+(zfs_received is not currently used by znapzend but may have
+some meaning in the future)
+
+=head2 snapshot_recurse_parent
+
+meaningful only for requests of properties of snapshots: recursively
+ask for values defined locally in a same-named snapshot of a parent
+or a further ancestor dataset
+
+=head1 COPYRIGHT
+
+Copyright (c) 2020 by OETIKER+PARTNER AG. All rights reserved.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see L<http://www.gnu.org/licenses/>.
+
+=head1 AUTHOR
+
+S<Jim Klimov E<lt>jimklimov@gmail.comE<gt>>,
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
