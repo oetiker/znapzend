@@ -40,6 +40,7 @@ bashisms
 Bcreate
 Bdebug
 Bdelete
+beadm
 Bedit
 bergulian
 Berr
