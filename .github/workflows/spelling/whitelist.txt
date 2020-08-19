@@ -191,6 +191,7 @@ Getopt
 github
 gitignore
 gitlab
+gmail
 gmake
 gmtime
 gmx
@@ -263,6 +264,7 @@ Ivalue
 Iznapzendzetup
 JB
 JBERGER
+jimklimov
 JSON
 killproc
 Klimov
