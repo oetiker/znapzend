@@ -158,6 +158,7 @@ endif
 ENTRYPOINT
 envval
 envvar
+errline
 errmsg
 esac
 esyscmd
@@ -208,6 +209,7 @@ HMSz
 Honame
 html
 http
+hostname
 Hypnotoad
 Icommand
 Icommon
@@ -289,6 +291,7 @@ lowmem
 lpr
 lsb
 ltrim
+mailprog
 MAINPID
 makeinfo
 manpage
@@ -418,6 +421,7 @@ scriptversion
 SEENSRC
 SEENDST
 selftest
+sendmail
 setsid
 shellwords
 shtml
