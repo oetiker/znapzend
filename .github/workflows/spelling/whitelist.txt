@@ -191,6 +191,7 @@ Getopt
 github
 gitignore
 gitlab
+gmail
 gmake
 gmtime
 gmx
@@ -263,6 +264,7 @@ Ivalue
 Iznapzendzetup
 JB
 JBERGER
+jimklimov
 JSON
 killproc
 Klimov
@@ -320,6 +322,7 @@ myprint
 mysql
 NAL
 namespace
+namespaced
 nano
 newcfgdata
 newestbe
@@ -435,6 +438,7 @@ sourced
 sourceforge
 sourcemissing
 sourcetype
+sourcing
 SPAMALOT
 src
 srcame
