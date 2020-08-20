@@ -769,7 +769,7 @@ my $sendRecvCleanup = sub {
                 scalar(@sendFailed) . ' send task(s) failed:' ;
         }
         $self->zLog->warn($errline);
-        if ($self->mailErrorSummaryTo ne '') {
+        if ($self->mailErrorSummaryTo) {
             $errmsg = $errline . "\n";
         }
         for $errline (@sendFailed) {
