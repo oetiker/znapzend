@@ -779,7 +779,7 @@ my $sendRecvCleanup = sub {
             }
         }
 
-        if ($self->mailErrorSummaryTo ne '') {
+        if ($self->mailErrorSummaryTo) {
             #my $mailprog = '/usr/lib/sendmail';
             my $mailprog = '/usr/sbin/sendmail';
             #my $from_address = "`id`@`hostname`" ;
