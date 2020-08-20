@@ -53,7 +53,7 @@ has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
 has cleanOffline            => sub { 0 };
-has mailErrorSummaryTo      => sub { q{} };
+has 'mailErrorSummaryTo';
 has backupSets              => sub { [] };
 
 has zConfig => sub {
