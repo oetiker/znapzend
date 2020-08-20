@@ -4,20 +4,7 @@ use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::ForkCall;
 use Data::Dumper;
-
-### Property inheritance levels - how deep we go in routines
-### that (need to) care about these nuances beyond a boolean.
-### Primarily intended for getSnapshotProperties() to get props
-### defined by snapshots of parent datasets with same snapnames.
-### For "usual" datasets (filesystem,volume) `zfs` returns the
-### properties inherited from higher level datasets; but for
-### snapshots it only returns the same - not from higher snaps.
-our %inheritLevels = (
-    local_only => 0,
-    local_zfsinherit => 1,
-    local_recurseparent => 2,
-    local_recurseparent_zfsinherit => 3,
-);
+use inheritLevels;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -467,13 +454,16 @@ sub mostRecentCommonSnapshot {
     # deletion of "protected" last-known-synced snapshots, we consider both
     # local and inherited values of the dst_X_synced flag, if present.
     # See definition of recognized $inherit values for this context in
-    # getSnapshotProperties() code.
-    # See %inheritLevels for reusable definitions.
-    # TODO: Remake from use of magic numbers to direct use of instances of that structure
+    # getSnapshotProperties() code and struct inheritLevels.
     my $inherit = shift; # May be not passed => undef
     if (!defined($inherit)) {
-        $inherit = $inheritLevels{local_recurseparent_zfsinherit};
-        # 3 = local + zfs inherited + recurse into same-named snapshot of parent(s)
+        # We leave defined but invalid values of $inherit to
+        # getSnapshotProperties() to figure out and complain,
+        # but for this routine's purposes set a specific default.
+        $inherit = new inheritLevels;
+        $inherit->zfs_local(1);
+        $inherit->zfs_inherit(1);
+        $inherit->snapshot_recurse_parent(1);
     }
 
     my ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount);
@@ -1190,7 +1180,7 @@ sub getSnapshotProperties {
     # NOTE that it is then up to zfs command to either return only data for the
     # snapshot named in the argument, or also same-named snapshots in children
     # of the dataset this is a snapshot of, so this flag may be effectively
-    # ignored by OS.
+    # ignored by OS, or even actively rejected.
     # TODO: Make magic like for inherit below, to drill into same-named
     # snapshots of datasets that are children of one that $snapshot is a
     # zfs snapshot of.
@@ -1198,14 +1188,15 @@ sub getSnapshotProperties {
 
     # NOTE that some versions of zfs do not inherit values from same-named
     # snapshot of a parent dataset, but only from a "real" dataset higher
-    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    # in the data hierarchy, so the "-s inherit" argument may be effectively
+    # ignored by OS for the purposes of *such* inheritance. Reasonable modes
+    # of sourcing properties include:
     #   0 = only local
     #   1 = local + inherit as defined by zfs
     #   2 = local + recurse into parent that has same snapname
     #   3 = local + inherit as defined by zfs + recurse into parent
-    # See %inheritLevels for reusable definitions.
-    # TODO: Remake from use of magic numbers to direct use of instances of that structure
-    my $inherit = shift; # May be not passed => undef
+    # See struct inheritLevels for reusable definitions.
+    my $inherit = shift; # May be not passed => undef => will make a new inheritLevels instance below
 
     # Limit the request to `zfs get` to only pick out certain properties
     # and save time not-processing stuff the caller will ignore?..
@@ -1225,49 +1216,72 @@ sub getSnapshotProperties {
     }
 
     if (!defined($inherit)) {
-        $inherit = $inheritLevels{local_only};
+        $inherit = new inheritLevels;
+        $inherit->zfs_local(1);
     } else {
-        if ( !( grep {$_ == $inherit} values %inheritLevels) ) {
-            $self->zLog->warn("getSnapshotProperties(): inherit flag is not a value recognized in inheritLevels");
-            $inherit = $inheritLevels{local_zfsinherit}; # caller DID set something...
+        # Data type check
+        if ( ! $inherit->isa('inheritLevels') ) {
+            $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct inheritLevels");
+            my $newInherit = new inheritLevels;
+            if (!$newInherit->reset($inherit)) {
+                # caller DID set something, so set a default... local_zfsinherit
+                $newInherit->zfs_local(1);
+                $newInherit->zfs_inherit(1);
+            }
+            $inherit = $newInherit;
         }
     }
-    my $inhMode = 'local';
-    if ($inherit == $inheritLevels{local_zfsinherit} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
-        $inhMode .= ',inherited';
-    }
+    my $inhMode = $inherit->getInhMode();
 
     my %properties;
+    my %propertiesInherited;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my @cmd = (@{$self->priv}, qw(zfs get -H -s), $inhMode);
+    my @cmd = (@{$self->priv}, qw(zfs get -H));
+    if ($inhMode ne '') {
+        push (@cmd, qw(-s), $inhMode);
+    }
     if ($self->zfsGetType) {
         push (@cmd, qw(-t snapshot));
     }
     if ($recurse) {
         push (@cmd, qw(-r));
     }
-    push (@cmd, qw(-o), 'property,value', $propnames, $snapshot);
+    push (@cmd, qw(-o), 'property,value,source', $propnames, $snapshot);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties of ' . $snapshot);
     while (my $prop = <$props>){
         chomp $prop;
-        my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
-        $properties{$key} = $value;
+        my ($key, $value, $sourcetype, $tail) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/ or next;
+        if ($inherit->zfs_inherit and $inherit->snapshot_recurse_parent and $sourcetype =~ /inherited from/) {
+            # If we are not doing "snapshot_recurse_parent" then either it
+            # is okay to put all values into one bucket initially, or we
+            # run on a system where "zfs get" does the snapshot property
+            # inheritance the way we need it to here, so manual iteration
+            # is not needed (TODO: Make it a user selectable feature).
+            # This also impacts the precedence of values set in a snapshot
+            # or its recursed same-named snapshots of parent dataset(s)
+            # over values that "zfs get" reports as "inherited" (lowest prio).
+            # Note we should not have any hits here if zfs_inherit mode
+            # is not enabled in the first place, so we filter by that too.
+            $propertiesInherited{$key} = $value;
+        } else {
+            $properties{$key} = $value;
+        }
     }
     my $numProps = keys %properties;
 
     if ($self->debug) {
         if ($numProps > 0) {
-            $self->zLog->debug("=== getSnapshotProperties(): GOT $inhMode (#$inherit) properties of $snapshot : " .Dumper(\%properties) );
+            $self->zLog->debug("=== getSnapshotProperties(): GOT '$inhMode' properties of $snapshot : " .Dumper(\%properties) );
         }
     }
 
-    if ($inherit == $inheritLevels{local_recurseparent} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
-        # For the context we have, inheriting means that we go up through
-        # parent datasets that have same-named snapshots as this one, and
-        # check if these snapshots have locally defined properties.
+    if ($inherit->snapshot_recurse_parent) {
+        # For the context we have, inheriting means that we recursively go
+        # up through parent datasets that have same-named snapshots as this
+        # one, and check if these snapshots have locally defined properties.
         # The value defined nearest to current snapshot is most preferred,
         # so we do not check those "parent snapshots" for what they could
         # have inherited from "real datasets" => will recurse with mode "2".
@@ -1306,7 +1320,7 @@ sub getSnapshotProperties {
                 ### Still warns about experimental perl feature in 5.22...
                 #if ($] >= 5.010001) {
                 #    if (@wantedPropnames ~~ \%properties) {
-                #        $inherit = 0;
+                #        $inherit->reset('zfs_local');
                 #    }
                 #} else {
                     # Old ways...
@@ -1320,17 +1334,17 @@ sub getSnapshotProperties {
                         }
                     }
                     if ($uniqHits == $numProps) {
-                        $inherit = $inheritLevels{local_only};
+                        $inherit->reset('zfs_local');
                     }
                 #}
             }
         }
-        if ($inherit == $inheritLevels{local_only}) {
+        if (!$inherit->snapshot_recurse_parent) {
             $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed") if $self->debug;
         }
     }
 
-    if ($inherit == $inheritLevels{local_recurseparent} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
+    if ($inherit->snapshot_recurse_parent) {
         my $parentSnapshot = $snapshot;
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
         #$self->zLog->debug("=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot") if $self->debug;
@@ -1340,11 +1354,15 @@ sub getSnapshotProperties {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
-                my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inheritLevels{local_recurseparent}, $propnames);
+                my $inherit_local_recurseparent = new inheritLevels;
+                $inherit_local_recurseparent->snapshot_recurse_parent(1);
+                $inherit_local_recurseparent->zfs_local(1);
+                my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inherit_local_recurseparent, $propnames);
 
                 my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
-                    # Merge hash arrays, use existing values as overrides in case of conflict:
+                    # Merge hash arrays, use existing values as overrides in
+                    # case of same-name conflict:
                     $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         "\t" . Dumper(\%$parentProperties) .
                         "\t" . Dumper(\%properties)
@@ -1357,6 +1375,18 @@ sub getSnapshotProperties {
                 $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist") if $self->debug;
             }
         } # else  Got to root, and it was inspected above
+    }
+
+    my $numPropertiesInherited = keys %propertiesInherited;
+    if ($numPropertiesInherited > 0) {
+        $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists - collected from '$snapshot' and same-named snapshots of parent datasets, and what ZFS claims as inherited from ancestors :\n" .
+            "\t" . Dumper(\%properties) .
+            "\t" . Dumper(\%propertiesInherited)
+            ) if $self->debug;
+        # Inherited values have lower priority than those local to snapshot or its parents
+        %properties = (%propertiesInherited, %properties);
+        $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list : " .
+            Dumper(\%properties) ) if $self->debug;
     }
 
     return \%properties;
