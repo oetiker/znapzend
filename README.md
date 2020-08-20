@@ -52,8 +52,19 @@ To also bootstrap on Ubuntu / Debian you may need:
 apt-get install autoconf carton
 ```
 
-* On Solaris you may need the C compiler from Solaris Studio and gnu-make
-since the installed perl version is probably very old.
+* On Solaris 10 you may need the C compiler from Solaris Studio and gnu-make
+since the installed perl version is probably very old and you would likely
+have to build some dependency modules. The GNU make is needed instead of Sun
+make due to syntax differences.
+Alternately, take a look at
+[CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
+and its modules, and other dependencies. If you use that implementation,
+you would need to change the shebangs in `znapzend`, `znapzendzetup` and
+`znapzendztatz` scripts to reference it instead of system perl, like this:
+```sh
+#!/opt/csw/bin/perl
+###!/usr/bin/env perl
+```
 
 * On OmniOS/SmartOS you will need perl and gnu-make packages.
 
