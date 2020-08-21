@@ -58,9 +58,7 @@ have to build some dependency modules. The GNU make is needed instead of Sun
 make due to syntax differences.
 Alternately, take a look at
 [CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
-and its modules, and other dependencies. If you use that implementation,
-you would need to change the shebangs in `znapzend`, `znapzendzetup` and
-`znapzendztatz` scripts to reference it instead of system perl, like this:
+and its modules, and other dependencies. To use a non-default perl, set the PERL environment variable to the path of your favorite perl interpreter prior to running `configure`. Eg. `PERL=/opt/perl-32/bin/perl5.32.1 ./configure`
 
 * On OmniOS/SmartOS you will need perl and gnu-make packages.
 
