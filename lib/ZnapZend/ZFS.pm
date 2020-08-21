@@ -910,6 +910,9 @@ sub getDataSetProperties {
         my %properties;
         # TODO : support "inherit-from-local" mode
         my @cmd = (@{$self->priv}, qw(zfs get -H));
+        if ($recurse) {
+            push (@cmd, qw(-r));
+        }
         if ($inherit) {
             push (@cmd, qw(-s), 'local,inherited');
         } else {
@@ -917,9 +920,6 @@ sub getDataSetProperties {
         }
         if ($self->zfsGetType) {
             push (@cmd, qw(-t), 'filesystem,volume');
-        }
-        if ($recurse) {
-            push (@cmd, qw(-r));
         }
         push (@cmd, qw(-o), 'name,property,value,source', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
@@ -1238,14 +1238,14 @@ sub getSnapshotProperties {
     my $propertyPrefix = $self->propertyPrefix;
 
     my @cmd = (@{$self->priv}, qw(zfs get -H));
+    if ($recurse) {
+        push (@cmd, qw(-r));
+    }
     if ($inhMode ne '') {
         push (@cmd, qw(-s), $inhMode);
     }
     if ($self->zfsGetType) {
         push (@cmd, qw(-t snapshot));
-    }
-    if ($recurse) {
-        push (@cmd, qw(-r));
     }
     push (@cmd, qw(-o), 'property,value,source', $propnames, $snapshot);
 
