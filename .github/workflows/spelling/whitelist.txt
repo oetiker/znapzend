@@ -351,6 +351,7 @@ oep
 oetiker
 oi
 ojo
+opencsw
 openindiana
 openlog
 openssh
@@ -554,6 +555,7 @@ withval
 WNOHANG
 WORKDIR
 workflow
+Wperl
 wu
 www
 wx
