@@ -60,7 +60,8 @@ boot-strap the code workspace from scratch:
 ```sh
 MAKE=gmake ./bootstrap.sh
 ```
-Alternately, take a look at
+Note also that the perl version 5.8.4 provided with Solaris 10 is too old for
+the syntax and dependencies of znapzend. As one alternative, take a look at
 [CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
 and its modules, and other dependencies. To use a non-default perl, set the
 `PERL` environment variable to the path of your favorite perl interpreter
