@@ -61,10 +61,6 @@ Alternately, take a look at
 and its modules, and other dependencies. If you use that implementation,
 you would need to change the shebangs in `znapzend`, `znapzendzetup` and
 `znapzendztatz` scripts to reference it instead of system perl, like this:
-```sh
-#!/opt/csw/bin/perl
-###!/usr/bin/env perl
-```
 
 * On OmniOS/SmartOS you will need perl and gnu-make packages.
 
