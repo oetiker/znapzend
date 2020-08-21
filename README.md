@@ -55,7 +55,11 @@ apt-get install autoconf carton
 * On Solaris 10 you may need the C compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old and you would likely
 have to build some dependency modules. The GNU make is needed instead of Sun
-make due to syntax differences.
+make due to syntax differences. Notably you should reference it if you would
+boot-strap the code workspace from scratch:
+```sh
+MAKE=gmake ./bootstrap.sh
+```
 Alternately, take a look at
 [CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
 and its modules, and other dependencies. To use a non-default perl, set the
