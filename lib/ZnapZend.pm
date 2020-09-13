@@ -53,6 +53,7 @@ has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
 has cleanOffline            => sub { 0 };
+has 'mailErrorSummaryTo';
 has backupSets              => sub { [] };
 
 has zConfig => sub {
@@ -752,14 +753,53 @@ my $sendRecvCleanup = sub {
     }
 
     #cleanup source
-    if (scalar(@sendFailed) > 0 and not $self->cleanOffline) {
-        $self->zLog->warn('ERROR: suspending cleanup source dataset because '
-            . scalar(@sendFailed) . ' send task(s) failed:');
-        for my $errmsg (@sendFailed) {
-            $self->zLog->warn(' +-->   ' . $errmsg);
+    #we want the message summarizing errors regardless of continuing to cleanup
+    if (scalar(@sendFailed) > 0) {
+        my $errmsg;
+        my $errline;
+        if ($self->cleanOffline) {
+            # Note: this is about all transfer failures, such as offline dest
+            # or it is full, or read-only, or source too full to make a snap...
+            $errline = 'ERROR: ' . scalar(@sendFailed) . ' send task(s) below ' .
+                'failed for ' . $backupSet->{src} . ', but "cleanOffline" mode ' .
+                'is on, so proceeding to clean up source dataset carefully:' ;
+        } else {
+            $errline = 'ERROR: suspending cleanup source dataset ' .
+                $backupSet->{src} . ' because ' .
+                scalar(@sendFailed) . ' send task(s) failed:' ;
+        }
+        $self->zLog->warn($errline);
+        if ($self->mailErrorSummaryTo) {
+            $errmsg = $errline . "\n";
+        }
+        for $errline (@sendFailed) {
+            $self->zLog->warn(' +-->   ' . $errline);
+            if ($self->mailErrorSummaryTo ne '') {
+                $errmsg .= ' +-->   ' . $errline . "\n";
+            }
+        }
+
+        if ($self->mailErrorSummaryTo) {
+            #my $mailprog = '/usr/lib/sendmail';
+            my $mailprog = '/usr/sbin/sendmail';
+            #my $from_address = "`id`@`hostname`" ;
+            if (open (MAIL, "|$mailprog -t " . $self->mailErrorSummaryTo)) {
+                $self->zLog->warn('Sending a copy of the report above to ' . $self->mailErrorSummaryTo);
+                print MAIL "To: " . $self->mailErrorSummaryTo . "\n";
+                #print MAIL "From: " . $from_address . "\n";
+                print MAIL "Subject: znapzend replication error summary\n";
+                print MAIL "-------\n";
+                print MAIL $errmsg;
+                print MAIL "-------\n";
+                print MAIL ".\n";
+                close(MAIL);
+            } else {
+                warn "Can't open $mailprog to send a copy of the report above to " . $self->mailErrorSummaryTo . "!\n";
+            }
         }
     }
-    else {
+
+    if (scalar(@sendFailed) == 0 or $self->cleanOffline) {
         # If "not sendFailed" or "cleanOffline requested"...
         # cleanup source according to backup schedule
 

@@ -22,7 +22,7 @@ sub main {
             # for "zfs send", so the longer variants --skipIntermediates
             # vs. --sendIntermediates are not documented in the manpage.
         qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s sinceForced=s),
-        qw(cleanOffline)
+        qw(cleanOffline mailErrorSummaryTo=s)
         ) or exit 1;
 
     $opts->{version} && do {
@@ -204,6 +204,7 @@ B<znapzend> [I<options>...]
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
  --skipOnPreSendCmdFail skip replication if the pre-send-command fails
  --cleanOffline         clean up source snapshots even if a destination was offline
+ --mailErrorSummaryTo=rcpt  if "send task(s) failed", mail a summary to rcpt
 
 =head1 DESCRIPTION
 
@@ -613,10 +614,24 @@ code or is killed by a signal.
 
 =item B<--cleanOffline>
 
-Clean snapshots of a source dataset even if one or more destination datasets failed during replication.
-The most recent common snapshot for each destination will not be deleted, but this is a
-potentially dangerous option. If the preserved snapshot somehow gets deleted from the
+Clean snapshots of a source dataset even if one or more destination datasets
+failed during replication for whatever reason (destination offline, destination
+full, destination pool became read-only due to storage issues, source too full
+to make a snapshot, etc.).
+
+The most recent common snapshot for each destination (as tracked on source for
+resilience) will not be deleted from source, but this is still a potentially
+dangerous option: if the preserved snapshot somehow gets deleted from the
 destination, it may require a full re-replication the next time it is online.
+
+=item B<--mailErrorSummaryTo=rcpt(@domain),...>
+
+If this argument is passed, a copy of error summary would be sent there by
+your system's command line mailer program. It is then up to this program and
+system setup to validate the recipient names (local or domain-suffixed) and
+deliver the message to some mailbox.
+
+This feature relies on a program which supports standard sendmail-like CLI.
 
 =back
 

@@ -52,8 +52,23 @@ To also bootstrap on Ubuntu / Debian you may need:
 apt-get install autoconf carton
 ```
 
-* On Solaris you may need the C compiler from Solaris Studio and gnu-make
-since the installed perl version is probably very old.
+* On Solaris 10 you may need the C compiler from Solaris Studio and gnu-make
+since the installed perl version is probably very old and you would likely
+have to build some dependency modules. The GNU make is needed instead of Sun
+make due to syntax differences. Notably you should reference it if you would
+boot-strap the code workspace from scratch:
+```sh
+MAKE=gmake ./bootstrap.sh
+```
+Note also that the perl version 5.8.4 provided with Solaris 10 is too old for
+the syntax and dependencies of znapzend. As one alternative, take a look at
+[CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
+and its modules, and other dependencies. To use a non-default perl, set the
+`PERL` environment variable to the path of your favorite perl interpreter
+prior to running `configure`, e.g.:
+```sh
+PERL=/opt/perl-32/bin/perl5.32.1 ./configure
+```
 
 * On OmniOS/SmartOS you will need perl and gnu-make packages.
 
