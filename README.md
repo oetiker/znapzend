@@ -230,10 +230,11 @@ Running by an unprivileged user
 -------------------------------
 
 In order to allow a non-privileged user to use it, the following permissions
-are required on the ZFS filesystems (which you cat assign with `zfs allow`):
+are required on the ZFS filesystems (which you can assign with `zfs allow`):
 
 Sending end: destroy,hold,mount,send,snapshot,userprop
-Receiving end: create,mount,receive,userprop
+
+Receiving end: create,destroy,mount,receive,userprop
 
 Running in Container
 -----------------
