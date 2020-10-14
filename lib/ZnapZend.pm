@@ -774,7 +774,7 @@ my $sendRecvCleanup = sub {
         }
         for $errline (@sendFailed) {
             $self->zLog->warn(' +-->   ' . $errline);
-            if ($self->mailErrorSummaryTo ne '') {
+            if ($self->mailErrorSummaryTo) {
                 $errmsg .= ' +-->   ' . $errline . "\n";
             }
         }
