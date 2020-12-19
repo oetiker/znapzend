@@ -1312,7 +1312,7 @@ my $daemonize = sub {
 ### public methods ###
 sub start {
     my $self = shift;
-    my $ready_to_refresh = 0;
+    my $ready_to_refresh = 1;
 
     $self->zLog->info("znapzend (PID=$$) starting up ...");
 
