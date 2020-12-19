@@ -1119,10 +1119,9 @@ my $sendWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-
+            $backupSet->{send_pid} = $pid;
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
-            $backupSet->{send_pid} = $pid;
         }
     );
 
@@ -1130,7 +1129,8 @@ my $sendWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-
+            ## Keep this backup set locked until the error is reported
+            $backupSet->{send_pid} = $pid;
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
@@ -1162,9 +1162,7 @@ my $snapWorker = sub {
 
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " done ($backupSet->{snap_pid})");
-            #snapshot process finished, clear pid from backup set
-            $backupSet->{snap_pid} = 0;
-
+            
             if ($backupSet->{send_pid}){
                 $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
                     . ' still running! skipping this round...');
@@ -1174,6 +1172,9 @@ my $snapWorker = sub {
                 $backupSet->{send_pid} = ~0;
                 $self->$sendWorker($backupSet, $timeStamp);
             }
+
+            #snapshot process finished, clear pid from backup set
+            $backupSet->{snap_pid} = 0;
         }
     );
 
@@ -1181,10 +1182,9 @@ my $snapWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-
+            $backupSet->{snap_pid} = $pid;
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
-            $backupSet->{snap_pid} = $pid;
         }
     );
 
@@ -1192,7 +1192,8 @@ my $snapWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-
+            # keep this backup set locked until error callback is done
+            $backupSet->{snap_pid} = $pid;
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
