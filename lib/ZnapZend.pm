@@ -1129,8 +1129,6 @@ my $sendWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-            ## Keep this backup set locked until the error is reported
-            $backupSet->{send_pid} = $pid;
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
@@ -1192,8 +1190,6 @@ my $snapWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-            # keep this backup set locked until error callback is done
-            $backupSet->{snap_pid} = $pid;
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
