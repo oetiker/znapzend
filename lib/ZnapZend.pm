@@ -1312,6 +1312,7 @@ my $daemonize = sub {
 ### public methods ###
 sub start {
     my $self = shift;
+    my $ready_to_refresh = 0;
 
     $self->zLog->info("znapzend (PID=$$) starting up ...");
 
@@ -1335,15 +1336,27 @@ sub start {
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
-        $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
-        $self->$createWorkers;
+
+        if ($ready_to_refresh) {
+            $ready_to_refresh = 0; # Exmut 
+
+            $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
+            $self->$createWorkers;
+
+            $ready_to_refresh = 1;
+        }
+
     };
 
-    print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
-    $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
+    if ($ready_to_refresh) {
+        $ready_to_refresh = 0; # Exmut
+        print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
+        $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
 
-    print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
-    $self->$createWorkers;
+        print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
+        $self->$createWorkers;
+        $ready_to_refresh = 1;
+    }
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
