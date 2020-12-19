@@ -615,11 +615,14 @@ sub sendRecvSnapshots {
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
     my @cmd;
+    my @cmdSnaps;
     if ($lastCommon){
         @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $incrOpt, $lastCommon, $lastSnapshot]);
+	@cmdSnaps = ([$lastCommon, $lastSnapshot]);
     }
     else{
         @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $lastSnapshot]);
+	@cmdSnaps = ([$lastSnapshot]);
     }
 
     #if mbuffer port is set, run in 'network mode'
@@ -699,7 +702,9 @@ sub sendRecvSnapshots {
         push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
+
         print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;
+	$self->zLog->debug("sending " . $shellQuote->(@cmdSnaps) . "\n");
 
         system($cmd) && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSetPath"
             . ($remote ? " on $remote" : '')) if !$self->noaction;
