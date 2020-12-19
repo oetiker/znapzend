@@ -1096,8 +1096,6 @@ my $sendWorker = sub {
 
     #send/receive fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    # Assign a temporary non-zero value to avoid race condition
-    $backupSet->{send_pid} = ~0; 
     $fc->run(
         #send/receive worker
         $sendRecvCleanup,
@@ -1150,8 +1148,6 @@ my $snapWorker = sub {
 
     #snapshot fork
     my $fc = Mojo::IOLoop::ForkCall->new;
-    # Assign a temporary non-zero value to avoid race condition
-    $backupSet->{snap_pid} = ~0;
     $fc->run(
         #snapshot worker
         $createSnapshot,
