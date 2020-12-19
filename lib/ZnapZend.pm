@@ -1218,6 +1218,8 @@ my $createWorkers = sub {
                     . 'post snapshot script runs for ages. snapshot will not be taken this time!');
             }
             else{
+                # Assign a temporary non-zero value to avoid race condition                                                                                                           
+                $backupSet->{snap_pid} = ~0;
                 $self->$snapWorker($backupSet, $timeStamp);
             }
 
