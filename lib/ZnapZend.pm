@@ -1170,6 +1170,8 @@ my $snapWorker = sub {
                     . ' still running! skipping this round...');
             }
             else{
+                # Assign a temporary non-zero value to avoid race condition                                                                                                           
+                $backupSet->{send_pid} = ~0;
                 $self->$sendWorker($backupSet, $timeStamp);
             }
         }
