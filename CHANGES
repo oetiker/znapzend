@@ -1,29 +1,48 @@
-0.21.0 2021-06-28 18:02:05 +0200 Tobias Oetiker <tobi@oetiker.ch>
+0.21.0 2021-06-28 19:25:46 +0200 Tobias Oetiker <tobi@oetiker.ch>
 
-  * updated install instructions see README.md
+ -
 
-  * new options for znapzend
+commit 259488a64c71b428cdd515b00f5fc35f6af96c24
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:08:01 2021 +0200
 
-    `--forbidDestRollback`   forbids forcing destination dataset rollback and
-    removal of datasets/snapshots not present on source
-  
-    `--since=x` allow to consider a non-automatic common snapshot "x" as a
-    starting point
+    update spelling
 
-    `--sinceForced=x` same as --since=x but also make sure "x" exists on
-    destination (can cause removal of newer snapshots)
+commit 5c75b0cb4fba15b2daa61c22488e2d08fd073108
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:06:08 2021 +0200
 
-    `--cleanOffline` clean up source snapshots even if a destination was offline
+    update release script
 
-    `--mailErrorSummaryTo=rcpt`  if "send task(s) failed", mail a summary to rcpt
+commit 2d77a3210443e2722059a2db2e6fb72d992207b9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:02:29 2021 +0200
 
-  * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
-
-  * an a ton of bugfixes for all sorts of edge cases
-
-  A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
-  and code to this release
-
+    Prepare release
+    
+      * updated install instructions see README.md
+    
+      * new options for znapzend
+    
+        `--forbidDestRollback`   forbids forcing destination dataset rollback and
+        removal of datasets/snapshots not present on source
+    
+        `--since=x` allow to consider a non-automatic common snapshot "x" as a
+        starting point
+    
+        `--sinceForced=x` same as --since=x but also make sure "x" exists on
+        destination (can cause removal of newer snapshots)
+    
+        `--cleanOffline` clean up source snapshots even if a destination was offline
+    
+        `--mailErrorSummaryTo=rcpt`  if "send task(s) failed", mail a summary to rcpt
+    
+      * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
+    
+      * an a ton of bugfixes for all sorts of edge cases
+    
+      A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
+      and code to this release
 
 commit c584c34cc209b2acb490f68d7d0420ba0c982318
 Author: Tobias Oetiker <tobi@oetiker.ch>
