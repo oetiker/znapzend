@@ -17,5 +17,5 @@ make
 make dist
 git checkout -b v${V}
 git commit -a
-git push
+git push --set-upstream origin v${V}
 #gh release create v${V} --title "ZnapZend $V" --notes-file release-notes-$V.md ${P}-${V}.tar.gz'#Source Archive' 
