@@ -1,28 +1,10 @@
+ - make aborted recv resumable using the `resume` fature -- @aarononeal
+
 0.21.0 2021-06-28 19:25:46 +0200 Tobias Oetiker <tobi@oetiker.ch>
-
- -
-
-commit 259488a64c71b428cdd515b00f5fc35f6af96c24
-Author: Tobias Oetiker <tobi@oetiker.ch>
-Date:   Mon Jun 28 18:08:01 2021 +0200
-
-    update spelling
-
-commit 5c75b0cb4fba15b2daa61c22488e2d08fd073108
-Author: Tobias Oetiker <tobi@oetiker.ch>
-Date:   Mon Jun 28 18:06:08 2021 +0200
-
-    update release script
-
-commit 2d77a3210443e2722059a2db2e6fb72d992207b9
-Author: Tobias Oetiker <tobi@oetiker.ch>
-Date:   Mon Jun 28 18:02:29 2021 +0200
-
-    Prepare release
     
-      * updated install instructions see README.md
+ * updated install instructions see README.md
     
-      * new options for znapzend
+ * new options for znapzend
     
         `--forbidDestRollback`   forbids forcing destination dataset rollback and
         removal of datasets/snapshots not present on source
@@ -37,12 +19,12 @@ Date:   Mon Jun 28 18:02:29 2021 +0200
     
         `--mailErrorSummaryTo=rcpt`  if "send task(s) failed", mail a summary to rcpt
     
-      * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
+ * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
     
-      * an a ton of bugfixes for all sorts of edge cases
+ * an a ton of bugfixes for all sorts of edge cases
     
-      A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
-      and code to this release
+A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
+and code to this release
 
 commit c584c34cc209b2acb490f68d7d0420ba0c982318
 Author: Tobias Oetiker <tobi@oetiker.ch>
