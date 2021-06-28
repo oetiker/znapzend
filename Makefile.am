@@ -15,14 +15,11 @@ POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 THIRDPARTY_DIR := $(shell pwd)/thirdparty
 
 GENERATED_EXTRADIST = $(MAN)
-EXTRA_DIST = VERSION COPYRIGHT NEWS.md README.md LICENSE CHANGES AUTHORS cpanfile $(BIN) $(PM) \
+EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS cpanfile $(BIN) $(PM) \
 	$(GENERATED_EXTRADIST) init/README.md init/org.znapzend.plist.in  init/znapzend.default  \
 	init/znapzend.service.in  init/znapzend.sysv.in  init/znapzend.upstart.in  init/znapzend.xml.in \
 	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
 	t/zfs t/znapzendzetup.t t/zpool
-
-CHANGES: VERSION
-	git log --full-history --simplify-merges --dense --no-merges > $@
 
 YEAR := $(shell date +%Y)
 DATE := $(shell date +%Y-%m-%d)
@@ -56,7 +53,7 @@ dist_bin_SCRIPTS = $(BIN)
 # Regenerate MAN pages and perl POD files from original script sources
 docs: $(POD) $(MAN)
 
-dist-hook: docs CHANGES
+dist-hook: docs
 	$(PERL) -i -p -e 's/^my .*# VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:

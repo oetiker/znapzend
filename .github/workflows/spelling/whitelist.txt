@@ -2,9 +2,9 @@ ABuild
 acconfig
 acinclude
 aclocal
-admins
 Aclosed
 adata
+admins
 Affero
 aix
 alpinelinux
@@ -116,7 +116,6 @@ daemonize
 daemonized
 DAGOLDEN
 datadir
-de'u
 debian
 defn
 defun
@@ -125,6 +124,7 @@ dest
 DESTDIR
 destfail
 desttemp
+de'u
 dirname
 distclean
 distdir
@@ -133,14 +133,16 @@ dmp
 dnf
 dnl
 DNO
-Dockerfile
+dockerfile
 DOCTYPE
 DOITPROG
 donotask
 dsa
 dsq
 dst
+dstbase
 dstdir
+dstdirslash
 dstds
 dstdsname
 DSTFILE
@@ -189,6 +191,7 @@ FQSN
 fsf
 gerczei
 Getopt
+gh
 github
 gitignore
 gitlab
@@ -208,9 +211,9 @@ Heitm
 heitmueller
 HMSz
 Honame
+hostname
 html
 http
-hostname
 Hypnotoad
 Icommand
 Icommon
@@ -232,7 +235,6 @@ Ilimited
 illumos
 imandir
 img
-incrementals
 ings
 inh
 inheritedattr
@@ -367,7 +369,6 @@ pid
 pidfile
 pipefail
 Pipely
-pkg
 pkglicense
 pkgname
 pkgonly
@@ -415,6 +416,7 @@ ron
 rootfs
 rootfs'es
 rpool
+rr
 runlevel
 runonce
 rw
@@ -422,8 +424,8 @@ sbin
 sbindir
 screation
 scriptversion
-SEENSRC
 SEENDST
+SEENSRC
 selftest
 sendmail
 setsid
@@ -440,7 +442,6 @@ snapsuffix
 SNO
 solaris
 sourced
-sourceforge
 sourcemissing
 sourcetype
 sourcing
@@ -481,7 +482,7 @@ svcname
 svg
 symlink
 synczbe
-Sys
+sys
 sysadmin
 sysconfdir
 syslog
@@ -528,7 +529,7 @@ Unicode
 uniq
 unsubscribe
 Uplevel
-URL
+url
 usbbackup
 usedbysnapshot
 userland
@@ -548,6 +549,7 @@ VPATH
 vroff
 vue
 waitpid
+westes
 wget
 whitespaces
 windoz
@@ -559,14 +561,15 @@ Wperl
 wu
 www
 wx
-Xproperties
 xargs
 xcode
 xf
 xml
 xno
+Xproperties
 xset
 yacc
+YAML
 Ymd
 yml
 yy
