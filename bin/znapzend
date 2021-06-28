@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use lib qw(); # PERL5LIB
-use FindBin; use lib "$FindBin::Bin/../lib", "$FindBin::Bin/../thirdparty/lib/perl5"; # LIBDIR
+use FindBin; use lib "$FindBin::RealBin/../lib", "$FindBin::RealBin/../thirdparty/lib/perl5"; # LIBDIR
 
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
@@ -9,22 +9,22 @@ use Pod::Usage;
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
 
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode resume recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates);
-
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode resume recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates forbidDestRollback);
 
 sub main {
     my $opts = {};
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
         qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation version),
-        qw(forcedSnapshotSuffix=s),
+        qw(forcedSnapshotSuffix=s forbidDestRollback),
         qw(skipIntermediates|i sendIntermediates|I),
             # Note: the intended usage is either via feature as done
             # originally, or via shorthand -i/-I flags as mnemonical
             # for "zfs send", so the longer variants --skipIntermediates
             # vs. --sendIntermediates are not documented in the manpage.
-
-        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s cleanOffline)) or exit 1;
+        qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s sinceForced=s),
+        qw(cleanOffline mailErrorSummaryTo=s)
+        ) or exit 1;
 
     $opts->{version} && do {
         print "znapzend version $VERSION\n";
@@ -78,6 +78,39 @@ sub main {
         }
     }
 
+    if (defined($opts->{forbidDestRollback})) {
+        $opts->{forbidDestRollback} = 1;
+    } else {
+        $opts->{forbidDestRollback} = 0;
+    }
+
+    if (defined($opts->{sinceForced}) && ($opts->{sinceForced} eq '')) {
+        delete $opts->{sinceForced};
+    }
+
+    if (defined($opts->{since}) && ($opts->{since} eq '')) {
+        delete $opts->{since};
+    }
+
+    if (defined($opts->{sinceForced})) {
+        chomp $opts->{sinceForced};
+        $opts->{since} = $opts->{sinceForced};
+        $opts->{forbidDestRollback} = 0;
+        delete $opts->{sinceForced};
+        warn "The --sinceForced option is used and will try to ensure that the snapshot exists in history of destinations (can delete and rewrite subsequent snapshots)"
+    } else {
+        if (defined($opts->{since})) {
+            $opts->{forbidDestRollback} = 1;
+            warn "The --since option is used and will try to ensure that the snapshot exists in history of destinations only if an older snapshot is the latest common (would not delete and rewrite subsequent snapshots to make way)"
+        }
+    }
+
+    if (defined($opts->{since})) {
+        # Chop off leading @ if any
+        chomp $opts->{since};
+        $opts->{since} =~ s/^[@]*// ;
+    }
+
     if (defined($opts->{forcedSnapshotSuffix}) && ($opts->{forcedSnapshotSuffix} ne '')) {
         chomp $opts->{forcedSnapshotSuffix};
         if ($opts->{forcedSnapshotSuffix} eq '') {
@@ -114,6 +147,10 @@ sub main {
     $opts->{man} && pod2usage(-exitstatus => 0, -verbose => 2);
 
     my $znapzend = ZnapZend->new($opts);
+
+### RM_COMM_4_TEST_main ###  # remove ### RM_COMM_4_TEST_main ### comments for testing purpose.
+### RM_COMM_4_TEST_main ###  return $znapzend->start;
+
     $znapzend->start;
 
     return 1;
@@ -140,6 +177,8 @@ B<znapzend> [I<options>...]
  -n,--noaction          run in simulation mode: does no changes to filesystems
  --nodelay              if a backup plan has a zend_delay defined, ignore it
  --nodestroy            does all changes to the filesystem except destroy
+ --forbidDestRollback   forbids forcing destination dataset rollback and
+                        removal of datasets/snapshots not present on source
  --logto=x              select where to log (syslog::<facility> or <filepath>)
  --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
@@ -148,11 +187,13 @@ B<znapzend> [I<options>...]
  -r,--recursive         recurse from the given "run-once" dataset
  --inherited            allow "run-once" on dataset which only inherits a plan
  --since=x              allow to consider a non-automatic common snapshot "x" as a starting point
+ --sinceForced=x        same as --since=x but also make sure "x" exists on
+                        destination (can cause removal of newer snapshots)
  --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
     oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
-    skipIntermediates sendIntermediates
+    skipIntermediates sendIntermediates forbidDestRollback
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -164,6 +205,7 @@ B<znapzend> [I<options>...]
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
  --skipOnPreSendCmdFail skip replication if the pre-send-command fails
  --cleanOffline         clean up source snapshots even if a destination was offline
+ --mailErrorSummaryTo=rcpt  if "send task(s) failed", mail a summary to rcpt
 
 =head1 DESCRIPTION
 
@@ -192,7 +234,21 @@ run them during experiments)
 
 =item B<--nodestroy>
 
-do all changes to the filesystem except destroying old snapshots
+do all changes to the filesystem except destroying old snapshots after
+a successful run to snapshot and replicate to backup destinations
+
+=item B<--forbidDestRollback>
+
+by default znapzend uses B<zfs recv -F> which rolls back destination to
+the most recent snapshot, and in case of incremental replication streams
+can also destroy snapshots and other child datasets not present in the
+source.
+
+The B<--forbidDestRollback> option allows to not enforce this mode, so
+znapzend would instead report errors if destination is not ready to
+receive data without applying such operations. This can be useful for
+maintenance of backup destinations, but can be counter-productive for
+regularly scheduled operations.
 
 =item B<--logto>={B<syslog::>I<facility>|I<filepath>}
 
@@ -241,7 +297,7 @@ take care that it is unique (no snapshots with such suffix already exist).
 
 See also B<--since>=I<snapsuffix>
 
-=item B<--since>=I<snapsuffix>
+=item B<--since>=I<snapsuffix>, B<--sinceForced>=I<snapsuffix>
 
 Enables to see a snapshot named I<snapsuffix> in the history of the dataset
 under source and target pools, which should be a common snapshot present on
@@ -254,6 +310,11 @@ discovered history of automatic snapshots allows to include it into the usual
 replication, it will be sent (and a newer automatically-named snapshot would
 be made and sent). In other cases, it is up to the systems administrator to
 make the original systems data consistent with that on their remote ZFS pool.
+
+One could then use B<--sinceForced>=I<snapsuffix> variant that can remove
+from destination any snapshots that are newer than I<snapsuffix> to make way
+if needed, and ensure that this snapshot appears in destination's history;
+by default with B<--since>=I<snapsuffix> such removals should not happen.
 
 Unlike the B<--forcedSnapshotSuffix>=I<snapsuffix>, this option does not
 define how the new snapshot made during this run would be called (it would
@@ -493,6 +554,11 @@ sysadmin marks certain data states via snapshots as special (e.g.
 The feature is recommended to be part of your 'znapzend' service
 setup for regular runs in stable storage/networking conditions.
 
+=item forbidDestRollback
+
+Avoid use of destructive 'zfs recv -F' in favor of failing to receive;
+more details in description of B<--forbidDestRollback> CLI option above.
+
 =item lowmemRecurse
 
 use 'lowmemRecurse' on systems where you have too many datasets,
@@ -562,10 +628,24 @@ code or is killed by a signal.
 
 =item B<--cleanOffline>
 
-Clean snapshots of a source dataset even if one or more destination datasets failed during replication.
-The most recent common snapshot for each destination will not be deleted, but this is a
-potentially dangerous option. If the preserved snapshot somehow gets deleted from the
+Clean snapshots of a source dataset even if one or more destination datasets
+failed during replication for whatever reason (destination offline, destination
+full, destination pool became read-only due to storage issues, source too full
+to make a snapshot, etc.).
+
+The most recent common snapshot for each destination (as tracked on source for
+resilience) will not be deleted from source, but this is still a potentially
+dangerous option: if the preserved snapshot somehow gets deleted from the
 destination, it may require a full re-replication the next time it is online.
+
+=item B<--mailErrorSummaryTo=rcpt(@domain),...>
+
+If this argument is passed, a copy of error summary would be sent there by
+your system's command line mailer program. It is then up to this program and
+system setup to validate the recipient names (local or domain-suffixed) and
+deliver the message to some mailbox.
+
+This feature relies on a program which supports standard sendmail-like CLI.
 
 =back
 

@@ -4,20 +4,7 @@ use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::ForkCall;
 use Data::Dumper;
-
-### Property inheritance levels - how deep we go in routines
-### that (need to) care about these nuances beyond a boolean.
-### Primarily intended for getSnapshotProperties() to get props
-### defined by snapshots of parent datasets with same snapnames.
-### For "usual" datasets (filesystem,volume) `zfs` returns the
-### properties inherited from higher level datasets; but for
-### snapshots it only returns the same - not from higher snaps.
-my %inheritLevels = (
-    local_only => 0,
-    local_zfsinherit => 1,
-    local_recurseparent => 2,
-    local_recurseparent_zfsinherit => 3,
-);
+use inheritLevels;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -29,6 +16,7 @@ has resume          => sub { 0 };
 has compressed      => sub { 0 };
 has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
+has forbidDestRollback => sub { 0 };
 has lowmemRecurse   => sub { 0 };
 has zfsGetType      => sub { 0 };
 has rootExec        => sub { q{} };
@@ -134,6 +122,8 @@ sub dataSetExists {
 
 sub snapshotExists {
     my $self = shift;
+    # Note: this is a fully qualified name of dataset@snapshot ZFS object,
+    # not just the snapname. May also be with remote destination ID.
     my $snapshot = shift;
     my $quiet = shift; # Maybe we expect it to not be there?
     if (!defined($quiet)) { $quiet = 0; }
@@ -206,7 +196,12 @@ sub listDataSets {
 sub listSnapshots {
     my $self = shift;
     my $dataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
     my $remote;
     my @snapshots;
 
@@ -220,6 +215,15 @@ sub listSnapshots {
 
     while (my $snap = <$snapshots>){
         chomp $snap;
+        if (defined($lastSnapshotToSee)) {
+            if ($snap  =~ /^\Q$dataSet\E\@$lastSnapshotToSee$/) {
+                # Only add this name to list if it matches $snapshotFilter ...
+                push @snapshots, $snap if $snap =~ /^\Q$dataSet\E\@$snapshotFilter$/;
+                # ...but still stop iterating
+                $self->zLog->debug("listSnapshots() : for dataSet='$dataSet' snapshotFilter='$snapshotFilter' lastSnapshotToSee='$lastSnapshotToSee' matched '$snap' and stopping the iteration");
+                last;
+            }
+        }
         next if $snap !~ /^\Q$dataSet\E\@$snapshotFilter$/;
         push @snapshots, $snap;
     }
@@ -391,10 +395,15 @@ sub lastAndCommonSnapshots {
     my $self = shift;
     my $srcDataSet = shift;
     my $dstDataSet = shift;
-    my $snapshotFilter = $_[0] || qr/.*/;
+    my $snapshotFilter = shift // qr/.*/;
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
 
-    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter);
-    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter);
+    my $srcSnapshots = $self->listSnapshots($srcDataSet, $snapshotFilter, $lastSnapshotToSee);
+    my $dstSnapshots = $self->listSnapshots($dstDataSet, $snapshotFilter, $lastSnapshotToSee);
 
     return (undef, undef, undef) if !scalar @$srcSnapshots;
 
@@ -446,13 +455,16 @@ sub mostRecentCommonSnapshot {
     # deletion of "protected" last-known-synced snapshots, we consider both
     # local and inherited values of the dst_X_synced flag, if present.
     # See definition of recognized $inherit values for this context in
-    # getSnapshotProperties() code.
-    # See %inheritLevels for reusable definitions.
-    # TODO: Remake from use of magic numbers to direct use of instances of that structure
+    # getSnapshotProperties() code and struct inheritLevels.
     my $inherit = shift; # May be not passed => undef
     if (!defined($inherit)) {
-        $inherit = $inheritLevels{local_recurseparent_zfsinherit};
-        # 3 = local + zfs inherited + recurse into same-named snapshot of parent(s)
+        # We leave defined but invalid values of $inherit to
+        # getSnapshotProperties() to figure out and complain,
+        # but for this routine's purposes set a specific default.
+        $inherit = new inheritLevels;
+        $inherit->zfs_local(1);
+        $inherit->zfs_inherit(1);
+        $inherit->snapshot_recurse_parent(1);
     }
 
     my ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount);
@@ -501,9 +513,27 @@ sub sendRecvSnapshots {
     my $dstName = shift; # name of the znapzend policy => property prefix
     my $mbuffer = shift;
     my $mbufferSize = shift;
-    my $snapFilter = $_[0] || qr/.*/;
+    my $snapFilter = shift // qr/.*/;
+
+    # Limit creation-ordered listing after registering this snapshot name,
+    # (there may exist newer snapshots that would be not seen and replicated).
+    # For practical purposes, this can be used with --since=X mode to ensure
+    # that "X" exists on destination if it does not yet (note that if there
+    # are newer snapshots on destination, they would be removed to allow
+    # receiving "X", unless --forbidDestRollback is requested, in this case).
+    my $lastSnapshotToSee = shift // undef; # Stop creation-ordered listing after registering this snapshot name - if there is one in the filtered selection
+    if (defined($lastSnapshotToSee)) {
+        if ($lastSnapshotToSee eq "") { $lastSnapshotToSee = undef; }
+        else { $lastSnapshotToSee =~ s/^.*\@// ; }
+    }
+
+    # In certain cases, callers can set this argument to explicitly
+    # forbid (0), allow (1) or enforce if needed (2) a rollback of dest.
+    my $allowDestRollback = shift // undef;
+    if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
+
     my @recvOpt = $self->recvu ? qw(-u) : ();
-    push @recvOpt, '-F' if !$self->sendRaw;
+    push @recvOpt, '-F' if $allowDestRollback;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;
@@ -514,11 +544,30 @@ sub sendRecvSnapshots {
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
 
-    my ($lastSnapshot, $lastCommon,$dstSnapCount)
-        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter);
+    # As seen through filter:
+    # * Last existing snapshot on source,
+    # * Last common snapshot between source and this destination,
+    # * Overall count of snapshots on destination.
+    my ($lastSnapshot, $lastCommon, $dstSnapCount)
+        = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapFilter, $lastSnapshotToSee);
 
-    my %snapshotSynced = ($dstName, $dstDataSet,
-        $dstName . '_synced', 1);
+    if (defined($lastSnapshotToSee)) {
+        $self->zLog->debug("sendRecvSnapshots() : " .
+            "for srcDataSet='$srcDataSet' srcDataSet='$srcDataSet' " .
+            "snapFilter='$snapFilter' lastSnapshotToSee='$lastSnapshotToSee' ".
+            "GOT: lastSnapshot='$lastSnapshot' " .
+            "lastCommon=" . ($lastCommon ? "'$lastCommon'" : "undef") . " " .
+            "dstSnapCount='$dstSnapCount'"
+            );
+    }
+
+    # We would set these source snapshot properties to mark that
+    # this snapshot has been delivered to destination, to keep the
+    # newest such snapshot if destination is unreachable currently.
+    my %snapshotSynced = (
+        $dstName,               $dstDataSet,
+        $dstName . '_synced',   1
+        );
     #nothing to do if no snapshot exists on source or if last common snapshot is last snapshot on source
     return 1 if !$lastSnapshot;
     if (defined $lastCommon && ($lastSnapshot eq $lastCommon)){
@@ -528,10 +577,41 @@ sub sendRecvSnapshots {
 
     #check if snapshots exist on destination if there is no common snapshot
     #as this will cause zfs send/recv to fail
-    !$lastCommon and $dstSnapCount
-        and Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but no common '
-            . "found on source and destination "
-            . "clean up destination $dstDataSet (i.e. destroy existing snapshots)");
+    if (!$lastCommon and $dstSnapCount) {
+        if ($allowDestRollback == 2) {
+            # Asked to enforce if needed... is needed now
+            $self->zLog->warn('WARNING: snapshot(s) exist on destination, but '
+                . 'no common found on source and destination: was requested '
+                . 'to clean up destination ' . $dstDataSet . ' (i.e. destroy '
+                . 'existing snapshots that match the znapzend filter)');
+            # TOTHINK: Maybe a "zfs rollback" to the oldest dst snapshot
+            # and then removing it in one act is better for performance?
+            # Can be destructive for man-named snapshots (if any) though...
+            $self->destroySnapshots ($self->listSnapshots($dstDataSet, $snapFilter, undef));
+            # If there are any manually created snapshots, with names not
+            # matched by filter, `zfs recv -F` below would likely fail.
+            # Still it is up to admins/users then to clean what they made,
+            # we only mutilate automatically what we made automatically.
+
+            # Reevaluate what is there now and look at all snapshots,
+            # e.g. the manually named snapshots may be common to src
+            # and dst, to have a starting point for such resync
+            ($lastSnapshot, $lastCommon, $dstSnapCount)
+                = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, qr/.*/, $lastSnapshotToSee);
+            my $dstSnapCountAll = scalar($self->listSnapshots($dstDataSet, qr/.*/, undef));
+            # We do not throw/error here because snapshots may help sync
+            $self->zLog->warn('ERROR: some snapshot(s) not covered '
+                    . 'by znapzend filter still exist on destination: '
+                    . 'this should be judged and fixed by the sysadmin '
+                    . '(i.e. destroy manually named snapshots); '
+                    . 'the zfs send+receive would likely fail below!'
+                    ) if (!$lastCommon && $dstSnapCountAll>0);
+        } else {
+            Mojo::Exception->throw('ERROR: snapshot(s) exist on destination, but '
+            . 'no common found on source and destination: clean up destination '
+            . $dstDataSet . ' (i.e. destroy existing snapshots)');
+        }
+    }
 
     ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
 
@@ -831,6 +911,9 @@ sub getDataSetProperties {
         my %properties;
         # TODO : support "inherit-from-local" mode
         my @cmd = (@{$self->priv}, qw(zfs get -H));
+        if ($recurse) {
+            push (@cmd, qw(-r));
+        }
         if ($inherit) {
             push (@cmd, qw(-s), 'local,inherited');
         } else {
@@ -838,9 +921,6 @@ sub getDataSetProperties {
         }
         if ($self->zfsGetType) {
             push (@cmd, qw(-t), 'filesystem,volume');
-        }
-        if ($recurse) {
-            push (@cmd, qw(-r));
         }
         push (@cmd, qw(-o), 'name,property,value,source', 'all', $listElem);
         print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
@@ -1101,7 +1181,7 @@ sub getSnapshotProperties {
     # NOTE that it is then up to zfs command to either return only data for the
     # snapshot named in the argument, or also same-named snapshots in children
     # of the dataset this is a snapshot of, so this flag may be effectively
-    # ignored by OS.
+    # ignored by OS, or even actively rejected.
     # TODO: Make magic like for inherit below, to drill into same-named
     # snapshots of datasets that are children of one that $snapshot is a
     # zfs snapshot of.
@@ -1109,14 +1189,15 @@ sub getSnapshotProperties {
 
     # NOTE that some versions of zfs do not inherit values from same-named
     # snapshot of a parent dataset, but only from a "real" dataset higher
-    # in the data hierarchy, so this flag may be effectively ignored by OS.
+    # in the data hierarchy, so the "-s inherit" argument may be effectively
+    # ignored by OS for the purposes of *such* inheritance. Reasonable modes
+    # of sourcing properties include:
     #   0 = only local
     #   1 = local + inherit as defined by zfs
     #   2 = local + recurse into parent that has same snapname
     #   3 = local + inherit as defined by zfs + recurse into parent
-    # See %inheritLevels for reusable definitions.
-    # TODO: Remake from use of magic numbers to direct use of instances of that structure
-    my $inherit = shift; # May be not passed => undef
+    # See struct inheritLevels for reusable definitions.
+    my $inherit = shift; # May be not passed => undef => will make a new inheritLevels instance below
 
     # Limit the request to `zfs get` to only pick out certain properties
     # and save time not-processing stuff the caller will ignore?..
@@ -1136,49 +1217,72 @@ sub getSnapshotProperties {
     }
 
     if (!defined($inherit)) {
-        $inherit = $inheritLevels{local_only};
+        $inherit = new inheritLevels;
+        $inherit->zfs_local(1);
     } else {
-        if ( !( grep {$_ == $inherit} values %inheritLevels) ) {
-            $self->zLog->warn("getSnapshotProperties(): inherit flag is not a value recognized in inheritLevels");
-            $inherit = $inheritLevels{local_zfsinherit}; # caller DID set something...
+        # Data type check
+        if ( ! $inherit->isa('inheritLevels') ) {
+            $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct inheritLevels");
+            my $newInherit = new inheritLevels;
+            if (!$newInherit->reset($inherit)) {
+                # caller DID set something, so set a default... local_zfsinherit
+                $newInherit->zfs_local(1);
+                $newInherit->zfs_inherit(1);
+            }
+            $inherit = $newInherit;
         }
     }
-    my $inhMode = 'local';
-    if ($inherit == $inheritLevels{local_zfsinherit} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
-        $inhMode .= ',inherited';
-    }
+    my $inhMode = $inherit->getInhMode();
 
     my %properties;
+    my %propertiesInherited;
     my $propertyPrefix = $self->propertyPrefix;
 
-    my @cmd = (@{$self->priv}, qw(zfs get -H -s), $inhMode);
-    if ($self->zfsGetType) {
-        push (@cmd, qw(-t snapshot));
-    }
+    my @cmd = (@{$self->priv}, qw(zfs get -H));
     if ($recurse) {
         push (@cmd, qw(-r));
     }
-    push (@cmd, qw(-o), 'property,value', $propnames, $snapshot);
+    if ($inhMode ne '') {
+        push (@cmd, qw(-s), $inhMode);
+    }
+    if ($self->zfsGetType) {
+        push (@cmd, qw(-t snapshot));
+    }
+    push (@cmd, qw(-o), 'property,value,source', $propnames, $snapshot);
 
     print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
     open my $props, '-|', @cmd or Mojo::Exception->throw('ERROR: could not get zfs properties of ' . $snapshot);
     while (my $prop = <$props>){
         chomp $prop;
-        my ($key, $value) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)$/ or next;
-        $properties{$key} = $value;
+        my ($key, $value, $sourcetype, $tail) = $prop =~ /^\Q$propertyPrefix\E:(\S+)\s+(.+)\s+(local|inherited from |received|default|-)(.*)$/ or next;
+        if ($inherit->zfs_inherit and $inherit->snapshot_recurse_parent and $sourcetype =~ /inherited from/) {
+            # If we are not doing "snapshot_recurse_parent" then either it
+            # is okay to put all values into one bucket initially, or we
+            # run on a system where "zfs get" does the snapshot property
+            # inheritance the way we need it to here, so manual iteration
+            # is not needed (TODO: Make it a user selectable feature).
+            # This also impacts the precedence of values set in a snapshot
+            # or its recursed same-named snapshots of parent dataset(s)
+            # over values that "zfs get" reports as "inherited" (lowest prio).
+            # Note we should not have any hits here if zfs_inherit mode
+            # is not enabled in the first place, so we filter by that too.
+            $propertiesInherited{$key} = $value;
+        } else {
+            $properties{$key} = $value;
+        }
     }
     my $numProps = keys %properties;
 
     if ($self->debug) {
         if ($numProps > 0) {
-            $self->zLog->debug("=== getSnapshotProperties(): GOT $inhMode (#$inherit) properties of $snapshot : " .Dumper(\%properties) );
+            $self->zLog->debug("=== getSnapshotProperties(): GOT '$inhMode' properties of $snapshot : " .Dumper(\%properties) );
         }
     }
 
-    if ($inherit == $inheritLevels{local_recurseparent} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
-        # For the context we have, inheriting means that we go up through
-        # parent datasets that have same-named snapshots as this one, and
-        # check if these snapshots have locally defined properties.
+    if ($inherit->snapshot_recurse_parent) {
+        # For the context we have, inheriting means that we recursively go
+        # up through parent datasets that have same-named snapshots as this
+        # one, and check if these snapshots have locally defined properties.
         # The value defined nearest to current snapshot is most preferred,
         # so we do not check those "parent snapshots" for what they could
         # have inherited from "real datasets" => will recurse with mode "2".
@@ -1217,7 +1321,7 @@ sub getSnapshotProperties {
                 ### Still warns about experimental perl feature in 5.22...
                 #if ($] >= 5.010001) {
                 #    if (@wantedPropnames ~~ \%properties) {
-                #        $inherit = 0;
+                #        $inherit->reset('zfs_local');
                 #    }
                 #} else {
                     # Old ways...
@@ -1231,17 +1335,17 @@ sub getSnapshotProperties {
                         }
                     }
                     if ($uniqHits == $numProps) {
-                        $inherit = $inheritLevels{local_only};
+                        $inherit->reset('zfs_local');
                     }
                 #}
             }
         }
-        if ($inherit == $inheritLevels{local_only}) {
+        if (!$inherit->snapshot_recurse_parent) {
             $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, we have all the properties we needed") if $self->debug;
         }
     }
 
-    if ($inherit == $inheritLevels{local_recurseparent} || $inherit == $inheritLevels{local_recurseparent_zfsinherit}) {
+    if ($inherit->snapshot_recurse_parent) {
         my $parentSnapshot = $snapshot;
         $parentSnapshot =~ s/^(.*)\/[^\/]+(\@.*)$/$1$2/;
         #$self->zLog->debug("=== getSnapshotProperties(): consider iterating from $snapshot up to $parentSnapshot") if $self->debug;
@@ -1251,11 +1355,15 @@ sub getSnapshotProperties {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
-                my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inheritLevels{local_recurseparent}, $propnames);
+                my $inherit_local_recurseparent = new inheritLevels;
+                $inherit_local_recurseparent->snapshot_recurse_parent(1);
+                $inherit_local_recurseparent->zfs_local(1);
+                my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inherit_local_recurseparent, $propnames);
 
                 my $numParentProps = keys %$parentProperties;
                 if ($numParentProps > 0) {
-                    # Merge hash arrays, use existing values as overrides in case of conflict:
+                    # Merge hash arrays, use existing values as overrides in
+                    # case of same-name conflict:
                     $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists from '$parentSnapshot' and '$snapshot' :\n" .
                         "\t" . Dumper(\%$parentProperties) .
                         "\t" . Dumper(\%properties)
@@ -1268,6 +1376,18 @@ sub getSnapshotProperties {
                 $self->zLog->debug("=== getSnapshotProperties(): Stopping recursion after $snapshot, a $parentSnapshot does not exist") if $self->debug;
             }
         } # else  Got to root, and it was inspected above
+    }
+
+    my $numPropertiesInherited = keys %propertiesInherited;
+    if ($numPropertiesInherited > 0) {
+        $self->zLog->debug("=== getSnapshotProperties(): Merging two property lists - collected from '$snapshot' and same-named snapshots of parent datasets, and what ZFS claims as inherited from ancestors :\n" .
+            "\t" . Dumper(\%properties) .
+            "\t" . Dumper(\%propertiesInherited)
+            ) if $self->debug;
+        # Inherited values have lower priority than those local to snapshot or its parents
+        %properties = (%propertiesInherited, %properties);
+        $self->zLog->debug("=== getSnapshotProperties(): Merging returned one property list : " .
+            Dumper(\%properties) ) if $self->debug;
     }
 
     return \%properties;

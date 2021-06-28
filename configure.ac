@@ -107,20 +107,22 @@ if test "x$PERL" != "x"; then
     if test $? -ne 0; then
         AC_MSG_RESULT(no);
         AC_MSG_ERROR(at least version $ac_perl_version is required to run mojolicious at all)
+        exit 1
     else
         MOJOLICIOUS_VERSION_CONSTRAINT=", '< 8.44'"
     fi
   else
     AC_MSG_RESULT(ok);
-    MOJOLICIOUS_VERSION_CONSTRAINT=""
+    # mojo 9 has no delay method anymore ... 
+    MOJOLICIOUS_VERSION_CONSTRAINT=", '>= 8.73, <9.0'"
   fi
 else
   AC_MSG_ERROR(could not find perl)
 fi
 AC_SUBST(MOJOLICIOUS_VERSION_CONSTRAINT)
-if test -n "$MOJOLICIOUS_VERSION_CONSTRAINT" ; then
-    AC_MSG_WARN(The available Perl version limits mojolicious version$MOJOLICIOUS_VERSION_CONSTRAINT)
-fi
+# if test -n "$MOJOLICIOUS_VERSION_CONSTRAINT" ; then
+#    AC_MSG_WARN(The available Perl version limits mojolicious version$MOJOLICIOUS_VERSION_CONSTRAINT)
+# fi
 
 AC_MSG_CHECKING(is perl reasonably complete)
 if $PERL -MExtUtils::MakeMaker -e '' 2>/dev/null; then

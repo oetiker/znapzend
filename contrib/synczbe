@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+
+# bashisms: $RANDOM is used, and this:
+set -o pipefail
+
+# (C) 2020 by Jim Klimov
+# PoC for: https://github.com/oetiker/znapzend/issues/503
+
+# Warning: no code support for now to manage rootfs datasets with children!
+
+# Here we send ALL incremental snapshots to allow branching off destinations
+# Those not made by znapzend will not be cleaned by policy after regular sync!
+
+# Assumptions: the datasets we care about are similarly named and structured
+# zoneroots or rootfs'es under one container directory on source and dest:
+
+# Examples below are for the setup discussed in the issue; you'll certainly
+# need to set your own, as in `SR=rpool/zones/z1/ROOT DEBUG=no ./synczbe` :)
+[ -n "$SR" ] || \
+SR="nvpool/zones/omni151018/ROOT"
+DR="backup-adata/snapshots/$SR"
+
+# For rootfs SR=rpool/ROOT or similar.
+# You can find the "SR" names for local zones by interpolating:
+#  ...zone root mountpoints from the OS:
+#  MPTZONEROOTS="`zoneadm list -cp | awk -F: '{print $4}' | egrep -v '^/$'`"
+#    /zones/omni151018
+#  ...and looking under znapzend configured source trees:
+#  ZFSZONEROOTS="`zfs list -Ho name,mountpoint -t filesystem -r nvpool/zones | egrep '(/ROOT\s|\s/)'`"
+#    nvpool/zones/lx5        /zones/lx5
+#    nvpool/zones/omni151018 /zones/omni151018
+#    nvpool/zones/omni151018/ROOT    legacy
+# In example above, "lx5" is not a root of a currently configured/recognized
+# local zone, and/or it is a brand with some different structure to handle.
+# The "omni151018" is one to process with this script, finding the mountpoint
+# in one line and confirming that this dataset has a /ROOT child in another.
+
+# Neuter writes by default until we are ready
+ZFSW="echo ###WOULD### :; zfs"
+[ "$DEBUG" = no ] && ZFSW=zfs \
+&& echo "WARNING: zfs operations for changing pool data are ENABLED, be sure to NOT HAVE znapzend service RUNNING!" >&2 \
+|| echo "WARNING: debug mode by default, zfs operations for changing pool data are DISABLED" >&2
+
+case "$SR" in
+    */ROOT) ;;
+    */) echo "ERROR: SR should be a dataset name" >&2 ;;
+    *)  echo "WARNING: SR='$SR' is not a dataset name ending with '/ROOT', you might want to revise that (press Ctrl+C to abort now)" >&2
+        sleep 5
+        ;;
+esac
+
+# First phase:
+# 1a) find latest available common snap in history owner on older dst (children
+#     included) and same-named snapshot (with children) on newest src.
+# 1b) zfs clone that into same relative name(s) on dst as newest src
+# 1c) zfs promote all those clones on dst
+# 1d) Replicate incrementally from that last common point to current tip
+#     (note `zfs send -R -I ...` is recursive)
+
+# e.g. zbe-30 is last history owner on backup, zbe-60 on source
+# clones on source are branches of zbe-60, clones on dst between
+# zbe-31 and zbe-59 are standalone by znapzend and own their histories =>
+#   zfs list -d1 -tfilesystem -o name,origin -r {backup-adata/snapshots/,}nvpool/zones/omni151018/ROOT
+### ^^^ Find and iterate rootfs/zbe children to find the recursively common snap between src and dst
+#   zfs clone backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-30@2019-01-29-09:14:13 backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60
+#   zfs promote backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60
+#   zfs send -R -I nvpool/zones/omni151018/ROOT/zbe-60@{2019-01-29-09:14:13,2020-08-09-19:22:53} | mbuffer -m 128M | zfs recv -vue backup-adata/snapshots/nvpool/zones/omni151018/ROOT
+
+# TODO: check if there are child datasets under ZBEs or rootfs'es
+# and for now bail as unsupported (to develop)
+
+# TODO also detect if the current src and dst are already in sync
+# (same name, same tip; presume or check same intermediate snaps)
+# and then skip phase 1 quickly.
+echo "TODO: Phase 1: Make newest history owners same-named (and with same incremental snaps) on src and dst" >&2
+
+# Phase 2: rewrite existing standalone backups
+echo "=== Gathering data for Phase 2 over '$SR' => '$DR' resync ..." >&2
+
+# 2a) Rediscover current layout:
+# Note that sorting is magic :) e.g. by creation time on destination, you see
+# the replicated tip first and clones made from it by `zfs recv` appeared later
+# while on source they would be more ordered (if source was not replicated too).
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR"`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR"`"
+
+# 2b) Find history owners on destination (rootfs/zbe names whom would we rewrite if we still can?)
+# Note we ignore all lines that list a snapshot "@" here, although some histories can be owned by different tips:
+#   backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-27      backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60@2018-10-17-21:49:25
+#   backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-28      backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-30@2019-02-13-01:22:08 ### <<< zbe-30@...
+#   backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-29      backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60@2019-01-29-09:14:13
+#   backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-30      backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60@2019-01-29-09:14:13
+#   backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-31      -
+# This can be due to a miss in choice of latest common snapshot to clone and
+# replicate that is not the latest branch on destination, or independent trees
+# like rootfs with distro and failsafe-boot env, or other distros in same rpool.
+# Might go over such later, filtering by "${newestbe}\@" ...
+
+DZ="`echo "$DNO" | grep -v @ | awk '{print $1}' | awk -F/ '{print $NF}' | grep -v ROOT`"
+
+# 2c) Find all histories we can rebase, and their span of snapshots
+# from branching point to tip of the dataset:
+#   zbe-31 => nvpool/zones/omni151018/ROOT/zbe-60@2019-10-04-12:28:11 .. nvpool/zones/omni151018/ROOT/zbe-31@znapzend-auto-2020-08-08T00:38:11Z
+#   zbe-32 => nvpool/zones/omni151018/ROOT/zbe-60@2019-11-15-14:33:16 .. nvpool/zones/omni151018/ROOT/zbe-32@znapzend-auto-2020-08-08T00:38:11Z
+#   === zbe-33 not in source
+#   zbe-34 => nvpool/zones/omni151018/ROOT/zbe-60@2019-12-19-09:10:31 .. nvpool/zones/omni151018/ROOT/zbe-34@znapzend-auto-2020-08-08T00:38:11Z
+# ...
+#   zbe-58 => nvpool/zones/omni151018/ROOT/zbe-60@2020-06-22-16:58:55 .. nvpool/zones/omni151018/ROOT/zbe-58@znapzend-auto-2020-08-08T00:38:11Z
+#   zbe-59 => nvpool/zones/omni151018/ROOT/zbe-60@2020-08-09-19:22:53 .. 
+#   zbe-60 => - .. nvpool/zones/omni151018/ROOT/zbe-60@2020-08-09-19:22:53
+# No big surprise with znapzend involved that newest snapnames all look the same
+# For zbe-59 - it was recently branched on source from zbe-60 (in fact vice
+# versa, but then `zfs promote` reshuffled them) and does not yet have snapshots
+# of its own. zbe-60 is the current history owner.
+
+RESFINAL=0
+echo "=== Processing collected dataset details..." >&2
+for Z in $DZ ; do
+    RES=0
+    ZL="`echo "$SNO" | egrep "^${SR}/${Z}\s"`" || { echo "!!! SKIP: $Z not in source" >&2 ; continue ; }
+    O="`echo "$ZL" | awk '{print $NF}'`" # origin on src
+    L="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${Z}" | tail -1`" || continue # latest on src
+    echo "$Z => $O .. $L" >&2
+    # We got listing for 3b up here
+
+    # NOTE: For rootfs with children, check that all children on src and dst
+	# are present and have in common the same-named snapshots, so a later
+	# replication stream can continue from a single snapshot name of the parent
+	# dataset (rootfs). This is a highly likely condition ensured by `beadm`
+	# but may be lacking on dataset subtrees cloned and promoted on source
+	# pool by other means.
+
+    if [ -z "$O" -o "$O" = "-" ] ; then
+        echo "=== SKIP a history owner: $Z" >&2
+        continue
+    fi
+
+    if [ "$DEBUG" = quick ]; then
+        if [ -z "$L" ] ; then
+            echo "=== $Z is a recent clone (has no snaps yet on src)" >&2
+        fi
+        continue
+    fi
+
+
+    # OS is snapname, but useful is OSD with ZBE/rootfs name relative to ROOT/
+    #OS="`echo "$O" | sed 's/^.*@//'`"
+    OSD="`echo "$O" | sed "s@^${SR}/@@"`"
+
+    echo "=== Move away the destination to back it up for now: '$DR/$Z' => '$DR/$Z.bak'" >&2
+    $ZFSW set zoned=off "$DR/$Z"
+    $ZFSW rename "$DR/$Z" "$DR/$Z.bak"
+    $ZFSW inherit zoned "$DR/$Z.bak"
+
+    #echo "=== Make new destination clone: '$DR/$OSD' => '$DR/$Z'" >&2
+    #$ZFSW clone "$DR/$OSD" "$DR/$Z"
+    # UGH: manually making clone and send+recv fails with:
+    #   cannot receive new filesystem stream: destination 'backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-31' is a clone
+    #   must destroy it to overwrite it
+    # but having no named destination and sufficient source snapshot automakes the dest
+
+    if [ -z "$L" ] ; then
+        # create snap, send it as the increment to have ZFS create clone the way it likes
+        # PoC NOTE: Assumes GNU date or compatible with +%s to add uniqueness to the snapname string
+        L="$SR/$Z@auto-firstsnap-`date -u +%s || date -u | tr '[ ,:@_\.]' '-'`-$$-$RANDOM"
+        echo "=== SNAP a recent clone (has no snaps yet on src): $Z => make '$L' to sync" >&2
+        $ZFSW snapshot -r "$L"
+        #continue
+    fi
+
+    #LS="`echo "$L" | sed 's/^.*@//'`"
+
+    # NOTE: NO LONGER RELEVANT: (was: For rootfs with children, have all children clones prepared before zfs send/recv)
+
+    echo "=== Update the new destination + create dst clone: increment '$O' => '$L', write into autotarget under '$DR' (overwrite with -F if needed?)" >&2
+    echo ":; time zfs send -R -I '$O' '$L' | mbuffer -m 128M | zfs recv -vue '$DR'"
+    time zfs send -R -I "$O" "$L" | mbuffer -m 128M | $ZFSW recv -vue "$DR" ; RES=$?
+    #zfs send -R -I nvpool/zones/omni151018/ROOT/zbe-60@{2019-01-29-09:14:13,2020-08-09-19:22:53} | mbuffer -m 128M | $ZFSW recv -vue backup-adata/snapshots/nvpool/zones/omni151018/ROOT
+    #  found clone origin backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-60@2019-10-04-12:28:11
+    #  receiving incremental stream of nvpool/zones/omni151018/ROOT/zbe-31@znapzend-auto-2019-10-11T17:30:00Z into backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-31@znapzend-auto-2019-10-11T17:30:00Z
+    #  in @  0.0 KiB/s, out @  0.0 KiB/s,  316 KiB total, buffer   1% full
+    #  received 312B stream in 103 seconds (3B/sec)
+    #  receiving incremental stream of nvpool/zones/omni151018/ROOT/zbe-31@znapzend-auto-2019-10-12T00:00:00Z into backup-adata/snapshots/nvpool/zones/omni151018/ROOT/zbe-31@znapzend-auto-2019-10-12T00:00:00Z
+    #  in @  0.0 KiB/s, out @  0.0 KiB/s,  316 KiB total, buffer   1% full
+    #  received 312B stream in 6 seconds (52B/sec)
+
+    echo "=== DONE ($RES) with $Z"; echo ""
+    [ "$RES" = 0 ] || RESFINAL="$RES"
+done
+
+echo "TODO: Pass over the current dataset layout and see if there are any datasets on source that are not on dest, remove ZBE-N.bak on dest if unneeded anymore" >&2
+
+echo "Final result of sync: $RESFINAL" >&2
+exit $RESFINAL
