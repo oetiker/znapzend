@@ -412,7 +412,22 @@ for Z in $DZ ; do
     fi
 done
 
-echo "TODO: Pass over the current dataset layout and see if there are any datasets on source that are not on dest, remove ZBE-N.bak on dest if unneeded anymore" >&2
+echo "Phase 3: Pass over the current dataset layout and see if there are any datasets on source that are not on dest, remove ZBE-N.bak on dest if unneeded anymore" >&2
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR" | grep '/ROOT/'`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR" | grep '/ROOT/'`"
+
+# Names of sub-datasets on src and dst:
+SN="`echo "$SNO" | awk '{print $1}' | awk -F/ '{print $NF}' | sort -n`"
+DN="`echo "$DNO" | awk '{print $1}' | awk -F/ '{print $NF}' | sort -n`"
+DIFF="`diff -bu <(echo "$DN") <(echo "$SN") | egrep '^[-+]' | egrep -v '^(\-\-\-|\+\+\+)'`"
+ONLY_SRC="`echo "$DIFF" | egrep '^\+' | sed 's,^\+,,'`"
+ONLY_DST="`echo "$DIFF" | egrep '^\-' | sed 's,^\-,,'`"
+if [ -n "$ONLY_DST" ]; then
+    echo "FYI: Sub-dataset names only present on backup destination (original obsoleted and removed?): " $ONLY_DST
+fi
+if [ -n "$ONLY_SRC" ]; then
+    echo "Sub-dataset names only present on original source (cloning and backup needed): " $ONLY_SRC
+fi
 
 echo "Final result of $SR => $DR sync: $RESFINAL ($COUNTOK OK, $COUNTFAIL failed)" >&2
 exit $RESFINAL
