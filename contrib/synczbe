@@ -151,7 +151,136 @@ trap "exit_trap" 0 1 2 3 15
 # TODO also detect if the current src and dst are already in sync
 # (same name, same tip; presume or check same intermediate snaps)
 # and then skip phase 1 quickly.
-echo "TODO: Phase 1: Make newest history owners same-named (and with same incremental snaps) on src and dst" >&2
+echo "Phase 1: Make newest history owners same-named (and with same incremental snaps) on src and dst" >&2
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR"`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR"`"
+
+STIPS="`echo "$SNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
+DTIPS="`echo "$DNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
+NSTIPS="`echo "$STIPS" | wc -l`"
+NDTIPS="`echo "$DTIPS" | wc -l`"
+echo "Phase 1: Discovered $NSTIPS source dataset tips (history owners):"; echo "$STIPS"
+echo "Phase 1: Discovered $NDTIPS destination dataset tips (history owners):"; echo "$DTIPS"
+if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
+    # ASSUME these come from same history
+    SZ="`basename "$STIPS"`" # tip zbe name on src
+    DZ="`basename "$DTIPS"`" # tip zbe name on dst
+    if [ "$SZ" = "$DZ" -a -n "$SZ" ]; then
+        echo "Phase 1: skipped clone/promote: Newest history owners are already same-named on src and dst" >&2
+    else
+        echo "Phase 1: Clone and promote destination tip dataset"
+
+        # Check that src tip dataset name (SZ) does not yet exist on dst:
+        if echo "$DNO" | awk '{print $1}' | egrep "/${SZ}"'$' ; then
+            # Let user rectify this
+            echo "Phase 1 fail: Dataset $SZ already exists under $DR (and is not a tip?)" >&2
+            exit 1
+        fi
+
+        # Look at dst tip (DZ) dataset name in source tree
+        # to see its origin snapshot name in history of SZ
+        # (also check if it is in that direct history at all).
+        # If all is ok, we would clone the existing (older)
+        # destination dataset DZ snapshot found below into
+        # a new destination dataset SZ, and then promote it.
+        #
+        # Filter logic: look at names+origins of src ZBEs,
+        # and pick the (one) entry with DZ as the name,
+        # and print its origin (snap with @ or '-' if a tip)
+        # and only select variants where such source DZ is
+        # a direct clone of SZ history owner. The resulting
+        # DZO is a complete snapshot name; short is made below.
+        # TODO: Recurse for other inheritance situations.
+        DZO="`echo "${SNO}" | while read D O ; do case "$D" in *"/${DZ}") echo "$O";; esac | grep "/${SZ}@"`" || DZO=""
+        if [ -z "$DZO" ]; then
+            # Let user rectify this
+            echo "Phase 1 fail: Dataset $DZ under $SR does not exist or is not a clone of $SZ history owner" >&2
+            exit 1
+        fi
+
+        # Get snap name: source DZ is tracked as clone of SZ@DZO_SNAP
+        DZO_SNAP="`echo "$DZO" | sed 's,^[^@]*@,,'`"
+
+        echo "Phase 1: under dst $DR, clone ${DZ}@${DZO_SNAP} as ${SZ} and promote it" >&2
+        echo "(in the end, ${SZ}@${DZO_SNAP} should be origin of ${DZ} on dst same as on src)" >&2
+
+        DR_ZBE="$DR/$DZ"
+        optionalDisarmDestZonedProp
+
+        $ZFSW clone "${DR}/${DZ}@${DZO_SNAP}" "${DR}/${SZ}" \
+        && $ZFSW promote "${DR}/${SZ}" \
+        || { echo "Phase 1 fail: could not clone/promote" >&2; exit 1; }
+
+        if $DR_ZBE_ZONED_DISARMED ; then
+            $ZFSW inherit zoned "$DR/$DZ"
+            $ZFSW inherit zoned "$DR/$SZ"
+            DR_ZBE_ZONED_DISARMED=false
+            DR_ZBE=""
+        fi
+    fi
+
+    if [ ! -n "$SZ" ] || [ ! -n "$DR" ] || [ ! -n "$SR" ]; then
+        echo "Phase 1 fail: could not find some dataset name to clone/promote" >&2
+        exit 1
+    fi
+
+    echo "Phase 1: Check if we need to sync snaps of $SZ history owner on src and dst, and then do so"
+    LD="`zfs list -d1 -Honame -tsnapshot -screation -r "${DR}/${SZ}" | tail -1`" || LD="" # latest on dst
+    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${SZ}" | tail -1`" || LS="" # latest on src
+
+    if [ -z "$LD" ] || [ -z "$LS" ] ; then
+        echo "Phase 1 fail: could not find some snapshots on history owner dataset $SZ under both src $SR and dst $DR" >&2
+        exit 1
+    fi
+
+    # Derive short snap tags:
+    LDS="`echo "$LD" | sed 's,^[^@]*@,,'`"
+    LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
+
+    if [ -z "$LDS" ] || [ -z "$LSS" ] ; then
+        echo "Phase 1 fail: could not find some snapshot names on history owner dataset $SZ under both src $SR and dst $DR" >&2
+        exit 1
+    fi
+
+    if [ "$LDS" = "$LSS" ]; then
+        echo "Phase 1: History owner $SZ is already up to date (per latest snapshot name)" >&2
+    else
+        echo "Phase 1: Refresh history owner $SZ => $LD .. $LS" >&2
+
+        # Update from older snapname known on backup destination
+        # to newer snapname known on source.
+        echo ":; time zfs send -R -I '$SR/$SZ@$LDS' '$SR/$SZ@$LSS' | mbuffer -m 128M | zfs recv -vue '$DR'"
+        time zfs send -Lce -RI "$SR/$SZ@$LDS" "$SR/$SZ@$LSS" | mbuffer -m 128M | $ZFSW recv -vue "$DR" || exit
+    fi
+
+else
+    # * If NDTIPS==0, there may be no datasets on dest (just too new), or
+    #   ones present are all clones made from origins in another zfs tree
+    # * If NDTIPS==1, we can probably find which of STIPS is its progenitor
+    # * Otherwise probably at some point backups were made that autoCreated
+    #   (by znapzend default ability) the destinations from scratch and not
+    #   as zfs clones
+    # * Generally otherwise, e.g. many unrelated rootfs'es of different OSes
+    #   (probably not a consideration for ZBE), need to be smart to map them
+    echo "TODO: Phase 1: Do not know how to arrange current layout (expected one history on source and one on destination)" >&2
+    echo "You can select the destination history owner you would like to use"
+    echo "(probably one with most child datasets branched off) e.g. 'zbe-XX'"
+    echo "below, and move others to a separate ZFS tree, e.g.:"
+    echo ":; zfs create -p ${DR}.bak"
+    echo ':; TABCHAR="`printf '"'"'\\t'"'"'`"'
+    echo ":; zfs list -Honame,origin -r ${DR} | grep /ROOT/ | egrep -v '/zbe-XX[@ '\"\$TABCHAR\"']' |"
+    echo '   while read D O ; do zfs rename "$D" "`echo "$D" | sed "s,/ROOT/,/ROOT.bak/,"`" & done'
+    echo "Hopefully this would also avoid ZFS automatically receiving newly"
+    echo "backed up clones as increments over a wrong compatible dataset tree."
+    echo "You can move those back later, if the clones recreated in correct"
+    echo "tree during next phases do not cover this."
+    if [ "$NSTIPS" = 1 ]; then
+        echo "NOTE: Will sleep a bit for the above to sink in, and fall through to try and clean up destination history owners"
+        sleep 10
+    else
+        exit 1
+    fi
+fi
 
 # Phase 2: rewrite existing standalone backups
 echo "=== Gathering data for Phase 2 over '$SR' => '$DR' resync ..." >&2
