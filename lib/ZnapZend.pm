@@ -1123,10 +1123,9 @@ my $sendWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-
+            $backupSet->{send_pid} = $pid;
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
-            $backupSet->{send_pid} = $pid;
         }
     );
 
@@ -1134,7 +1133,6 @@ my $sendWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
@@ -1166,16 +1164,19 @@ my $snapWorker = sub {
 
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " done ($backupSet->{snap_pid})");
-            #snapshot process finished, clear pid from backup set
-            $backupSet->{snap_pid} = 0;
-
+            
             if ($backupSet->{send_pid}){
                 $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
                     . ' still running! skipping this round...');
             }
             else{
+                # Assign a temporary non-zero value to avoid race condition
+                $backupSet->{send_pid} = ~0;
                 $self->$sendWorker($backupSet, $timeStamp);
             }
+
+            #snapshot process finished, clear pid from backup set
+            $backupSet->{snap_pid} = 0;
         }
     );
 
@@ -1183,10 +1184,9 @@ my $snapWorker = sub {
     $fc->on(
         spawn => sub {
             my ($fc, $pid) = @_;
-
+            $backupSet->{snap_pid} = $pid;
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
-            $backupSet->{snap_pid} = $pid;
         }
     );
 
@@ -1194,7 +1194,6 @@ my $snapWorker = sub {
     $fc->on(
         error => sub {
             my ($fc, $err) = @_;
-
             $self->zLog->warn($err) if !$self->terminate;
         }
     );
@@ -1222,6 +1221,8 @@ my $createWorkers = sub {
                     . 'post snapshot script runs for ages. snapshot will not be taken this time!');
             }
             else{
+                # Assign a temporary non-zero value to avoid race condition
+                $backupSet->{snap_pid} = ~0;
                 $self->$snapWorker($backupSet, $timeStamp);
             }
 
@@ -1315,6 +1316,7 @@ my $daemonize = sub {
 ### public methods ###
 sub start {
     my $self = shift;
+    my $ready_to_refresh = 1;
 
     $self->zLog->info("znapzend (PID=$$) starting up ...");
 
@@ -1338,15 +1340,27 @@ sub start {
         for my $backupSet (@{$self->backupSets}){
             Mojo::IOLoop->remove($backupSet->{timer_id}) if $backupSet->{timer_id};
         }
-        $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
-        $self->$createWorkers;
+
+        if ($ready_to_refresh) {
+            $ready_to_refresh = 0; # Exmut 
+
+            $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
+            $self->$createWorkers;
+
+            $ready_to_refresh = 1;
+        }
+
     };
 
-    print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
-    $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
+    if ($ready_to_refresh) {
+        $ready_to_refresh = 0; # Exmut
+        print STDERR "znapzend (PID=$$) Refreshing backup plans...\n" if $self->debug;
+        $self->$refreshBackupPlans($self->recursive, $self->inherited, $self->dataset);
 
-    print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
-    $self->$createWorkers;
+        print STDERR "znapzend (PID=$$) Creating workers for the backup plans processing...\n" if $self->debug;
+        $self->$createWorkers;
+        $ready_to_refresh = 1;
+    }
 
     $self->zLog->info("znapzend (PID=$$) initialized -- resuming normal operations.");
 
