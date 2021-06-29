@@ -8,7 +8,8 @@ use Pod::Usage;
 
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates forbidDestRollback);
+
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode resume recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates forbidDestRollback);
 
 sub main {
     my $opts = {};
@@ -466,6 +467,19 @@ can destroy. Logging an error about the problem
 
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
+
+=item resume
+
+use the -s option on the receive end, to support resumable transfer
+with receive_resume_token.
+
+If you have aborted a resumable-send, you should either do a resume-send using -t <token>
+to continue it or clear the half-received snapshot using zfs receive -A <filesystem>
+
+Example:
+
+ zfs get receive_resume_token tank/test
+ zfs send -t <token> | zfs receive -s tank/test
 
 =item compressed
 

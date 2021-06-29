@@ -12,6 +12,7 @@ has noaction        => sub { 0 };
 has nodestroy       => sub { 1 };
 has oracleMode      => sub { 0 };
 has recvu           => sub { 0 };
+has resume          => sub { 0 };
 has compressed      => sub { 0 };
 has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
@@ -536,7 +537,7 @@ sub sendRecvSnapshots {
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
     my @sendOpt = $self->compressed ? qw(-Lce) : ();
     push @sendOpt, '-w' if $self->sendRaw;
-
+    push @recvOpt, '-s' if $self->resume;
     my $remote;
     my $mbufferPort;
 
