@@ -157,8 +157,8 @@ DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR
 
 STIPS="`echo "$SNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
 DTIPS="`echo "$DNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
-NSTIPS="`echo "$STIPS" | wc -l`"
-NDTIPS="`echo "$DTIPS" | wc -l`"
+NSTIPS="`echo "$STIPS" | egrep -v '^$' | wc -l`"
+NDTIPS="`echo "$DTIPS" | egrep -v '^$' | wc -l`"
 echo "Phase 1: Discovered $NSTIPS source dataset tips (history owners):"; echo "$STIPS"
 echo "Phase 1: Discovered $NDTIPS destination dataset tips (history owners):"; echo "$DTIPS"
 if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
