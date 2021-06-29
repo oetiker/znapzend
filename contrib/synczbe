@@ -436,7 +436,17 @@ if [ -n "$ONLY_SRC" ]; then
     while [ -n "$SNO" ] && [ "$SNO" != "$OLD_SNO" ]; do
         OLD_SNO="$SNO"
         STIPS="`echo "$SNO" | egrep '\-$' | awk '{print $1}'`"
-        DTIPS="`echo "$DNO" | egrep '\-$' | awk '{print $1}'`"
+        #DTIPS="`echo "$DNO" | egrep '\-$' | awk '{print $1}'`"
+
+        if [ -z "$STIPS" ]; then
+            # We ran out of datasets that are history owners and are
+            # origins for clones, but some not-synced clones remain.
+            # Select remaining origin datasets, most populat first:
+            STIPS="`echo "$SNO" | awk '{print $2}' | sed 's,@.*$,,' | sort | uniq -c | sort -nr | awk '{print $2}'`"
+            echo "Phase 3: Looking at origin datasets that are not history owners:"
+            echo "$STIPS"
+        fi
+
         for STIP in $STIPS ; do
             SZ="`basename "$STIP"`" # tip zbe name on src - origin for others
             zfs list "$DR/$SZ" \
