@@ -427,6 +427,69 @@ if [ -n "$ONLY_DST" ]; then
 fi
 if [ -n "$ONLY_SRC" ]; then
     echo "Sub-dataset names only present on original source (cloning and backup needed): " $ONLY_SRC
+    # TODO: Send datasets grouped by presence of their cloning origin
+    # on target pool. The first (and often only) such group is based
+    # on the common "history owner" that Phase 1 hopefully ensured
+    # and updated so it has all needed intermediate snapshots.
+
+    while [ -n "$SNO" ]; do
+        STIPS="`echo "$SNO" | egrep '\-$' | awk '{print $1}'`"
+        DTIPS="`echo "$DNO" | egrep '\-$' | awk '{print $1}'`"
+        for STIP in $STIPS ; do
+            SZ="`basename "$STIP"`" # tip zbe name on src - origin for others
+            zfs list "$DR/$SZ" \
+            || { echo "Phase 3: history owner $SZ is not present (yet?) under dst $DR" >&2 ; continue; }
+
+            LIST="`echo "$SNO" | grep "/${SZ}@"`" || LIST=""
+            if [ -n "$LIST" ]; then
+                echo "Phase 3: Processing datasets with origin $STIP ($SZ)..."
+                # Read LIST as dataset (full name under SR) + origin fields:
+                while read D O ; do
+                    SKIP=true
+                    for Z in $ONLY_SRC; do
+                        case "$D" in
+                            */"$Z") SKIP=false; break;;
+                        esac
+                    done
+                    if $SKIP ; then
+                        echo "Phase 3: skip $D because it is not among datasets only on src" >&2
+                        continue
+                    fi
+
+                    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${D}" | tail -1`" || LS="" # latest on src
+                    # Derive short snap tags:
+                    LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
+                    if [ -z "$LS" ] || [ -z "$LSS" ]; then
+                        echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR" >&2
+                        COUNTFAIL=$(($COUNTFAIL+1))
+                        continue
+                    fi
+
+                    echo "Send to clone+update `basename "$D"` => $O .. $D@$LSS"
+
+                    RES=0
+                    echo ":; time zfs send -R -I '$O' '$D@$LSS' | mbuffer -m 128M | zfs recv -vue '$DR'"
+                    time zfs send -Lce -RI "$O" "$D@$LSS" | mbuffer -m 128M | $ZFSW recv -vue "$DR" || RES=$?
+
+                    echo "=== DONE ($RES) with $D"; echo ""
+                    if [ "$RES" = 0 ] ; then
+                        COUNTOK=$(($COUNTOK+1))
+                    else
+                        RESFINAL="$RES"
+                        COUNTFAIL=$(($COUNTFAIL+1))
+                    fi
+                done <<EOF
+$LIST
+EOF
+
+                SNO="`echo "$SNO" | grep -v "/${SZ}@"`"
+            fi
+        done ### for STIP
+        if [ -n "$SNO" ] ; then
+            echo "Phase 3: Remaining source name+origin entries to process:"
+            echo "$SNO"
+        fi
+    done ### while SNO
 fi
 
 echo "Final result of $SR => $DR sync: $RESFINAL ($COUNTOK OK, $COUNTFAIL failed)" >&2
