@@ -432,7 +432,9 @@ if [ -n "$ONLY_SRC" ]; then
     # on the common "history owner" that Phase 1 hopefully ensured
     # and updated so it has all needed intermediate snapshots.
 
-    while [ -n "$SNO" ]; do
+    OLD_SNO=""
+    while [ -n "$SNO" ] && [ "$SNO" != "$OLD_SNO" ]; do
+        OLD_SNO="$SNO"
         STIPS="`echo "$SNO" | egrep '\-$' | awk '{print $1}'`"
         DTIPS="`echo "$DNO" | egrep '\-$' | awk '{print $1}'`"
         for STIP in $STIPS ; do
@@ -482,15 +484,22 @@ if [ -n "$ONLY_SRC" ]; then
 $LIST
 EOF
 
-                SNO="`echo "$SNO" | grep -v "/${SZ}@"`"
+                SNO="`echo "$SNO" | egrep -v "(/${SZ}@|\-\$)"`"
             fi
         done ### for STIP
+
         if [ -n "$SNO" ] ; then
             echo "Phase 3: Remaining source name+origin entries to process:"
             echo "$SNO"
         fi
     done ### while SNO
+
+    if [ -n "$SNO" ] ; then
+        echo "WARNING: Phase 3 gave up on some datasets it could not sync, see remaining list above"
+    fi
 fi
+
+echo "NOTE: Phase 3 should have completed well before re-enabling znapzend, so you do not lose intermediate snapshots that may be important for cloning!"
 
 echo "Final result of $SR => $DR sync: $RESFINAL ($COUNTOK OK, $COUNTFAIL failed)" >&2
 exit $RESFINAL
