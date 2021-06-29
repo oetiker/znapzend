@@ -17,8 +17,10 @@ set -o pipefail
 # Examples below are for the setup discussed in the issue; you'll certainly
 # need to set your own, as in `SR=rpool/zones/z1/ROOT DEBUG=no ./synczbe` :)
 [ -n "$SR" ] || \
-SR="nvpool/zones/omni151018/ROOT"
-DR="backup-adata/snapshots/$SR"
+{ SR="nvpool/zones/omni151018/ROOT"; echo "WARNING: Using default SR='$SR'" >&2 ; }
+[ -n "$DRBASE" ] || \
+{ DRBASE="backup-adata/snapshots"; echo "WARNING: Using default DRBASE='$DRBASE'" >&2 ; }
+DR="$DRBASE/$SR"
 
 # For rootfs SR=rpool/ROOT or similar.
 # You can find the "SR" names for local zones by interpolating:
@@ -38,7 +40,7 @@ DR="backup-adata/snapshots/$SR"
 # Neuter writes by default until we are ready
 ZFSW="echo ###WOULD### :; zfs"
 [ "$DEBUG" = no ] && ZFSW=zfs \
-&& echo "WARNING: zfs operations for changing pool data are ENABLED, be sure to NOT HAVE znapzend service RUNNING!" >&2 \
+&& echo "WARNING: DEBUG=$DEBUG => zfs operations for changing pool data are ENABLED, be sure to NOT HAVE znapzend service RUNNING!" >&2 \
 || echo "WARNING: debug mode by default, zfs operations for changing pool data are DISABLED" >&2
 
 case "$SR" in
