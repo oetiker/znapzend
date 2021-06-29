@@ -51,6 +51,80 @@ case "$SR" in
         ;;
 esac
 
+DR_ZONED_SOURCE=""
+DR_ZONED_VALUE="`zfs get -Ho value -s local zoned "$DR"`" && [ -n "$DR_ZONED_VALUE" ] && DR_ZONED_SOURCE="local"
+if [ -z "$DR_ZONED_SOURCE" ]; then
+    DR_ZONED_VALUE="`zfs get -Ho value zoned "$DR"`"
+    DR_ZONED_SOURCE="`zfs get -Ho source zoned "$DR"`"
+fi
+DR_ZONED_DISARMED=false
+
+DR_ZBE=""
+DR_ZBE_ZONED_SOURCE=""
+DR_ZBE_ZONED_VALUE=""
+DR_ZBE_ZONED_DISARMED=false
+
+optionalDisarmDestZonedProp() {
+    DR_ZBE_ZONED_DISARMED=false
+    DR_ZBE_ZONED_VALUE="`zfs get -Ho value -s local zoned "$DR_ZBE"`" && [ -n "$DR_ZBE_ZONED_VALUE" ] && DR_ZBE_ZONED_SOURCE="local"
+    if [ -z "$DR_ZBE_ZONED_SOURCE" ]; then
+        DR_ZBE_ZONED_VALUE="`zfs get -Ho value zoned "$DR_ZBE"`"
+        DR_ZBE_ZONED_SOURCE="`zfs get -Ho source zoned "$DR_ZBE"`"
+    fi
+
+    if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
+
+        if ! $DR_ZONED_DISARMED && [ "$DR_ZONED_VALUE" = on ]; then
+            DR_ZONED_DISARMED=true
+            $ZFSW set zoned=off "$DR"
+
+            # Re-evaluate whether we need to tweak each
+            # ZBE, or changing its parent helped already
+            DR_ZBE_ZONED_VALUE="`zfs get -Ho value -s local zoned "$DR_ZBE"`" && [ -n "$DR_ZBE_ZONED_VALUE" ] && DR_ZBE_ZONED_SOURCE="local"
+            if [ -z "$DR_ZBE_ZONED_SOURCE" ]; then
+                DR_ZBE_ZONED_VALUE="`zfs get -Ho value zoned "$DR_ZBE"`"
+                DR_ZBE_ZONED_SOURCE="`zfs get -Ho source zoned "$DR_ZBE"`"
+            fi
+        fi
+
+        if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
+            DR_ZBE_ZONED_DISARMED=true
+            $ZFSW set zoned=off "$DR_ZBE"
+        fi
+    fi
+}
+
+exit_trap() {
+    EXIT_RES=$?
+
+    trap true 2 # ignore break for now
+
+    $DR_ZONED_DISARMED && \
+    echo "Restoring zoned property on $DR to $DR_ZONED_SOURCE $DR_ZONED_VALUE ..." >&2 && \
+    case "$DR_ZONED_SOURCE" in
+        local)
+            $ZFSW set zoned="$DR_ZONED_VALUE" "$DR" ;;
+        inherited)
+            $ZFSW inherit set zoned "$DR" ;;
+    esac
+
+    $DR_ZBE_ZONED_DISARMED && \
+    [ -n "$DR_ZBE" -a -n "$DR_ZBE_ZONED_SOURCE" -a -n "$DR_ZONED_VALUE" ] && \
+    echo "Restoring zoned property on $DR_ZBE to $DR_ZBE_ZONED_SOURCE $DR_ZBE_ZONED_VALUE ..." >&2 && \
+    case "$DR_ZBE_ZONED_SOURCE" in
+        local)
+            $ZFSW set zoned="$DR_ZBE_ZONED_VALUE" "$DR_ZBE"{,.bak} ;;
+        inherited)
+            $ZFSW inherit set zoned "$DR_ZBE"{,.bak} ;;
+    esac
+
+    trap - 2
+
+    exit $EXIT_RES
+}
+
+trap "exit_trap" 0 1 2 3 15
+
 # First phase:
 # 1a) find latest available common snap in history owner on older dst (children
 #     included) and same-named snapshot (with children) on newest src.
@@ -152,9 +226,18 @@ for Z in $DZ ; do
     OSD="`echo "$O" | sed "s@^${SR}/@@"`"
 
     echo "=== Move away the destination to back it up for now: '$DR/$Z' => '$DR/$Z.bak'" >&2
-    $ZFSW set zoned=off "$DR/$Z"
+    DR_ZBE="$DR/$Z"
+    optionalDisarmDestZonedProp
     $ZFSW rename "$DR/$Z" "$DR/$Z.bak"
-    $ZFSW inherit zoned "$DR/$Z.bak"
+
+    if $DR_ZBE_ZONED_DISARMED ; then
+        # For a backup copy, normally we do not want to restore
+        # original "zoned" value, just inherit one (and that
+        # eventually stabilizes as "off" to avoid automounting)
+        $ZFSW inherit zoned "$DR/$Z.bak"
+        DR_ZBE_ZONED_DISARMED=false
+        DR_ZBE=""
+    fi
 
     #echo "=== Make new destination clone: '$DR/$OSD' => '$DR/$Z'" >&2
     #$ZFSW clone "$DR/$OSD" "$DR/$Z"
