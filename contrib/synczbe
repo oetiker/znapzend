@@ -51,6 +51,9 @@ case "$SR" in
         ;;
 esac
 
+# For portable regexing
+WSCHAR="`printf ' \t'`"
+
 DR_ZONED_SOURCE=""
 DR_ZONED_VALUE="`zfs get -Ho value -s local zoned "$DR"`" && [ -n "$DR_ZONED_VALUE" ] && DR_ZONED_SOURCE="local"
 if [ -z "$DR_ZONED_SOURCE" ]; then
@@ -202,11 +205,11 @@ for Z in $DZ ; do
     # We got listing for 3b up here
 
     # NOTE: For rootfs with children, check that all children on src and dst
-	# are present and have in common the same-named snapshots, so a later
-	# replication stream can continue from a single snapshot name of the parent
-	# dataset (rootfs). This is a highly likely condition ensured by `beadm`
-	# but may be lacking on dataset subtrees cloned and promoted on source
-	# pool by other means.
+    # are present and have in common the same-named snapshots, so a later
+    # replication stream can continue from a single snapshot name of the parent
+    # dataset (rootfs). This is a highly likely condition ensured by `beadm`
+    # but may be lacking on dataset subtrees cloned and promoted on source
+    # pool by other means.
 
     if [ -z "$O" -o "$O" = "-" ] ; then
         echo "=== SKIP a history owner: $Z" >&2
