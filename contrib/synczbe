@@ -116,6 +116,8 @@ DZ="`echo "$DNO" | grep -v @ | awk '{print $1}' | awk -F/ '{print $NF}' | grep -
 # of its own. zbe-60 is the current history owner.
 
 RESFINAL=0
+COUNTOK=0
+COUNTFAIL=0
 echo "=== Processing collected dataset details..." >&2
 for Z in $DZ ; do
     RES=0
@@ -187,10 +189,15 @@ for Z in $DZ ; do
     #  received 312B stream in 6 seconds (52B/sec)
 
     echo "=== DONE ($RES) with $Z"; echo ""
-    [ "$RES" = 0 ] || RESFINAL="$RES"
+    if [ "$RES" = 0 ] ; then
+        COUNTOK=$(($COUNTOK+1))
+    else
+        RESFINAL="$RES"
+        COUNTFAIL=$(($COUNTFAIL+1))
+    fi
 done
 
 echo "TODO: Pass over the current dataset layout and see if there are any datasets on source that are not on dest, remove ZBE-N.bak on dest if unneeded anymore" >&2
 
-echo "Final result of sync: $RESFINAL" >&2
+echo "Final result of $SR => $DR sync: $RESFINAL ($COUNTOK OK, $COUNTFAIL failed)" >&2
 exit $RESFINAL
