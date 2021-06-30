@@ -1,3 +1,1779 @@
+ - make aborted recv resumable using the `resume` fature -- @aarononeal
+
+0.21.0 2021-06-28 19:25:46 +0200 Tobias Oetiker <tobi@oetiker.ch>
+    
+ * updated install instructions see README.md
+    
+ * new options for znapzend
+    
+        `--forbidDestRollback`   forbids forcing destination dataset rollback and
+        removal of datasets/snapshots not present on source
+    
+        `--since=x` allow to consider a non-automatic common snapshot "x" as a
+        starting point
+    
+        `--sinceForced=x` same as --since=x but also make sure "x" exists on
+        destination (can cause removal of newer snapshots)
+    
+        `--cleanOffline` clean up source snapshots even if a destination was offline
+    
+        `--mailErrorSummaryTo=rcpt`  if "send task(s) failed", mail a summary to rcpt
+    
+ * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
+    
+ * an a ton of bugfixes for all sorts of edge cases
+    
+A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
+and code to this release
+
+commit c584c34cc209b2acb490f68d7d0420ba0c982318
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 22 08:38:28 2021 +0100
+
+    fixed #541 better :)
+
+commit c3ef029adb1af0ef23569d7601ca390853c2a485
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Feb 22 08:36:48 2021 +0100
+
+    add mojo 9 restriction - fixes #541
+
+commit d78782946eec2e6cf32b7ac759fdeccfcf5d2322
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Oct 20 05:57:02 2020 +0200
+
+    Problem: Hard to use znapzend dev bins in a web of symlinks
+    
+    Solution: Follow up from 75857808ab5fc1030ac294c4e3634d4b5ef323c9
+    which added the line which is removed during "proper" installation,
+    but now use FindBin::RealBin instead of just ::Bin to allow developers
+    to shoot themselves in the foot easier by symlinking their version
+    in progress (or a snapshot of the development workspace) right into
+    their `/usr/bin/znapzend*` pathnames.
+    
+    Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit c89a1bd14b3197b6c37e98e56c842a2d4c00412e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Oct 14 18:02:46 2020 +0200
+
+    Update ZnapZend.pm
+    
+    Fix #524 and follow-up to #520
+
+commit 60f86cc6a7ef1115116849bcc884fa3f90991538
+Author: GabrieleV <GabrieleV@users.noreply.github.com>
+Date:   Mon Oct 12 10:58:43 2020 +0200
+
+    Fix typo and addes destroy options on recv side for running as unprivileged user
+    
+    Running as an unprivileged user needs the destroy permission on the remote receiving destination to allow cleaning expired snapshots.
+
+commit cac7607a830424e2a92ce5650d4ea18f05e296d2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 14:20:52 2020 +0200
+
+    README.md : clarify why bother about non-system perl
+
+commit 7bb829a966e193ff8c753662aaed3cd7f484f8c7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:59:12 2020 +0200
+
+    Update manpade and POD
+
+commit 1a5ed99c61fea31e6ce68ff615f30392979099fa
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:58:36 2020 +0200
+
+    Satisfy spellchecker
+
+commit 37f4aa0c16e34b670f15333a7a5923ac75b22122
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:57:21 2020 +0200
+
+    README.md : add suggestion about gmake on Solaris
+
+commit 02a4da44bfd63918e354276e544e7c39b88729d0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:56:56 2020 +0200
+
+    README.md : line-wrap and format the suggestion about perl on Solaris 10
+
+commit fd7c5972203a1c0146d6a200544695f0f8211f4d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:53:17 2020 +0200
+
+    Update README.md
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit f6f525723845ab7a050c1466d129d990a958cbfd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 13:53:10 2020 +0200
+
+    Update README.md
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 5f8616e6e63825b4dd2a01300fc0274f48741fc1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 21 00:18:53 2020 +0200
+
+    ZFS.pm : getSnapshotProperties()/getDataSetProperties() : when building "zfs get" @cmd, specify "-r" (if requested) earlier in command line
+
+commit d1a21a4ce75fd7f8133d66b95a25f681fdd89c9b
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Thu Aug 20 01:55:12 2020 +0300
+
+    bootstrap.sh : abort if autoreconf fails, and check that git tool exists
+
+commit 34fb2d3c18fc449942b753bec60447ce5b553fc5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 23:51:11 2020 +0200
+
+    README.md : point to CSWperl for Solaris 10
+
+commit 1cffc0747e78b25d97091161713277682fab9373
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 19 23:25:00 2020 +0200
+
+    Satisfy spellchecker
+
+commit 5c05f64c339680fe97c682ea4f70794e397126ec
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 19 23:23:25 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : if doing "snapshot_recurse_parent" then append "inherited" properties (if any and if enabled) at lowest priority
+
+commit f47ba407efaf02b3ab7b307a117d80040c22d45d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 19 22:47:35 2020 +0200
+
+    inheritLevels.pm : complete the POD sections
+
+commit c010c498603fca8a2b50c8145fac4aac18468a2e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 23:05:17 2020 +0200
+
+    Satisfy spellchecker
+
+commit df23fabeffc12dc4c74e53a5a5cb3ad33aae9e4e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 23:02:20 2020 +0200
+
+    Evict inheritLevels to dedicated module allowing to define routines
+
+commit 6bde6c4290e47015b40c6a95b7bd7acd7f170d53
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 23:00:24 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : update comments and a newly converted logic fix
+
+commit d9b0efd3c91be88c2e1c0482909107e199aec0e3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 22:46:25 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : pass "-s $inhMode" args to "zfs get" only if inhmode is not empty/unconstrained
+
+commit 37f8393c7290d1afad616c77f3a4a92f9a20de0d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 22:07:49 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : clarify comment and message of skipped --cleanOffline action
+
+commit 6b6e443b8501c0faa03bcc05c87431a06528cd0d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 21:51:19 2020 +0200
+
+    ZnapZend.pm : clarify args (even if undef) to mostRecentCommonSnapshot() usecase
+
+commit 8f1f38102ebdd8eb91327a35b488ad1b019c5278
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 21:48:40 2020 +0200
+
+    ZFS.pm : convert inheritLevels into a Class::Struct
+
+commit db8ac736b9d8511296b8744002988bdaf4c9b67d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 23:40:35 2020 +0200
+
+    Update lib/ZnapZend.pm
+    
+    Commit PR suggestion from @oetiker
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 2dbe32ae02c72b1858f4338f4fe69786d1a167db
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 23:40:17 2020 +0200
+
+    Update lib/ZnapZend.pm
+    
+    Commit PR suggestion from @oetiker
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit dde1c11bc190639cc7e9f9b95c6007b3fcec6c95
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 23:40:01 2020 +0200
+
+    Update lib/ZnapZend.pm
+    
+    Commit PR suggestion from @oetiker
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 316e201ce44eed67f6d0a9cdaaa37c6ae883b422
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 00:33:16 2020 +0200
+
+    Satisfy spellchecker
+
+commit 5c278c9cd7604f194e0358d013cb3c145ce48724
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 20 00:02:47 2020 +0200
+
+    ZnapZend.pm / znapzend : introduce --mailErrorSummaryTo=rcpt CLI option (issue #499)
+
+commit def30a8b4ee1d99477584fce72eddec9a4942817
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 19 23:54:45 2020 +0200
+
+    znapzend : line-wrap and slightly rephrase help for --cleanOffline option
+
+commit da0b2fd7b3e32878a17e8e66cd20bbce1c4c5b98
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 19 23:46:47 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : separate error summary (and differentiate text for cleanOffline mode) from cleaning or not the source snapshots
+
+commit 6b94e303c2794a3765f2f03ded1bfbb399f6bf8f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 14 14:49:18 2020 +0200
+
+    Satisfy spellchecker
+
+commit 1a47f7ad48d4ce75cb70e4e91bf53e8a306bee1d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 14 13:55:47 2020 +0200
+
+    Update contrib/synczbe : typo fixes, comment updates...
+
+commit 3127fc6fed40cc3316841b275508673f57bf5d2f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 20:21:44 2020 +0200
+
+    README.md : rearrange Verification vs. Compilation and Installation sections, and the issue #500 is no longer a problem
+
+commit 0915f14e9fc39120229957bac04e10023257c2ed
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 00:49:01 2020 +0200
+
+    ZFS.pm : hotfix "Variable %inheritLevels will not stay shared at..." - see #516
+
+commit d4a10d0a8254c58fab63357ec4a094825c267398
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 00:32:56 2020 +0200
+
+    ZnapZend.pm : start() : log initialization steps (backup plan parsing, worker creation) and end of life if $self->debug
+
+commit aa6ecc09e835f9e21673a2d059d3cb43dee8e622
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 00:28:49 2020 +0200
+
+    znapzend-daemonize.t : we do not explicitly "use Test::Builder" anymore now
+
+commit fc46538f7cf007ebea969a96445eb62a511b560d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 00:27:34 2020 +0200
+
+    test.sh : "set -e" to die on failed test scripts
+
+commit e825ec32603a5d868d3ffed581d427a5ad31edb5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 18 00:06:28 2020 +0200
+
+    Satisfy spellchecker
+
+commit d0e5e9eb90224bdb1091720e920871945b9b9456
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 23:58:24 2020 +0200
+
+    znapzend-daemonize.t : introduce forkedTest() to check expectations for both child and parent behaviors
+
+commit c53a9aa7131bff84b75056222563ea914b37873b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 23:57:33 2020 +0200
+
+    Znapzend.pm : do not lose STDOUT/STDERR of daemonized child in test mode (needed by test harness)
+
+commit b0cf2d985d3e2da0d4905fb3fc518650444415b4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 23:56:52 2020 +0200
+
+    Znapzend.pm / znapzend-daemonize.t : track spawned child PIDs explicitly (but optionally WRT other tests and production runs)
+
+commit 511ef062fd2317dcccbb7e55ac25b6899358c21e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 22:26:34 2020 +0200
+
+    znapzend-daemonize.t / znapzend : test what start() returns as result of main(), not plain "1"
+
+commit 7303217ecc7f9c2a558ce939f0c49171c5ad4303
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 22:18:03 2020 +0200
+
+    t/znapzend-daemonize.t : use Test::SharedFork for better accounting (but it still only counts parent logic)
+
+commit 0593eafae0c53b2a51f4793de27bb2cc66ef639f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 21:54:21 2020 +0200
+
+    ZnapZend.pm : start() : log initialization steps (backup plan parsing, worker creation) and end of life
+
+commit 9333da4b006e44040bd80b10d1dbfcdacf61912c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 17 21:52:56 2020 +0200
+
+    ZnapZend.pm : daemonize()/start() : pass special return codes where we do not die() on pidfile clash and where parent PID would exit() when running in tests, and handle these codes to skip processing nonetheless where it would not happen in real life
+
+commit 5435c04b86f868457de96c35441efbd2861a68e5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:29:48 2020 +0200
+
+    README.md : markdown does not have "NOTE:" blocks like asciidoc, use blockquotes for similar visual effect
+
+commit 3928a39865f2a0fa4a50cc0bf8e82ff36c8834d8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:18:13 2020 +0200
+
+    README.md : minor rewording
+
+commit 333a6546f1c62762e563ffca2c216ebbf5b39685
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:18:03 2020 +0200
+
+    README.md : try to use "NOTE:" blocks
+
+commit 6399ada50b69eef3115e050209e8454dbfb6f68a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:11:54 2020 +0200
+
+    README.md : bullet-point the instructions for prerequisite packages on different distros, code-block the installation commands
+
+commit c86496acb5fe7b2811407e88be278571d07fbb21
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:10:43 2020 +0200
+
+    README.md : mention bootstrap.sh
+
+commit 6de594791d6097ea5534961d5be944ac61eb6b26
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:04:27 2020 +0200
+
+    README.md : truobleshooting : suggest oracleMode to clean up hordes of snapshots that overflow command line zie otherwise (issue #308)
+
+commit f3069067bca6f067784539ff8459f61e844773dd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 14:17:37 2020 +0200
+
+    README.md : reference unit-tests as part of build
+
+commit 4653597a701e484d4ddddfef0418445f2bf6f9d0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 14:09:46 2020 +0200
+
+    README.md : update apt-get dependencies
+
+commit 4a88bc4219421aae2dfee5d7f596c91dbf1fceba
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:53:23 2020 +0200
+
+    README.md : add a blurb on installing znapzend in OpenIndiana
+
+commit 1b7d208be005b2f3aea406d496fb65b07a59f241
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:51:09 2020 +0200
+
+    Satisfy spellchecker
+
+commit e6966f8a97a284c0c46b029518c47e80c7cd658b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:49:19 2020 +0200
+
+    Satisfy spellchecker
+
+commit ead1424db0f53b4e3e19c63dd21302cacbb6a479
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:47:33 2020 +0200
+
+    README.md : reference OpenIndiana packaging
+
+commit 2639116fb0093ed066069ad679549442307f4ab6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:47:21 2020 +0200
+
+    README.md : separate inline commentary text for xcode by a hashed comment
+
+commit 698e46a0d92741850798a3c3fcc4a50906fdd053
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:38:30 2020 +0200
+
+    Satisfy spellchecker
+
+commit e1656b541a39b19b35ddd675bbdc3afb8116b2da
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:31:48 2020 +0200
+
+    README.md : word-wrap the text with support/contrib URLs and expand a bit about "issues" protocol in particular
+
+commit 07c8c84a239977e4dcebde84d1f44d377cc5c74a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:30:52 2020 +0200
+
+    README.md : in configure/install/symlink code examples, and in troubleshooting, reference the master branch
+
+commit 2cbefc814d58ccffef99cfafde87dfd473890972
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:30:31 2020 +0200
+
+    README.md : in configure/install/symlink code examples, update ZNAPVER to latest public release 0.20.0
+
+commit f379c855eecaa9f5ca7d48b51f115e9f677a24f1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:20:31 2020 +0200
+
+    README.md : add troubleshooting suggestions about problems with `zfs promote` of issue #503
+
+commit 8678472c0b6b97e42c0d7e68840fcf66eb6873fe
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:19:55 2020 +0200
+
+    README.md : add troubleshooting suggestions about typical causes of sync errors
+
+commit 0693a10e47206c8852dc100251ae0df305ce45f0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:10:55 2020 +0200
+
+    README.md : add troubleshooting suggestions about the "ERROR: suspending cleanup" summaries at end of a run
+
+commit a22b03f93d97da2699aa3a7a4682990348ae699b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:09:14 2020 +0200
+
+    README.md : make the symlink code example more reliable (be sure to symlink into a directory, use relative links, overwrite existing links)
+
+commit e8b80bf94453e4843db6f26f753e2bdaebf756ab
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:08:10 2020 +0200
+
+    README.md : make the configure/install/symlink code examples more generic with a ZNAPVER variable
+
+commit 3548ef404b5144e6b7360c053d8883184f7b4228
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:07:09 2020 +0200
+
+    README.md : add URLs to GitHub issues and Pull Requests for znapzend central repository
+
+commit 7cb121881f9efe16ee17f54665e5cdee11770893
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:06:25 2020 +0200
+
+    README.md : wrap long lines in docker code examples
+
+commit 2ec9c88920e06a95047435a376f62e93aa70e446
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 13:06:02 2020 +0200
+
+    README.md : wrap long lines and reword a few things slightly
+
+commit 359b112518e29c841606075b83968b579db61242
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 11:31:01 2020 +0200
+
+    Contrib a PoC shell script for logic addressing parts of #503
+
+commit b05e735258adb17cf4764f2c5679fb13e5a92cb4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 20:25:18 2020 +0200
+
+    Update generated documentation files (*.pod, man/*.1)
+
+commit e83ff71490b85d9395a557632b862216f2cbdd96
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 16:16:49 2020 +0200
+
+    Satisfy spellchecker
+
+commit 61c6df959bd417ad5ec525da24cd97aa954b3045
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:58:52 2020 +0200
+
+    Update znapzend.1 man page for --cleanOffline option
+
+commit 2ef55bcdd58455b12637cc832dc2a9d9a54f5d7b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:58:34 2020 +0200
+
+    Update znapzend.1 man page for --since=X mode
+
+commit 892cc8f9165b22e2d68a1ad651539f9b6b6fdc73
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:58:11 2020 +0200
+
+    Update znapzend.1 man page for feature=sendIntermediates documented in more detail
+
+commit d76b6d5c40fe59192d479959bc825bc99550cb5c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:56:16 2020 +0200
+
+    znapzend: add feature=sendIntermediates for completeness, and document the difference in more detail
+
+commit ca680bafe55b0018f1ef26aeca2fbc24dbf694d3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 12 15:39:15 2020 +0200
+
+    Config.pm : checkBackupSets() : report the "BUG: Should not get here" as a zLog->error()
+
+commit e1d43822b15004cb3dade386b2c88083db81a445
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 22:58:05 2020 +0200
+
+    Config.pm : checkBackupSets() : line-wrap the error message for seeing a snapshot among backupSet items
+
+commit 9fe286125cbee7077dadb7e8702b3a077a39c53c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 22:57:26 2020 +0200
+
+    Config.pm : checkBackupSets() : line-wrap a large comment block
+
+commit 54a4361c9fda097175e0d2ac57b16a48d79c804b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 22:56:55 2020 +0200
+
+    Proper fix for regression introduced by 60e7afe as mentioned in #479
+
+commit 2c5622771ff95736f4cc56160e1a6798b0012ca1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 22:52:03 2020 +0200
+
+    Revert "fix for regression introduced by 60e7afe as mentioned in #479"
+    
+    This reverts commit 93a1cbc0c3334afd839791c457b3ec914e58a389 to fix 60e7afe properly.
+
+commit d99d399b2253a8464504674f4dedd73f572a3f43
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 22:56:54 2020 +0200
+
+    Satisfy spellchecker
+
+commit 9aee0851804506184963137c17fe3d137413df25
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:21:40 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : fix use of lastAndCommonSnapshots()
+
+commit b1c89988c46323676e032127ee25bdc4b54c7097
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 23:12:09 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : extend commented-away debug aid, and phrase more clearly the returned logical values
+
+commit 066c90ff57b5a36142c126d018360ca961fa909d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:28:31 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : fix snapTime => snapName as it reflects the purpose better
+
+commit 8c554ce2204f97fe30ae493d197cbfe79a9b0577
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:27:43 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : fix detection of correct (exact) snapName, and lack of match
+
+commit ca93f4466c4159172923a1cefae1af8d0cca1f69
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:36:52 2020 +0200
+
+    Satisfy spellchecker
+
+commit 7c0f6b4e63c742965d02e94212e8c3cef7b43bd6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:34:10 2020 +0200
+
+    bin/znapzendztats : fix padding length in header properly
+
+commit 135ddad3440464aae237cad17a5506b6ac7d8482
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:25:05 2020 +0200
+
+    bin/znapzendztats : fix padding length from going non-positive (depends on snapname pattern)
+
+commit 7b28bb9fe18917be93ee7a7e1a87239d8324a9b8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:22:29 2020 +0200
+
+    bin/znapzendztats : fix padding length from going negative (depends on snapname pattern)
+
+commit 1ef34a8c356f799a4706b97226ef498203c11583
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:14:01 2020 +0200
+
+    bin/znapzendztats : add --debug
+
+commit 578538a6d3a9db83166bbe84d1884f6ae84befa0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:12:33 2020 +0200
+
+    bin/znapzendztats : fix absence of usable ZConfig->zLog (needed after converting from "print STDERR")
+
+commit ced52e718e5940561338571ed8f9a2068745b15e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Sat Aug 8 02:05:06 2020 +0200
+
+    bin/znapzendzetup : fix absence of usable ZConfig->zLog (needed after converting from "print STDERR")
+
+commit a5bf67990429be28ac6a296420c8175b7ce5e7cc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 23:42:22 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : amend debug message
+
+commit 1850ad9567e9c0d2afd6007fc9543172af805d3d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 23:42:22 2020 +0200
+
+    ZFS.pm : fix definition of %inheritLevels
+
+commit 0c5c2da220f7844e24a140ec6d31302a45acc4aa
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 13:40:00 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix FQSN matching to actually remove already considered snapshots from current child-processing phase toDestroy list
+
+commit 84b94a57a58195c98917e83a761142124daa19f4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 13:29:59 2020 +0200
+
+    ZFS.pm : extractSnapshotNames() : hide another temporary debug print
+
+commit 0c925792d747e5dfa7e32e9a1043ebfe048598a9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 13:27:39 2020 +0200
+
+    ZFS.pm : extractSnapshotNames() : use the simpler syntax to pass $array
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 46692a3d494435af5f43284920ac00be2c4e6129
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 14:58:48 2020 +0200
+
+    Make spellchecker happier
+
+commit 66a4e4b55a54ed35ba8a124ed85920eefb37f75d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 14:49:43 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : be explicit that we let mostRecentCommonSnapshot() define the inheritance mode for these invocations
+
+commit 1a925f61d1c87db845f1245da3d0857757fbcb95
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 14:47:54 2020 +0200
+
+    ZFS.pm : define %inheritLevels to move getSnapshotProperties() and mostRecentCommonSnapshot() from hardcoding magic numbers
+
+commit 24524dce00ae47f171d5e0187b772fb2bde97d31
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 14:46:59 2020 +0200
+
+    ZFS.pm : filterPropertyNames() : fix tags in debug log messages
+
+commit 5ebf55d506dc24313e126de83745601e874ac3e4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 13:51:31 2020 +0200
+
+    ZnapZend.pm : fix use of hash scalars, they may be not numeric
+
+commit 4ca854102741abee134434286eb3901929fc83f1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 13:06:21 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : only bother to check extractSnapshotNames(toDestroy) when walking snapshots individually if both snapnamesRecursive and toDestroy lists are not empty
+
+commit 73e618e3bf4bec0b6629d45556c9a73085a0205c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 13:05:41 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix passing of array vars to Dumper()
+
+commit 52c5b8aa2f6412956bc31aacf89e4b1972ec6078
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 13:05:13 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix passing of array vars to extractSnapshotNames()
+
+commit d87f34dde0cbdc657177e8a0c1e16145c848494a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 13:03:38 2020 +0200
+
+    ZFS.pm : extractSnapshotNames() : figure out array var passing, and support incoming plain strings
+
+commit 3130e1ed75f178423ecf94d45c0fb166840339ab
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 12:30:22 2020 +0200
+
+    ZFS.pm : extractSnapshotNames() : a bit of debug prints
+
+commit 2f50da1800eb3cb036df84ce2464c22ef12953a8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 12:27:26 2020 +0200
+
+    ZFS.pm : extractSnapshotNames() : only process the array if it is not empty
+
+commit 9c7d9d70dc7b5852a95ad96b6f4ac0cea914a0d4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 12:05:55 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : extractSnapshotNames() for destination recursive cleanup only if @toDestroy list is not empty
+
+commit 843d3ef59915e2bf90b1aec8a0a088d487fa0efb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 12:05:22 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : log and do destination recursive cleanup only if @toDestroy list is not empty
+
+commit 1d59491881f6fb9830178ff5fac42778bb5a9aba
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:57:32 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : use the trick with snapnamesRecursive also for destination cleanup
+
+commit 04756ecf4888d267edbd28c198213a2465d886e9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:47:11 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : only bother to check extractSnapshotNames(toDestroy) when walking snapshots individually if snapnamesRecursive is not empty
+
+commit c112a0a235f1e4e48919da9946acddf301be26c5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:46:06 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : comment why snapnamesRecursive remains a hash
+
+commit 42f36362b67e610b40ab2beed143429f041603f6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:43:18 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : refactor to use extractSnapshotNames()
+
+commit 01422b2858f9380230e765ca4313b520e3e1989d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 12:07:32 2020 +0200
+
+    ZFS.pm : fix declaration of extractSnapshotNames()
+
+commit f67f32b3c81a56f148c541773225b6ef1e0b40ef
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:42:27 2020 +0200
+
+    ZFS.pm : make sure extractSnapshotNames() looks to end of string, just in case
+
+commit 0a748def1f48768ac8ab1b54abeda5ce7fb9efc0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:32:32 2020 +0200
+
+    ZFS.pm : introduce extractSnapshotNames() courtesy of @oetiker
+
+commit af449ae44b6b56df6ac7562b701bfe5fff1554b8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 11:23:44 2020 +0200
+
+    Config.pm : fix indentation in attribute defaults
+
+commit f70e6c7c26b41597288976d686cd67b39b0af0d2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:22:53 2020 +0200
+
+    Satisfy spellchecker
+
+commit cc7140ed079c555e8561dd9355e015c4153ea91d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:21:54 2020 +0200
+
+    Satisfy spellchecker
+
+commit d50a1618cc4a2c1926ae953276c05324b85c8412
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:21:37 2020 +0200
+
+    ZFS.pm : another minor fix for debug log formatting
+
+commit 344e34632597b94811099d8b11ff81ec572c8b51
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:15:30 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): log the amount of snapshots remaining in toDestroy lists when we are ready to apply them to source cleanup
+
+commit d942cd67a730d989ca42edaf4bcc439ca4591689
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:14:54 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): add Dumper() logging of toDestroy lists in debug mode
+
+commit 6955aeaefea77ebf22cb22bc5b6d44623e247493
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:13:42 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): be quieter about "not cleaning ... because needed" debug logging
+
+commit a73db8f67e05f7d265035c3127df2b79248ea593
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:05:50 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): be quieter about "not considering whether to clean source" debug logging
+
+commit ab49613220be67fa56ab75b0da67f42ccc6efa28
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 17:04:40 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): consider toDestroy child datasets in reverse order, so we do not delete snapshots with a dst_X_synced flag while someone else may rely on it
+
+commit 695825c632d193ee9bb28b50c9aba5c36aecf4b1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 16:54:01 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): do not corrupt original toDestroy array contents - mangle a copy of its entries
+
+commit 48b8427eae5defbf248a32703d9c4d37c215790c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 16:24:33 2020 +0200
+
+    Accept comment from PR #507 : convert `print STDERR "...\n" if debug` => `$self->zLog->debug() if debug` (keep it optional for explicit --debug CLI option) in most places
+
+commit 7e448e8f99c2cd4468dd88ef8ba473066f05ebe1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 16:21:46 2020 +0200
+
+    Config.pm : initialize private "zfs" with access to our zLog
+
+commit d880a604f83fa4f2690560a4aafd207aa81fb266
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 16:20:57 2020 +0200
+
+    Config.pm ZFS.pm : make dummy zLog definition (exception thrower) more actionable with a stack trace
+
+commit 1520199c34a1806dfe45963c56297b591187a26a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:44:27 2020 +0200
+
+    ZFS.pm : filterPropertyNames(): comment about possible caveat with fast skip of propname eq all
+
+commit 3353e7bb7df5b501149d926872544d7255a18672
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:43:20 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : do not process snapshots we already recursively decided about in parent when going to child datasets
+
+commit 687776a4d8621eef12ba61f1a56fa5a8726d38db
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:29:36 2020 +0200
+
+    Accept comment from PR #507 : perl warn => $self->zLog->warn() in most places
+
+commit 4dd7d7e39ebc908e727a10d842df6466ecf86e81
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:18:41 2020 +0200
+
+    ZFS.pm : filterPropertyNames() : we skip undef and "" explicitly, but have no syntactic reason to forbid "0" in array of property names on the input
+
+commit 9d594ce8849e6b340d03bfe6ef20869cf8f6c709
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:12:59 2020 +0200
+
+    Accept comment from PR #507 : uses of "defined"
+
+commit b2e7581aeaba9910c11b7b292861838e5f2698b0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 15:04:27 2020 +0200
+
+    Accept comment from PR #507 : foreach => for
+
+commit f98c6cd349e05447e40a93e60699bc660a46a67f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:59:28 2020 +0200
+
+    Satisfy spellchecker
+
+commit 07e5d5f5d4a987670edb9bee031e9b47dfb0c817
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:54:40 2020 +0200
+
+    Satisfy spellchecker
+
+commit 1765c7941706282186b53683cd3870d017c0d7c8
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:52:45 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : fix markup in debug log
+
+commit e5c396c6e9c8d39380f96513e2c6fb0521315358
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:52:01 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : do not process snapshots we already recursively decided about in parent when going to child datasets
+
+commit 03915e6170155dfd7dcd6b14e192a5d438293de1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:47:57 2020 +0200
+
+    ZFS.pm : prepare snapshotExists() skeleton for quiet mode to be used from getSnapshotProperties()
+
+commit f93303342e6c5d14bb7eddac04ab715975512146
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 14:30:00 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : log-debug if we stopped recursion because same0named snapshot does not exist in parent dataset
+
+commit e39695ad17088af5f36e5b0bf0371ac7699ef55f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 13:59:05 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : check if the currently inspected snapshot got us all the specific properties we wanted
+
+commit 79cb08ef530ba0b036d57b08565318f333945dca
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 13:57:04 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : leave a commented-away way to always check via getSnapshotProperties()
+
+commit b84dad2655c3a6e3048e7cd229a6c68452de15bd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:41:30 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : optimize a bit, predefine @dstSyncedProps - and we actually look for two properties here
+
+commit c417185f85941e153c615cc5947c46b415a4ef3d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 13:57:45 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : comment "recurse" not "iterate" for consistency
+
+commit e42dfc21de93709e854b091e7887a0499c7fe4f7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 13:58:08 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : debug dump $inherit numeric mode value
+
+commit 90ac1019ca98fa1a5fc65deac34af1837b435638
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:22:49 2020 +0200
+
+    ZFS.pm : rearrange hash dereferencing in getSnapshotProperties()
+
+commit 8880386d7913cc8f235b642ef43caa79b7780deb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:22:24 2020 +0200
+
+    ZFS.pm : rearrange debug data dumping in in getSnapshotProperties()
+
+commit 61a2786cd58b12f8f0381b45b83ab5dfe4b2317f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:20:59 2020 +0200
+
+    ZFS.pm : introduce filterPropertyNames() to use in getSnapshotProperties() to get specific props from "zfs get" right away
+
+commit 55818fd3a8b3bddd2a65538c802752d9f016edb4
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:16:47 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : log debug before "checking to clean up source..." and possibly spewing logs from search for dst_X_synced
+
+commit 97e3793e6295b76e49c3ef2a69b447cbb9d37809
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 12:40:34 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : optimize a bit, only define $dstSyncedPropname when/if needed
+
+commit 499e5c3795de2e81617f8c5ffdfba9a515d8f4e3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 10:19:25 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : refactor for a bit of performance by not concating dstSyncedPropname in a loop
+
+commit 40b39efac63d6ba572bdf995f4e3562a6d0d224d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 19:37:18 2020 +0200
+
+    getSnapshotProperties() : for a few typos more...
+
+commit 71d419e38f4fa2b755004a9e1900f3bdf33add43
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 18:38:55 2020 +0200
+
+    ZnapZend.pm : $createSnapshot(): speed up using recursive zfs list from backupSet{src} instead of listing all datasets in the system
+
+commit fbe2add9dc90d0b0b40487aa152a52794ea1cfe9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 18:31:41 2020 +0200
+
+    Time.pm: getSnapshotsToDestroy(): make double-sure that latest snapshot is not listed toDestroy
+
+commit b27dd29d43d459f978b066680040dc82d081dc08
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 17:54:37 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): reword "got nothing to clean in children of source" to be more useful
+
+commit a81be26799caf1b312c8e0caa0cf6f35841a4ae2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 16:58:22 2020 +0200
+
+    ZFS.pm : make spellchecker happier
+
+commit 83541e661be03dbba6cf6d0ad83a4e366ebbfe16
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 16:38:45 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : refactor using $inhMode and $numProps, and debug-log if we found something
+
+commit 9fd5b58e52b70d75a6b148b3767a4916ebe3a8b1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 16:24:56 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : implement a custom $inherit mode to recurse into same-named snapshots of parent dataset
+
+commit 3722081a205606b25fb98ab64a94a4e513c52eca
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 16:23:26 2020 +0200
+
+    ZFS.pm : clean up naming in comments: zfs datasets have "properties" not "attributes"
+
+commit 1fb28799341da9eedb696ea8471a0bae61fcd515
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 15:50:46 2020 +0200
+
+    ZFS.pm : comment about name-spaced (get/set/delete)(dataset/snapshot)properties
+
+commit a07938508ca060baffde13f88ec5a936aba3597a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Aug 10 08:57:51 2020 +0200
+
+    ZnapZend::ZFS uses zLog too so we better provide it when instanciating.
+
+commit 9c7e2d4926ceb8c838efcd9d712a2647bde76391
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Aug 7 13:18:22 2020 +0200
+
+    Update lib/ZnapZend.pm --since mode
+    
+    Do not explicitly preset variables to `undef` as this should be the default value anyway. Caveat emptor: code below still relies on things being `undef` vs. `0` for example.
+    
+    Co-authored-by: Tobias Oetiker <tobi@oetiker.ch>
+
+commit 6a292c9160a0b2d29762f8c6e1175b04f5be3471
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 23:14:40 2020 +0200
+
+    whitelist.txt : spellcheck accept "resync"
+
+commit 35dac5ec1705b96fb0937b516c881bcf47a6bdfd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 20:08:18 2020 +0200
+
+    ZnapZend.pm : fix merge-error adding "since" snapshot to snapCleanFilter (intended for snapSendFilter)
+
+commit f8838c099bc5236f2c159861fc62930aa546fb83
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 16:16:45 2020 +0300
+
+    whitelist.txt : make spell checker happier
+
+commit 19eb2df16c711fb51b176ba52065014625b89421
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 16:04:47 2020 +0300
+
+    znapzend.t : coverage for runonce --since=x
+
+commit f7bc8bccb19a356890bca13cfd3811ad3901cd58
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Jul 13 14:40:00 2020 +0000
+
+    Introduce runonce --since=snapname syntax
+
+commit 9abc4f3457e496af5fb2c564ca7ab45935f93f15
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 00:25:42 2020 +0200
+
+    Satisfy spellchecker
+
+commit e30dfbde8adbc4dae09e1d6b521b135211591233
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 00:22:38 2020 +0200
+
+    ZFS.pm : sendRecvSnapshots() : move a debug printout higher so we might see it before throwing exceptions
+
+commit 5beddf2ff2c756940ee52f7d01314cd24ca1c2d6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Aug 6 00:21:57 2020 +0200
+
+    ZnapZend.pm ZFS.pm : sendRecvSnapshots() : support forced removal of (automated) snapshots on destination, to make way for repopulation with needed historic points where requested and possible
+
+commit c5bf1ccdc665c8098d8b49532032915685c13654
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 23:21:44 2020 +0200
+
+    ZFS.pm : sendRecvSnapshots() : comment contents of %snapshotSynced for code readability
+
+commit ecbc88af0a79599147dccf93bee0df5e789d9340
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 23:21:11 2020 +0200
+
+    ZFS.pm : sendRecvSnapshots() : comment the return values of lastAndCommonSnapshots() for code readability
+
+commit 79fd65d709d5a4794d7fea996eb411f2ccc2bbb1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 23:12:09 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : extend commented-away debug aid, and phrase more clearly the returned logical values
+
+commit 7b2c0f53c5d89f8ef5e4da8c7934cdce09e47f89
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 23:11:02 2020 +0200
+
+    ZFS.pm : various snapshot listers and comparators with $lastSnapshotToSee argument : trim it to "snapname" if getting "dataset@snapname" on input
+
+commit d5d96be56064cae89cbd6e544c24d768c7c7f7d0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 22:06:30 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() --since mode: skip complex decisions if we have seenD (the "X" in destination snapshot history, and in src history by construct)
+
+commit 756dd13a9e3563c06e772d3d844c13867ee8508f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 14:46:46 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() --sinceForced mode: log differently if we had not seenX and have just one or more common snapshots
+
+commit 4fb82c2e7fd93907d51ff8962031c1b47e307d61
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 14:45:27 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() --since mode: keep note if we have seenD (the "X" in destination snapshot history)
+
+commit 88f3d2ea05e22529b66b26c7839836a7eaedb6fe
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 14:43:20 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() --since mode: debug-track hits of seenX and lastCommon as we look through arrays
+
+commit 08d98ba235057a7fc6b0ea11101874480b2421f7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Aug 5 14:37:01 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() --since mode: rename "snapTime" var to "snapName" to reflect its contents
+
+commit f11f2f6af6a142e2ac1cd0e041c3e7586b67096d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 22:56:54 2020 +0200
+
+    Satisfy spellchecker
+
+commit 66e27b3b5406037b2d093fd1de2813e659df3b08
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:31:16 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): fix reported "no common found" wording
+
+commit e4e9a48d2efd4be61f53b683829215c77e0fc44a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:28:31 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : fix snapTime => snapName as it reflects the purpose better
+
+commit 10abb48040bd7ef332a44556c0ec320eb7965e28
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:27:43 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : fix detection of correct (exact) snapName, and lack of match
+
+commit 7c6b394d52a6f99245d1b1d875e105549ed9469e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:21:40 2020 +0200
+
+    ZFS.pm : mostRecentCommonSnapshot() : fix use of lastAndCommonSnapshots()
+
+commit 8188d16b89558e6912584a63636d50b0bf4c9c39
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:21:16 2020 +0200
+
+    ZFS.pm : lastAndCommonSnapshots() : comment what it returns
+
+commit c1f81a625b0c7fd4de3b20978c075454d2c4ada9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:13:27 2020 +0200
+
+    ZFS.pm : sendRecvSnapshots() : line-wrap the long debug printer
+
+commit 8ec6f4380f0c93339bd3787031be9654a43e6e91
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 20:12:52 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): conmplete the logic for --since=X mode where destination has no snapshots at all or none common with source
+
+commit 07c075ce71707f916edb6759c3ca8e67dfb33a37
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 19:21:27 2020 +0200
+
+    ZnapZend.pm sendRecvCleanup(), ZFS.pm sendRecvSnapshots() : use tracked dst_X_justCreated attribute (in-memory only), so we can rollback the new destination if needed even in otherwise forbidDestRollback==true mode
+
+commit 64e945aa1e5ee1b380f0736a1e70e36f636b7f36
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 18:51:02 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() refreshBackupPlans() : track "creating destination dataset" as a dst_X_justCreated attribute (in-memory only), e.g. so we can rollback it if needed even in forbidDestRollback==true mode
+
+commit bdb3e774c5d349124940397f3afcabf686e7a196
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 18:46:00 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() refreshBackupPlans() : log "creating destination dataset" before trying to create one
+
+commit 8b85b028cd7f30be83792920e1dbfa77cc8c82e9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 18:38:55 2020 +0200
+
+    ZnapZend.pm : $createSnapshot(): speed up using recursive zfs list from backupSet{src} instead of listing all datasets in the system
+
+commit 87aa848385fdefcb8953e08f2c45c5f8f9c03c8a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Aug 4 18:08:24 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): convert warn() logging for --since mode into $self->zLog->debug()
+
+commit 9a9f0694a8b77714f9aa9e02d61674a9102808bb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 14:08:16 2020 +0200
+
+    ZFS.pm ZnapZend.pm : modernize mostRecentCommonSnapshot() with support for recurse and inherit, and try to use them while preparing for a recursive cleanup of root backed-up source dataset
+
+commit cafe9c688a2f0a0ade3df1da9e95086c1ad73a1f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 14:00:04 2020 +0200
+
+    ZnapZend.pm: sendRecvCleanup(): clarify in logged messages the cleanup of destinations vs sources
+
+commit 125ff11adc45ee70e0cee708fb4377c2f5a13660
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 13:54:44 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() : modernize to support recurse and inherit args, and zfsGetType feature
+
+commit 40a39c0c60831b05b75265eaa080426de2924bcb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 13:44:45 2020 +0200
+
+    ZFS.pm ZnapZend.pm : modernize mostRecentCommonSnapshot() with support for $snapshotFilter
+
+commit e50cf72c8a458de126bc6a627dfa65c5c3f22fb0
+Author: Sean Nyman <snyman.git@gmail.com>
+Date:   Sun Oct 7 16:40:29 2018 -0400
+
+    Improve test coverage slightly (for --cleanOffline mode and listing of dst_X_synced snapshot attributes)
+
+commit d569b629382a2f3a15887bd36a3d711728bdfcfe
+Author: Sean Nyman <snyman.git@gmail.com>
+Date:   Sun Oct 7 00:34:50 2018 -0400
+
+    Option to clean source snapshots even if a destination failed
+    
+    Useful if one or more of the destinations is regularly not available but
+    you don't want source snapshots to be forever building up. It's an
+    option because it's slightly more dangerous than simply not destroying
+    snapshots in the event of a failure.
+    
+    jim> Updated for handling also the protection of newest common snapshots
+    during recursive cleanup of the policy's root dataset - a mode which was
+    added in master later than the original PRed code branched off.
+
+commit cca35d465393228f84e6612c787c02c6c1b9f655
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 13:55:36 2020 +0200
+
+    ZFS.pm : setSnapshotProperties() : modernize to prefix "# WOULD # somecommand ..." if running in noaction mode
+
+commit 340c5aac150af2cbbe1062ebd1550dfb90153141
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Aug 3 13:02:35 2020 +0200
+
+    ZFS.pm : getSnapshotProperties() mostRecentCommonSnapshot() : comment what these do and TODOs to modernize
+
+commit 8a262a10c62f3cdfe3c16b5d3d95897ab86344c4
+Author: Sean Nyman <snyman.git@gmail.com>
+Date:   Sun Oct 7 00:04:22 2018 -0400
+
+    Prevent last common snapshot from being deleted
+    
+    This should help ensure that the snapshot cleanup does not delete the
+    minimum snapshot necessary to replicate.
+
+commit 1c1e8350e02ccff905dcda7f681bb39c2d388305
+Author: Sean Nyman <snyman.git@gmail.com>
+Date:   Sat Oct 6 21:26:47 2018 -0400
+
+    Tag the most recently synced snapshot
+    
+    Note that this does not tag every synced snapshot, nor does it clean up
+    older tags. Therefore the $dst_synced property can only be used to find
+    the most recent snapshot that was successfully synced to the
+    destination. Other synced snapshots may not be tagged, if they were
+    synced in a group. Conversely, an older tagged snapshot may since have
+    been deleted from the destination, depending on the destination's backup
+    plan.
+
+commit d4e4c4d07670be674c6db5ae0f473d05607126ac
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:22:54 2020 +0200
+
+    Zfs.pm : prefix "# WOULD # somecommand ..." if running in noaction mode
+
+commit f5eb7097ad2c2f171736a472e2022c1983635158
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:04:51 2020 +0200
+
+    Zfs.pm : destroySnapshots() : prefix "# WOULD # zfs destroy ..." if running in noaction/nodestroy mode
+
+commit 87dee845c37aaea168f89ba3f3660196e2fd55c3
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:59:56 2020 +0200
+
+    Zfs.pm : help debug usages of defined lastSnapshotToSee
+
+commit 0aeddafc9d99f5af32bee0069bf64c9dceb1bd39
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:58:41 2020 +0200
+
+    ZnapZend.pm + ZFS.pm : technically our "since" may be a regex; technically user may also shoot themselves in the foot with that - but code should handle it consistently
+
+commit 572f13b4e61972d1e8fca75d6cf53f17dc3eab8c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:43:36 2020 +0200
+
+    ZnapZend.pm : cosmetic
+
+commit 3bdb72b3b5e071d37294f26031d9a7253fa410bb
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:43:24 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : differentiate "if lastCommon" vs. "if defined lastCommon"
+
+commit 31d9262fd0b929642d8f17e771fb69d21bd8036f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:42:50 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : track lastCommonNum in "--since" mode to speed up comparison vs. seenX number
+
+commit c41831f8afd6f8ee551dad7eda6bf730cf6a8007
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:30:30 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : differentiate "if seenX" vs. "if defined seenX"
+
+commit 9888c9875ef5dd892ecdceef53d2bbf3fc2d903d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:17:58 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix reporting of "since" snapname in tracing warnings
+
+commit dab5d6faef1b20150bf78c9d7f54862251d23820
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:17:23 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix use of listSnapshots()
+
+commit 858126455acaafa7c5dcf8af5e71b3c19306fdfc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:22:54 2020 +0200
+
+    Zfs.pm : prefix "# WOULD # somecommand ..." if running in noaction mode
+
+commit cf8c16e8773d61873930ee57c21657e651027a5b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 14:04:51 2020 +0200
+
+    Zfs.pm : destroySnapshots() : prefix "# WOULD # zfs destroy ..." if running in noaction/nodestroy mode
+
+commit b38096d5bfbf8efadde78db82ba782b031350db6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:50:39 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix use of snapshotExists() for "--since" mode
+
+commit 3ba0624008bfd193d91a3e796e0eeb4f61d807a1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:41:12 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : make sure logic intended for "if !seenX" happens only in that case
+
+commit 34e679ab95a1957eea4d4d4055caf85894b766cd
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:39:45 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : comment ends of logic for bulletpoints in decisions for "--since" mode
+
+commit bdf0cdefe755d87a7697e3153f39f4576366b776
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:30:03 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : add "warn()" messages tracing "--since" progress about codepaths not taken, and in fact die() if user required a "since" shapshot to be in history but it is not in the source
+
+commit 41dc6915b4183ad8d6b34f7a2b2435dca10233ea
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:28:47 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : make the "warn()" messages tracing "--since" progress more visible and attributable in output
+
+commit f944ecaac23c5c4bd4e5b35f3b42f1e42989116b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 13:16:38 2020 +0200
+
+    .github/workflows/spelling/whitelist.txt : do not fret about "Bzfs" in manpage markup
+
+commit cc846369c792ea3066f44164c426f728b3b74c06
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 12:21:16 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : fix comment to not confuse "source" and "origin" (latter has a special meaning for zfs)
+
+commit 81c2220a164246d3bbbe6f8ec086935dd8844c1c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 12:20:45 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : make the "warn()" messages tracing "--since" progress a bit more visible in output
+
+commit 376daae7dc7a2a6d1fe2d2f7bc910fb1c617870a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 12:19:13 2020 +0200
+
+    ZnapZend.pm : sendRecvCleanup() : log_debug whether we consider "--since" and with what impactful flags
+
+commit 6699bb959669050f5b42dd8db648a7d45de2bc11
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 22:50:04 2020 +0200
+
+    sendRecvSnapshots() : deterministic logic for different scenarios about --since=X
+
+commit e195db1c4562fdcbeca84386317de8785b10c88b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:35:59 2020 +0200
+
+    lastAndCommonSnapshots() : comment that snapTime is actually snapshot name (time-based)
+
+commit ab894bc7b71a116f48f4d2d571910de0ebd57b19
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:35:24 2020 +0200
+
+    sendRecvSnapshots() : update comment for syncing after ensuring intermediate snapshot with since* modes
+
+commit 1ee2ce5aadf5d01a6c3779efc67c35c021592c0f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:34:40 2020 +0200
+
+    sendRecvSnapshots() : cosmetic - wrap long lines
+
+commit 1b1a02946177ba5d621b703781128aed7d7a8d7b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:34:02 2020 +0200
+
+    sendRecvSnapshots() : rewrite comment for since vs sinceForced
+
+commit ec5ce3d2e0ce6de15c2168134f11e9dbecd7f090
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 12:26:28 2020 +0200
+
+    znapzend.1 : update generated manpage for --since and --sinceForced options
+
+commit d6210e9572948166df63c151a8467a4aed6d6b6f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:32:39 2020 +0200
+
+    znapzend : chop off any leading "@" in the --since=X and --sinceForced=X arguments
+
+commit 73d9a55d80e5d6b23b041c6d373e7c66051a67a7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 19:32:11 2020 +0200
+
+    znapzend : sanity-check the --since=X and --sinceForced=X arguments to have not-empty X
+
+commit 6d44939226ea16f228b4d375c7d0b3fa67893b7e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 18:59:30 2020 +0200
+
+    znapzend : add a --sinceForced vs. --since with hardcoded behaviors for forbidDestRollback setting
+
+commit 03f909a019ee912b72d6db9a8046368ae988fd75
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 18:44:50 2020 +0200
+
+    sendRecvCleanup() : if we use --since-forced=X make sure it is part of destination history
+
+commit 8323a9ca0f3a76fc138917db083703f95640547b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 18:38:10 2020 +0200
+
+    sendRecvSnapshots() : Hint at safer use of $lastSnapshotToSee with forbidDistRollback
+
+commit b87609b760f5f442719026f7f4218600c3d2b2dc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 18:35:23 2020 +0200
+
+    Extend listSnapshots() and tree of its consumers with optional $lastSnapshotToSee argument
+
+commit 40b5196a0130605b25b7ff7917da04aa8f7d2cc0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Fri Jul 31 12:26:01 2020 +0200
+
+    znapzend.1 : update generated manpage for --forbidDestRollback option and feature
+
+commit 23d71056480ef5625d9d2e0e46cfbf246e0505b6
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 18:32:27 2020 +0200
+
+    Introduce --forbidDestRollback option to avoid "zfs recv -F" eating data (can fail to receive then)
+
+commit f4547ede8b6f8dfec81c6d3b5612a3ca73045fca
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 23:14:40 2020 +0200
+
+    whitelist.txt : spellcheck accept "resync"
+
+commit 93597fc6a990d0fd2580504e190a8345a1fc991c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 28 20:08:18 2020 +0200
+
+    ZnapZend.pm : fix merge-error adding "since" snapshot to snapCleanFilter (intended for snapSendFilter)
+
+commit cbae681bb42a03ca69edfa723da12e20c7c00d97
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 16:16:45 2020 +0300
+
+    whitelist.txt : make spell checker happier
+
+commit 9b10661fb9f31370b1a236d139749bf6302839bc
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 16:04:47 2020 +0300
+
+    znapzend.t : coverage for runonce --since=x
+
+commit de12791b9a173c28a43b3e36ed11f02b07b8254e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Jul 13 14:40:00 2020 +0000
+
+    Introduce runonce --since=snapname syntax
+
+commit c2c94ef3ea07ae96edb63a244dbe2c8f8c9cf563
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Jul 30 14:35:06 2020 +0200
+
+    Split off znapzend-daemonize.t which confuses Test::More
+
+commit 2d1ee98ef203caa2ca2db3f7d178ed48842855d1
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Jul 30 14:33:17 2020 +0200
+
+    test.sh : word-wrap for readability, double-quote for safety
+
+commit 73ecf74956449bd14818dc3e9ba47cc215e89d85
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Jul 30 14:36:48 2020 +0200
+
+    ZnapZend.pm : daemonize() : print a debug message that we are exiting/returning from parent process (at least during tests)
+
+commit e333c2a99a2b75c25ffb05ff1aad816507777af5
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Jul 30 14:32:39 2020 +0200
+
+    Makefile.am : add clean-pidfiles
+
+commit f284fd406248874d7a2d3c2e7145e9a18da1a2c9
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Jul 30 11:41:44 2020 +0200
+
+    configure.ac : add a way to configure the URL_CAT to prefer
+
+commit 890df7f23e5cafc5625b8b307b58e4cd661bfdff
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jul 29 18:33:04 2020 +0200
+
+    znapzendzetup : make sure test harness result is on its own line, when saving setup interactively
+
+commit 0b89aa5ed5e9af9776b7371fd01940fc8c4db56a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jul 29 18:28:39 2020 +0200
+
+    Makefile.am : fix "make check" to be more verbose and help catch the errors
+
+commit 18169107658d0c09d8031b66f06b507bb4d7e5bc
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jul 29 14:51:19 2020 +0200
+
+    znapzendzetup.t : avoid "Possible attempt to separate words with commas at t/znapzendzetup.t line 143"
+
+commit 2612b13185452ebc48a598bfa086b3ae9f94ee08
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jul 29 13:13:33 2020 +0200
+
+    thirdparty/Makefile.am : mark which recipe ensures we have carton
+
+commit bfe8adeea322ea95e493d6bba1fe2a21678ff268
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jul 29 13:13:10 2020 +0200
+
+    thirdparty/Makefile.am : make bin/cpanm recipe more reliable in face of networking issues
+
+commit 0f6639e5933d76e450b6ea83a639716a9c5e57f4
+Author: Hans Oostendorp <hans@trialen.nl>
+Date:   Fri Jul 24 19:22:45 2020 +0200
+
+    Do not send snapshot to destination when sendRaw feature is used and destination dataset doesn't exist (causing zfs to automatically create the destination dataset), when the autoCreation option isn't used
+
+commit efe80bb9e5d9c2f44cb2f927a4810ce4885c1ee4
+Author: Hans Oostendorp <hans@trialen.nl>
+Date:   Fri Jul 24 18:03:55 2020 +0200
+
+    Do not automatically create destination when using feature sendRaw, receiving a raw encrypted stream is not supported on unencrypted datasets
+
+commit a7f55d8155240861cbc94b23a56f8e9fc7069dd5
+Author: Hans Oostendorp <hans@trialen.nl>
+Date:   Fri Jul 24 17:11:51 2020 +0200
+
+    Do not use the -F receive option when sendRaw feature is used, zfs receive -F cannot be used to destroy an encrypted filesystem or overwrite an unencrypted one with an encrypted one
+
+commit 27326beeb1dbdbe2aee1b9b13240f1aa70ae2f6a
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jul 17 14:56:45 2020 +0200
+
+    Update Dockerfile
+
+commit 557616740332995259b1da9611b7218040aaf740
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jul 17 14:43:32 2020 +0200
+
+    fix perl version
+
+commit 19d26b77a48721cd193921ad262b27f87b951f30
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Fri Jul 17 14:40:16 2020 +0200
+
+    update perl version
+
+commit 8aa7357db36cf2371b26132d106db4e771d13431
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 19:40:34 2020 +0300
+
+    configure.ac : report if using non-empty MOJOLICIOUS_VERSION_CONSTRAINT
+
+commit dd4d972175249099ea8d3f2cd265948be2a715b5
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 17:03:16 2020 +0300
+
+    cpanfile.in configure.ac : perl-5.10 is only good until mojolicious-8.43
+
+commit 44f55c1bec17359bb0b86a308ae466d4eb69929e
+Author: Jim Klimov <jimklimov@cos.ru>
+Date:   Mon Jul 13 16:29:00 2020 +0300
+
+    configure.ac : check for perl 5.16 first
+
+commit 1ea7a2eca1916c63d3aa90a1a3e20edd8c7cea92
+Author: Samuel Amoser <samuel.amoser@oetiker.ch>
+Date:   Tue May 5 15:00:13 2020 +0200
+
+    Update ZFS.pm
+    
+    * "Use of uninitialized value $usedBySnap in scalar chomp" if dataset does not exist
+    * "usedBySnapshots" should return a defined value
+
+commit 94543b52a5003051600d6b1ad868290a1340be02
+Author: Samuel Amoser <samuel.amoser@oetiker.ch>
+Date:   Tue May 5 14:54:42 2020 +0200
+
+    Update ZnapZend.pm
+    
+    save $@ for later use
+
+commit c3ae4034a788477e5c7f03f6a476afc32f3eeefc
+Author: Chris <github.account@chrigel.net>
+Date:   Tue Apr 7 23:39:05 2020 +0200
+
+    Fix extracting git tag in Pipeline
+
+commit 749cccf8e553f4c6ff5c625bda1b6806ee2720ca
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 15:44:37 2020 +0100
+
+    whitelist more words
+
+commit e8e1707ac1c68c596a40d435c22a6b75b867f0ec
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 15:36:55 2020 +0100
+
+    ignore cpan spashot
+
+commit a3be12563c54a025238eda2b93c96b6eeebfcc54
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 15:21:07 2020 +0100
+
+    add NEWS file
+
+commit 9f7438cb7f0abdbae9309a3e78ed51b14d261831
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:45:51 2020 +0100
+
+    skip change log changes
+
+commit 34ec8244958bb98259fdb4d1fddccfab6a20a455
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:44:13 2020 +0100
+
+    skip change log changes
+
+commit 3085f61e63d1e78d481cfe8fecbcc874dd86a32d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:31:03 2020 +0100
+
+    add autotools and autoconf
+
+commit 5462dc1548a74fc07f367eaa782e1b9359436437
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:27:33 2020 +0100
+
+    bootstrap docker
+
+commit 7accb55f5d1b23f101a3cdf0a602a8ec4d81f333
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:23:43 2020 +0100
+
+    reorder install
+
+commit 44f113a94bb02e01e59e87501a9b906cb2a5503e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 14:21:32 2020 +0100
+
+    update spelling
+
+commit b700cdda7b50929c2525ff12a59bb094e9264cdc
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 11:25:30 2020 +0100
+
+    working towards 0.20.0
+
+commit 1d4f991a3b18ffbf46b1b987168f3a72dd6cde7b
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Mar 23 11:25:27 2020 +0100
+
+    working towards 0.20.0
+
 commit 7ed013577ac2f918ef4d159c70b65e4e0c3cc5e6
 Author: Josh Soref <jsoref@users.noreply.github.com>
 Date:   Fri Feb 21 01:55:38 2020 -0500
