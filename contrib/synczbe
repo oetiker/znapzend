@@ -266,10 +266,13 @@ else
     echo "You can select the destination history owner you would like to use"
     echo "(probably one with most child datasets branched off) e.g. 'zbe-XX'"
     echo "below, and move others to a separate ZFS tree, e.g.:"
-    echo ":; zfs create -p ${DR}.bak"
+    echo ':; XX=123'
+    echo ":; zfs create -p '${DR}.bak'"
+    echo ":; zfs set zoned=off '${DR}' '${DR}.bak'"
     echo ':; TABCHAR="`printf '"'"'\\t'"'"'`"'
-    echo ":; zfs list -Honame,origin -r ${DR} | grep /ROOT/ | egrep -v '/zbe-XX[@ '\"\$TABCHAR\"']' |"
-    echo '   while read D O ; do zfs rename "$D" "`echo "$D" | sed "s,/ROOT/,/ROOT.bak/,"`" & done'
+    echo ":; zfs list -Honame,origin -r '${DR}' | grep /ROOT/ | egrep -v \"/zbe-\$XX[@ \$TABCHAR]\" |"
+    echo '   while read D O ; do zfs rename "$D" "`echo "$D" | sed "s,/ROOT/,/ROOT.bak/,"`" & done ; wait; sync'
+    echo ":; zfs set zoned=on '${DR}' '${DR}.bak'"
     echo "Hopefully this would also avoid ZFS automatically receiving newly"
     echo "backed up clones as increments over a wrong compatible dataset tree."
     echo "You can move those back later, if the clones recreated in correct"
