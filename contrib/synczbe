@@ -22,6 +22,16 @@ set -o pipefail
 { DRBASE="backup-adata/snapshots"; echo "WARNING: Using default DRBASE='$DRBASE'" >&2 ; }
 DR="$DRBASE/$SR"
 
+[ -n "${ZFSLIST_REGEX-}" ] && { echo "WARNING: Filtering dataset name discovery by regex: '$ZFSLIST_REGEX'" >&2; } || ZFSLIST_REGEX=""
+zfslist_filter() {
+    # Process the stream from "zfs list ..." to pick onlyl interesting patterns
+    # Primarily aimed at rootfs support where several OSes (failsafes...) may
+    # be installed and there are validly several history owners to consider.
+    if [ -z "$ZFSLIST_REGEX" ] ; then cat; return; fi
+
+    egrep "$ZFSLIST_REGEX"
+}
+
 # For rootfs SR=rpool/ROOT or similar.
 # You can find the "SR" names for local zones by interpolating:
 #  ...zone root mountpoints from the OS:
@@ -152,8 +162,8 @@ trap "exit_trap" 0 1 2 3 15
 # (same name, same tip; presume or check same intermediate snaps)
 # and then skip phase 1 quickly.
 echo "Phase 1: Make newest history owners same-named (and with same incremental snaps) on src and dst" >&2
-SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR"`"
-DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR"`"
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR" | zfslist_filter`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR" | zfslist_filter`"
 
 STIPS="`echo "$SNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
 DTIPS="`echo "$DNO" | grep '/ROOT/' | egrep '\-$' | awk '{print $1}'`"
@@ -225,8 +235,8 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
     fi
 
     echo "Phase 1: Check if we need to sync snaps of $SZ history owner on src and dst, and then do so"
-    LD="`zfs list -d1 -Honame -tsnapshot -screation -r "${DR}/${SZ}" | tail -1`" || LD="" # latest on dst
-    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${SZ}" | tail -1`" || LS="" # latest on src
+    LD="`zfs list -d1 -Honame -tsnapshot -screation -r "${DR}/${SZ}" | zfslist_filter | tail -1`" || LD="" # latest on dst
+    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${SZ}" | zfslist_filter | tail -1`" || LS="" # latest on src
 
     if [ -z "$LD" ] || [ -z "$LS" ] ; then
         echo "Phase 1 fail: could not find some snapshots on history owner dataset $SZ under both src $SR and dst $DR" >&2
@@ -281,6 +291,8 @@ else
         echo "NOTE: Will sleep a bit for the above to sink in, and fall through to try and clean up destination history owners"
         sleep 10
     else
+        echo "NOTE: If you validly have several rootfs naming patterns, consider"
+        echo "constraining the choice with: export ZFSLIST_REGEX='...'"
         exit 1
     fi
 fi
@@ -292,8 +304,8 @@ echo "=== Gathering data for Phase 2 over '$SR' => '$DR' resync ..." >&2
 # Note that sorting is magic :) e.g. by creation time on destination, you see
 # the replicated tip first and clones made from it by `zfs recv` appeared later
 # while on source they would be more ordered (if source was not replicated too).
-SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR"`"
-DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR"`"
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR" | zfslist_filter`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR" | zfslist_filter`"
 
 # 2b) Find history owners on destination (rootfs/zbe names whom would we rewrite if we still can?)
 # Note we ignore all lines that list a snapshot "@" here, although some histories can be owned by different tips:
@@ -332,7 +344,7 @@ for Z in $DZ ; do
     RES=0
     ZL="`echo "$SNO" | egrep "^${SR}/${Z}\s"`" || { echo "!!! SKIP: $Z not in source" >&2 ; continue ; }
     O="`echo "$ZL" | awk '{print $NF}'`" # origin on src
-    L="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${Z}" | tail -1`" || continue # latest on src
+    L="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${Z}" | zfslist_filter | tail -1`" || continue # latest on src
     echo "$Z => $O .. $L" >&2
     # We got listing for 3b up here
 
@@ -416,8 +428,8 @@ for Z in $DZ ; do
 done
 
 echo "Phase 3: Pass over the current dataset layout and see if there are any datasets on source that are not on dest, remove ZBE-N.bak on dest if unneeded anymore" >&2
-SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR" | grep '/ROOT/'`"
-DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR" | grep '/ROOT/'`"
+SNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$SR" | zfslist_filter | grep '/ROOT/'`"
+DNO="`zfs list -Honame -d1 -tfilesystem,volume -screation -o name,origin -r "$DR" | zfslist_filter | grep '/ROOT/'`"
 
 # Names of sub-datasets on src and dst:
 SN="`echo "$SNO" | awk '{print $1}' | awk -F/ '{print $NF}' | sort -n`"
@@ -452,6 +464,7 @@ if [ -n "$ONLY_SRC" ]; then
 
         for STIP in $STIPS ; do
             SZ="`basename "$STIP"`" # tip zbe name on src - origin for others
+            # No zfslist_filter here, we already look at filtered names
             zfs list "$DR/$SZ" \
             || { echo "Phase 3: history owner $SZ is not present (yet?) under dst $DR" >&2 ; continue; }
 
@@ -471,7 +484,7 @@ if [ -n "$ONLY_SRC" ]; then
                         continue
                     fi
 
-                    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${D}" | tail -1`" || LS="" # latest on src
+                    LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${D}" | zfslist_filter | tail -1`" || LS="" # latest on src
                     # Derive short snap tags:
                     LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
                     if [ -z "$LS" ] || [ -z "$LSS" ]; then
