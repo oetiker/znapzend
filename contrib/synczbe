@@ -201,7 +201,7 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
         # a direct clone of SZ history owner. The resulting
         # DZO is a complete snapshot name; short is made below.
         # TODO: Recurse for other inheritance situations.
-        DZO="`echo "${SNO}" | while read D O ; do case "$D" in *"/${DZ}") echo "$O";; esac | grep "/${SZ}@"`" || DZO=""
+        DZO="`echo "${SNO}" | while read D O ; do case "$D" in */"${DZ}") echo "$O";; esac; done | grep "/${SZ}@"`" || DZO=""
         if [ -z "$DZO" ]; then
             # Let user rectify this
             echo "Phase 1 fail: Dataset $DZ under $SR does not exist or is not a clone of $SZ history owner" >&2
@@ -234,6 +234,7 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
         exit 1
     fi
 
+    # Re-verify stuff, we could be in DEBUG mode and not actually change the destination
     echo "Phase 1: Check if we need to sync snaps of $SZ history owner on src and dst, and then do so"
     LD="`zfs list -d1 -Honame -tsnapshot -screation -r "${DR}/${SZ}" | zfslist_filter | tail -1`" || LD="" # latest on dst
     LS="`zfs list -d1 -Honame -tsnapshot -screation -r "${SR}/${SZ}" | zfslist_filter | tail -1`" || LS="" # latest on src
