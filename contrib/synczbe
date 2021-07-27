@@ -222,12 +222,32 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
         echo "Phase 1: under dst $DR, clone ${DZ}@${DZO_SNAP} as ${SZ} and promote it" >&2
         echo "(in the end, ${SZ}@${DZO_SNAP} should be origin of ${DZ} on dst same as on src)" >&2
 
+        zfs list "${DR}/${DZ}@${DZO_SNAP}" \
+        || { echo "HINT: snapshot dataset needed for cloning does not exist on destination,"
+             echo "so we will try renaming instead:"
+             echo "    :; zfs rename '${DR}/${DZ}' '${DR}/${SZ}'"
+           }
+
         DR_ZBE="$DR/$DZ"
         optionalDisarmDestZonedProp
 
-        $ZFSW clone "${DR}/${DZ}@${DZO_SNAP}" "${DR}/${SZ}" \
-        && $ZFSW promote "${DR}/${SZ}" \
-        || { echo "Phase 1 fail: could not clone/promote" >&2; exit 1; }
+        # It is possible that cloning fails, if the original rootfs => dataset
+        # tree was recently upgraded and new snapshots appeared and clones were
+        # made, but the backup destination has no information about that.
+        if zfs list "${DR}/${DZ}@${DZO_SNAP}" >/dev/null 2>/dev/null ; then
+            $ZFSW clone "${DR}/${DZ}@${DZO_SNAP}" "${DR}/${SZ}" \
+            && $ZFSW promote "${DR}/${SZ}" \
+            || { echo "Phase 1 fail: could not clone/promote" >&2
+                 exit 1
+               }
+            echo "Phase 1: clone+promote succeeded"
+        else
+            $ZFSW rename "${DR}/${DZ}" "${DR}/${SZ}" \
+            || { echo "Phase 1 fail: could not rename (instead of clone/promote)" >&2
+                 exit 1
+               }
+            echo "Phase 1: rename succeeded"
+        fi
 
         if $DR_ZBE_ZONED_DISARMED ; then
             $ZFSW inherit zoned "$DR/$DZ"
@@ -497,8 +517,15 @@ if [ -n "$ONLY_SRC" ]; then
                     # Derive short snap tags:
                     LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
                     if [ -z "$LS" ] || [ -z "$LSS" ]; then
-                        echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR" >&2
-                        COUNTFAIL=$(($COUNTFAIL+1))
+                        # So the source dataset was only cloned, but never snapshotted after that
+                        DZO_SNAP="`echo "$O" | sed 's,^[^@]*@,,'`"
+                        echo "Phase 3: could not find some snapshots on source leaf dataset $D, so just trying to clone on destination from $DZO_SNAP"
+
+                        $ZFSW clone "$DR/$SZ@$DZO_SNAP" "$DR/`basename "$D"`" \
+                        && COUNTOK=$(($COUNTOK+1)) \
+                        || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not clone" >&2
+                             COUNTFAIL=$(($COUNTFAIL+1))
+                           }
                         continue
                     fi
 
