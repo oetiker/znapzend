@@ -88,6 +88,7 @@ optionalDisarmDestZonedProp() {
     if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
 
         if ! $DR_ZONED_DISARMED && [ "$DR_ZONED_VALUE" = on ]; then
+            echo "Disarming 'zoned' property on destination '$DR' ..."
             DR_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR"
 
@@ -101,37 +102,44 @@ optionalDisarmDestZonedProp() {
         fi
 
         if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
+            echo "Disarming 'zoned' property on destination '$DR_ZBE' ..."
             DR_ZBE_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR_ZBE"
         fi
     fi
 }
 
-exit_trap() {
-    EXIT_RES=$?
-
+optionalRearmDestZonedProp() {
     trap true 2 # ignore break for now
 
     $DR_ZONED_DISARMED && \
-    echo "Restoring zoned property on $DR to $DR_ZONED_SOURCE $DR_ZONED_VALUE ..." >&2 && \
+    echo "Restoring 'zoned' property on $DR to $DR_ZONED_SOURCE $DR_ZONED_VALUE ..." >&2 && \
     case "$DR_ZONED_SOURCE" in
         local)
             $ZFSW set zoned="$DR_ZONED_VALUE" "$DR" ;;
         inherited)
             $ZFSW inherit set zoned "$DR" ;;
     esac
+    DR_ZONED_DISARMED=false
 
     $DR_ZBE_ZONED_DISARMED && \
     [ -n "$DR_ZBE" -a -n "$DR_ZBE_ZONED_SOURCE" -a -n "$DR_ZONED_VALUE" ] && \
-    echo "Restoring zoned property on $DR_ZBE to $DR_ZBE_ZONED_SOURCE $DR_ZBE_ZONED_VALUE ..." >&2 && \
+    echo "Restoring 'zoned' property on $DR_ZBE to $DR_ZBE_ZONED_SOURCE $DR_ZBE_ZONED_VALUE ..." >&2 && \
     case "$DR_ZBE_ZONED_SOURCE" in
         local)
             $ZFSW set zoned="$DR_ZBE_ZONED_VALUE" "$DR_ZBE"{,.bak} ;;
         inherited)
             $ZFSW inherit set zoned "$DR_ZBE"{,.bak} ;;
     esac
+    DR_ZBE_ZONED_DISARMED=false
 
     trap - 2
+}
+
+exit_trap() {
+    EXIT_RES=$?
+
+    optionalRearmDestZonedProp
 
     exit $EXIT_RES
 }
