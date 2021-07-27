@@ -518,15 +518,28 @@ if [ -n "$ONLY_SRC" ]; then
                     LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
                     if [ -z "$LS" ] || [ -z "$LSS" ]; then
                         # So the source dataset was only cloned, but never snapshotted after that
-                        DZO_SNAP="`echo "$O" | sed 's,^[^@]*@,,'`"
-                        echo "Phase 3: could not find some snapshots on source leaf dataset $D, so just trying to clone on destination from $DZO_SNAP"
+                        if false ; then
+                            # Experiment: "just cloning" is not good for
+                            # subsequent znapzend, it wants to kill and
+                            # recreate the target dataset
+                            DZO_SNAP="`echo "$O" | sed 's,^[^@]*@,,'`"
+                            echo "Phase 3: could not find some snapshots on source leaf dataset $D, so just trying to clone on destination from $DZO_SNAP"
 
-                        $ZFSW clone "$DR/$SZ@$DZO_SNAP" "$DR/`basename "$D"`" \
-                        && COUNTOK=$(($COUNTOK+1)) \
-                        || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not clone" >&2
-                             COUNTFAIL=$(($COUNTFAIL+1))
-                           }
-                        continue
+                            $ZFSW clone "$DR/$SZ@$DZO_SNAP" "$DR/`basename "$D"`" \
+                            && COUNTOK=$(($COUNTOK+1)) \
+                            || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not clone" >&2
+                                 COUNTFAIL=$(($COUNTFAIL+1))
+                               }
+                            continue
+                        fi
+
+                        LSS="znapzend-synczbe-`date -u '+%Y-%m-%dT%H:%M:%SZ'`"
+                        echo "Phase 3: could not find any snapshots on source leaf dataset $D, so creating $D@$LSS to send"
+                        $ZFSW snapshot "$D@$LSS" \
+                            || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not make a new snap" >&2
+                                 COUNTFAIL=$(($COUNTFAIL+1))
+                                 continue
+                               }
                     fi
 
                     echo "Send to clone+update `basename "$D"` => $O .. $D@$LSS"
