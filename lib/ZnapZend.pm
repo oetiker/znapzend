@@ -787,18 +787,17 @@ my $sendRecvCleanup = sub {
             #my $mailprog = '/usr/lib/sendmail';
             my $mailprog = '/usr/sbin/sendmail';
             #my $from_address = "`id`@`hostname`" ;
-            if (open (MAIL, "|$mailprog -t " . $self->mailErrorSummaryTo)) {
+            if (open my $mail, "|-", $mailprog,'-t') {
                 $self->zLog->warn('Sending a copy of the report above to ' . $self->mailErrorSummaryTo);
-                print MAIL "To: " . $self->mailErrorSummaryTo . "\n";
+                print $mail "To: " . $self->mailErrorSummaryTo . "\n";
                 #print MAIL "From: " . $from_address . "\n";
-                print MAIL "Subject: znapzend replication error summary\n";
-                print MAIL "-------\n";
-                print MAIL $errmsg;
-                print MAIL "-------\n";
-                print MAIL ".\n";
-                close(MAIL);
+                print $mail "Subject: znapzend replication error summary\n";
+                print $mail "-------\n";
+                print $mail $errmsg;
+                print $mail "-------\n";
+                print $mail ".\n";
             } else {
-                warn "Can't open $mailprog to send a copy of the report above to " . $self->mailErrorSummaryTo . "!\n";
+                warn "Problem starting $mailprog to send a copy of the report above to " . $self->mailErrorSummaryTo . " - $!\n";
             }
         }
     }
