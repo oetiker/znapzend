@@ -3,7 +3,7 @@
 # bashisms: $RANDOM is used, and this:
 set -o pipefail
 
-# (C) 2020 by Jim Klimov
+# (C) 2020 - 2021 by Jim Klimov
 # PoC for: https://github.com/oetiker/znapzend/issues/503
 
 # Warning: no code support for now to manage rootfs datasets with children!
@@ -24,7 +24,7 @@ DR="$DRBASE/$SR"
 
 [ -n "${ZFSLIST_REGEX-}" ] && { echo "WARNING: Filtering dataset name discovery by regex: '$ZFSLIST_REGEX'" >&2; } || ZFSLIST_REGEX=""
 zfslist_filter() {
-    # Process the stream from "zfs list ..." to pick onlyl interesting patterns
+    # Process the stream from "zfs list ..." to pick only interesting patterns
     # Primarily aimed at rootfs support where several OSes (failsafes...) may
     # be installed and there are validly several history owners to consider.
     if [ -z "$ZFSLIST_REGEX" ] ; then cat; return; fi
@@ -88,7 +88,7 @@ optionalDisarmDestZonedProp() {
     if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
 
         if ! $DR_ZONED_DISARMED && [ "$DR_ZONED_VALUE" = on ]; then
-            echo "Disarming 'zoned' property on destination '$DR' ..."
+            echo "Disarming 'zoned' property on destination '$DR' ..." >&2
             DR_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR"
 
@@ -102,7 +102,7 @@ optionalDisarmDestZonedProp() {
         fi
 
         if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
-            echo "Disarming 'zoned' property on destination '$DR_ZBE' ..."
+            echo "Disarming 'zoned' property on destination '$DR_ZBE' ..." >&2
             DR_ZBE_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR_ZBE"
         fi
@@ -250,7 +250,9 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
         fi
 
         if $DR_ZBE_ZONED_DISARMED ; then
+            echo "Restoring 'zoned' property on $DR/$DZ ..." >&2
             $ZFSW inherit zoned "$DR/$DZ"
+            echo "Restoring 'zoned' property on $DR/$SZ ..." >&2
             $ZFSW inherit zoned "$DR/$SZ"
             DR_ZBE_ZONED_DISARMED=false
             DR_ZBE=""
@@ -410,6 +412,7 @@ for Z in $DZ ; do
         # For a backup copy, normally we do not want to restore
         # original "zoned" value, just inherit one (and that
         # eventually stabilizes as "off" to avoid automounting)
+        echo "Restoring 'zoned' property on $DR/$Z.bak ..." >&2
         $ZFSW inherit zoned "$DR/$Z.bak"
         DR_ZBE_ZONED_DISARMED=false
         DR_ZBE=""
