@@ -404,6 +404,13 @@ for Z in $DZ ; do
     OSD="`echo "$O" | sed "s@^${SR}/@@"`"
 
     echo "=== Move away the destination to back it up for now: '$DR/$Z' => '$DR/$Z.bak'" >&2
+    if [ "$NSTIPS" = 1 ]; then
+        echo "NOTE: Will sleep a bit for the above to sink in, and fall through"
+        echo "to continue with rename; press Ctrl+C now if you think there is an"
+        echo "unexpected data layout to fix manually (e.g. znapzend service"
+        echo "already intervened and created bogus destination and snapshot names)"
+        sleep 10
+    fi >&2
     DR_ZBE="$DR/$Z"
     optionalDisarmDestZonedProp
     $ZFSW rename "$DR/$Z" "$DR/$Z.bak"
