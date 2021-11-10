@@ -545,7 +545,7 @@ if [ -n "$ONLY_SRC" ]; then
 
                         LSS="znapzend-synczbe-`date -u '+%Y-%m-%dT%H:%M:%SZ'`"
                         echo "Phase 3: could not find any snapshots on source leaf dataset $D, so creating $D@$LSS to send"
-                        $ZFSW snapshot "$D@$LSS" \
+                        $ZFSW snapshot -r "$D@$LSS" \
                             || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not make a new snap" >&2
                                  COUNTFAIL=$(($COUNTFAIL+1))
                                  continue
