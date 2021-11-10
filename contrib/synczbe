@@ -3,7 +3,7 @@
 # bashisms: $RANDOM is used, and this:
 set -o pipefail
 
-# (C) 2020 by Jim Klimov
+# (C) 2020 - 2021 by Jim Klimov
 # PoC for: https://github.com/oetiker/znapzend/issues/503
 
 # Warning: no code support for now to manage rootfs datasets with children!
@@ -24,7 +24,7 @@ DR="$DRBASE/$SR"
 
 [ -n "${ZFSLIST_REGEX-}" ] && { echo "WARNING: Filtering dataset name discovery by regex: '$ZFSLIST_REGEX'" >&2; } || ZFSLIST_REGEX=""
 zfslist_filter() {
-    # Process the stream from "zfs list ..." to pick onlyl interesting patterns
+    # Process the stream from "zfs list ..." to pick only interesting patterns
     # Primarily aimed at rootfs support where several OSes (failsafes...) may
     # be installed and there are validly several history owners to consider.
     if [ -z "$ZFSLIST_REGEX" ] ; then cat; return; fi
@@ -88,6 +88,7 @@ optionalDisarmDestZonedProp() {
     if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
 
         if ! $DR_ZONED_DISARMED && [ "$DR_ZONED_VALUE" = on ]; then
+            echo "Disarming 'zoned' property on destination '$DR' ..." >&2
             DR_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR"
 
@@ -101,37 +102,44 @@ optionalDisarmDestZonedProp() {
         fi
 
         if [ "$DR_ZBE_ZONED_VALUE" = on ]; then
+            echo "Disarming 'zoned' property on destination '$DR_ZBE' ..." >&2
             DR_ZBE_ZONED_DISARMED=true
             $ZFSW set zoned=off "$DR_ZBE"
         fi
     fi
 }
 
-exit_trap() {
-    EXIT_RES=$?
-
+optionalRearmDestZonedProp() {
     trap true 2 # ignore break for now
 
     $DR_ZONED_DISARMED && \
-    echo "Restoring zoned property on $DR to $DR_ZONED_SOURCE $DR_ZONED_VALUE ..." >&2 && \
+    echo "Restoring 'zoned' property on $DR to $DR_ZONED_SOURCE $DR_ZONED_VALUE ..." >&2 && \
     case "$DR_ZONED_SOURCE" in
         local)
             $ZFSW set zoned="$DR_ZONED_VALUE" "$DR" ;;
         inherited)
             $ZFSW inherit set zoned "$DR" ;;
     esac
+    DR_ZONED_DISARMED=false
 
     $DR_ZBE_ZONED_DISARMED && \
     [ -n "$DR_ZBE" -a -n "$DR_ZBE_ZONED_SOURCE" -a -n "$DR_ZONED_VALUE" ] && \
-    echo "Restoring zoned property on $DR_ZBE to $DR_ZBE_ZONED_SOURCE $DR_ZBE_ZONED_VALUE ..." >&2 && \
+    echo "Restoring 'zoned' property on $DR_ZBE to $DR_ZBE_ZONED_SOURCE $DR_ZBE_ZONED_VALUE ..." >&2 && \
     case "$DR_ZBE_ZONED_SOURCE" in
         local)
             $ZFSW set zoned="$DR_ZBE_ZONED_VALUE" "$DR_ZBE"{,.bak} ;;
         inherited)
             $ZFSW inherit set zoned "$DR_ZBE"{,.bak} ;;
     esac
+    DR_ZBE_ZONED_DISARMED=false
 
     trap - 2
+}
+
+exit_trap() {
+    EXIT_RES=$?
+
+    optionalRearmDestZonedProp
 
     exit $EXIT_RES
 }
@@ -214,15 +222,37 @@ if [ "$NSTIPS" = 1 ] && [ "$NDTIPS" = 1 ] ; then
         echo "Phase 1: under dst $DR, clone ${DZ}@${DZO_SNAP} as ${SZ} and promote it" >&2
         echo "(in the end, ${SZ}@${DZO_SNAP} should be origin of ${DZ} on dst same as on src)" >&2
 
+        zfs list "${DR}/${DZ}@${DZO_SNAP}" \
+        || { echo "HINT: snapshot dataset needed for cloning does not exist on destination,"
+             echo "so we will try renaming instead:"
+             echo "    :; zfs rename '${DR}/${DZ}' '${DR}/${SZ}'"
+           }
+
         DR_ZBE="$DR/$DZ"
         optionalDisarmDestZonedProp
 
-        $ZFSW clone "${DR}/${DZ}@${DZO_SNAP}" "${DR}/${SZ}" \
-        && $ZFSW promote "${DR}/${SZ}" \
-        || { echo "Phase 1 fail: could not clone/promote" >&2; exit 1; }
+        # It is possible that cloning fails, if the original rootfs => dataset
+        # tree was recently upgraded and new snapshots appeared and clones were
+        # made, but the backup destination has no information about that.
+        if zfs list "${DR}/${DZ}@${DZO_SNAP}" >/dev/null 2>/dev/null ; then
+            $ZFSW clone "${DR}/${DZ}@${DZO_SNAP}" "${DR}/${SZ}" \
+            && $ZFSW promote "${DR}/${SZ}" \
+            || { echo "Phase 1 fail: could not clone/promote" >&2
+                 exit 1
+               }
+            echo "Phase 1: clone+promote succeeded"
+        else
+            $ZFSW rename "${DR}/${DZ}" "${DR}/${SZ}" \
+            || { echo "Phase 1 fail: could not rename (instead of clone/promote)" >&2
+                 exit 1
+               }
+            echo "Phase 1: rename succeeded"
+        fi
 
         if $DR_ZBE_ZONED_DISARMED ; then
+            echo "Restoring 'zoned' property on $DR/$DZ ..." >&2
             $ZFSW inherit zoned "$DR/$DZ"
+            echo "Restoring 'zoned' property on $DR/$SZ ..." >&2
             $ZFSW inherit zoned "$DR/$SZ"
             DR_ZBE_ZONED_DISARMED=false
             DR_ZBE=""
@@ -374,6 +404,13 @@ for Z in $DZ ; do
     OSD="`echo "$O" | sed "s@^${SR}/@@"`"
 
     echo "=== Move away the destination to back it up for now: '$DR/$Z' => '$DR/$Z.bak'" >&2
+    if [ "$NSTIPS" = 1 ]; then
+        echo "NOTE: Will sleep a bit for the above to sink in, and fall through"
+        echo "to continue with rename; press Ctrl+C now if you think there is an"
+        echo "unexpected data layout to fix manually (e.g. znapzend service"
+        echo "already intervened and created bogus destination and snapshot names)"
+        sleep 10
+    fi >&2
     DR_ZBE="$DR/$Z"
     optionalDisarmDestZonedProp
     $ZFSW rename "$DR/$Z" "$DR/$Z.bak"
@@ -382,6 +419,7 @@ for Z in $DZ ; do
         # For a backup copy, normally we do not want to restore
         # original "zoned" value, just inherit one (and that
         # eventually stabilizes as "off" to avoid automounting)
+        echo "Restoring 'zoned' property on $DR/$Z.bak ..." >&2
         $ZFSW inherit zoned "$DR/$Z.bak"
         DR_ZBE_ZONED_DISARMED=false
         DR_ZBE=""
@@ -489,9 +527,29 @@ if [ -n "$ONLY_SRC" ]; then
                     # Derive short snap tags:
                     LSS="`echo "$LS" | sed 's,^[^@]*@,,'`"
                     if [ -z "$LS" ] || [ -z "$LSS" ]; then
-                        echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR" >&2
-                        COUNTFAIL=$(($COUNTFAIL+1))
-                        continue
+                        # So the source dataset was only cloned, but never snapshotted after that
+                        if false ; then
+                            # Experiment: "just cloning" is not good for
+                            # subsequent znapzend, it wants to kill and
+                            # recreate the target dataset
+                            DZO_SNAP="`echo "$O" | sed 's,^[^@]*@,,'`"
+                            echo "Phase 3: could not find some snapshots on source leaf dataset $D, so just trying to clone on destination from $DZO_SNAP"
+
+                            $ZFSW clone "$DR/$SZ@$DZO_SNAP" "$DR/`basename "$D"`" \
+                            && COUNTOK=$(($COUNTOK+1)) \
+                            || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not clone" >&2
+                                 COUNTFAIL=$(($COUNTFAIL+1))
+                               }
+                            continue
+                        fi
+
+                        LSS="znapzend-synczbe-`date -u '+%Y-%m-%dT%H:%M:%SZ'`"
+                        echo "Phase 3: could not find any snapshots on source leaf dataset $D, so creating $D@$LSS to send"
+                        $ZFSW snapshot -r "$D@$LSS" \
+                            || { echo "Phase 3 partial fail: could not find some snapshots on leaf dataset $D under src $SR, and could not make a new snap" >&2
+                                 COUNTFAIL=$(($COUNTFAIL+1))
+                                 continue
+                               }
                     fi
 
                     echo "Send to clone+update `basename "$D"` => $O .. $D@$LSS"
