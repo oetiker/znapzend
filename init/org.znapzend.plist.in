@@ -5,7 +5,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/usr/local/zfs/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+			<string>/usr/local/zfs/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 	</dict>
 	<key>KeepAlive</key>
 	<dict>
