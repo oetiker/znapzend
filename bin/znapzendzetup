@@ -482,7 +482,7 @@ sub main {
     }
     print STDERR <<NOTE;
 NOTE: if you have modified your configuration, send a HUP signal
-(sudo launchctl kill -HUP system/org.znapzend) to your znapzend daemon for it to notice the change.
+(pkill -HUP znapzend) to your znapzend daemon for it to notice the change.
 NOTE
     return 1;
 }
