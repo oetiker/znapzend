@@ -480,12 +480,21 @@ sub main {
             die ("ERROR: Unsupported main option $mainOpt was provided\n");
         }
     }
-    print STDERR <<NOTE;
+    
+    if ($^O eq 'darwin') {
+        print STDERR <<NOTE;
+NOTE: if you have modified your configuration, send a HUP signal
+(sudo launchctl kill -HUP system/org.znapzend) to your znapzend daemon for it to notice the change.
+NOTE
+            } 
+    else    {
+        print STDERR <<NOTE;
 NOTE: if you have modified your configuration, send a HUP signal
 (pkill -HUP znapzend) to your znapzend daemon for it to notice the change.
 NOTE
+            }
     return 1;
-}
+    }
 
 {
     local $@;
