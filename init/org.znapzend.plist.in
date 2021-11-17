@@ -5,7 +5,7 @@
 	<key>EnvironmentVariables</key>
 	<dict>
 		<key>PATH</key>
-		<string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<string>/usr/local/zfs/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
 	</dict>
 	<key>KeepAlive</key>
 	<dict>
@@ -16,7 +16,7 @@
 	<string>org.znapzend</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>@BINDIR@/org.znapzend</string>
+		<string>@BINDIR@/znapzend</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>

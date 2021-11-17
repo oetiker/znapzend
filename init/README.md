@@ -26,6 +26,12 @@ launchctl load /Library/LaunchDaemons/org.znapzend.plist
 as launchd will lose control of the process. Check out ```init/org.znapzend.plist.in```
 for an example plist.
 
+To reload the daemon by sending a HUP signal, use this command:
+
+```sh
+sudo launchctl kill -HUP system/org.znapzend
+```
+
 ## Solaris/Illumos
 
 For solaris/illumos OSes you can tell configure to install a znapzend
