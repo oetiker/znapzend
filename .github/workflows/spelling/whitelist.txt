@@ -18,6 +18,7 @@ args
 ARGSTR
 ARGV
 asciiphil
+asdf
 astring
 attr
 austingroupbugs
@@ -25,6 +26,7 @@ autocommit
 autoconf
 autom
 automake
+automounting
 autoreconf
 autoscrub
 autotarget
@@ -97,6 +99,8 @@ CONNEC
 Consor
 copyleft
 coreutils
+COUNTFAIL
+COUNTOK
 cpan
 cpanfile
 cpanify
@@ -116,6 +120,7 @@ daemonize
 daemonized
 DAGOLDEN
 datadir
+DBD
 debian
 defn
 defun
@@ -137,6 +142,7 @@ dockerfile
 DOCTYPE
 DOITPROG
 donotask
+DRBASE
 dsa
 dsq
 dst
@@ -148,6 +154,7 @@ dstdsname
 DSTFILE
 dstname
 dsttmp
+DTIPS
 DTRT
 dummydataset
 ebuild
@@ -239,7 +246,6 @@ ings
 inh
 inheritedattr
 initscripts
-installdeps
 installinfo
 Inumber
 Inztructionz
@@ -329,6 +335,7 @@ NAL
 namespace
 namespaced
 nano
+NDTIPS
 newcfgdata
 newestbe
 nf
@@ -345,10 +352,12 @@ nostdinc
 notest
 NOTMAKE
 nroff
+NSTIPS
 nvpool
 nytprof
 OBJC
 OBJCXX
+ODBC
 oep
 oetiker
 oi
@@ -379,6 +388,7 @@ pkill
 plaintar
 plist
 plugin
+populat
 posix
 prebuilt
 precmd
@@ -403,6 +413,7 @@ recv
 recvu
 redhat
 regex
+regexing
 RESFINAL
 respawn
 resync
@@ -464,6 +475,7 @@ stderr
 stdin
 stdout
 stefan
+stip
 strftime
 stripcmd
 stripprog
@@ -491,6 +503,7 @@ systemd
 sysutils
 sysv
 SZ
+TABCHAR
 tabledata
 tarball
 tardir
@@ -525,7 +538,7 @@ unconfigured
 UNCONSIDER
 undef
 undef'ed
-Unicode
+unicode
 uniq
 unsubscribe
 Uplevel
@@ -537,7 +550,7 @@ username
 userprop
 usr
 ustar
-UTF
+utf
 Utils
 Validator
 varname
@@ -558,6 +571,7 @@ WNOHANG
 WORKDIR
 workflow
 Wperl
+WSCHAR
 wu
 www
 wx
@@ -578,6 +592,7 @@ ZConfig
 zetup
 zfs
 zfsinherit
+zfslist
 zfsutils
 zfsutilsdep
 ZFSW
