@@ -1,11 +1,160 @@
- - fix mail program call sequence #540 -- @oetiker, @gchmurka123
- - make aborted recv resumable using the `resume` fature -- @aarononeal
+0.21.1 2022-01-20 16:13:24 +0100 Tobias Oetiker <tobi@oetiker.ch>
 
-0.21.0 2021-06-28 19:25:46 +0200 Tobias Oetiker <tobi@oetiker.ch>
+ - fixed delay redefined warning
+ - check if retention plans are sensible (error out on retention shorter than
+   interval in retention=>interval expressions)
+
+commit e1f67187a9fb78e800d536b3311e6cc6ff92cb3d
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Dec 20 13:06:08 2021 +0100
+
+    Update test.yml
+
+commit d22cbcbdb0f18f20216d8571d683377344da4185
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Dec 20 13:05:42 2021 +0100
+
+    Update release.yml
+
+commit 5b5c57701337e821fe1aa16643cd5da3e97ef52e
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Dec 20 13:05:23 2021 +0100
+
+    Update spelling.yml
+
+commit b3d3c858040c50186693277a4e264bc936cd4902
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Dec 20 13:05:05 2021 +0100
+
+    Update build.yml
+
+commit 0f661bb74aaeda97d9b3b8168b286b65d1a7f01c
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Nov 16 08:59:06 2021 +0100
+
+    Update init/org.znapzend.plist.in
+
+commit 20c04441644f65af1a198e491dbefdf0f30c0e89
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Mon Nov 15 19:36:50 2021 +0200
+
+    incorporated OS X daemon initialization
+
+commit 89199133301e034171a0a99b260ea5d6cf010920
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Nov 16 08:56:50 2021 +0100
+
+    Update bin/znapzendzetup
+
+commit 9ecf7f4750f64192add8a8a9def9da59a91f8dba
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Sat Nov 13 23:31:13 2021 +0200
+
+    Executable for OS X
+
+commit 8b589e9231b314ba2c4e81e614f60b910dc6735a
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Sat Nov 13 23:28:41 2021 +0200
+
+    Update README.md
+
+commit 7412153712941b219a0075672a0a693c991095c6
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Sat Nov 13 23:18:51 2021 +0200
+
+    Mac OS X changes (on how to send -HUP)
+
+commit 899923ea24d92196fdb914dc525c2ea43319bb26
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Sat Nov 13 23:16:19 2021 +0200
+
+    Update org.znapzend.plist.in
     
- * updated install instructions see README.md
+    In OS X, the command argument should come out as "/opt/znapzend-0.21.0/bin/znapzend", rather than "/opt/znapzend-0.21.0/bin/org.znapzend"
+
+commit 85228c8ed5af7c269a5d786dd4bb7e876b5e5a49
+Author: xenophon61 <xenophon@otenet.gr>
+Date:   Sat Nov 13 23:08:26 2021 +0200
+
+    Update znapzendzetup
     
- * new options for znapzend
+    Instead for 'pkill', in OS X one should use 'sudo launchctl kill -HUP system/org.znapzend' to restart the daemon.
+
+commit 5c3dc23176698ed72611ae527d02ae3bf46d5c36
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Nov 10 13:30:30 2021 +0100
+
+    contrib/synczbe: if we have to make a "snapshot on source leaf dataset", make it recursive
+
+commit 3fdc99b4da56607c083e91e7629ad1547d10569e
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Mon Oct 25 16:58:14 2021 +0200
+
+    contrib/synczbe: extra notice sleep if we intend to "Move away the destination": maybe sysadmin should fix FS tree/snap layout
+
+commit a85a6a978877d3dc0cee0a2ef8abdbbcb992df22
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Tue Jun 29 08:52:45 2021 +0200
+
+    fix #540 - do not mention recipent when using -t switch
+
+commit c9591031259445f4248312dbf7db07a86816c06d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Thu Oct 7 21:32:14 2021 +0200
+
+    contrib/synczbe: update reporting about (time-consuming) changes of zoned property
+
+commit 19a4ac352de31f334a87437375043a457324db7f
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 27 19:13:02 2021 +0200
+
+    contrib/synczbe: improve behavior for recently cloned sources (sync just after "pkg update + beadm activate") - do not leave an empty leaf snapshot
+
+commit 3039393f79c4264a43e2fa7cd0112ec48b5702b7
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 27 13:51:28 2021 +0200
+
+    contrib/synczbe: improve behavior for recently cloned sources (sync just after "pkg update + beadm activate")
+
+commit 23b4a5b316aa7895b52d743c2cdff582e69eca54
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jul 27 13:29:02 2021 +0200
+
+    contrib/synczbe: refactor work with zoned property
+
+commit 9875f06b3fcbcb0739cb8e8f98215f9a903fc464
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 20:18:26 2021 +0200
+
+    Update CHANGES
+
+commit 1297d417c7a71ae46c99f5d34119d41fff4bb170
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 19:45:20 2021 +0200
+
+    add stalebot support to manage issues
+
+commit 259488a64c71b428cdd515b00f5fc35f6af96c24
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:08:01 2021 +0200
+
+    update spelling
+
+commit 5c75b0cb4fba15b2daa61c22488e2d08fd073108
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:06:08 2021 +0200
+
+    update release script
+
+commit 2d77a3210443e2722059a2db2e6fb72d992207b9
+Author: Tobias Oetiker <tobi@oetiker.ch>
+Date:   Mon Jun 28 18:02:29 2021 +0200
+
+    Prepare release
+    
+      * updated install instructions see README.md
+    
+      * new options for znapzend
     
         `--forbidDestRollback`   forbids forcing destination dataset rollback and
         removal of datasets/snapshots not present on source
@@ -20,12 +169,12 @@
     
         `--mailErrorSummaryTo=rcpt`  if "send task(s) failed", mail a summary to rcpt
     
- * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
+      * new `--feature=x` flags for znapzend `sendIntermediates` `forbidDestRollback`
     
- * an a ton of bugfixes for all sorts of edge cases
+      * an a ton of bugfixes for all sorts of edge cases
     
-A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
-and code to this release
+      A big Thank You! to Jim Klimov @jimkilmov who contributed a lot of time
+      and code to this release
 
 commit c584c34cc209b2acb490f68d7d0420ba0c982318
 Author: Tobias Oetiker <tobi@oetiker.ch>
@@ -53,6 +202,92 @@ Date:   Tue Oct 20 05:57:02 2020 +0200
     their `/usr/bin/znapzend*` pathnames.
     
     Signed-off-by: Jim Klimov <jimklimov@gmail.com>
+
+commit e42e4e65ad9cbebf8afccea57cb5eb73e0c15830
+Author: Aaron Oneal <aaron.oneal@spicypixel.com>
+Date:   Sun Oct 22 13:48:57 2017 -0700
+
+    Add `resume` feature for resumable transfer
+    
+    Adds `-s` to the receive command to support a resumable transfer. Future work could extend to support resume token on send.
+
+commit 54cb7518b736f885d96cc6a5fafeed4ab95ff695
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jun 30 14:37:03 2021 +0200
+
+    contrib/synczbe: typo fix
+
+commit 615aed9228a23fc0d53447a6709a0ee7d3a63599
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jun 30 13:17:53 2021 +0200
+
+    contrib/synczbe: introduce zfslist_filter() and ZFSLIST_REGEX
+
+commit 73125d4129787a3f77300f842eb3381c27f63dc2
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Wed Jun 30 10:01:34 2021 +0200
+
+    contrib/synczbe: phase 1: update copy-pastable suggestions to move away extra history owners
+
+commit ec88a1e220d93d703b74c8b3eb3c088e1528d50d
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 22:39:29 2021 +0200
+
+    contrib/synczbe: phase 1: avoid bogus "1 hit" for wrong dataset name (empty line as the hit)
+
+commit bbcd3eec9ed42eb3be05973d26a4cb1cc72ae764
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 22:36:50 2021 +0200
+
+    contrib/synczbe: phase 3: support origin datasets that are not history owners, if we ran out of those
+
+commit b50f3647929c99ea7e9daaceff709d98847d4fa0
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 22:30:11 2021 +0200
+
+    contrib/synczbe: phase 3: avoid infinite loop, report if something remained unprocessed
+
+commit 38b68e46a8cd3b4847e6d8841c49470074ebd279
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 22:03:04 2021 +0200
+
+    contrib/synczbe: phase 3 loop to send ONLY_SRC datasets, grouped by origin (starting with presumably common history owner(s))
+
+commit dd44022ab861d0eba715e439c85b15d2dd26dd60
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 17:30:02 2021 +0200
+
+    contrib/synczbe: PoC the Phase 3 (identify datasets only present on source that we can clone and update on dst)
+
+commit 0a51323cd58f57a35ec81a3d9e7c7906426e949a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 17:12:09 2021 +0200
+
+    contrib/synczbe: PoC the Phase 1 (detect history owners, promote and make usable on destination for simple common situation)
+
+commit 392806a79786507eaaec9f0b1dc4a342d859175a
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 17:12:20 2021 +0200
+
+    contrib/synczbe: cosmetic
+
+commit fcbd4fba05307a2b8425fc849ec22f349d432e0b
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 14:30:36 2021 +0200
+
+    contrib/synczbe: track (and trap) work with "zoned=off" that can preclude renaming of offending (not-cloned) destinations into backup names
+
+commit fba86f8e65a1134d556888bed248183a6f1e756c
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 14:29:29 2021 +0200
+
+    contrib/synczbe: count successful and failed processed datasets
+
+commit 3b30a37fc128470fc2ae2867ee9b5dd24f458262
+Author: Jim Klimov <jimklimov@gmail.com>
+Date:   Tue Jun 29 14:28:59 2021 +0200
+
+    contrib/synczbe: update some startup warnings about defaults
 
 commit c89a1bd14b3197b6c37e98e56c842a2d4c00412e
 Author: Jim Klimov <jimklimov@gmail.com>

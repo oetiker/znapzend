@@ -304,6 +304,19 @@ can destroy. Logging an error about the problem
 use the -u option on the receive end, to keep the destination zfs
 filesystems unmounted.
 
+=item resume
+
+use the -s option on the receive end, to support resumable transfer
+with receive_resume_token.
+
+If you have aborted a resumable-send, you should either do a resume-send using -t <token>
+to continue it or clear the half-received snapshot using zfs receive -A <filesystem>
+
+Example:
+
+ zfs get receive_resume_token tank/test
+ zfs send -t <token> | zfs receive -s tank/test
+
 =item compressed
 
 use 'compressed' to add options -Lce to the zfs send command

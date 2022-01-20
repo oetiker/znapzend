@@ -59,14 +59,15 @@ DISTRIBUTIONS
       Text::ParseWords 0
       perl 5.006001
       version 0.87
-  Mojo-IOLoop-ForkCall-0.20
-    pathname: J/JB/JBERGER/Mojo-IOLoop-ForkCall-0.20.tar.gz
+  Mojo-IOLoop-ForkCall-0.21
+    pathname: J/JB/JBERGER/Mojo-IOLoop-ForkCall-0.21.tar.gz
     provides:
-      Mojo::IOLoop::ForkCall 0.20
+      Mojo::IOLoop::ForkCall 0.21
       Mojolicious::Plugin::ForkCall undef
     requirements:
       IO::Pipely 0
       Module::Build 0.38
+      Mojo::IOLoop::Delay 0
       Mojolicious 5.08
       Perl::OSType 0
   Mojolicious-8.73
