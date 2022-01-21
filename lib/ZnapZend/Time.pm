@@ -91,6 +91,18 @@ sub checkTimeUnit {
     return undef;
 };
 
+my $parseDuration = sub {
+    my $self = shift;
+    my $duration = shift;
+
+    my ($value, $unit) = $duration =~ /^(\d+)([a-z]+)$/;
+    die "ERROR: cannot parse expression '$duration'\n"
+        unless ($value && $unit);
+    die "ERROR: unknown unit '$unit'\n" 
+        unless exists $self->unitFactors->{$unit};
+    return $self->$timeToTimestamp($value, $unit);
+};
+
 sub backupPlanToHash {
     my $self = shift;
     my $backupPlan = shift;
@@ -99,20 +111,15 @@ sub backupPlanToHash {
     my @planItems = split /,/, $backupPlan;
 
     for my $planItem (@planItems){
-        my @planValues = split '=>', $planItem, 2;
-        my ($value, $unit) = $planValues[0] =~ /^(\d+)([a-z]+)$/;
-        $value && exists $self->unitFactors->{$unit}
-            or die "ERROR: backup plan $backupPlan is not valid\n";
+        my ($retentionExp,$intervalExp) = split '=>', $planItem, 2;
+        my $retention = $self->$parseDuration($retentionExp);
+        my $interval = $self->$parseDuration($intervalExp);
+        die "ERROR: the retention $retentionExp is shorter than interval $interval Exp in backup plan $backupPlan\n"
+            if $retention < $interval;
 
-        my $key = $self->$timeToTimestamp($value, $unit);
-        exists $backupPlan{$key}
-            and die "ERROR: retention time '$value$unit' already specified\n";
-
-        ($value, $unit) = $planValues[1] =~ /^(\d+)([a-z]+)$/;
-        $value && exists $self->unitFactors->{$unit}
-            or die "ERROR: backup plan $backupPlan ist not valid\n";
-
-        $backupPlan{$key} = $self->$timeToTimestamp($value, $unit);
+        die "ERROR: retention time '$retentionExp' already specified\n"
+            if exists $backupPlan{$retention};
+        $backupPlan{$retention} = $interval;
     }
 
     return \%backupPlan;

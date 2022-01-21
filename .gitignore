@@ -3,6 +3,7 @@ blib/
 _build/
 cover_db/
 inc/
+autom4te.cache/
 Build
 !Build/
 Build.bat

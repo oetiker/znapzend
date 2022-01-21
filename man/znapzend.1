@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2021-01-26" "0.21.0" "znapzend"
+.TH ZNAPZEND 1 "2021-06-29" "0.21.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -436,6 +436,20 @@ can destroy. Logging an error about the problem
 .IX Item "recvu"
 use the \-u option on the receive end, to keep the destination zfs
 filesystems unmounted.
+.IP "resume" 4
+.IX Item "resume"
+use the \-s option on the receive end, to support resumable transfer
+with receive_resume_token.
+.Sp
+If you have aborted a resumable-send, you should either do a resume-send using \-t <token>
+to continue it or clear the half-received snapshot using zfs receive \-A <filesystem>
+.Sp
+Example:
+.Sp
+.Vb 2
+\& zfs get receive_resume_token tank/test
+\& zfs send \-t <token> | zfs receive \-s tank/test
+.Ve
 .IP "compressed" 4
 .IX Item "compressed"
 use 'compressed' to add options \-Lce to the zfs send command
