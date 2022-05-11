@@ -138,7 +138,7 @@ can be found at https://github.com/Gregy/znapzend-debian
 
 An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
-For Fedora specifically there's also a
+For recent versions of Fedora and RHEL 7-9 there's also a
 [copr repository](https://copr.fedorainfracloud.org/coprs/spike/znapzend/)
 by [spike](https://copr.fedorainfracloud.org/coprs/spike/) (sources at
 https://gitlab.com/copr_spike/znapzend):
