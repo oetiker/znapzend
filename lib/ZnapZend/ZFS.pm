@@ -3,7 +3,7 @@ package ZnapZend::ZFS;
 use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::Delay;
-use Mojo::IOLoop::ForkCall;
+use Mojo::IOLoop::Subprocess;
 use Data::Dumper;
 use inheritLevels;
 
@@ -633,32 +633,27 @@ sub sendRecvSnapshots {
 
         my $cmd = $shellQuote->(@recvCmd);
 
-        my $fc = Mojo::IOLoop::ForkCall->new;
-        $fc->run(
+        my $subprocess = Mojo::IOLoop::Subprocess->new;
+        $subprocess->run(
             #receive worker fork
             sub {
-                my $cmd = shift;
-                my $debug = shift;
-                my $noaction = shift;
-
-                print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $debug;
+                print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;
 
                 system($cmd)
-                    && Mojo::Exception->throw('ERROR: executing receive process') if !$noaction;
+                    && Mojo::Exception->throw('ERROR: executing receive process') if !$self->noaction;
             },
-            #arguments
-            [$cmd, $self->debug, $self->noaction],
             #callback
             sub {
-                my ($fc, $err) = @_;
+                my ($subprocess, $err) = @_;
                 $self->zLog->debug("receive process on $remote done ($recvPid)");
                 Mojo::Exception->throw($err) if $err;
             }
         );
         #spawn event
-        $fc->on(
+        $subprocess->on(
             spawn => sub {
-                my ($fc, $pid) = @_;
+                my ($subprocess) = @_;
+                my $pid = $subprocess->pid;
 
                 $recvPid = $pid;
 
@@ -685,14 +680,14 @@ sub sendRecvSnapshots {
             }
         );
         #error event
-        $fc->on(
+        $subprocess->on(
             error => sub {
-                my ($fc, $err) = @_;
+                my ($subprocess, $err) = @_;
                 die $err;
             }
         );
-        #start forkcall event loop
-        $fc->ioloop->start if !$fc->ioloop->is_running;
+        #start subprocess event loop
+        $subprocess->ioloop->start if !$subprocess->ioloop->is_running;
     }
     else {
         my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
