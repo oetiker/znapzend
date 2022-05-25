@@ -1,7 +1,7 @@
 package ZnapZend;
 
 use Mojo::Base -base;
-use Mojo::IOLoop::ForkCall;
+use Mojo::IOLoop::Subprocess;
 use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
@@ -1098,15 +1098,15 @@ my $sendWorker = sub {
 ### RM_COMM_4_TEST ###  return;
 
     #send/receive fork
-    my $fc = Mojo::IOLoop::ForkCall->new;
-    $fc->run(
+    my $subprocess = Mojo::IOLoop::Subprocess->new;
+    $subprocess->run(
         #send/receive worker
-        $sendRecvCleanup,
-        #send/receive worker arguments
-        [$self, $backupSet, $timeStamp],
+        sub {
+            return $sendRecvCleanup->($self, $backupSet, $timeStamp);
+        },
         #send/receive worker callback
         sub {
-            my ($fc, $err) = @_;
+            my ($subprocess, $err) = @_;
 
             $self->zLog->warn('send/receive for ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err;
@@ -1119,9 +1119,10 @@ my $sendWorker = sub {
     );
 
     #spawn event
-    $fc->on(
+    $subprocess->on(
         spawn => sub {
-            my ($fc, $pid) = @_;
+            my ($subprocess) = @_;
+            my $pid = $subprocess->pid;
 
             $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
@@ -1130,9 +1131,9 @@ my $sendWorker = sub {
     );
 
     #error event
-    $fc->on(
+    $subprocess->on(
         error => sub {
-            my ($fc, $err) = @_;
+            my ($subprocess, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
         }
@@ -1150,15 +1151,15 @@ my $snapWorker = sub {
 ### RM_COMM_4_TEST ###  return;
 
     #snapshot fork
-    my $fc = Mojo::IOLoop::ForkCall->new;
-    $fc->run(
+    my $subprocess = Mojo::IOLoop::Subprocess->new;
+    $subprocess->run(
         #snapshot worker
-        $createSnapshot,
-        #snapshot worker arguments
-        [$self, $backupSet, $timeStamp],
+        sub {
+            return $createSnapshot->($self, $backupSet, $timeStamp);
+        },
         #snapshot worker callback
         sub {
-            my ($fc, $err) = @_;
+            my ($subprocess, $err) = @_;
 
             $self->zLog->warn('taking snapshot on ' . $backupSet->{src}
                 . ' failed: ' . $err) if $err;
@@ -1179,9 +1180,10 @@ my $snapWorker = sub {
     );
 
     #spawn event
-    $fc->on(
+    $subprocess->on(
         spawn => sub {
-            my ($fc, $pid) = @_;
+            my ($subprocess) = @_;
+            my $pid = $subprocess->pid;
 
             $self->zLog->debug('snapshot worker for ' . $backupSet->{src}
                 . " spawned ($pid)");
@@ -1190,9 +1192,9 @@ my $snapWorker = sub {
     );
 
     #error event
-    $fc->on(
+    $subprocess->on(
         error => sub {
-            my ($fc, $err) = @_;
+            my ($subprocess, $err) = @_;
 
             $self->zLog->warn($err) if !$self->terminate;
         }
