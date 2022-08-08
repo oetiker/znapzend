@@ -54,7 +54,7 @@ dist_bin_SCRIPTS = $(BIN)
 docs: $(POD) $(MAN)
 
 dist-hook: docs
-	$(PERL) -i -p -e 's/^my .*#VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; #VERSION/' $(distdir)/$(BIN)
+	$(PERL) -i -p -e 's/^my .*#\s*VERSION/my \$$VERSION = q{$(PACKAGE_VERSION)}; # VERSION/' $(distdir)/$(BIN)
 
 install-exec-hook:
 	[ "$(PERL5LIB)" = "" ] || cd "$(DESTDIR)$(exec_prefix)" && $(PERL) -i -p -e 's{.*# PERL5LIB}{use lib qw($(PERL5LIB)); # PERL5LIB}' $(BIN) || true
