@@ -43,9 +43,12 @@ my $splitHostDataSet = sub {
     #return ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
 
     my @return;
-    #push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
-    push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
-    print STDERR "[D] Split '" . $_[0] . "' into: ['" . join("', '", @return) . "']\n";# if $self->debug;
+    ###push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+    ###push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    # Note: Claims `Use of uninitialized value $return[0]...` when there
+    # is no remote host portion matched, so using a map to stringify:
+    print STDERR "[D] Split '" . $_[0] . "' into: [" . join(", ", map { defined ? "'$_'" : '<undef>' } @return) . "]\n";# if $self->debug;
     return @return;
 };
 
