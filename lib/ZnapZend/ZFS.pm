@@ -1431,10 +1431,32 @@ sub fileExistsAndExec {
     my $remote;
 
     ($remote, $filePath) = $splitHostDataSet->($filePath);
-    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(test -x), $filePath]);
+    my @ssh1 = $self->$buildRemote($remote, [@{$self->priv}, qw(test -x), $filePath]);
+    # Note: with restricted shell setup, users may be unable to run
+    # fully qualified command names (with a slash) but may run what
+    # they have in the PATH.
+    my @ssh2 = $self->$buildRemote($remote, [@{$self->priv}, qw(command -v), $filePath]);
 
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    return !system(@ssh);
+    print STDERR '# ' . join(' ', @ssh1) . " || " . join(' ', @ssh2) . "\n" if $self->debug;
+    # Tricks to hide output of `command -v` from perl stdout:
+    if (!system(@ssh1)) {
+        return 1;
+    }
+
+    my $ssh2out = `@ssh2`;
+    if ($? == 0 && defined $ssh2out && $ssh2out ne "") {
+        if ($filePath =~ /\//) {
+            # Nudge the users to verify their config:
+            print STDERR "WARNING: Could not 'test' a qualified executable file path '" . $filePath . "' but confirmed it with 'command -v' - if you use a restricted shell, use basename and PATH\n";
+        } else {
+            # Only show at debug/troubleshooting, as this is sort of expected
+            print STDERR "WARNING: Only found executable file basename '" . $filePath . "' with 'command -v': " . $ssh2out . "\n" if $self->debug;
+        }
+        return 1;
+    }
+
+    # Neither attempt found the command:
+    return 0;
 }
 
 sub listPools {
