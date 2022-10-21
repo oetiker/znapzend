@@ -386,6 +386,16 @@ zfs create backup/server1
 zfs allow -du znapzend-server1 create,destroy,mount,receive,userprop backup/server1
 ```
 
+NOTE: When defining a "backup plan" you would have to specify a basename
+for `mbuffer`, since the restricted shell would forbid running a fully
+specified pathname, e.g.:
+```sh
+znapzendzetup edit --mbuffer=mbuffer \
+   SRC '6hours=>30minutes,1week=>6hours' rpool/export \
+   DST '6hours=>30minutes,1week=>6hours,2weeks=>1day,4months=>1week,10years=>1month' \
+       znapdest:backup/server1/rpool/export
+```
+
 Running in Container
 --------------------
 
