@@ -232,12 +232,157 @@ Running by an unprivileged user
 In order to allow a non-privileged user to use it, the following permissions
 are required on the ZFS filesystems (which you can assign with `zfs allow`):
 
-Sending end: destroy,hold,mount,send,snapshot,userprop
+Sending end: `destroy,hold,mount,send,snapshot,userprop`
 
-Receiving end: create,destroy,mount,receive,userprop
+Receiving end: `create,destroy,mount,receive,userprop`
+
+Caveat Emptor: Receiver with some implementations of ZFS may have further
+constraints technologically. For example, non-root users with ZFS on Linux
+(as of 2022) may not write into a dataset with property `zoned=on` (including
+one inherited or just received -- and `zfs recv -x zoned` or similar options
+have no effect to not-replicate it), so this property has to be removed as
+soon as it appears on such destination host with the initial replication
+stream, e.g. leave a snippet like this running on receiving host before
+populating (`zfs send -R ...`) the destination for the first time:
+
+```sh
+while ! zfs inherit zoned backup/server1/rpool/rpool/zones/zone1/ROOT ; do sleep 0.1; done
+```
+
+You may also have to `zfs allow` by name all standard ZFS properties which
+your original datasets customize and you want applied to the copy (e.g. to
+eventually restore them), so the non-privileged user may `zfs set` them on
+that dataset and its descendants, e.g.:
+`compression,mountpoint,canmount,setuid,atime,exec,dedup`
+or perhaps you optimized the original storage with the likes of:
+`logbias,primarycache,secondarycache,sync`
+and note that other options may be problematic long-term if actually used
+by the receiving server, e.g.:
+`refreservation,refquota,quota,reservation,encryption`
+
+Running with restricted shell
+-----------------------------
+
+As a further security twist on using a non-privileged user on the receiving
+host is to restrict its shell so just a few commands may be executed. After
+all, you leave its gates open with remote SSH access and a private key without
+a passphrase lying somewhere. Several popular shells offer a restricted option,
+for example BASH has a `-r` command line option and a `rbash` symlink support.
+
+NOTE: Some SSH server versions also allow to constrain the commands which a
+certain key-based session may use, and/or limit from which IP addresses or
+DNS names such sessions may be initiated. See documentation on your server's
+supported `authorized_keys` file format and key words for that extra layer.
+
+On original server, run `ssh-keygen` to generate an SSH key for the sending
+account (`root` or otherwise), possibly into an uniquely named file to use
+just for this connection. You can specify custom key file name, non-standard
+port, acceptable encryption algorithms and other options with SSH config:
+```
+# ~/.ssh/config
+Host znapdest
+        # "HostName" to access may even be "localhost" if the backup storage
+        # system can dial in to the systems it collects data from (with SSH
+        # port forwarding back to itself) -- e.g. running without a dedicated
+        # public IP address (consumer home network, corporate firewall).
+        #HostName localhost
+        HostName znapdest.domain.org
+        Port 22123
+        # May list several SSH keys to try:
+        IdentityFile /root/.ssh/id_ecdsa-znapdest
+        IdentityFile /root/.ssh/id_rsa-znapdest
+        User znapzend-server1
+        IdentitiesOnly yes
+```
+
+On receiving server (example for Proxmox/Debian with ZFS on Linux):
+
+* Create receiving user with `rbash` as the shell, and a home directory:
+```sh
+useradd -m -s `which rbash` znapzend-server1
+```
+
+* Restricted shell denies access to run programs and redirect to path names
+  with a path separator (slash character, including `>/dev/null` quiescing).
+  This allows to only run allowed shell commands and whatever is resolved
+  by `PATH` (read-only after the profile file is interpreted). Typically a
+  `bin` directory is crafted with programs you allow to run, but unlike the
+  `chroot` jails you don't have to fiddle with dynamic libraries, etc. to
+  make the login usable for its purpose.
+
+  * Prepare restricted shell profile (made and owned by `root`) in the user
+    home directory:
+
+      ```sh
+      # ~znapzend-server1/.rbash_profile
+      # Restricted BASH settings
+      # https://www.howtogeek.com/718074/how-to-use-restricted-shell-to-limit-what-a-linux-user-can-do/
+      PATH="$HOME/bin"
+      export PATH
+      ```
+
+  * Neuter all other shell profiles so only the restricted one is consulted
+  for any way the user logs in (avoid confusion):
+
+      ```sh
+      cd ~znapzend-server1/ && (
+        rm -f .bash_history .bash_logout .bash_profile .bashrc .profile
+        ln -s .rbash_profile .profile
+        touch .hush_login )
+      ```
+
+  * (As `root`) Prepare `~/bin` for the user:
+
+      ```sh
+      mkdir -p ~znapzend-server1/bin
+      cd ~znapzend-server1/bin
+      for CMD in mbuffer zfs ; do ln -frs "`which "$CMD"`" ./ ; done
+      # NOTE: If this user also receives other backups, you can
+      # symlink commands needed for that e.g. "rsync" or "git"
+      ```
+
+  * Maybe go as far as to make the homedir not writeable to the user?
+
+* Prepare SSH login:
+```sh
+mkdir -p ~znapzend-server1/.ssh
+vi ~znapzend-server1/.ssh/authorized_keys
+### Paste public keys from IdentityFile you used on the original server
+```
+
+* Restrict access to SSH files (they are ignored otherwise):
+```sh
+chown -R znapzend-server1: ~znapzend-server1/.ssh
+chmod 700 ~znapzend-server1/.ssh
+chmod 600 ~znapzend-server1/.ssh/authorized_keys
+```
+
+* Unlock the user for ability to login (will use SSH key in practice,
+  but unlocking in general may require a password to be set):
+```sh
+#usermod znapzend-server1 -p "`cat /dev/random | base64 | cut -b 0-20 | head -1`"
+usermod -U znapzend-server1
+```
+
+* Now is a good time to check that you can log in from the original
+  backed-up system to the backup server (using the same account that
+  znapzend daemon would use, to save the known SSH host keys), e.g.
+  that keys and encryption algorithms are trusted, names are known,
+  ports are open... If you defined a `Host znapdest` like above,
+  just run:
+```sh
+:; ssh znapdest
+```
+
+* Dedicate a dataset (or several) you would use as destination for the znapzend
+  daemon, and set ZFS permissions (see suggestions above), e.g.:
+```sh
+zfs create backup/server1
+zfs allow -du znapzend-server1 create,destroy,mount,receive,userprop backup/server1
+```
 
 Running in Container
------------------
+--------------------
 
 znapzend is also available as docker container image. It needs to be a
 privileged container depending on permissions.
