@@ -328,6 +328,7 @@ useradd -m -s `which rbash` znapzend-server1
       cd ~znapzend-server1/ && (
         rm -f .bash_history .bash_logout .bash_profile .bashrc .profile
         ln -s .rbash_profile .profile
+        ln -s .rbash_profile .bashrc
         touch .hush_login )
       ```
 
@@ -371,7 +372,11 @@ usermod -U znapzend-server1
   ports are open... If you defined a `Host znapdest` like above,
   just run:
 ```sh
+# Interactive login?
 :; ssh znapdest
+
+# Gets PATH to run stuff?
+:; ssh znapdest zfs list
 ```
 
 * Dedicate a dataset (or several) you would use as destination for the znapzend
