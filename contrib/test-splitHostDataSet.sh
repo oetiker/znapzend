@@ -5,7 +5,8 @@
 
 # https://github.com/oetiker/znapzend/issues/585
 #RE='/^(?:(.+)\s)?([^\s]+)$/'
-RE='/^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/'
+#RE='/^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/'
+RE='/^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/'
 
 echo 'NOTE: For each probe this should return an array with two strings:'
 echo '      empty "", "remotehost" or "user@remotehost" as applicable,'
