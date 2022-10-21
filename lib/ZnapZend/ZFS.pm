@@ -40,7 +40,13 @@ has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $se
 my $splitHostDataSet = sub {
 #JIM#    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
 #JIM#    See https://github.com/oetiker/znapzend/issues/585
-    return ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+    #return ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+
+    my @return;
+    #push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+    push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    print STDERR "[D] Split '" . $_[0] . "' into: ['" . join("', '", @return) . "']\n";# if $self->debug;
+    return @return;
 };
 
 my $splitDataSetSnapshot = sub {
