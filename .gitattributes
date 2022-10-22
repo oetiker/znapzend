@@ -6,6 +6,12 @@
 *.m4 text eol=lf
 *.ac text eol=lf
 *.am text eol=lf
+/conftools/* text eol=lf
+
+# Buildable sources (mostly for docker on windows builds to pass):
+*.in text eol=lf
+*.pm text eol=lf
+/bin/* text eol=lf
 
 # Some files are binary always:
 *.png bin
@@ -13,4 +19,5 @@
 
 # The rest are assumed text sources with platform-dependent EOL being okay,
 # or we let Git guess otherwise:
-* text=auto
+#* text=auto
+* text=auto eol=lf
