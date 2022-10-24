@@ -113,8 +113,7 @@ if test "x$PERL" != "x"; then
     fi
   else
     AC_MSG_RESULT(ok);
-    # mojo 9 has no delay method anymore ... 
-    MOJOLICIOUS_VERSION_CONSTRAINT=", '>= 8.73, <9.0'"
+    MOJOLICIOUS_VERSION_CONSTRAINT=", '>= 8.73'"
   fi
 else
   AC_MSG_ERROR(could not find perl)
