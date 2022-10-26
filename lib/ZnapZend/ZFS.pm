@@ -2,7 +2,6 @@ package ZnapZend::ZFS;
 
 use Mojo::Base -base;
 use Mojo::Exception;
-use Mojo::IOLoop::Delay;
 use Mojo::IOLoop::Subprocess;
 use Data::Dumper;
 use inheritLevels;
