@@ -37,7 +37,20 @@ has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $se
 
 ### private functions ###
 my $splitHostDataSet = sub {
-    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    # See also https://github.com/oetiker/znapzend/issues/585
+    # If there are further bugs in the regex, comment away the
+    # next implementation line and fall through to verbosely
+    # debugging code below to try and iterate a fix:
+    return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+
+    my @return;
+    ###push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+    ###push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    # Note: Claims `Use of uninitialized value $return[0]...` when there
+    # is no remote host portion matched, so using a map to stringify:
+    print STDERR "[D] Split '" . $_[0] . "' into: [" . join(", ", map { defined ? "'$_'" : '<undef>' } @return) . "]\n";# if $self->debug;
+    return @return;
 };
 
 my $splitDataSetSnapshot = sub {
