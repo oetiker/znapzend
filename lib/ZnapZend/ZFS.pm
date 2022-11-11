@@ -382,23 +382,28 @@ sub destroySnapshots {
     }
 
     #combinedDestroy
+    #collect "dataset1@snap1,snap2 dataset2@snap1,snap2,snap3..."
+    #to destroy one dataset at a time (maybe many snaps per each)
     for my $task (@toDestroy){
         my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
         my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
         #tag local snapshots as 'local' so we have a key to build the hash
         $remote = $remote || 'local';
-        exists $toDestroy{$remote} or $toDestroy{$remote} = [];
-        push @{$toDestroy{$remote}}, scalar @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot" ;
+        exists $toDestroy{$remote} or $toDestroy{$remote} = {};
+        exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
+        push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
     }
 
     for $remote (keys %toDestroy){
-        #check if remote is flaged as 'local'.
-        my @ssh = $self->$buildRemote($remote ne 'local'
-            ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}})]);
+        for $dataSet (keys %{$toDestroy{$remote}}){
+            #check if remote is flaged as 'local'.
+            my @ssh = $self->$buildRemote($remote ne 'local'
+                ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}{$dataSet}})]);
 
-        print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
-        system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
-            if !($self->noaction || $self->nodestroy);
+            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
+            system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
+                if !($self->noaction || $self->nodestroy);
+        }
     }
 
     return 1;
