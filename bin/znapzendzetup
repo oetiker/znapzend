@@ -543,6 +543,10 @@ and where 'command' and its unique options is one of the following:
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] ]
 
+            NOTE: If you specify [user@]host:dataset for remote replication
+            over SSH, make use of ~/.ssh/config for any advanced options
+            (custom ports, keys to use, etc.) See znapzend READNE for ideas.
+
     delete  [--dst=key] <src_dataset>
 
     edit    [--recursive=on|off] \

@@ -1076,7 +1076,7 @@ my $createSnapshot = sub {
             # removal here is non-recursive to allow for fine-grained control
             if ( @dataSetsExplicitlyDisabled ){
                $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitlyDisabled));
-               $self->zZfs->destroySnapshots(@dataSetsExplicitlyDisabled, 0);
+               $self->zZfs->destroySnapshots(\@dataSetsExplicitlyDisabled, 0);
            }
         }
     }
