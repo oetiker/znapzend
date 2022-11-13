@@ -1,6 +1,7 @@
  - removed depencency on ForkCall @fdd-rev
  - Fix regex in splitHostDataSet to understand dataset names with colons  @jimklimov
  - Fix deletion of many snaps for many datasets, and handle several not-"enabled" sub-trees under one schedule @jimklimov
+ - Try harder when faced with a restricted shell at the remote end @jimklimov
  
 0.21.1 2022-01-20 16:13:24 +0100 Tobias Oetiker <tobi@oetiker.ch>
 
