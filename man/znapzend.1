@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZEND 1"
-.TH ZNAPZEND 1 "2021-06-29" "0.21.1" "znapzend"
+.TH ZNAPZEND 1 "2022-12-08" "0.21.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -155,6 +155,7 @@ znapzend \- znapzend daemon
 \& \-\-forbidDestRollback   forbids forcing destination dataset rollback and
 \&                        removal of datasets/snapshots not present on source
 \& \-\-logto=x              select where to log (syslog::<facility> or <filepath>)
+\&                        when logging to a file, send USR1 to re\-open the filehandle
 \& \-\-loglevel=x           define the log level
 \& \-\-pidfile=x            write a pid file when running in daemon mode
 \& \-\-daemonize            fork into the background
@@ -222,6 +223,8 @@ regularly scheduled operations.
 send logs out to either syslog or a logfile. Default is to send logs to
 \&\fBsyslog::daemon\fR when running daemonized. When running in debug mode, the
 logs will go to \s-1STDERR\s0 by default.
+.Sp
+When logging to a file, send \s-1USR1\s0 to repoen the file handle after log rotation.
 .Sp
 Examples:
 .Sp

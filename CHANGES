@@ -1,3 +1,4 @@
+ - clear log handle on receiving a USR1 signal
  - removed depencency on ForkCall @fdd-rev
  - Fix regex in splitHostDataSet to understand dataset names with colons  @jimklimov
  - Fix deletion of many snaps for many datasets, and handle several not-"enabled" sub-trees under one schedule @jimklimov

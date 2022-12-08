@@ -100,8 +100,7 @@ has zLog => sub {
                :                                   $self->logto,
         level => $level
     );
-
-    $syslog && do {
+    if ($syslog) {
         $log->unsubscribe('message');
         #add syslog handler if either syslog is explicitly specified or no logfile is given
         openlog(basename($0), 'cons,pid', $syslog);
@@ -111,7 +110,11 @@ has zLog => sub {
                 syslog($logLevels{$level}, @lines) if $log->is_level($level);
             }
         );
-    };
+    }
+    else {
+        $log->with_roles('+Clearable');
+        $SIG{USR1} = sub { $log->clear_handle };        
+    }
 
     return $log;
 };
