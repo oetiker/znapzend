@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use FindBin;
-$ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
+$ENV{PATH} = $FindBin::RealBin . ':' . $ENV{PATH};
 my $buildDir;
 
 BEGIN {
-    $buildDir = shift @ARGV // "$FindBin::Bin/../";
+    $buildDir = shift @ARGV // $FindBin::RealBin.'/../';
 }
 
 # PERL5LIB
@@ -86,7 +86,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(--help);
-do 'znapzend' or die "ERROR: loading program znapzend\n";
+do 'znapzend' or die "ERROR: loading program znapzend $@\n";
 
 # seems to allow tests to continue so why not?
 is (runCommand('--help'), 1, 'znapzend help');

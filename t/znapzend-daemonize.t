@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use FindBin;
-$ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
+$ENV{PATH} = $FindBin::RealBin.':'.$ENV{PATH};
 my $buildDir;
 
 BEGIN {
-    $buildDir = shift @ARGV // "$FindBin::Bin/../";
+    $buildDir = shift @ARGV // $FindBin::Bin."/../";
 }
 
 # Track child PIDs spawned by test
@@ -16,10 +16,10 @@ our @test_arr_children = ();
 sub test_arr_children { \@test_arr_children };
 
 # PERL5LIB
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::RealBin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
 #place bin path to lib so it is stored in @INC
-use lib "$FindBin::Bin/../bin";
+use lib "$FindBin::RealBin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
@@ -95,7 +95,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(--help);
-do 'znapzend' or die "ERROR: loading program znapzend\n";
+do 'znapzend' or die "ERROR: loading program znapzend $@\n";
 
 # For tests below we run the real forking and daemonization and test how it
 # behaves. Thanks to Test::SharedFork above these are counted correctly -
