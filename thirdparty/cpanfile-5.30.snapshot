@@ -1,5 +1,14 @@
 # carton snapshot format: version 1.0
 DISTRIBUTIONS
+  B-Debug-1.26
+    pathname: R/RU/RURBAN/B-Debug-1.26.tar.gz
+    provides:
+      B::Debug 1.26
+    requirements:
+      B 0
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      deprecate 0.03
   Class-Method-Modifiers-2.13
     pathname: E/ET/ETHER/Class-Method-Modifiers-2.13.tar.gz
     provides:
@@ -13,6 +22,80 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Clone-0.46
+    pathname: G/GA/GARU/Clone-0.46.tar.gz
+    provides:
+      Clone 0.46
+    requirements:
+      ExtUtils::MakeMaker 0
+  Devel-Cover-1.38
+    pathname: P/PJ/PJCJ/Devel-Cover-1.38.tar.gz
+    provides:
+      Devel::Cover 1.38
+      Devel::Cover::Annotation::Git 1.38
+      Devel::Cover::Annotation::Random 1.38
+      Devel::Cover::Annotation::Svk 1.38
+      Devel::Cover::Branch 1.38
+      Devel::Cover::Collection 1.38
+      Devel::Cover::Collection::Template::Provider 1.38
+      Devel::Cover::Condition 1.38
+      Devel::Cover::Condition_and_2 1.38
+      Devel::Cover::Condition_and_3 1.38
+      Devel::Cover::Condition_or_2 1.38
+      Devel::Cover::Condition_or_3 1.38
+      Devel::Cover::Condition_xor_4 1.38
+      Devel::Cover::Criterion 1.38
+      Devel::Cover::DB 1.38
+      Devel::Cover::DB::Criterion 1.38
+      Devel::Cover::DB::Digests 1.38
+      Devel::Cover::DB::File 1.38
+      Devel::Cover::DB::IO 1.38
+      Devel::Cover::DB::IO::Base 1.38
+      Devel::Cover::DB::IO::JSON 1.38
+      Devel::Cover::DB::IO::Sereal 1.38
+      Devel::Cover::DB::IO::Storable 1.38
+      Devel::Cover::DB::Run 1.38
+      Devel::Cover::DB::Structure 1.38
+      Devel::Cover::Html_Common 1.38
+      Devel::Cover::Op 1.38
+      Devel::Cover::Pod 1.38
+      Devel::Cover::Report::Compilation 1.38
+      Devel::Cover::Report::Html 1.38
+      Devel::Cover::Report::Html_basic 1.38
+      Devel::Cover::Report::Html_basic::Template::Provider 1.38
+      Devel::Cover::Report::Html_minimal 1.38
+      Devel::Cover::Report::Html_subtle 1.38
+      Devel::Cover::Report::Html_subtle::Template::Provider 1.38
+      Devel::Cover::Report::Json 1.38
+      Devel::Cover::Report::Sort 1.38
+      Devel::Cover::Report::Text 1.38
+      Devel::Cover::Report::Text2 1.38
+      Devel::Cover::Report::Vim 1.38
+      Devel::Cover::Report::Vim::Template::Provider 1.38
+      Devel::Cover::Statement 1.38
+      Devel::Cover::Subroutine 1.38
+      Devel::Cover::Test 1.38
+      Devel::Cover::Time 1.38
+      Devel::Cover::Truth_Table 1.38
+      Devel::Cover::Truth_Table::Row 1.38
+      Devel::Cover::Util 1.38
+      Devel::Cover::Web 1.38
+    requirements:
+      B::Debug 0
+      Digest::MD5 0
+      ExtUtils::MakeMaker 0
+      HTML::Entities 3.69
+      Storable 0
+      Test::More 0
+  Encode-Locale-1.05
+    pathname: G/GA/GAAS/Encode-Locale-1.05.tar.gz
+    provides:
+      Encode::Locale 1.05
+    requirements:
+      Encode 2
+      Encode::Alias 0
+      ExtUtils::MakeMaker 0
+      perl 5.008
   ExtUtils-Config-0.008
     pathname: L/LE/LEONT/ExtUtils-Config-0.008.tar.gz
     provides:
@@ -52,6 +135,104 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  HTML-Parser-3.80
+    pathname: O/OA/OALDERS/HTML-Parser-3.80.tar.gz
+    provides:
+      HTML::Entities 3.80
+      HTML::Filter 3.80
+      HTML::HeadParser 3.80
+      HTML::LinkExtor 3.80
+      HTML::Parser 3.80
+      HTML::PullParser 3.80
+      HTML::TokeParser 3.80
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 6.52
+      HTML::Tagset 0
+      HTTP::Headers 0
+      IO::File 0
+      URI 0
+      URI::URL 0
+      XSLoader 0
+      strict 0
+  HTML-Tagset-3.20
+    pathname: P/PE/PETDANCE/HTML-Tagset-3.20.tar.gz
+    provides:
+      HTML::Tagset 3.20
+    requirements:
+      ExtUtils::MakeMaker 0
+  HTTP-Date-6.05
+    pathname: O/OA/OALDERS/HTTP-Date-6.05.tar.gz
+    provides:
+      HTTP::Date 6.05
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      Time::Local 1.28
+      Time::Zone 0
+      perl 5.006002
+      strict 0
+  HTTP-Message-6.44
+    pathname: O/OA/OALDERS/HTTP-Message-6.44.tar.gz
+    provides:
+      HTTP::Config 6.44
+      HTTP::Headers 6.44
+      HTTP::Headers::Auth 6.44
+      HTTP::Headers::ETag 6.44
+      HTTP::Headers::Util 6.44
+      HTTP::Message 6.44
+      HTTP::Request 6.44
+      HTTP::Request::Common 6.44
+      HTTP::Response 6.44
+      HTTP::Status 6.44
+    requirements:
+      Carp 0
+      Clone 0.46
+      Compress::Raw::Bzip2 0
+      Compress::Raw::Zlib 2.062
+      Encode 3.01
+      Encode::Locale 1
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      HTTP::Date 6
+      IO::Compress::Bzip2 2.021
+      IO::Compress::Deflate 0
+      IO::Compress::Gzip 0
+      IO::HTML 0
+      IO::Uncompress::Inflate 0
+      IO::Uncompress::RawInflate 0
+      LWP::MediaTypes 6
+      MIME::Base64 2.1
+      MIME::QuotedPrint 0
+      URI 1.10
+      parent 0
+      perl 5.008001
+      strict 0
+      warnings 0
+  IO-HTML-1.004
+    pathname: C/CJ/CJM/IO-HTML-1.004.tar.gz
+    provides:
+      IO::HTML 1.004
+    requirements:
+      Carp 0
+      Encode 2.10
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      perl 5.008
+  LWP-MediaTypes-6.04
+    pathname: O/OA/OALDERS/LWP-MediaTypes-6.04.tar.gz
+    provides:
+      LWP::MediaTypes 6.04
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      Scalar::Util 0
+      perl 5.006002
+      strict 0
   Module-Build-Tiny-0.039
     pathname: L/LE/LEONT/Module-Build-Tiny-0.039.tar.gz
     provides:
@@ -255,3 +436,113 @@ DISTRIBUTIONS
       Test::Builder::Module 0
       Test::More 0.88
       perl 5.008_001
+  TimeDate-2.33
+    pathname: A/AT/ATOOMIC/TimeDate-2.33.tar.gz
+    provides:
+      Date::Format 2.24
+      Date::Format::Generic 2.24
+      Date::Language 1.10
+      Date::Language::Afar 0.99
+      Date::Language::Amharic 1.00
+      Date::Language::Austrian 1.01
+      Date::Language::Brazilian 1.01
+      Date::Language::Bulgarian 1.01
+      Date::Language::Chinese 1.00
+      Date::Language::Chinese_GB 1.01
+      Date::Language::Czech 1.01
+      Date::Language::Danish 1.01
+      Date::Language::Dutch 1.02
+      Date::Language::English 1.01
+      Date::Language::Finnish 1.01
+      Date::Language::French 1.04
+      Date::Language::Gedeo 0.99
+      Date::Language::German 1.02
+      Date::Language::Greek 1.00
+      Date::Language::Hungarian 1.01
+      Date::Language::Icelandic 1.01
+      Date::Language::Italian 1.01
+      Date::Language::Norwegian 1.01
+      Date::Language::Occitan 1.04
+      Date::Language::Oromo 0.99
+      Date::Language::Romanian 1.01
+      Date::Language::Russian 1.01
+      Date::Language::Russian_cp1251 1.01
+      Date::Language::Russian_koi8r 1.01
+      Date::Language::Sidama 0.99
+      Date::Language::Somali 0.99
+      Date::Language::Spanish 1.00
+      Date::Language::Swedish 1.01
+      Date::Language::Tigrinya 1.00
+      Date::Language::TigrinyaEritrean 1.00
+      Date::Language::TigrinyaEthiopian 1.00
+      Date::Language::Turkish 1.0
+      Date::Parse 2.33
+      Time::Zone 2.24
+      TimeDate 1.21
+    requirements:
+      ExtUtils::MakeMaker 0
+  URI-5.17
+    pathname: O/OA/OALDERS/URI-5.17.tar.gz
+    provides:
+      URI 5.17
+      URI::Escape 5.17
+      URI::Heuristic 5.17
+      URI::IRI 5.17
+      URI::QueryParam 5.17
+      URI::Split 5.17
+      URI::URL 5.17
+      URI::WithBase 5.17
+      URI::data 5.17
+      URI::file 5.17
+      URI::file::Base 5.17
+      URI::file::FAT 5.17
+      URI::file::Mac 5.17
+      URI::file::OS2 5.17
+      URI::file::QNX 5.17
+      URI::file::Unix 5.17
+      URI::file::Win32 5.17
+      URI::ftp 5.17
+      URI::gopher 5.17
+      URI::http 5.17
+      URI::https 5.17
+      URI::ldap 5.17
+      URI::ldapi 5.17
+      URI::ldaps 5.17
+      URI::mailto 5.17
+      URI::mms 5.17
+      URI::news 5.17
+      URI::nntp 5.17
+      URI::nntps 5.17
+      URI::pop 5.17
+      URI::rlogin 5.17
+      URI::rsync 5.17
+      URI::rtsp 5.17
+      URI::rtspu 5.17
+      URI::sftp 5.17
+      URI::sip 5.17
+      URI::sips 5.17
+      URI::snews 5.17
+      URI::ssh 5.17
+      URI::telnet 5.17
+      URI::tn3270 5.17
+      URI::urn 5.17
+      URI::urn::isbn 5.17
+      URI::urn::oid 5.17
+    requirements:
+      Carp 0
+      Cwd 0
+      Data::Dumper 0
+      Encode 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      MIME::Base64 2
+      Net::Domain 0
+      Scalar::Util 0
+      constant 0
+      integer 0
+      overload 0
+      parent 0
+      perl 5.008001
+      strict 0
+      utf8 0
+      warnings 0
