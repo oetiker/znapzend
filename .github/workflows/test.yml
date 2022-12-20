@@ -1,4 +1,4 @@
-name: Test
+name: Run Tests
 
 on:
   push:
@@ -27,9 +27,10 @@ jobs:
       uses: shogo82148/actions-setup-perl@v1
       with:
         perl-version: ${{ matrix.perl }}
-    - run: TEZT=1 ./bootstrap.sh
+    - run: ./bootstrap.sh
     - run: ./configure --prefix=$HOME/znapzend
-    - run: make install
+    - run: TEZT=1 make
     - run: ./test.sh
+    - run: make install
     - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
     - run: perl -I./thirdparty/lib/perl5 thirdparty/bin/cover -report coveralls

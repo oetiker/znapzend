@@ -118,6 +118,14 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
+  Role-Tiny-2.002004
+    pathname: H/HA/HAARG/Role-Tiny-2.002004.tar.gz
+    provides:
+      Role::Tiny 2.002004
+      Role::Tiny::With 2.002004
+    requirements:
+      Exporter 5.57
+      perl 5.006
   Sub-Uplevel-0.2800
     pathname: D/DA/DAGOLDEN/Sub-Uplevel-0.2800.tar.gz
     provides:
