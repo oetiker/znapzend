@@ -29,8 +29,8 @@ jobs:
         perl-version: ${{ matrix.perl }}
     - run: ./bootstrap.sh
     - run: ./configure --prefix=$HOME/znapzend
-    - run: echo 'Pod::Coverage' >> cpanfile
-    - run: echo 'Net::SSLeay' >> cpanfile
+    - run: echo 'requires "Pod::Coverage";' >> cpanfile
+    - run: echo 'requires "Net::SSLeay";' >> cpanfile
     - run: make install
     - run: ./test.sh
     - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
