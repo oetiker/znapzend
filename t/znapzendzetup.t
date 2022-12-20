@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use FindBin;
-$ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
+$ENV{PATH} = $FindBin::RealBin.':'.$ENV{PATH};
 my $buildDir;
 
 BEGIN {
-    $buildDir = shift @ARGV // "$FindBin::Bin/../";
+    $buildDir = shift @ARGV // $FindBin::RealBin."/../";
 }
 
 # PERL5LIB
@@ -80,7 +80,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(help);
-do 'znapzendzetup' or die "ERROR: loading program znapzendzetup\n";
+do 'znapzendzetup' or die "ERROR: loading program znapzendzetup $@\n";
 
 is (runCommand('help'), 1, 'znapzendzetup help');
 

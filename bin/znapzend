@@ -5,6 +5,7 @@ use FindBin; use lib "$FindBin::RealBin/../lib", "$FindBin::RealBin/../thirdpart
 
 use Getopt::Long qw(:config posix_default no_ignore_case);
 use Pod::Usage;
+use Role::Tiny;
 
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
@@ -180,6 +181,7 @@ B<znapzend> [I<options>...]
  --forbidDestRollback   forbids forcing destination dataset rollback and
                         removal of datasets/snapshots not present on source
  --logto=x              select where to log (syslog::<facility> or <filepath>)
+                        when logging to a file, send USR1 to re-open the filehandle
  --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
  --daemonize            fork into the background
@@ -255,6 +257,8 @@ regularly scheduled operations.
 send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
+
+When logging to a file, send USR1 to repoen the file handle after log rotation.
 
 Examples:
 

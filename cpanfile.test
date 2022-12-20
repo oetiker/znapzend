@@ -1,0 +1,6 @@
+requires 'Test::SharedFork';
+requires 'Test::Exception';
+requires 'Test::More';
+requires 'Devel::Cover';
+requires "Devel::Cover::Report::Coveralls";
+requires "Pod::Coverage";
