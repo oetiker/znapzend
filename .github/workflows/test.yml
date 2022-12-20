@@ -30,7 +30,7 @@ jobs:
         perl-version: ${{ matrix.perl }}
     - run: ./bootstrap.sh
     - run: ./configure --prefix=$HOME/znapzend
-    - run: TEZT=1 make
+    - run: cat cpanfile.test >> cpanfile && make
     - run: ./test.sh
     - run: make install
     - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
