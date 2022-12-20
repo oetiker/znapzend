@@ -1,3 +1,3 @@
 requires 'Mojolicious';
 requires 'Scalar::Util', '>= 1.45';
-requires 'Role::Tiny';
+requires 'Mojo::Log::Role::Clearable';
