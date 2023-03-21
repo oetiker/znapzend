@@ -10,7 +10,7 @@ export HOME=/tmp/home
 
 # workaround for debhelper bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=897569
 mkdir -p deb_build_home
-ls | grep -v deb_build_home | xargs mv -t deb_build_home # move everything except deb_build_home
+ls | grep -v deb_build_home | xargs mv -n -t deb_build_home # move everything except deb_build_home
 cd deb_build_home
 
 dh_clean
