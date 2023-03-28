@@ -4,7 +4,7 @@ set -ex
 DISTRIBUTION_NAME=$1
 DISTRIBUTION_VERSION=$2
 
- Overriding $HOME to prevent permissions issues when running on github actions
+#Overriding $HOME to prevent permissions issues when running on github actions
 mkdir -p /tmp/home
 chmod 0777 /tmp/home
 export HOME=/tmp/home
