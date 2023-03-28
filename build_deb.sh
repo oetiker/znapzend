@@ -1,25 +1,22 @@
-#!/bin/sh
+#!/bin/bash
 set -ex
 
 DISTRIBUTION_NAME=$1
+DISTRIBUTION_VERSION=$2
 
-# Overriding $HOME to prevent permissions issues when running on github actions
+ Overriding $HOME to prevent permissions issues when running on github actions
 mkdir -p /tmp/home
 chmod 0777 /tmp/home
 export HOME=/tmp/home
-
-# workaround for debhelper bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=897569
-mkdir -p deb_build_home
-ls | grep -v deb_build_home | xargs mv -n -t deb_build_home # move everything except deb_build_home
-cd deb_build_home
 
 dh_clean
 dpkg-buildpackage -us -uc -nc
 
 # set filename
-release_code_name=$(cat /etc/os-release | grep VERSION_CODENAME | cut -d'=' -f 2)
-package_name=$(basename ../*.deb | sed 's/.deb$//')_${DISTRIBUTION_NAME}_${release_code_name}.deb
-mv ../*.deb ../$package_name
+# znapzend_$VERSION~$DISTRIBUTIONNAME$DISTRIBUTION_VERSION_amd64.deb
+release_number=${DISTRIBUTION_VERSION:0:2}
+package_name=$(basename ../znapzend_*.deb | sed 's/_amd64.deb$//')~${DISTRIBUTION_NAME}${release_number}_amd64.deb
+mv ../znapzend_*.deb "$package_name"
 
 # set action output
 echo "package_name=$package_name" >> $GITHUB_OUTPUT
