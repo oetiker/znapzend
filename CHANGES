@@ -1,8 +1,8 @@
-znapzend (0.21.11) unstable; urgency=medium
+znapzend (0.21.2) unstable; urgency=medium
 
   * Maintenance release: Automate .deb package builds
 
- -- Tobias Bossert <tbossert@oetiker.ch>  Tue, 21 Mar 2023 14:42:54 +0100
+ -- Tobias Bossert <tbossert@oetiker.ch>  Tue, 12 Apr 2023 10:12:54 +0100
 
 znapzend (0.21.1) unstable; urgency=medium
 
