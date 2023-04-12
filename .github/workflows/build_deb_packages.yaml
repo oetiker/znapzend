@@ -1,0 +1,56 @@
+name: Build .deb packages
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build_deb_packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distribution: debian
+            version: 10
+          - distribution: debian
+            version: 11
+          - distribution: ubuntu
+            version: 18.04
+          - distribution: ubuntu
+            version: 20.04
+          - distribution: ubuntu
+            version: 22.04
+
+
+    runs-on: ubuntu-latest
+    name: Build package for ${{ matrix.distribution }} ${{ matrix.version }}
+    container:
+      image: ${{ matrix.distribution }}:${{ matrix.version }}
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      # small hack to make caches work because the cache action lives outside the container
+      options: --mount type=volume,dst=/__w/znapzend/znapzend/,volume-driver=local,volume-opt=type=none,volume-opt=o=bind,volume-opt=device=${{ github.workspace }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install OS requirements
+        run: apt-get update && apt-get -yq install perl unzip autoconf carton debhelper pkg-config
+      - name: CPAN cache
+        id: cpan_cache
+        uses: actions/cache@v3
+        with:
+          path: thirdparty
+          key: ${{ matrix.distribution }}-cpan-${{ matrix.version }}-${{ hashFiles('cpanfile', '*/cpanfile', 'Makefile.am', '*/Makefile.am') }}
+      - name: Build package
+        id: build_package
+        run: bash build_deb.sh ${{ matrix.distribution }} ${{ matrix.version }}
+      - name: Release deb files
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ github.workspace }}/${{ steps.build_package.outputs.package_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,8 @@
+@BINDIR@/znapzend /usr/local/bin/znapzend
+@BINDIR@/znapzendzetup /usr/local/bin/znapzendzetup
+@BINDIR@/znapzendztatz /usr/local/bin/znapzendztatz
+
+@DATADIR@/man/man1/znapzend.1 /usr/share/man/man1/znapzend.1
+@DATADIR@/man/man1/znapzendzetup.1 /usr/share/man/man1/znapzendzetup.1
+@DATADIR@/man/man1/znapzendztatz.1 /usr/share/man/man1/znapzendztatz.1
+

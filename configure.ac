@@ -25,6 +25,14 @@ AC_PATH_PROG(CURL, curl, no)
 AC_PATH_PROG(WGET, wget, no)
 AC_PATH_PROG(POD2MAN, pod2man, no)
 
+
+AC_ARG_ENABLE([deb_build],
+AS_HELP_STRING([--enable-deb_build    Enable debian package build specifics]),
+[deb_build=true],
+[deb_build=false])
+
+AM_CONDITIONAL([DEB_BUILD], [test x$deb_build = xtrue])
+
 # TODO: with some respect to legacy, split such settings to be named
 # after respective service management framework; code supports several
 AC_ARG_ENABLE(svcinstall,
@@ -213,6 +221,8 @@ AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile
     lib/Makefile
+    debian/Makefile
+    debian/znapzend.links
     init/znapzend.service
     init/znapzend.sysv
     init/znapzend.upstart
@@ -247,6 +257,7 @@ Settings:
   PERL = $PERL
   SVCINSTALLDIR = $SVCINSTALLDIR
   URL_CAT = $URL_CAT
+  DEB_BUILD = $deb_build
 
 The Makefiles use GNU make functionality.
 Continue installation with
