@@ -10,7 +10,7 @@ use Role::Tiny;
 use ZnapZend;
 my $VERSION = '0.dev'; #VERSION
 
-my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode resume recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates forbidDestRollback);
+my %featureMap = map { $_ => 1 } qw(pfexec sudo oracleMode resume recvu compressed sendRaw lowmemRecurse zfsGetType skipIntermediates sendIntermediates forbidDestRollback disableEmbedded);
 
 sub main {
     my $opts = {};
@@ -195,7 +195,7 @@ B<znapzend> [I<options>...]
  --features=x           comma separated list of features to be enabled
                         (detailed in man page):
     oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
-    skipIntermediates sendIntermediates forbidDestRollback
+    skipIntermediates sendIntermediates forbidDestRollback disableEmbedded
  -i/-I                  a "zfs send" compatible on/off for skipIntermediates
  --rootExec=x           exec zfs with this command to obtain root privileges
                         (sudo or pfexec)
@@ -479,6 +479,10 @@ with receive_resume_token.
 
 If you have aborted a resumable-send, you should either do a resume-send using -t <token>
 to continue it or clear the half-received snapshot using zfs receive -A <filesystem>
+
+=item disableEmbedded
+
+when compression feature enabled, disableEmbedded removes -e option from zfs send parameters
 
 Example:
 

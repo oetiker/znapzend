@@ -17,6 +17,7 @@ has compressed      => sub { 0 };
 has sendRaw         => sub { 0 };
 has skipIntermediates => sub { 0 };
 has forbidDestRollback => sub { 0 };
+has disableEmbedded => sub { 0 };
 has lowmemRecurse   => sub { 0 };
 has zfsGetType      => sub { 0 };
 has rootExec        => sub { q{} };
@@ -292,6 +293,7 @@ sub createDataSet {
 
     #just in case if someone asks to check '';
     return 0 if !$dataSet;
+    return 1;
 
     ($remote, $dataSet) = $splitHostDataSet->($dataSet);
     my @ssh = $self->$buildRemote($remote,
@@ -553,7 +555,13 @@ sub sendRecvSnapshots {
     my @recvOpt = $self->recvu ? qw(-u) : ();
     push @recvOpt, '-F' if $allowDestRollback;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
-    my @sendOpt = $self->compressed ? qw(-Lce) : ();
+    my @sendOpt = ();
+    if (not($self->compressed)) {
+    } elsif($self->disableEmbedded) {
+        @sendOpt = qw(-Lc);
+    } else {
+        @sendOpt = qw(-Lce);
+    }
     push @sendOpt, '-w' if $self->sendRaw;
     push @recvOpt, '-s' if $self->resume;
     my $remote;

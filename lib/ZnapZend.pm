@@ -33,6 +33,7 @@ has compressed              => sub { 0 };
 has sendRaw                 => sub { 0 };
 has skipIntermediates       => sub { 0 };
 has forbidDestRollback      => sub { 0 };
+has disableEmbedded         => sub { 0 };
 has lowmemRecurse           => sub { 0 };
 has rootExec                => sub { q{} };
 has zfsGetType              => sub { 0 };
@@ -71,7 +72,7 @@ has zZfs => sub {
     my $self = shift;
     ZnapZend::ZFS->new(debug => $self->debug, noaction => $self->noaction,
         nodestroy => $self->nodestroy, oracleMode => $self->oracleMode,
-        resume => $self->resume,
+        resume => $self->resume, disableEmbedded => $self->disableEmbedded,
         recvu => $self->recvu, connectTimeout => $self->connectTimeout,
         lowmemRecurse => $self->lowmemRecurse, skipIntermediates => $self->skipIntermediates,
         rootExec => $self->rootExec, zfsGetType => $self->zfsGetType,
