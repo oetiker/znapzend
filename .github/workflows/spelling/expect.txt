@@ -8,6 +8,7 @@ admins
 Affero
 aix
 alpinelinux
+amd
 AMTAR
 anewconfig
 anotherchild
@@ -174,6 +175,7 @@ DTIPS
 DTRT
 dummydataset
 ebuild
+ecdsa
 eckels
 egrep
 elif
@@ -213,6 +215,7 @@ foced
 foreach
 forkcall
 FQSN
+FRONTEND
 fsf
 gerczei
 Getopt
@@ -462,6 +465,7 @@ rootfs
 rootfs'es
 rpool
 rr
+rsa
 rsync
 runlevel
 runonce
@@ -550,6 +554,7 @@ tabledata
 tarball
 tardir
 TARNAME
+tattr
 tempfile
 templated
 testsuite
@@ -559,14 +564,18 @@ tfilesystem
 tgerczei
 thirdparty
 timeslot
+tinherit
 TION
 tium
+tlowmem
 TLS
 tmp
 tmpdir
 tobi
 todo
 TOTHINK
+tpropnames
+trecurse
 troff
 tsformat
 tsnapshot
@@ -580,6 +589,7 @@ unconfigured
 UNCONSIDER
 undef
 undef'ed
+UNICODE
 unicode
 uniq
 unsubscribe
