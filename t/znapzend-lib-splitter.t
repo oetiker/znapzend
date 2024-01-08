@@ -97,6 +97,16 @@ my $zZFS  = ZnapZend::ZFS->new();
 
 is (ref $zZFS,'ZnapZend::ZFS', 'instantiation of ZFS');
 
+# NOTE: In absence of any hints we can not reliably discern below
+# a     task='poolrootfs@snap-2:3'
+# vs.   task='username@hostname:poolrootfs'
+# which one is a local pool's root dataset with a funny but legal
+# snapshot name, and which one is a remote user@host spec with a
+# remote pool's root dataset. For practical purposes, we proclaim
+# preference for the former: we are more likely to look at funny
+# local snapshot names, than to back up to (or otherwise care about)
+# remote pools' ROOT datasets.
+
 for my $r (qw(undef hostname username@hostname)) {
     for my $d (qw(poolrootfs rpool/dataset rpool/dataset:with-colon)) {
         for my $s (qw(undef snapname snap-1 snap-2:3 snap-12:35:00)) {
@@ -115,20 +125,28 @@ for my $r (qw(undef hostname username@hostname)) {
             printTaskReport($task, $remote, $dataSetPathAndSnap, $dataSet, $snapshot);
 
             is (defined ($dataSet), 1, "dataSet should always be defined after parsing");
-            is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
 
-            if ($r ne "undef") {
-                is (defined ($remote), 1, "remote should be defined after parsing this test case");
-                is (($remote eq $r), 1, "remote has expected value after parsing");
+            # See big comment above:
+            if ($task eq 'username@hostname:poolrootfs') {
+                isnt (defined ($remote), 1, "remote should BOGUSLY be not defined after parsing for this exceptional test case");
+                is (($dataSet eq "username"), 1, "dataSet has expected BOGUS value after parsing for this exceptional test case");
+                is (($snapshot eq "hostname:poolrootfs"), 1, "snapshot has expected BOGUS value after parsing for this exceptional test case");
             } else {
-                isnt (defined ($remote), 1, "remote should not be defined after parsing this test case");
-            }
+                is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
 
-            if ($s ne "undef") {
-                is (defined ($snapshot), 1, "snapshot should be defined after parsing this test case");
-                is (($snapshot eq $s), 1, "snapshot has expected value after parsing");
-            } else {
-                isnt (defined ($snapshot), 1, "snapshot should not be defined after parsing this test case");
+                if ($r ne "undef") {
+                    is (defined ($remote), 1, "remote should be defined after parsing this test case");
+                    is (($remote eq $r), 1, "remote has expected value after parsing");
+                } else {
+                    isnt (defined ($remote), 1, "remote should not be defined after parsing this test case");
+                }
+
+                if ($s ne "undef") {
+                    is (defined ($snapshot), 1, "snapshot should be defined after parsing this test case");
+                    is (($snapshot eq $s), 1, "snapshot has expected value after parsing");
+                } else {
+                    isnt (defined ($snapshot), 1, "snapshot should not be defined after parsing this test case");
+                }
             }
         }
     }
