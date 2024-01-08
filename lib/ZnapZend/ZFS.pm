@@ -54,7 +54,12 @@ my $splitHostDataSet = sub {
 };
 
 my $splitDataSetSnapshot = sub {
-    return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/);
+    my $count = ($_[0] =~ tr/@//);
+    if ($count > 0) {
+        return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/);
+    } else {
+        return ($_[0], undef);
+    }
 };
 
 my $shellQuote = sub {
