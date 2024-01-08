@@ -47,7 +47,10 @@ SUMS$
 \.xpm$
 \.yml$
 \.zip$
+\.1$
+^AUTHORS$
 ^CHANGES$
+^CHANGES.old$
 ^excludes\.txt$
 ^whitelist\.txt$
 ^\.github/workflows/spelling/
