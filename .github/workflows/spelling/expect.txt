@@ -55,7 +55,6 @@ Binfo
 blib
 Bnoaction
 Bnot
-Bossert
 bossert
 bpatsubst
 Bpidfile
@@ -106,7 +105,6 @@ conftools
 CONNEC
 Consor
 copr
-coprs
 copyleft
 coreutils
 COUNTFAIL
@@ -131,7 +129,6 @@ daemonization
 daemonize
 daemonized
 DAGOLDEN
-DATADIR
 datadir
 DBD
 de'u
@@ -186,7 +183,6 @@ endif
 ENTRYPOINT
 envval
 envvar
-EOL
 eol
 errline
 errmsg
@@ -575,7 +571,6 @@ troff
 tsformat
 tsnapshot
 tzoffset
-Ubuntu
 ubuntu
 uid
 umask
