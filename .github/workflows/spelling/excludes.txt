@@ -1,3 +1,4 @@
+^debian/znapzend\.links\.in
 (?:^|/)go\.mod$
 (?:^|/)go\.sum$
 (?:^|/)package-lock\.json$

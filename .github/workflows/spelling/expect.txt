@@ -131,6 +131,7 @@ daemonization
 daemonize
 daemonized
 DAGOLDEN
+DATADIR
 datadir
 DBD
 de'u
