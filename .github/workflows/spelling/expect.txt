@@ -589,7 +589,6 @@ unconfigured
 UNCONSIDER
 undef
 undef'ed
-UNICODE
 unicode
 uniq
 unsubscribe

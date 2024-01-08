@@ -49,6 +49,7 @@ SUMS$
 \.yml$
 \.zip$
 \.1$
+Makefile\.am$
 ^AUTHORS$
 ^CHANGES$
 ^CHANGES\.old$
