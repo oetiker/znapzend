@@ -37,11 +37,64 @@ has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $se
 
 ### private functions ###
 my $splitHostDataSet = sub {
+    # When troubleshooting, set to 1:
+    my $debugHere = 0;
+    #my $debugHere = 1;
+
     # See also https://github.com/oetiker/znapzend/issues/585
     # If there are further bugs in the regex, comment away the
     # next implementation line and fall through to verbosely
-    # debugging code below to try and iterate a fix:
-    return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    # debugging code below to try and iterate a fix.
+    # In the "if" clause below we separate the regexes for the
+    # use-case where we have two "@" characters:
+    #   user@host:dataset@snap
+    # from having zero or one "@" characters:
+    #   host:dataset
+    #   host:dataset@snap
+    #   user@host:dataset
+    # and note that dataset may lack "/" chars (root dataset
+    # of a pool), and (non-root?) dataset and snapshot names
+    # may have ":" chars of their own, e.g.
+    #   ...@znapzend-auto-2024-01-08T10:22:13Z
+    #   pond/export/vm-1:2
+    my $count = ($_[0] =~ tr/@//);
+    if ($count > 1) {
+        #return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+        print STDERR "[D] splitHostDataSet: use-case: Two or more \@\n" if $debugHere;
+        return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+\@[^@\s]+)$/);
+    } else {
+        # Zero or one "@"
+        # Either "[host:]dataset[@snap]" or "[user@]host:dataset"
+        print STDERR "[D] splitHostDataSet: use-case: zero or one \@: " if $debugHere;
+        if ($_[0] =~ /^[^:@\/]+:/) {
+            # Got a colon before any "@" (if at all present):
+            # assume    host:... (no "user@")
+            print STDERR "colon before any frog\n" if $debugHere;
+            return ($_[0] =~ /^(?:([^:@\/]+):)([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+        } elsif ($_[0] =~ /^[^:@\/]+\//) {
+            # Slashes are not anticipated in user or host names, so:
+            # assume    poolroot/...
+            print STDERR "slashes before colon\n" if $debugHere;
+            return (undef, $_[0]);
+        } elsif ($_[0] =~ /^[^:\/@]+@[^:@\/]+$/) {
+            # X@Y without colons or slashes:
+            # assume    poolroot@snap
+            print STDERR "no colon, no slash, with frog\n" if $debugHere;
+            return (undef, $_[0]);
+        } elsif ($_[0] =~ /^[^:@\/]+@[^:@\/]+:.*\//) {
+            # X@Y:Z/W - snapshot names can not have slashes
+            # assume    X@Y = user@host, Z/W = rootds/ds...[@snap]
+            print STDERR "X\@Y:Z/W without slashes in X and Y\n" if $debugHere;
+            return ($_[0] =~ /^([^:\/]+):(.+)$/);
+        } elsif ($_[0] =~ /^[^:@\/]+@[^:@\/]+:/) {
+            # X@Y:Z without slashes in X and Y - may be:
+            # either    user@host:...
+            # or e.g.   rootds@snap-12:34:56
+            print STDERR "X\@Y:Z without slashes in X and Y\n" if $debugHere;
+        }
+        print STDERR "other\n" if $debugHere;
+        return ($_[0] =~ /^(?:([^:@\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    }
 
     my @return;
     ###push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
@@ -49,7 +102,7 @@ my $splitHostDataSet = sub {
     push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
     # Note: Claims `Use of uninitialized value $return[0]...` when there
     # is no remote host portion matched, so using a map to stringify:
-    print STDERR "[D] Split '" . $_[0] . "' into: [" . join(", ", map { defined ? "'$_'" : '<undef>' } @return) . "]\n";# if $self->debug;
+    print STDERR "[D] Split '" . $_[0] . "' into: [" . join(", ", map { defined ? "'$_'" : '<undef>' } @return) . "]\n" if $debugHere;
     return @return;
 };
 
