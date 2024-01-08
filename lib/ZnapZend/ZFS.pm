@@ -45,8 +45,8 @@ my $splitHostDataSet = sub {
     # If there are further bugs in the regex, comment away the
     # next implementation line and fall through to verbosely
     # debugging code below to try and iterate a fix.
-    # In the "if" clause below we separate the regexes for the
-    # use-case where we have two "@" characters:
+    # In the "if" clause below we separate the regular expressions
+    # for the use-case where we have two "@" characters:
     #   user@host:dataset@snap
     # from having zero or one "@" characters:
     #   host:dataset
@@ -57,6 +57,12 @@ my $splitHostDataSet = sub {
     # may have ":" chars of their own, e.g.
     #   ...@znapzend-auto-2024-01-08T10:22:13Z
     #   pond/export/vm-1:2
+    # Also note that we can not discern "X@Y:Z" strings by pattern
+    # alone - are they a remote "user@host:rootds" or a local
+    # "rootds@funny:snapname"? For practical purposes, we proclaim
+    # preference for the former: we are more likely to look at funny
+    # local snapshot names, than to back up to (or otherwise care
+    # about) remote pools' ROOT datasets.
     my $count = ($_[0] =~ tr/@//);
     if ($count > 1) {
         #return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);

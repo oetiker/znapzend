@@ -4,7 +4,7 @@
 # since there are many use-cases and combinations to take care of.
 # We do so below by constructing "task" strings from components we
 # know to be a dataset name and some defined (or not) remote spec
-# and/or snapshot name, and deconstructing it back with the class
+# and/or snapshot name, and de-constructing it back with the class
 # method.
 #
 # Copyright (C) 2024 by Jim Klimov <jimklimov@gmail.com>
@@ -135,9 +135,9 @@ for my $r (qw(undef hostname username@hostname)) {
 
             # See big comment above:
             if ($task eq 'username@hostname:poolrootfs') {
-                isnt (defined ($remote), 1, "remote should BOGUSLY be not defined after parsing for this exceptional test case");
-                is (($dataSet eq "username"), 1, "dataSet has expected BOGUS value after parsing for this exceptional test case");
-                is (($snapshot eq "hostname:poolrootfs"), 1, "snapshot has expected BOGUS value after parsing for this exceptional test case");
+                isnt (defined ($remote), 1, "BOGUS exceptional test case: remote should be not defined after parsing for this exceptional test case");
+                is (($dataSet eq "username"), 1, "BOGUS exceptional test case: dataSet has expected BOGUS value after parsing for this exceptional test case");
+                is (($snapshot eq "hostname:poolrootfs"), 1, "BOGUS exceptional test case: snapshot has expected BOGUS value after parsing for this exceptional test case");
             } else {
                 is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
 
@@ -181,22 +181,15 @@ for my $r (qw(undef hostname username@hostname)) {
         printTaskReportCFG($task, $remote, $dataSet);
 
         is (defined ($dataSet), 1, "dataSet should always be defined after parsing");
+        is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
 
-        # See big comment above:
-#        if ($task eq 'username@hostname:poolrootfs') {
-#            isnt (defined ($remote), 1, "remote should BOGUSLY be not defined after parsing for this exceptional test case");
-#            is (($dataSet eq "username"), 1, "dataSet has expected BOGUS value after parsing for this exceptional test case");
-#        } else {
-            is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
-
-            if ($r ne "undef") {
-                is (defined ($remote), 1, "remote should be defined after parsing this test case");
-                is (($remote eq $r), 1, "remote has expected value after parsing");
-            } else {
-                isnt (defined ($remote), 1, "remote should not be defined after parsing this test case");
-            }
+        if ($r ne "undef") {
+            is (defined ($remote), 1, "remote should be defined after parsing this test case");
+            is (($remote eq $r), 1, "remote has expected value after parsing");
+        } else {
+            isnt (defined ($remote), 1, "remote should not be defined after parsing this test case");
         }
-#    }
+    }
 }
 
 done_testing;
