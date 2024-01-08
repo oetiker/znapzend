@@ -113,7 +113,7 @@ has zLog => sub {
     }
     else {
         $log->with_roles('+Clearable');
-        $SIG{USR1} = sub { $log->clear_handle };        
+        $SIG{USR1} = sub { $log->clear_handle };
     }
 
     return $log;
