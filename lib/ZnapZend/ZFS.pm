@@ -368,11 +368,16 @@ sub destroySnapshots {
         for my $task (@toDestroy){
             my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
             my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
+            if (defined ($dataSet)) {
+                my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
 
-            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
-            system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
-                if !($self->noaction || $self->nodestroy);
+                print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
+                system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
+                    if !($self->noaction || $self->nodestroy);
+            } else {
+                print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
+                Mojo::Exception->throw("ERROR: oracleMode destroy: failed to parse task='$task', got undefined dataSet and/or snapshot");
+            }
         }
         #remove trailing \n
         chomp $destroyError;
@@ -387,11 +392,16 @@ sub destroySnapshots {
     for my $task (@toDestroy){
         my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
         my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-        #tag local snapshots as 'local' so we have a key to build the hash
-        $remote = $remote || 'local';
-        exists $toDestroy{$remote} or $toDestroy{$remote} = {};
-        exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
-        push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
+        if (defined ($dataSet)) {
+            #tag local snapshots as 'local' so we have a key to build the hash
+            $remote = $remote || 'local';
+            exists $toDestroy{$remote} or $toDestroy{$remote} = {};
+            exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
+            push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
+        } else {
+            print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
+            Mojo::Exception->throw("ERROR: combinedDestroy: failed to parse task='$task', got undefined dataSet and/or snapshot");
+        }
     }
 
     for $remote (keys %toDestroy){
