@@ -51,7 +51,8 @@ SUMS$
 \.1$
 ^AUTHORS$
 ^CHANGES$
-^CHANGES.old$
+^CHANGES\.old$
 ^excludes\.txt$
 ^whitelist\.txt$
+^expect\.txt$
 ^\.github/workflows/spelling/
