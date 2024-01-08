@@ -233,6 +233,7 @@ Gregy
 grep
 gtar
 gz
+HAARG
 hadfl
 Hassler
 Heitm
