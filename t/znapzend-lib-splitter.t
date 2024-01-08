@@ -31,7 +31,7 @@ use lib "$FindBin::RealBin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
-    return () if $filename !~ /ZnapZend|ZFS|znapzend/;
+    return () if $filename !~ /ZnapZend|ZnapZend.Config|ZFS|znapzend/;
     if (my $found = (grep { -e $_ } map { "$_/$filename" } grep { !ref } @INC)[0] ) {
         local $/ = undef;
         open my $fh, '<', $found or die("Can't read module file $found\n");
@@ -53,6 +53,8 @@ unshift @INC, sub {
         # names so we can actually call them from the test context.
         if($filename =~ /ZFS/) {
             $module_text =~ s/^1;$/### Quick drop-in\nsub splitDataSetSnapshot {return \$splitDataSetSnapshot->(\$_[1]);}\nsub splitHostDataSet {return \$splitHostDataSet->(\$_[1]);}\n\n1;\n/gm;
+        } elsif($filename =~ /Config/) {
+            $module_text =~ s/^1;$/### Quick drop-in\nsub splitHostDataSet {return \$splitHostDataSet->(\$_[1]);}\n\n1;\n/gm;
         }
 
         if(defined($ENV{DEBUG_ZNAPZEND_SELFTEST_REWRITE})) {
@@ -81,8 +83,14 @@ sub stringify {
     return "<undef>";
 }
 
-sub printTaskReport {
-    print STDERR "[D] task='" . stringify($_[0]) .
+sub printTaskReportCFG {
+    print STDERR "[D:zCFG] task='" . stringify($_[0]) .
+        "' => remote='" . stringify($_[1]) .
+        "' dataSet='" . stringify($_[2]) . "'\n";
+}
+
+sub printTaskReportZFS {
+    print STDERR "[D:zZFS] task='" . stringify($_[0]) .
         "' => remote='" . stringify($_[1]) .
         "' dataSetPathAndSnap='" . stringify($_[2]) .
         "' => dataSet='" . stringify($_[3]) .
@@ -121,8 +129,7 @@ for my $r (qw(undef hostname username@hostname)) {
             # Note the methods are externalized from the module for the test by patcher above
             my ($remote, $dataSetPathAndSnap) = $zZFS->splitHostDataSet($task);
             my ($dataSet, $snapshot) = $zZFS->splitDataSetSnapshot($dataSetPathAndSnap);
-            #print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
-            printTaskReport($task, $remote, $dataSetPathAndSnap, $dataSet, $snapshot);
+            printTaskReportZFS($task, $remote, $dataSetPathAndSnap, $dataSet, $snapshot);
 
             is (defined ($dataSet), 1, "dataSet should always be defined after parsing");
 
@@ -150,6 +157,46 @@ for my $r (qw(undef hostname username@hostname)) {
             }
         }
     }
+}
+
+# This module has its own definition of splitHostDataSet for
+# znapzendzetup property parsing - without snapshot parts
+use_ok 'ZnapZend::Config';
+
+my $zCFG  = ZnapZend::Config->new();
+
+is (ref $zCFG,'ZnapZend::Config', 'instantiation of Config');
+
+for my $r (qw(undef hostname username@hostname)) {
+    for my $d (qw(poolrootfs rpool/dataset rpool/dataset:with-colon)) {
+        #EXAMPLE# my $task = 'user@host:dataset';
+
+        my $task = '';
+        if ($r ne "undef") { $task .= $r . ':'; }
+        $task .= $d;
+
+        # Decode it back, see if we can
+        # Note the methods are externalized from the module for the test by patcher above
+        my ($remote, $dataSet) = $zCFG->splitHostDataSet($task);
+        printTaskReportCFG($task, $remote, $dataSet);
+
+        is (defined ($dataSet), 1, "dataSet should always be defined after parsing");
+
+        # See big comment above:
+#        if ($task eq 'username@hostname:poolrootfs') {
+#            isnt (defined ($remote), 1, "remote should BOGUSLY be not defined after parsing for this exceptional test case");
+#            is (($dataSet eq "username"), 1, "dataSet has expected BOGUS value after parsing for this exceptional test case");
+#        } else {
+            is (($dataSet eq $d), 1, "dataSet has expected value after parsing");
+
+            if ($r ne "undef") {
+                is (defined ($remote), 1, "remote should be defined after parsing this test case");
+                is (($remote eq $r), 1, "remote has expected value after parsing");
+            } else {
+                isnt (defined ($remote), 1, "remote should not be defined after parsing this test case");
+            }
+        }
+#    }
 }
 
 done_testing;
