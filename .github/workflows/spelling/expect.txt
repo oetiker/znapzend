@@ -105,6 +105,8 @@ conftest
 conftools
 CONNEC
 Consor
+copr
+coprs
 copyleft
 coreutils
 COUNTFAIL
