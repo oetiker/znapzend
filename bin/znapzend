@@ -258,7 +258,7 @@ send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
-When logging to a file, send USR1 to repoen the file handle after log rotation.
+When logging to a file, send USR1 to reopen the file handle after log rotation.
 
 Examples:
 
