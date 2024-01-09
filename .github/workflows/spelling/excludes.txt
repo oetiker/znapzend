@@ -1,3 +1,5 @@
+^debian/znapzend\.links\.in
+^init/org\.znapzend\.plist\.in$
 (?:^|/)go\.mod$
 (?:^|/)go\.sum$
 (?:^|/)package-lock\.json$
@@ -47,7 +49,12 @@ SUMS$
 \.xpm$
 \.yml$
 \.zip$
+\.1$
+Makefile\.am$
+^AUTHORS$
 ^CHANGES$
+^CHANGES\.old$
 ^excludes\.txt$
 ^whitelist\.txt$
+^expect\.txt$
 ^\.github/workflows/spelling/

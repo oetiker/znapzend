@@ -387,16 +387,21 @@ sub destroySnapshots {
     for my $task (@toDestroy){
         my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
         my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-        #tag local snapshots as 'local' so we have a key to build the hash
-        $remote = $remote || 'local';
-        exists $toDestroy{$remote} or $toDestroy{$remote} = {};
-        exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
-        push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
+        if (defined ($dataSet)) {
+            #tag local snapshots as 'local' so we have a key to build the hash
+            $remote = $remote || 'local';
+            exists $toDestroy{$remote} or $toDestroy{$remote} = {};
+            exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
+            push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
+        } else {
+            print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
+            Mojo::Exception->throw("ERROR: combinedDestroy: failed to parse task='$task', got undefined dataSet and/or snapshot");
+        }
     }
 
     for $remote (keys %toDestroy){
         for $dataSet (keys %{$toDestroy{$remote}}){
-            #check if remote is flaged as 'local'.
+            #check if remote is flagged as 'local'.
             my @ssh = $self->$buildRemote($remote ne 'local'
                 ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}{$dataSet}})]);
 
