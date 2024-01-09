@@ -31,6 +31,15 @@ for S in \
     "user@remotehost:pond/data/set/openindiana-2022:03:15-backup-1" \
     "user@remotehost:pond/data/set/openindiana-2022:03:15-backup-1@snap" \
     "user@remotehost:pond/data/set/openindiana-2022:03:15-backup-1@snaptime-12:34:56" \
+    "rpool" \
+    "rpool@snap" \
+    "rpool@snaptime-12:34:56" \
+    "remotehost:rpool" \
+    "remotehost:rpool@snap" \
+    "remotehost:rpool@snaptime-12:34:56" \
+    "user@remotehost:rpool" \
+    "user@remotehost:rpool@snap" \
+    "user@remotehost:rpool@snaptime-12:34:56" \
 ; do
     perl -e 'print STDERR "[D] Split \"" . $ARGV[0] . "\" into:\n\t[\"" . join("\", \"", ($ARGV[0] =~ '"$RE"')) . "\"]\n";' "$S"
 done
