@@ -258,7 +258,7 @@ send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
 
-When logging to a file, send USR1 to repoen the file handle after log rotation.
+When logging to a file, send USR1 to reopen the file handle after log rotation.
 
 Examples:
 
@@ -612,7 +612,7 @@ Automatically create a dataset on a destination host if it's not there yet.
 
 =item B<--timeWarp>=x
 
-Shift ZnapZends sense of time into the future by x seconds.
+Shift ZnapZend's sense of time into the future by x seconds.
 
 The practical application if this function is to determine what will happen
 at some future point in time. This can be useful for testing but also when

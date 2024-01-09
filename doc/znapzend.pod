@@ -444,7 +444,7 @@ Automatically create a dataset on a destination host if it's not there yet.
 
 =item B<--timeWarp>=x
 
-Shift ZnapZends sense of time into the future by x seconds.
+Shift ZnapZend's sense of time into the future by x seconds.
 
 The practical application if this function is to determine what will happen
 at some future point in time. This can be useful for testing but also when

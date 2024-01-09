@@ -41,4 +41,7 @@ CMD [ "znapzend --logto=/dev/stdout" ]
 FROM builder as test
 
 RUN \
+  cpan Devel::Cover
+
+RUN \
   ./test.sh

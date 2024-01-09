@@ -411,7 +411,7 @@ sub destroySnapshots {
 
     for $remote (keys %toDestroy){
         for $dataSet (keys %{$toDestroy{$remote}}){
-            #check if remote is flaged as 'local'.
+            #check if remote is flagged as 'local'.
             my @ssh = $self->$buildRemote($remote ne 'local'
                 ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}{$dataSet}})]);
 

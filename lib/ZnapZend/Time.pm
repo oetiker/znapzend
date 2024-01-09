@@ -98,7 +98,7 @@ my $parseDuration = sub {
     my ($value, $unit) = $duration =~ /^(\d+)([a-z]+)$/;
     die "ERROR: cannot parse expression '$duration'\n"
         unless ($value && $unit);
-    die "ERROR: unknown unit '$unit'\n" 
+    die "ERROR: unknown unit '$unit'\n"
         unless exists $self->unitFactors->{$unit};
     return $self->$timeToTimestamp($value, $unit);
 };
