@@ -383,6 +383,7 @@ notest
 NOTMAKE
 nroff
 NSTIPS
+nsub
 nvpool
 nytprof
 OBJC
@@ -419,6 +420,7 @@ plaintar
 plist
 plugin
 png
+poolrootfs
 populat
 posix
 prebuilt
@@ -461,6 +463,7 @@ rmdir
 rmprog
 rmtmp
 ron
+rootds
 rootfs
 rootfs'es
 rpool

@@ -47,7 +47,9 @@ has backupSets => sub { [] };
 
 ### private functions ###
 my $splitHostDataSet = sub {
-    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    #return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    # See https://github.com/oetiker/znapzend/pull/585
+    return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
 };
 
 ### private methods ###
