@@ -194,7 +194,7 @@ my $listDisabledSourceDescendants = sub {
         }
     }
 
-    return @dataSetsExplicitlyDisabled;
+    return \@dataSetsExplicitlyDisabled;
 };
 
 my $refreshBackupPlans = sub {
@@ -212,6 +212,13 @@ my $refreshBackupPlans = sub {
         or die "No backup set defined or enabled, yet. run 'znapzendzetup' to setup znapzend\n";
 
     for my $backupSet (@{$self->backupSets}){
+        $backupSet->{srcDisabledDescendants} = $self->$listDisabledSourceDescendants($backupSet);
+        if ($self->debug) {
+            for my $ds (@{$backupSet->{srcDisabledDescendants}}) {
+                $self->zLog->info('Found disabled sub-dataset: ' . $ds);
+            }
+        }
+
         $backupSet->{srcPlanHash} = $self->zTime->backupPlanToHash($backupSet->{src_plan});
         #check destination for remote pre-command
         for (keys %$backupSet){
@@ -353,8 +360,10 @@ my $sendRecvCleanup = sub {
     my $srcSubDataSets = $backupSet->{recursive} eq 'on'
         ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
-    my @dataSetsExplicitlyDisabled = $self->$listDisabledSourceDescendants($backupSet);
-    $self->zLog->info('dataSetsExplicitlyDisabled: ' . @dataSetsExplicitlyDisabled);
+    my @dataSetsExplicitlyDisabled = ();
+    if (defined($backupSet->{srcDisabledDescendants})) {
+        @dataSetsExplicitlyDisabled = @{$backupSet->{srcDisabledDescendants}};
+    }
 
     #loop through all destinations
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
@@ -1105,7 +1114,10 @@ my $createSnapshot = sub {
     # up subsequently (it might still become blocked if znapzend crashes
     # or the host reboots between such snapshot creation and clean-up).
     # This only applies if we made a single-command recursive snapshot.
-    my @dataSetsExplicitlyDisabled = $self->$listDisabledSourceDescendants($backupSet);
+    my @dataSetsExplicitlyDisabled = ();
+    if (defined($backupSet->{srcDisabledDescendants})) {
+        @dataSetsExplicitlyDisabled = @{$backupSet->{srcDisabledDescendants}};
+    }
 
     # Remove the snapshots previously marked (if any). Note that the
     # removal here is non-recursive to allow for fine-grained control:
