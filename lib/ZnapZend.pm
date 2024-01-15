@@ -443,8 +443,13 @@ my $sendRecvCleanup = sub {
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
-            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ((grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled)) ? ": not enabled, should be skipped" : ""));
-            {
+            my $srcDataSetDisabled = (grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled));
+            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ($srcDataSetDisabled ? ": not enabled, should be skipped" : ""));
+            if ($srcDataSetDisabled) {
+                next;
+            }
+
+            {   # scoping
                 local $@;
                 eval {
                     local $SIG{__DIE__};
