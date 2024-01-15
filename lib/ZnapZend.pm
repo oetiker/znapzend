@@ -145,6 +145,58 @@ my $killThemAll = sub {
     exit 0;
 };
 
+# Return an array of dataset names which are local descendants of the
+# provided $backupSet->{src} and have an explicit org.znapzend:enabled=off
+# (note that currently each disabled descendant must be explicit - maybe
+# an also-explicit recursion handling is a good idea for the future).
+# The array may be empty if not in recursive mode, or no descendants
+# exist, or none are disabled.
+my $listDisabledSourceDescendants = sub {
+    my $self = shift;
+    my $backupSet = shift;
+
+    #no HUP handler in child
+    $SIG{HUP} = 'IGNORE';
+
+    my @dataSetsExplicitlyDisabled = ();
+    if ($backupSet->{recursive} eq 'on') {
+        $self->zLog->info("checking for explicitly excluded ZFS dependent datasets under '$backupSet->{src}'");
+
+        # restrict the list to the datasets that are descendant from the current
+        ###my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
+        my @dataSetList = @{$self->zZfs->listDataSets(undef, $backupSet->{src}, 1)};
+
+        if ( @dataSetList ) {
+            # the default sub-dataset enablement value is implicitly "on"
+            # (technically, the value inherited from $backupSet which we
+            # are currently processing, because it is enabled)
+            my $enabled_default = 'on';
+            if (defined($backupSet->{enabled})) {
+                $enabled_default = $backupSet->{enabled};
+            }
+
+            # for each sub-dataset: if the property "enabled" is set to "off", set the
+            # newly created snapshot for removal
+            for my $dataSet (@dataSetList){
+                # get the value for org.znapzend property
+                my @cmd = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
+                print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
+                open my $prop, '-|', @cmd;
+
+                # if the property does not exist, the command will just return.
+                # In this case, use the default determined above.
+                $prop = <$prop> || $enabled_default;
+                chomp($prop);
+                if ( $prop eq 'off' ) {
+                    push(@dataSetsExplicitlyDisabled, $dataSet);
+                }
+            }
+        }
+    }
+
+    return @dataSetsExplicitlyDisabled;
+};
+
 my $refreshBackupPlans = sub {
     my $self = shift;
     my $recurse = shift;
@@ -301,6 +353,9 @@ my $sendRecvCleanup = sub {
     my $srcSubDataSets = $backupSet->{recursive} eq 'on'
         ? $self->zZfs->listSubDataSets($backupSet->{src}) : [ $backupSet->{src} ];
 
+    my @dataSetsExplicitlyDisabled = $self->$listDisabledSourceDescendants($backupSet);
+    $self->zLog->info('dataSetsExplicitlyDisabled: ' . @dataSetsExplicitlyDisabled);
+
     #loop through all destinations
     for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
         my ($key) = $dst =~ /dst_([^_]+)$/;
@@ -379,7 +434,7 @@ my $sendRecvCleanup = sub {
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
-            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet);
+            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ((grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled)) ? ": not enabled, should be skipped" : ""));
             {
                 local $@;
                 eval {
@@ -1050,49 +1105,17 @@ my $createSnapshot = sub {
     # up subsequently (it might still become blocked if znapzend crashes
     # or the host reboots between such snapshot creation and clean-up).
     # This only applies if we made a single-command recursive snapshot.
-    if ($backupSet->{recursive} eq 'on') {
+    my @dataSetsExplicitlyDisabled = $self->$listDisabledSourceDescendants($backupSet);
 
-        $self->zLog->info("checking for explicitly excluded ZFS dependent datasets under '$backupSet->{src}'");
-
-        # restrict the list to the datasets that are descendant from the current
-        ###my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
-        my @dataSetList = @{$self->zZfs->listDataSets(undef, $backupSet->{src}, 1)};
-
-        if ( @dataSetList ) {
-            # the default sub-dataset enablement value is implicitly "on"
-            # (technically, the value inherited from $backupSet which we
-            # are currently processing, because it is enabled)
-            my $enabled_default = 'on';
-            if (defined($backupSet->{enabled})) {
-                $enabled_default = $backupSet->{enabled};
-            }
-
-            # for each sub-dataset: if the property "enabled" is set to "off", set the
-            # newly created snapshot for removal
-            my @dataSetsExplicitlyDisabled = ();
-            for my $dataSet (@dataSetList){
-
-                # get the value for org.znapzend property
-                my @cmd = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
-                print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-                open my $prop, '-|', @cmd;
-
-                # if the property does not exist, the command will just return.
-                # In this case, use the default determined above.
-                $prop = <$prop> || $enabled_default;
-                chomp($prop);
-                if ( $prop eq 'off' ) {
-                    push(@dataSetsExplicitlyDisabled, $dataSet . '@' . $snapshotSuffix);
-                }
-            }
-
-            # Remove the snapshots previously marked (if any). Note that the
-            # removal here is non-recursive to allow for fine-grained control:
-            if (@dataSetsExplicitlyDisabled) {
-                $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitlyDisabled));
-                $self->zZfs->destroySnapshots(\@dataSetsExplicitlyDisabled, 0);
-            }
+    # Remove the snapshots previously marked (if any). Note that the
+    # removal here is non-recursive to allow for fine-grained control:
+    if (@dataSetsExplicitlyDisabled) {
+        my @snapshotsToRemove = ();
+        for my $dataSet (@dataSetsExplicitlyDisabled) {
+            push (@snapshotsToRemove, $dataSet . '@' . $snapshotSuffix);
         }
+        $self->zLog->info("Requesting removal of marked snapshots from \"disabled\" datasets: ". join( ", ", @snapshotsToRemove));
+        $self->zZfs->destroySnapshots(\@snapshotsToRemove, 0);
     }
 
     #clean up env variables
