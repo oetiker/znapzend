@@ -41,7 +41,8 @@ CMD [ "znapzend --logto=/dev/stdout" ]
 FROM builder as test
 
 RUN \
-  cpan Devel::Cover
+  cpan Devel::Cover && \
+  cpan Test::SharedFork
 
 RUN \
   ./test.sh
