@@ -1054,7 +1054,15 @@ my $createSnapshot = sub {
         # restrict the list to the datasets that are descendant from the current
         ###my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
         my @dataSetList = @{$self->zZfs->listDataSets(undef, $backupSet->{src}, 1)};
+
         if ( @dataSetList ) {
+            # the default sub-dataset enablement value is implicitly "on"
+            # (technically, the value inherited from $backupSet which we
+            # are currently processing, because it is enabled)
+            my $enabled_default = 'on';
+            if (defined($backupSet->{enabled})) {
+                $enabled_default = $backupSet->{enabled};
+            }
 
             # for each dataset: if the property "enabled" is set to "off", set the
             # newly created snapshot for removal
@@ -1066,9 +1074,9 @@ my $createSnapshot = sub {
                 print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
                 open my $prop, '-|', @cmd;
 
-                # if the property does not exist, the command will just return. In this case,
-                # the value is implicit "on"
-                $prop = <$prop> || "on";
+                # if the property does not exist, the command will just return.
+                # In this case, use the default determined above.
+                $prop = <$prop> || $enabled_default;
                 chomp($prop);
                 if ( $prop eq 'off' ) {
                     push(@dataSetsExplicitlyDisabled, $dataSet . '@' . $snapshotSuffix);
