@@ -147,8 +147,7 @@ my $killThemAll = sub {
 
 # Return an array of dataset names which are local descendants of the
 # provided $backupSet->{src} and have an explicit org.znapzend:enabled=off
-# (note that currently each disabled descendant must be explicit - maybe
-# an also-explicit recursion handling is a good idea for the future).
+# and/or an intermediate nearest ancestor which is disabled with recursion.
 # The array may be empty if not in recursive mode, or no descendants
 # exist, or none are disabled.
 my $listDisabledSourceDescendants = sub {
@@ -159,6 +158,11 @@ my $listDisabledSourceDescendants = sub {
     $SIG{HUP} = 'IGNORE';
 
     my @dataSetsExplicitlyDisabled = ();
+
+    my %explicitEnabled = ();
+    my %explicitRecursiveLocal = ();
+    my %explicitRecursiveInherited = ();
+
     if ($backupSet->{recursive} eq 'on') {
         $self->zLog->info("checking for explicitly excluded ZFS dependent datasets under '$backupSet->{src}'");
 
@@ -166,7 +170,7 @@ my $listDisabledSourceDescendants = sub {
         ###my @dataSetList = grep /^$backupSet->{src}($|\/)/, @{$self->zZfs->listDataSets()};
         my @dataSetList = @{$self->zZfs->listDataSets(undef, $backupSet->{src}, 1)};
 
-        if ( @dataSetList ) {
+        if (@dataSetList) {
             # the default sub-dataset enablement value is implicitly "on"
             # (technically, the value inherited from $backupSet which we
             # are currently processing, because it is enabled)
@@ -179,15 +183,169 @@ my $listDisabledSourceDescendants = sub {
             # newly created snapshot for removal
             for my $dataSet (@dataSetList){
                 # get the value for org.znapzend property
-                my @cmd = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
-                print STDERR '# ' . join(' ', @cmd) . "\n" if $self->debug;
-                open my $prop, '-|', @cmd;
+                my @cmdLE = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
+                print STDERR '# ' . join(' ', @cmdLE) . "\n" if $self->debug;
+                open my $propLE, '-|', @cmdLE;
+
+                my @cmdLR = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:recursive), $dataSet);
+                print STDERR '# ' . join(' ', @cmdLR) . "\n" if $self->debug;
+                open my $propLR, '-|', @cmdLR;
+                my $propIR;
 
                 # if the property does not exist, the command will just return.
                 # In this case, use the default determined above.
-                $prop = <$prop> || $enabled_default;
-                chomp($prop);
-                if ( $prop eq 'off' ) {
+                $propLE = <$propLE>; # || $enabled_default;
+                if ($propLE) {
+                    chomp($propLE);
+                }
+
+                $propLR = <$propLR>;
+                if ($propLR) {
+                    chomp($propLR);
+                } else {
+                    my @cmdIR = (@{$self->zZfs->priv}, qw(zfs get -H -s inherited -o value org.znapzend:recursive), $dataSet);
+                    print STDERR '# ' . join(' ', @cmdIR) . "\n" if $self->debug;
+                    open $propIR, '-|', @cmdIR;
+
+                    $propIR = <$propIR>;
+                    if ($propIR) {
+                        chomp($propIR);
+                    }
+                }
+
+                # ASSUMPTION: We process the dataSetList in alphanumeric
+                # order, so parent datasets were seen before child ones!
+                $explicitEnabled{$dataSet} = $propLE;
+                $explicitRecursiveLocal{$dataSet} = $propLR;
+                $explicitRecursiveInherited{$dataSet} = $propIR;
+
+                $self->zLog->debug("=== $dataSet snapshotting:" .
+                    " enabled=" . (defined($propLE) ? $propLE : "<undef>") .
+                    " recursive=" . (defined($propLR) ? $propLR : "<undef>") .
+                    " (inherited_recursive=" . (defined($propIR) ? $propIR : "<undef>") . ")"
+                    ) if $self->debug;
+
+                # We treat a dataset as individually not-enabled for backup
+                # snapshot processing if either:
+                # * its local enabled==off, whatever the recursive setting
+                # * the nearest ancestor with a local setting about this has
+                #   both enabled==off and recursive==on (explicitly set in it)
+                # Note that a dataset, whose nearest ancestor has enabled==off
+                # but does not set (or enable as "on") the "recursive" option,
+                # would be backed up as usual.
+                # In case of partial pruning and un-pruning, for a sub-dataset
+                # whose nearest ancestor has enabled==on again (which may also
+                # re-define the "recursive" option), a ZFS-inherited definition
+                # of "recursive" would be used.
+                # It is not valid for a single dataset configuration to only
+                # specify "recursive" (however, specifying only "enabled" is
+                # valid, as well as specifying "enabled" and "recursive" as
+                # the only two local znapzend-related properties).
+
+                # Is this source dataset not-enabled for snapshotting? Tri-state:
+                # -1  Known enabled (loop to next item)
+                #  0  Continue investigating
+                #  1  Known disabled (add to output list)
+                my $isDisabled = 0;
+
+                # Is the local "enabled" property value set for this dataset?
+                if (defined($propLE)) {
+                    if ($propLE eq 'off') { $isDisabled = 1; }
+                    elsif ($propLE eq 'on') { $isDisabled = -1; }
+                }
+
+                if (!$isDisabled) {
+                    # Is anything "inherited" from local property definitions?
+                    # Backtrack through collected hashmaps...
+                    my $nearestLE;  # local enabled
+                    my $nearestLR;  # local recursive
+                    my $nearestLEds;  # dataset with local enabled setting
+                    my $nearestLRds;  # dataset with local recursive setting
+                    my $ancestor = $dataSet;
+                    while ($ancestor ne $backupSet->{src}) {
+                        # Chop off last slash and dataset name after it
+                        my $idx = rindex($ancestor, '/');
+                        if ($idx == 0) {
+                            die "Did not expect to see a starting slash in dataset name in the loop under $backupSet->{src}: $dataSet => $ancestor"
+                        }
+                        elsif ($idx < 0) {
+                            # -1 means no slash, looking at a pool's root dataset
+                            # May be our starting point or last loop cycle, so process it?
+                            # Although $backupSet->{src} should have ruled it out anyway.
+                            # In any case, avoid infinite loop upon errors, bail out below.
+                            $self->zLog->debug("WARNING: Did not expect to see a root dataset name in the loop under $backupSet->{src}: $dataSet => $ancestor");
+                        } else {
+                            $ancestor = substr($ancestor, 0, $idx);
+                        }
+                        if ((!defined($nearestLE)) && defined($explicitEnabled{$ancestor})) {
+                            $nearestLE = $explicitEnabled{$ancestor};
+                            $nearestLEds = $ancestor;
+                        }
+                        if ((!defined($nearestLR)) && defined($explicitRecursiveLocal{$ancestor})) {
+                            $nearestLR = $explicitRecursiveLocal{$ancestor};
+                            $nearestLRds = $ancestor;
+                        }
+                        if (defined($nearestLE) && defined($nearestLR)) {
+                            last;
+                        }
+                        if ($idx < 1 || $ancestor eq $dataSet) {
+                            # Chopping did not go well
+                            last;
+                        }
+                    }
+
+                    if (defined($nearestLE)) {
+                        # Got something, is it "on" or "off", is recursion involved?
+                        if (defined($nearestLR)) {
+                            # Both properties are locally defined in some ancestor(s)
+                            if ($nearestLE eq "off" && $nearestLR eq "on" && $nearestLEds eq $nearestLRds) {
+                                # An ancestor defines both enabled==off and recursive==on
+                                # explicitly, and is the nearest one to define such things.
+                                $isDisabled = 1;
+                            }
+                            # else enabled=on, or recursive=off, or not set in same dataset
+                            elsif ($nearestLE eq "on" && $nearestLR eq "on" && $nearestLEds eq $nearestLRds) {
+                                # logical inheritance of "enabled=on"
+                                $isDisabled = -1;
+                            }
+                            # else enabled=on, or recursive=off, or not set in same dataset
+                            elsif ($nearestLE eq "on" && $nearestLR eq "off" && $nearestLEds eq $nearestLRds) {
+                                # logical inheritance of "enabled=..." from parent of that
+                                # ancestor because its own "enabled=on" is not recursive
+                                my $ancestor2 = $nearestLEds;
+                                while ($ancestor2) {
+                                    $ancestor2 =~ s/\/[^\/]+$// ;
+                                    if (grep {$_ eq $ancestor2} @dataSetsExplicitlyDisabled) {
+                                        # We handled that ancestor and found it disabled, in an earlier loop
+                                        $isDisabled = 1;
+                                        last;
+                                    }
+                                    if (index($ancestor2, '/') < 0) {
+                                        last;
+                                    }
+                                }
+                            }
+                            elsif ($nearestLE eq "on" && defined($propIR) && $propIR eq "on") {
+                                # zfs-inheritance of "enabled=on"
+                                $isDisabled = -1;
+                            }
+                        }   # else only "enabled=whatever" is defined in some ancestor, but
+                            # not "recursive" anywhere => this one remains enabled, probably
+                    }   # else no ancestor defines a local "enabled" setting
+                }
+
+                if (!$isDisabled) {
+                    if ($enabled_default eq 'off') {
+                        # Somehow processing a disabled backupSet?..
+                        $isDisabled = 1;
+                    } elsif ($enabled_default eq 'on') {
+                        $isDisabled = -1;
+                    }
+                }
+
+                ###if ((defined($propLE) && $propLE eq 'off') || (!(defined($propLE)) && $enabled_default eq 'off')) {
+                $self->zLog->debug("=== $dataSet snapshotting: isDisabled=$isDisabled (" . ($isDisabled==1 ? "known-disabled" : ($isDisabled==-1 ? "known-enabled" : "uncertain")) . ")") if $self->debug;
+                if ($isDisabled == 1) {
                     push(@dataSetsExplicitlyDisabled, $dataSet);
                 }
             }
