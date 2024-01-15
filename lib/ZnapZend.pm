@@ -1042,10 +1042,13 @@ my $createSnapshot = sub {
         }
     }
 
-    # Remove snapshots from descendant subsystems that have the property
-    # "enabled" set to "off", if the "recursive" flag is set to "on",
-    # so their newly created snapshots are discarded quickly and disk
-    # space is not abused by something we do not back up subsequently.
+    # First we snapshot the backupSet recursively and atomically, but
+    # later we would remove snapshots from descendant subsystems that
+    # have the property "enabled" set to "off", if the "recursive" flag
+    # is set to "on", so their newly created snapshots are discarded
+    # quickly and disk space is not abused by something we do not back
+    # up subsequently (it might still become blocked if znapzend crashes
+    # or the host reboots between such snapshot creation and clean-up).
     # This only applies if we made a single-command recursive snapshot.
     if ($backupSet->{recursive} eq 'on') {
 
@@ -1064,7 +1067,7 @@ my $createSnapshot = sub {
                 $enabled_default = $backupSet->{enabled};
             }
 
-            # for each dataset: if the property "enabled" is set to "off", set the
+            # for each sub-dataset: if the property "enabled" is set to "off", set the
             # newly created snapshot for removal
             my @dataSetsExplicitlyDisabled = ();
             for my $dataSet (@dataSetList){
@@ -1083,12 +1086,12 @@ my $createSnapshot = sub {
                 }
             }
 
-            # remove the snapshots previously marked
-            # removal here is non-recursive to allow for fine-grained control
-            if ( @dataSetsExplicitlyDisabled ){
-               $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitlyDisabled));
-               $self->zZfs->destroySnapshots(\@dataSetsExplicitlyDisabled, 0);
-           }
+            # Remove the snapshots previously marked (if any). Note that the
+            # removal here is non-recursive to allow for fine-grained control:
+            if (@dataSetsExplicitlyDisabled) {
+                $self->zLog->info("Requesting removal of marked datasets: ". join( ", ", @dataSetsExplicitlyDisabled));
+                $self->zZfs->destroySnapshots(\@dataSetsExplicitlyDisabled, 0);
+            }
         }
     }
 
