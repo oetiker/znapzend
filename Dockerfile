@@ -1,7 +1,7 @@
 
 ##### Builder image
 ARG PERL_BUILD_VERSION=5.30-buster
-ARG ALPINE_VERSION=3.11
+ARG ALPINE_VERSION=3.19
 FROM docker.io/library/perl:${PERL_BUILD_VERSION} as builder
 
 WORKDIR /usr/local/src
@@ -41,7 +41,8 @@ CMD [ "znapzend --logto=/dev/stdout" ]
 FROM builder as test
 
 RUN \
-  cpan Devel::Cover
+  cpan Devel::Cover && \
+  cpan Test::SharedFork
 
 RUN \
   ./test.sh
