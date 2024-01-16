@@ -273,6 +273,10 @@ and note that other options may be problematic long-term if actually used
 by the receiving server, e.g.:
 `refreservation,refquota,quota,reservation,encryption`
 
+Generally, check the ZnapZend service (or manual run) logs for any errors
+and adapt the dataset permissions on the destination pool to satisfy its
+implementation specifics.
+
 Running with restricted shell
 -----------------------------
 
