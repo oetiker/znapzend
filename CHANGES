@@ -3,7 +3,7 @@ znapzend (0.21.3) unstable; urgency=medium
   * Maintenance release: refine splitting of [[user@]host:]dataset[:with-colons][@snap[:with-colons]] strings to work for the realistic majority of use-cases; fix back support of pool root dataset in such spec
   * Update self-tests with verification that [[user@]host:]dataset[:with-colons][@snap[:with-colons]] string decoding yields expected results
   * Fixed CI recipes and contents for spell-checker
-  * Extended handling of "enabled=off" for sub-trees: if the same intermediate dataset declares "recursive=on", the disablement takes place for descendants as well
+  * Extended handling of "org.znapzend:enabled=off" setting for sub-trees: now if the same intermediate dataset declares "org.znapzend:recursive=on", the disablement of znapzend handling takes place for descendants as well (previously it had effect only exactly for datasets that set "org.znapzend:enabled=off" as a local ZFS property)
 
  -- Jim Klimov <jimklimov@gmail.com>  Tue, 9 Jan 2024 13:42:28 +0100
 
