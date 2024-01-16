@@ -197,6 +197,36 @@ and the I/O speeds of the storage and networking involved. As a rule of thumb,
 let it absorb at least a minute of I/O, so while one side of the ZFS dialog
 is deeply thinking, another can do its work.
 
+> **_NOTE:_**  Due to backwards-compatibility considerations, the legacy
+> `--mbuffer=...` setting applies by default to all destination datasets
+> (and to sender, in case of `--mbuffer=/path/to/mbuffer:port` variant).
+> This might work if needed programs are all found in `PATH` by the same
+> short name, but fails miserably if custom full path names are required
+> on different systems.
+>
+> To avoid this limitation, ZnapZend now allows to specify custom path
+> and buffer size settings individually for each source and destination
+> dataset in each backup/retention schedule configuration (using the
+> `znapzendzetup` program or `org.znapzend:src_mbuffer` etc. ZFS dataset
+> properties directly). The legacy configuration properties would now be
+> used as fallback defaults, and may emit warnings whenever they are
+> applied as such.
+>
+> With this feature in place, the sender may have the only `mbuffer`
+> running, without requiring one on the receiver (e.g. to limit impact
+> to RAM usage on the backup server). You may also run an mbuffer on
+> each side of the SSH tunnel, if networking latency is random and
+> carries a considerable impact.
+
+The remote system does not need anything other than ZFS functionality, an
+SSH server, a user account with prepared SSH key based log-in (optionally
+an unprivileged one with `zfs allow` settings on a particular target dataset
+dedicated to receiving your trees of backed-up datasets), and optionally the
+local implementation of the `mbuffer` program. Namely, as a frequently asked
+concern: the remote system *does not require* ZnapZend nor its dependencies
+(perl, etc.) to be installed. (It may however be installed - e.g. if used for
+snapshots of that remote system's own datasets.)
+
 Running
 -------
 
