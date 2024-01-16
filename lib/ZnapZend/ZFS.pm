@@ -603,8 +603,10 @@ sub sendRecvSnapshots {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $dstName = shift; # name of the znapzend policy => property prefix
-    my $mbuffer = shift;
-    my $mbufferSize = shift;
+    my $srcMbuffer = shift // 'off';
+    my $srcMbufferSize = shift // '1G'; # documented default for mbuffer_size
+    my $dstMbuffer = shift // 'off';
+    my $dstMbufferSize = shift // '1G';
     my $snapFilter = shift // qr/.*/;
 
     # Limit creation-ordered listing after registering this snapshot name,
@@ -631,7 +633,7 @@ sub sendRecvSnapshots {
     push @sendOpt, '-w' if $self->sendRaw;
     push @recvOpt, '-s' if $self->resume;
     my $remote;
-    my $mbufferPort;
+    my $dstMbufferPort;
 
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
@@ -705,7 +707,7 @@ sub sendRecvSnapshots {
         }
     }
 
-    ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
+    ($dstMbuffer, $dstMbufferPort) = split /:/, $dstMbuffer, 2;
 
     my @cmd;
     if ($lastCommon){
@@ -715,12 +717,23 @@ sub sendRecvSnapshots {
         @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $lastSnapshot]);
     }
 
-    #if mbuffer port is set, run in 'network mode'
-    if ($remote && $mbufferPort && $mbuffer ne 'off'){
+    # if mbuffer port is set for this destination (or inherited by it
+    # from the legacy "mbuffer" setting), we run in 'network mode'
+    if ($remote && $dstMbufferPort && $dstMbuffer ne 'off' && $srcMbuffer eq 'off'){
+        # Not a fatal situation - we have SSH anyway, to spawn that remote
+        # mbuffer. The "problem" is that we would encrypt the data by SSH,
+        # which may be a bit of useless overhead in a trusted LAN.
+        $self->zLog->warn('WARNING: remote destination ' . $dstName
+            . ' at ' . $remote . ' asked for port-to-port mbuffer connection,'
+            . ' but no local path to mbuffer program was set on source.'
+            . ' Will try to use the usual SSH tunnel for data instead.');
+    }
+
+    if ($remote && $dstMbufferPort && $dstMbuffer ne 'off' && $srcMbuffer ne 'off'){
         my $recvPid;
 
-        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
+        my @recvCmd = $self->$buildRemoteRefArray($remote, [$dstMbuffer, @{$self->mbufferParam},
+            $dstMbufferSize, '-4', '-I', $dstMbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -751,8 +764,8 @@ sub sendRecvSnapshots {
                 $remote =~ s/^[^@]+\@//; #remove username if given
                 $self->zLog->debug("receive process on $remote spawned ($pid)");
 
-                push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-                    '-O', "$remote:$mbufferPort"];
+                push @cmd, [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize,
+                    '-O', "$remote:$dstMbufferPort"];
 
                 $cmd = $shellQuote->(@cmd);
 
@@ -781,10 +794,14 @@ sub sendRecvSnapshots {
         $subprocess->ioloop->start if !$subprocess->ioloop->is_running;
     }
     else {
-        my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
+        my $srcMbCmd = [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize];
+        my @dstMbCmd = $dstMbuffer ne 'off' ? ([$dstMbuffer, @{$self->mbufferParam}, $dstMbufferSize]) : () ;
         my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , @recvOpt, $dstDataSetPath];
 
-        push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+        if ($srcMbuffer ne 'off') {
+            push @cmd, $srcMbCmd;
+        }
+        push @cmd,  $self->$buildRemoteRefArray($remote, @dstMbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
         print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;

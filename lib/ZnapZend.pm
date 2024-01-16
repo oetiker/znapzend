@@ -666,7 +666,8 @@ my $sendRecvCleanup = sub {
                                             $lastSnapshotToSee = ${$srcSnapshots}[$seenX];
                                         }
                                         $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
-                                                $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                                                $backupSet->{src_mbuffer}, $backupSet->{src_mbuffer_size},
+                                                $backupSet->{"dst_$key" . '_mbuffer'}, $backupSet->{"dst_$key" . '_mbuffer_size'},
                                                 $backupSet->{snapSendFilter}, $lastSnapshotToSee,
                                                 ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : ($doPromote > 1 ? $doPromote : undef ) )
                                             );
@@ -695,7 +696,8 @@ my $sendRecvCleanup = sub {
                     # Note this can fail if we forbidDestRollback and there are
                     # snapshots or data on dst newer than the last common snap.
                     $self->zZfs->sendRecvSnapshots($srcDataSet, $dstDataSet, $dst,
-                        $backupSet->{mbuffer}, $backupSet->{mbuffer_size},
+                        $backupSet->{src_mbuffer}, $backupSet->{src_mbuffer_size},
+                        $backupSet->{"dst_$key" . '_mbuffer'}, $backupSet->{"dst_$key" . '_mbuffer_size'},
                         $backupSet->{snapSendFilter}, undef,
                         ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
                         );

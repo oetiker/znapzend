@@ -13,18 +13,45 @@ to do its work. It has the built-in ability to manage both local snapshots
 as well as remote copies by thinning them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
-itself.
+itself. Keep in mind that while this only regards *local* ZFS properties
+of each configured dataset (not "inherited", not "received"), there is
+some domain-specific handling of recursion for certain settings based on
+presence and value of an `org.znapzend:recursive` property.
 
 Note that while recursive configurations are well supported to set up
 backup and retention policies for a whole dataset subtree under the dataset
 to which you have applied explicit configuration, at this time pruning of
-such trees ("I want every dataset under var except var/tmp") is not supported.
+such trees ("I want every dataset under var except var/tmp") is experimental:
+it works, but there may be rough edges which would require more development.
+
 You probably do not want to enable ZnapZend against the root datasets of your
 pools due to that, but would have to be more fine-grained in your setup.
 This is consistent with (and due to) usage of recursive ZFS snapshots, where
 the command is targeted at one dataset and impacts it and all its children,
 allowing to get a consistent point-in-time set of snapshots across multiple
 datasets.
+
+That said, for several years ZnapZend supports setting a local ZFS property
+`org.znapzend:enabled=off` (and only it) in datasets which descend from the
+one with a full backup retention schedule configuration (which in turn sets
+that its descendants should be handled per `org.znapzend:recursive=off`),
+and then exactly these "not-enabled" datasets with `enabled=off` setting
+would not be tracked with a long-term history locally or remotely.
+
+> **_NOTE:_**  Implementation-wise, snapshots of the dataset with a full
+> backup retention schedule configuration are made recursively so as to be
+> a reliable atomic operation. Subsequently snapshots for "not-enabled"
+> datasets are pruned. Different ZnapZend versions varied about sending
+> such snapshots to a remote destination (e.g. as part of a recursive ZFS
+> send stream) and pruning them there afterwards, or avoiding such sending
+> operations.
+>
+> An important take-away is that temporarily there may be a storage and
+> traffic cost associated with "not-enabled" dataset snapshots, and that
+> their creation and deletion is separated by time: if the host reboots
+> (or ZnapZend process is interrupted otherwise) at the wrong moment,
+> such snapshots may linger indefinitely and "unexpectedly" consume disk
+> space for their uniquely referenced blocks.
 
 Compilation and Installation from source Inztructionz
 -----------------------------------------------------
@@ -197,6 +224,36 @@ and the I/O speeds of the storage and networking involved. As a rule of thumb,
 let it absorb at least a minute of I/O, so while one side of the ZFS dialog
 is deeply thinking, another can do its work.
 
+> **_NOTE:_**  Due to backwards-compatibility considerations, the legacy
+> `--mbuffer=...` setting applies by default to all destination datasets
+> (and to sender, in case of `--mbuffer=/path/to/mbuffer:port` variant).
+> This might work if needed programs are all found in `PATH` by the same
+> short name, but fails miserably if custom full path names are required
+> on different systems.
+>
+> To avoid this limitation, ZnapZend now allows to specify custom path
+> and buffer size settings individually for each source and destination
+> dataset in each backup/retention schedule configuration (using the
+> `znapzendzetup` program or `org.znapzend:src_mbuffer` etc. ZFS dataset
+> properties directly). The legacy configuration properties would now be
+> used as fallback defaults, and may emit warnings whenever they are
+> applied as such.
+>
+> With this feature in place, the sender may have the only `mbuffer`
+> running, without requiring one on the receiver (e.g. to limit impact
+> to RAM usage on the backup server). You may also run an mbuffer on
+> each side of the SSH tunnel, if networking latency is random and
+> carries a considerable impact.
+
+The remote system does not need anything other than ZFS functionality, an
+SSH server, a user account with prepared SSH key based log-in (optionally
+an unprivileged one with `zfs allow` settings on a particular target dataset
+dedicated to receiving your trees of backed-up datasets), and optionally the
+local implementation of the `mbuffer` program. Namely, as a frequently asked
+concern: the remote system *does not require* ZnapZend nor its dependencies
+(perl, etc.) to be installed. (It may however be installed - e.g. if used for
+snapshots of that remote system's own datasets.)
+
 Running
 -------
 
@@ -259,6 +316,10 @@ or perhaps you optimized the original storage with the likes of:
 and note that other options may be problematic long-term if actually used
 by the receiving server, e.g.:
 `refreservation,refquota,quota,reservation,encryption`
+
+Generally, check the ZnapZend service (or manual run) logs for any errors
+and adapt the dataset permissions on the destination pool to satisfy its
+implementation specifics.
 
 Running with restricted shell
 -----------------------------
