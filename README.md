@@ -21,7 +21,8 @@ presence and value of an `org.znapzend:recursive` property.
 Note that while recursive configurations are well supported to set up
 backup and retention policies for a whole dataset subtree under the dataset
 to which you have applied explicit configuration, at this time pruning of
-such trees ("I want every dataset under var except var/tmp") is not supported.
+such trees ("I want every dataset under var except var/tmp") is experimental:
+it works, but there may be rough edges which would require more development.
 
 You probably do not want to enable ZnapZend against the root datasets of your
 pools due to that, but would have to be more fine-grained in your setup.
@@ -29,6 +30,28 @@ This is consistent with (and due to) usage of recursive ZFS snapshots, where
 the command is targeted at one dataset and impacts it and all its children,
 allowing to get a consistent point-in-time set of snapshots across multiple
 datasets.
+
+That said, for several years ZnapZend supports setting a local ZFS property
+`org.znapzend:enabled=off` (and only it) in datasets which descend from the
+one with a full backup retention schedule configuration (which in turn sets
+that its descendants should be handled per `org.znapzend:recursive=off`),
+and then exactly these "not-enabled" datasets with `enabled=off` setting
+would not be tracked with a long-term history locally or remotely.
+
+> **_NOTE:_**  Implementation-wise, snapshots of the dataset with a full
+> backup retention schedule configuration are made recursively so as to be
+> a reliable atomic operation. Subsequently snapshots for "not-enabled"
+> datasets are pruned. Different ZnapZend versions varied about sending
+> such snapshots to a remote destination (e.g. as part of a recursive ZFS
+> send stream) and pruning them there afterwards, or avoiding such sending
+> operations.
+>
+> An important take-away is that temporarily there may be a storage and
+> traffic cost associated with "not-enabled" dataset snapshots, and that
+> their creation and deletion is separated by time: if the host reboots
+> (or ZnapZend process is interrupted otherwise) at the wrong moment,
+> such snapshots may linger indefinitely and "unexpectedly" consume disk
+> space for their uniquely referenced blocks.
 
 Compilation and Installation from source Inztructionz
 -----------------------------------------------------
