@@ -53,6 +53,25 @@ would not be tracked with a long-term history locally or remotely.
 > such snapshots may linger indefinitely and "unexpectedly" consume disk
 > space for their uniquely referenced blocks.
 
+Current ZnapZend releases extend this support with an ability to also set
+a local ZFS property `org.znapzend:recursive=on` in such datasets (so there
+would be two properties -- to enable/disable and to recurse that), with the
+effect that whole sub-trees of ZFS datasets can be excluded from ZnapZend
+retention handling with one configuration in their common ancestor dataset
+(previously this would require `enabled=off` in each excluded dataset).
+
+This behavior can be useful, for example, on CI build hosts, where you would
+generally enable backups of `rpool/home` but would exclude the location for
+discardable bulk data like build roots or caches in the worker account's home.
+
+> **_NOTE:_**  Technically, the code allows to further set `enabled=on` in
+> certain sub-datasets of the not-enabled tree to re-enable snapshot tracking
+> for that dataset (maybe recursively to its descendants), but this feature
+> has not yet seen much use and feedback in real-life situations. It may be
+> possible that you would have to pre-create the parent datasets (disabled
+> on source) to receive regular backups from ZnapZend on remote destinations,
+> etc.
+
 Compilation and Installation from source Inztructionz
 -----------------------------------------------------
 
