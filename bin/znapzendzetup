@@ -101,7 +101,7 @@ sub parseArguments {
             $state = '';
             next;
         };
-        die "ERROR: dont know what to do with $_. check the syntax\n";
+        die "ERROR: don't know what to do with $_. check the syntax\n";
     }
 
     #check if we have a valid source as this is crucial
@@ -703,12 +703,22 @@ separator.
 
 Specify the path to your copy of the mbuffer utility.
 
+NOTE: with this option, the same path would be used for all remote
+destinations - this can misfire if they run different operating systems.
+
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
-Specify the path to your copy of the mbuffer utility and the port used
-on the destination. Caution: znapzend will send the data directly
-from source mbuffer to destination mbuffer, thus data stream is B<not>
-encrypted.
+Specify the path to your copy of the mbuffer utility and
+the port used on the destination. Caution: znapzend will use SSH to
+set up the remote mbuffer receiver, but will send the snapshot data
+stream directly from source mbuffer to destination mbuffer. In other
+words, the data stream is B<not> encrypted. Use this only in a trusted
+LAN or over VPN, where you can safely avoid the overheads of an SSH
+tunnel.
+
+NOTE: with this option, the same path would be used for all remote
+destinations as well as the source system - this can misfire if they
+run different operating systems.
 
 =item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
 
