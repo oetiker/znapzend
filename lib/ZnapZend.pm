@@ -185,29 +185,29 @@ my $listDisabledSourceDescendants = sub {
                 # get the value for org.znapzend property
                 my @cmdLE = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:enabled), $dataSet);
                 print STDERR '# ' . join(' ', @cmdLE) . "\n" if $self->debug;
-                open my $propLE, '-|', @cmdLE;
+                open my $cmdOutLE, '-|', @cmdLE;
 
                 my @cmdLR = (@{$self->zZfs->priv}, qw(zfs get -H -s local -o value org.znapzend:recursive), $dataSet);
                 print STDERR '# ' . join(' ', @cmdLR) . "\n" if $self->debug;
-                open my $propLR, '-|', @cmdLR;
-                my $propIR;
+                open my $cmdOutLR, '-|', @cmdLR;
 
                 # if the property does not exist, the command will just return.
                 # In this case, use the default determined above.
-                $propLE = <$propLE>; # || $enabled_default;
+                my $propLE = <$cmdOutLE>; # || $enabled_default;
                 if ($propLE) {
                     chomp($propLE);
                 }
 
-                $propLR = <$propLR>;
+                my $propLR = <$cmdOutLR>;
+                my $propIR;
                 if ($propLR) {
                     chomp($propLR);
                 } else {
                     my @cmdIR = (@{$self->zZfs->priv}, qw(zfs get -H -s inherited -o value org.znapzend:recursive), $dataSet);
                     print STDERR '# ' . join(' ', @cmdIR) . "\n" if $self->debug;
-                    open $propIR, '-|', @cmdIR;
+                    open my $cmdOutIR, '-|', @cmdIR;
 
-                    $propIR = <$propIR>;
+                    $propIR = <$cmdOutIR>;
                     if ($propIR) {
                         chomp($propIR);
                     }
