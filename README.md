@@ -201,6 +201,15 @@ and the I/O speeds of the storage and networking involved. As a rule of thumb,
 let it absorb at least a minute of I/O, so while one side of the ZFS dialog
 is deeply thinking, another can do its work.
 
+The remote system does not need anything other than ZFS functionality, an
+SSH server, a user account with prepared SSH key based log-in (optionally
+an unprivileged one with `zfs allow` settings on a particular target dataset
+dedicated to receiving your trees of backed-up datasets), and optionally the
+local implementation of the `mbuffer` program. Namely, as a frequently asked
+concern: the remote system *does not require* ZnapZend nor its dependencies
+(perl, etc.) to be installed. (It may however be installed - e.g. if used for
+snapshots of that remote system's own datasets.)
+
 Running
 -------
 
