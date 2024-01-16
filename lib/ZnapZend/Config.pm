@@ -156,6 +156,45 @@ my $checkBackupSets = sub {
                     or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
             }
         }
+
+        # mbuffer properties not set for source? legacy behavior was to not use
+        # any on the sender, except when in port-to-port mode
+        if (!exists($backupSet->{src_mbuffer}) or !($backupSet->{src_mbuffer})) {
+            # Have *something* defined to avoid further exists() checks at least
+            $backupSet->{src_mbuffer} = undef;
+            if ($backupSet->{mbuffer}) {
+                if ($backupSet->{mbuffer} eq 'off') {
+                    # Only use the setting for source if legacy "off" is set
+                    $backupSet->{src_mbuffer} = $backupSet->{mbuffer};
+                    $self->zLog->info("WARNING: property 'src_mbuffer' not set on backup for " . $backupSet->{src} . ", inheriting 'off' from legacy 'mbuffer'");
+                } else {
+                    my ($mbuffer, $mbufferPort) = split /:/, $backupSet->{mbuffer}, 2;
+                    #check if port is numeric
+                    if ($mbufferPort &&
+                        $mbufferPort =~ /^\d{1,5}$/ && int($mbufferPort) < 65535
+                    ) {
+                        # Only use the setting for source program if the legacy
+                        # "/path/to/mbuffer:port" is set (note we would use a
+                        # port defined by each destination separately - maybe
+                        # inherited from the legacy setting, maybe re-defined
+                        # locally or even avoided for that destination link).
+                        $backupSet->{src_mbuffer} = $mbuffer;
+                        $self->zLog->info("WARNING: property 'src_mbuffer' not set on backup for " . $backupSet->{src} . ", inheriting path from legacy 'mbuffer': " . $backupSet->{src_mbuffer});
+                    }
+                }
+            }
+        }
+        if ($backupSet->{src_mbuffer}) {
+            if (!($self->zfs->fileExistsAndExec($backupSet->{src_mbuffer}))) {
+                warn "*** WARNING: executable '$backupSet->{src_mbuffer}' does not exist on source system, will ignore\n\n";
+                $backupSet->{src_mbuffer} = undef;
+            }
+        }
+        if (!exists($backupSet->{src_mbuffer_size}) or !($backupSet->{src_mbuffer_size})) {
+            $backupSet->{src_mbuffer_size} = $backupSet->{mbuffer_size};
+            $self->zLog->info("WARNING: property 'src_mbuffer_size' not set on backup for " . $backupSet->{src} . ", inheriting from legacy 'mbuffer_size': " . $backupSet->{src_mbuffer_size}) if $backupSet->{src_mbuffer_size};
+        }
+
         #check destination plans and datasets
         for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
             #store backup destination validity. will be checked where used
@@ -166,17 +205,33 @@ my $checkBackupSets = sub {
 
             $backupSet->{$dst . '_plan'} = $self->$checkBackupPlan($backupSet->{$dst . '_plan'});
 
+            # mbuffer properties not set for destination? inherit the legacy default ones.
+            if (!exists($backupSet->{$dst . '_mbuffer'}) or !($backupSet->{$dst . '_mbuffer'})) {
+                ###if ($backupSet->{mbuffer}) {
+                    $backupSet->{$dst . '_mbuffer'} = $backupSet->{mbuffer};
+                ### Do not preclude inheritance when legacy setting changes
+                ###} else {
+                ###    $backupSet->{$dst . '_mbuffer'} = 'off';
+                ###}
+                $self->zLog->info("WARNING: property '" . $dst . "_mbuffer' not set on backup for " . $backupSet->{src} . ", inheriting path[:port] from legacy 'mbuffer': " . $backupSet->{$dst . '_mbuffer'}) if $backupSet->{$dst . '_mbuffer'};
+            }
+            if (!exists($backupSet->{$dst . '_mbuffer_size'}) or !($backupSet->{$dst . '_mbuffer_size'})) {
+                $backupSet->{$dst . '_mbuffer_size'} = $backupSet->{mbuffer_size};
+                $self->zLog->info("WARNING: property '" . $dst . "_mbuffer_size' not set on backup for " . $backupSet->{src} . ", inheriting from legacy 'mbuffer_size': " . $backupSet->{$dst . '_mbuffer_size'}) if $backupSet->{$dst . '_mbuffer_size'};
+            }
+
             # mbuffer property set? check if executable is available on remote host
-            if ($backupSet->{mbuffer} ne 'off'){
-                my ($mbuffer, $mbufferPort) = split /:/, $backupSet->{mbuffer}, 2;
+            if ($backupSet->{$dst . '_mbuffer'} ne 'off') {
+                my ($mbuffer, $mbufferPort) = split /:/, $backupSet->{$dst . '_mbuffer'}, 2;
                 my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
                 my $file = ($remote ? "$remote:" : '') . $mbuffer;
                 $self->zfs->fileExistsAndExec($file)
-                    or warn "*** WARNING: executable '$mbuffer' does not exist" . ($remote ? " on $remote\n\n" : "\n\n");
+                    or warn "*** WARNING: executable '$mbuffer' does not exist on " . ($remote ? "remote $remote" : "local") . " system, zfs receive can fail\n\n";
+                    # TOTHINK: Reset to 'off'/undef and ignore the validity checks below?
 
                 #check if mbuffer size is valid
-                $backupSet->{mbuffer_size} =~ /^\d+[bkMG%]?$/
-                    or die "ERROR: mbuffer size '" . $backupSet->{mbuffer_size} . "' invalid\n";
+                $backupSet->{$dst . '_mbuffer_size'} =~ /^\d+[bkMG%]?$/
+                    or die "ERROR: mbuffer size '" . $backupSet->{$dst . '_mbuffer_size'} . "' invalid\n";
                 #check if port is numeric
                 $mbufferPort && do {
                     $mbufferPort =~ /^\d{1,5}$/ && int($mbufferPort) < 65535
