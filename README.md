@@ -13,12 +13,16 @@ to do its work. It has the built-in ability to manage both local snapshots
 as well as remote copies by thinning them out as time progresses.
 
 The ZnapZend configuration is stored as properties in the ZFS filesystem
-itself.
+itself. Keep in mind that while this only regards *local* ZFS properties
+of each configured dataset (not "inherited", not "received"), there is
+some domain-specific handling of recursion for certain settings based on
+presence and value of an `org.znapzend:recursive` property.
 
 Note that while recursive configurations are well supported to set up
 backup and retention policies for a whole dataset subtree under the dataset
 to which you have applied explicit configuration, at this time pruning of
 such trees ("I want every dataset under var except var/tmp") is not supported.
+
 You probably do not want to enable ZnapZend against the root datasets of your
 pools due to that, but would have to be more fine-grained in your setup.
 This is consistent with (and due to) usage of recursive ZFS snapshots, where
