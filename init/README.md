@@ -118,3 +118,8 @@ znapzend as a service:
 #				Set it to "YES" to enable znapzend.
 znapzend_enable="YES"
 ```
+
+If you want to set parameters for the znapzend daemon separately from the
+rc-script, copy ```znapzend.default``` to ```/etc/defaults/znapzend```
+and edit it. Note that the rc-script in all cases provides a set of its
+own ```command_args``` to manage daemonization, logging and PID file use.
