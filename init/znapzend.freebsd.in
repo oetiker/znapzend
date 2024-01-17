@@ -10,6 +10,9 @@
 #				Set it to "YES" to enable znapzend.
 #
 
+# This file in znapzend project originated in FreeBSD ports integration at:
+# https://cgit.freebsd.org/ports/blame/sysutils/znapzend/files/znapzend.in
+
 . /etc/rc.subr
 
 name=znapzend
