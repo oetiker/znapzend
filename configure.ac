@@ -223,6 +223,7 @@ AC_CONFIG_FILES([
     lib/Makefile
     debian/Makefile
     debian/znapzend.links
+    init/znapzend.freebsd
     init/znapzend.service
     init/znapzend.sysv
     init/znapzend.upstart
