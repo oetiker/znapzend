@@ -218,18 +218,28 @@ LIBDIR=${conftemp}
 AC_DEFINE_UNQUOTED(LIBDIR, "${conftemp}", [Default path for system libraries])
 AC_SUBST(LIBDIR)
 
+AC_MSG_NOTICE([Generating "data" files from templates, see below for executable scripts])
 AC_CONFIG_FILES([
     Makefile
     thirdparty/Makefile
     lib/Makefile
     debian/Makefile
     debian/znapzend.links
-    init/znapzend.freebsd
     init/znapzend.service
-    init/znapzend.sysv
-    init/znapzend.upstart
     init/znapzend.xml
     init/org.znapzend.plist
+])
+
+AC_MSG_NOTICE([Generating templated script files that should be marked executable])
+m4_foreach_w([SCRIPTFILE], [
+    init/znapzend.freebsd
+    init/znapzend.sysv
+    init/znapzend.upstart
+], [
+    dnl Autoconf substitutes the token above specified in plain text,
+    dnl e.g. the brace below is empty and bracket gives verbatim varname
+    dnl AC_MSG_NOTICE([Script: SCRIPTFILE brace:(${SCRIPTFILE}) bracket:([SCRIPTFILE])])
+    AC_CONFIG_FILES(SCRIPTFILE, chmod +x "SCRIPTFILE")
 ])
 
 AC_SUBST(VERSION)
