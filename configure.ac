@@ -24,6 +24,7 @@ AC_PATH_PROG(PERL, perl, no)
 AC_PATH_PROG(CURL, curl, no)
 AC_PATH_PROG(WGET, wget, no)
 AC_PATH_PROG(POD2MAN, pod2man, no)
+AC_PATH_PROG(RM, rm, no)
 
 
 AC_ARG_ENABLE([deb_build],
