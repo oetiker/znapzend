@@ -217,7 +217,7 @@ my $checkBackupSets = sub {
         if ($backupSet->{src_mbuffer}) {
             if ($backupSet->{src_mbuffer} ne 'off' and !($self->zfs->fileExistsAndExec($backupSet->{src_mbuffer}))) {
                 warn "*** WARNING: executable '$backupSet->{src_mbuffer}' does not exist on source system, will ignore\n\n";
-                $backupSet->{src_mbuffer} = undef;
+                $backupSet->{src_mbuffer} = 'off';
             }
         }
         if (!($backupSet->{src_mbuffer})) {
