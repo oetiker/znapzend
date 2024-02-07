@@ -73,6 +73,7 @@ canmount
 CBuilder
 cfg
 cgi
+cgit
 checkinstall
 chf
 chgrp
@@ -215,6 +216,7 @@ foced
 foreach
 forkcall
 FQSN
+freebsd
 FRONTEND
 fsf
 gerczei
@@ -447,6 +449,7 @@ qw
 qwe
 rbash
 RCAPUTO
+rcvar
 README
 recurseparent
 recv
@@ -481,6 +484,7 @@ rw
 sbin
 sbindir
 screation
+SCRIPTFILE
 scriptversion
 secondarycache
 SEENDST
@@ -534,6 +538,7 @@ stripprog
 strptime
 subdataset
 SUBDIRS
+subr
 substr
 substvars
 subsys
