@@ -4,18 +4,18 @@ use strict;
 use warnings;
 
 use FindBin;
-$ENV{PATH} = "$FindBin::Bin:$ENV{PATH}";
+$ENV{PATH} = $FindBin::RealBin.':'.$ENV{PATH};
 my $buildDir;
 
 BEGIN {
-    $buildDir = shift @ARGV // "$FindBin::Bin/../";
+    $buildDir = shift @ARGV // $FindBin::RealBin."/../";
 }
 
 # PERL5LIB
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::RealBin/../lib";
 use lib "$buildDir/thirdparty/lib/perl5";
 #place bin path to lib so it is stored in @INC
-use lib "$FindBin::Bin/../bin";
+use lib "$FindBin::RealBin/../bin";
 
 unshift @INC, sub {
     my (undef, $filename) = @_;
@@ -76,7 +76,7 @@ use_ok 'ZnapZend';
 
 #load program
 @ARGV = qw(--help);
-do 'znapzendztatz' or die "ERROR: loading program znapzendztatz\n";
+do 'znapzendztatz' or die "ERROR: loading program znapzendztatz $@\n";
 
 is (runCommand('--help'), 1, 'znapzendztatz help');
 

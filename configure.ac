@@ -1,8 +1,8 @@
 # Author: Tobi Oetiker <tobi@oetiker.ch>
 # License: Public Domain
 
-AC_INIT([znapzend],m4_esyscmd([tr -d '\n' < VERSION]),[tobi@oetiker.ch])
-AC_PREREQ([2.59])
+AC_INIT([znapzend],[m4_esyscmd(tr -d '\n' < VERSION)],[tobi@oetiker.ch])
+AC_PREREQ([2.69])
 AC_CONFIG_AUX_DIR(conftools)
 
 AC_MSG_CHECKING(in to see how you are doing)
@@ -24,14 +24,21 @@ AC_PATH_PROG(PERL, perl, no)
 AC_PATH_PROG(CURL, curl, no)
 AC_PATH_PROG(WGET, wget, no)
 AC_PATH_PROG(POD2MAN, pod2man, no)
+AC_PATH_PROG(RM, rm, no)
+
+
+AC_ARG_ENABLE([deb_build],
+AS_HELP_STRING([--enable-deb_build    Enable debian package build specifics]),
+[deb_build=true],
+[deb_build=false])
+
+AM_CONDITIONAL([DEB_BUILD], [test x$deb_build = xtrue])
 
 # TODO: with some respect to legacy, split such settings to be named
 # after respective service management framework; code supports several
 AC_ARG_ENABLE(svcinstall,
-        AC_HELP_STRING(
-                [--enable-svcinstall=DIR],
-                [install svc manifest into given directory]
-        ),
+        AS_HELP_STRING([--enable-svcinstall=DIR],[install svc manifest into given directory
+        ]),
         [SVCINSTALLDIR=$enableval],
         [SVCINSTALLDIR=no]
 )
@@ -40,10 +47,8 @@ AM_CONDITIONAL(ENABLE_SVCINSTALL,[test $SVCINSTALLDIR != no])
 
 SVCNAME_SMF="oep/znapzend"
 AC_ARG_WITH(svcname-smf,
-        AC_HELP_STRING(
-                [--with-svcname-smf=SMF_FMRI],
-                [use specified SMF FMRI in manifest (defaults to oep/znapzend)]
-        ),
+        AS_HELP_STRING([--with-svcname-smf=SMF_FMRI],[use specified SMF FMRI in manifest (defaults to oep/znapzend)
+        ]),
         [AC_MSG_CHECKING([user-provided SMF service name of '$withval'])
          SVCNAME_SMF="`echo "$withval" | sed -e 's,^svc:,,' -e 's,^/*,,' -e 's,:.*$,,'`"
         ],[AC_MSG_CHECKING([default SMF service name])]
@@ -57,10 +62,8 @@ DEFAULT_URL_CAT_CURL="$CURL --location --insecure"
 DEFAULT_URL_CAT_WGET="$WGET -O -"
 
 AC_ARG_WITH(url-cat,
-    AC_HELP_STRING(
-        [--with-url-cat=(curl|wget)],
-        [use specified program (with further predefined arguments added as needed) to cat URLs]
-    ),
+    AS_HELP_STRING([--with-url-cat=(curl|wget)],[use specified program (with further predefined arguments added as needed) to cat URLs
+    ]),
     [AS_CASE("$withval",
         [curl],[AS_IF([test -n "$CURL" && test -x "$CURL"],
                     [URL_CAT="$DEFAULT_URL_CAT_CURL"],
@@ -70,10 +73,8 @@ AC_ARG_WITH(url-cat,
                     [AC_MSG_ERROR([Asked to preconfigure use of $withval but one is not in PATH])])],
         [*],[AC_MSG_ERROR([Asked to preconfigure use of $withval which is not an URL cat-er we support])])],
     [AC_ARG_WITH(url-cat-program,
-        AC_HELP_STRING(
-            [--with-url-cat-program=(/path/name --args)],
-                [use specified custom program with arguments to cat URLs]
-            ),
+        AS_HELP_STRING([--with-url-cat-program=(/path/name --args)],[use specified custom program with arguments to cat URLs
+            ]),
         [URL_CAT="$withval"],
         [
         AS_IF([test -x "$WGET"],[URL_CAT="$DEFAULT_URL_CAT_WGET"],
@@ -98,23 +99,6 @@ if test "x$PERL" != "x"; then
   if test $? -ne 0; then
     AC_MSG_RESULT(no);
     AC_MSG_WARN(at least version $ac_perl_version is required to run modern mojolicious)
-
-    # re-check for older distributions minimal support
-    ac_perl_version="5.10.1"
-
-    AC_MSG_CHECKING(for perl version greater than or equal to $ac_perl_version)
-    $PERL -e "use $ac_perl_version;" >/dev/null 2>&1
-    if test $? -ne 0; then
-        AC_MSG_RESULT(no);
-        AC_MSG_ERROR(at least version $ac_perl_version is required to run mojolicious at all)
-        exit 1
-    else
-        MOJOLICIOUS_VERSION_CONSTRAINT=", '< 8.44'"
-    fi
-  else
-    AC_MSG_RESULT(ok);
-    # mojo 9 has no delay method anymore ... 
-    MOJOLICIOUS_VERSION_CONSTRAINT=", '>= 8.73, <9.0'"
   fi
 else
   AC_MSG_ERROR(could not find perl)
@@ -161,8 +145,7 @@ else
 fi
 
 AC_ARG_ENABLE(pkgonly,
-        AC_HELP_STRING([--enable-pkgonly],
-                        [Skip all checking]))
+        AS_HELP_STRING([--enable-pkgonly],[Skip all checking]))
 AC_SUBST(enable_pkgonly)
 
 # TODO: Is this block needed? No code seems to refer this varname...
@@ -235,16 +218,28 @@ LIBDIR=${conftemp}
 AC_DEFINE_UNQUOTED(LIBDIR, "${conftemp}", [Default path for system libraries])
 AC_SUBST(LIBDIR)
 
+AC_MSG_NOTICE([Generating "data" files from templates, see below for executable scripts])
 AC_CONFIG_FILES([
-    cpanfile
     Makefile
     thirdparty/Makefile
     lib/Makefile
+    debian/Makefile
+    debian/znapzend.links
     init/znapzend.service
-    init/znapzend.sysv
-    init/znapzend.upstart
     init/znapzend.xml
     init/org.znapzend.plist
+])
+
+AC_MSG_NOTICE([Generating templated script files that should be marked executable])
+m4_foreach_w([SCRIPTFILE], [
+    init/znapzend.freebsd
+    init/znapzend.sysv
+    init/znapzend.upstart
+], [
+    dnl Autoconf substitutes the token above specified in plain text,
+    dnl e.g. the brace below is empty and bracket gives verbatim varname
+    dnl AC_MSG_NOTICE([Script: SCRIPTFILE brace:(${SCRIPTFILE}) bracket:([SCRIPTFILE])])
+    AC_CONFIG_FILES(SCRIPTFILE, chmod +x "SCRIPTFILE")
 ])
 
 AC_SUBST(VERSION)
@@ -274,6 +269,7 @@ Settings:
   PERL = $PERL
   SVCINSTALLDIR = $SVCINSTALLDIR
   URL_CAT = $URL_CAT
+  DEB_BUILD = $deb_build
 
 The Makefiles use GNU make functionality.
 Continue installation with

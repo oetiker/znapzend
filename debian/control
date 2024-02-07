@@ -1,0 +1,10 @@
+Source: znapzend
+Section: system
+Priority: optional
+Maintainer: Tobias Bossert <bossert@oetiker.ch>
+Build-Depends: build-essential, debhelper (>= 9), perl
+
+Package: znapzend
+Architecture: any
+Depends: ${shlibs:Depends}, perl, zfsutils-linux
+Description: ZnapZend is a ZFS centric backup tool to create snapshots and send them to backup locations

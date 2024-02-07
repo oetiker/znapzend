@@ -1,7 +1,7 @@
 
 ##### Builder image
-ARG PERL_BUILD_VERSION=5.30-buster
-ARG ALPINE_VERSION=3.11
+ARG PERL_BUILD_VERSION=5.38-buster
+ARG ALPINE_VERSION=3.19
 FROM docker.io/library/perl:${PERL_BUILD_VERSION} as builder
 
 WORKDIR /usr/local/src
@@ -17,7 +17,7 @@ RUN \
 ##### Runtime image
 FROM docker.io/library/alpine:${ALPINE_VERSION} as runtime
 
-ARG PERL_VERSION=5.30.3-r0
+ARG PERL_VERSION=5.38.2-r0
 
 RUN \
   # mbuffer is not in main currently, and community keys expire over time,
@@ -42,6 +42,10 @@ CMD [ "znapzend --logto=/dev/stdout" ]
 
 ##### Tests
 FROM builder as test
+
+RUN \
+  cpan Devel::Cover && \
+  cpan Test::SharedFork
 
 RUN \
   ./test.sh

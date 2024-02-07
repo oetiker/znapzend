@@ -2,7 +2,6 @@ package ZnapZend::ZFS;
 
 use Mojo::Base -base;
 use Mojo::Exception;
-use Mojo::IOLoop::Delay;
 use Mojo::IOLoop::Subprocess;
 use Data::Dumper;
 use inheritLevels;
@@ -38,11 +37,88 @@ has priv            => sub { my $self = shift; [$self->rootExec ? split(/ /, $se
 
 ### private functions ###
 my $splitHostDataSet = sub {
-    return ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    # When troubleshooting, set to 1:
+    my $debugHere = 0;
+    #my $debugHere = 1;
+
+    # See also https://github.com/oetiker/znapzend/issues/585
+    # If there are further bugs in the regex, comment away the
+    # next implementation line and fall through to verbosely
+    # debugging code below to try and iterate a fix.
+    # In the "if" clause below we separate the regular expressions
+    # for the use-case where we have two "@" characters:
+    #   user@host:dataset@snap
+    # from having zero or one "@" characters:
+    #   host:dataset
+    #   host:dataset@snap
+    #   user@host:dataset
+    # and note that dataset may lack "/" chars (root dataset
+    # of a pool), and (non-root?) dataset and snapshot names
+    # may have ":" chars of their own, e.g.
+    #   ...@znapzend-auto-2024-01-08T10:22:13Z
+    #   pond/export/vm-1:2
+    # Also note that we can not discern "X@Y:Z" strings by pattern
+    # alone - are they a remote "user@host:rootds" or a local
+    # "rootds@funny:snapname"? For practical purposes, we proclaim
+    # preference for the former: we are more likely to look at funny
+    # local snapshot names, than to back up to (or otherwise care
+    # about) remote pools' ROOT datasets.
+    my $count = ($_[0] =~ tr/@//);
+    if ($count > 1) {
+        #return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+        print STDERR "[D] splitHostDataSet: use-case: Two or more \@\n" if $debugHere;
+        return ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+\@[^@\s]+)$/);
+    } else {
+        # Zero or one "@"
+        # Either "[host:]dataset[@snap]" or "[user@]host:dataset"
+        print STDERR "[D] splitHostDataSet: use-case: zero or one \@: " if $debugHere;
+        if ($_[0] =~ /^[^:@\/]+:/) {
+            # Got a colon before any "@" (if at all present):
+            # assume    host:... (no "user@")
+            print STDERR "colon before any frog\n" if $debugHere;
+            return ($_[0] =~ /^(?:([^:@\/]+):)([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+        } elsif ($_[0] =~ /^[^:@\/]+\//) {
+            # Slashes are not anticipated in user or host names, so:
+            # assume    poolroot/...
+            print STDERR "slashes before colon\n" if $debugHere;
+            return (undef, $_[0]);
+        } elsif ($_[0] =~ /^[^:\/@]+@[^:@\/]+$/) {
+            # X@Y without colons or slashes:
+            # assume    poolroot@snap
+            print STDERR "no colon, no slash, with frog\n" if $debugHere;
+            return (undef, $_[0]);
+        } elsif ($_[0] =~ /^[^:@\/]+@[^:@\/]+:.*\//) {
+            # X@Y:Z/W - snapshot names can not have slashes
+            # assume    X@Y = user@host, Z/W = rootds/ds...[@snap]
+            print STDERR "X\@Y:Z/W without slashes in X and Y\n" if $debugHere;
+            return ($_[0] =~ /^([^:\/]+):(.+)$/);
+        } elsif ($_[0] =~ /^[^:@\/]+@[^:@\/]+:/) {
+            # X@Y:Z without slashes in X and Y - may be:
+            # either    user@host:...
+            # or e.g.   rootds@snap-12:34:56
+            print STDERR "X\@Y:Z without slashes in X and Y\n" if $debugHere;
+        }
+        print STDERR "other\n" if $debugHere;
+        return ($_[0] =~ /^(?:([^:@\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    }
+
+    my @return;
+    ###push @return, ($_[0] =~ /^(?:(.+)\s)?([^\s]+)$/);
+    ###push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^:]+|[^:@]+\@.+)$/);
+    push @return, ($_[0] =~ /^(?:([^:\/]+):)?([^@\s]+|[^@\s]+\@[^@\s]+)$/);
+    # Note: Claims `Use of uninitialized value $return[0]...` when there
+    # is no remote host portion matched, so using a map to stringify:
+    print STDERR "[D] Split '" . $_[0] . "' into: [" . join(", ", map { defined ? "'$_'" : '<undef>' } @return) . "]\n" if $debugHere;
+    return @return;
 };
 
 my $splitDataSetSnapshot = sub {
-    return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/);
+    my $count = ($_[0] =~ tr/@//);
+    if ($count > 0) {
+        return ($_[0] =~ /^([^\@]+)\@([^\@]+)$/);
+    } else {
+        return ($_[0], undef);
+    }
 };
 
 my $shellQuote = sub {
@@ -356,11 +432,16 @@ sub destroySnapshots {
         for my $task (@toDestroy){
             my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
             my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-            my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
+            if (defined ($dataSet)) {
+                my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(zfs destroy), @recursive, "$dataSet\@$snapshot"]);
 
-            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
-            system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
-                if !($self->noaction || $self->nodestroy);
+                print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "") . join(' ', @ssh) . "\n" if $self->debug;
+                system(@ssh) and $destroyError .= "ERROR: cannot destroy snapshot $dataSet\@$snapshot\n"
+                    if !($self->noaction || $self->nodestroy);
+            } else {
+                print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
+                Mojo::Exception->throw("ERROR: oracleMode destroy: failed to parse task='$task', got undefined dataSet and/or snapshot");
+            }
         }
         #remove trailing \n
         chomp $destroyError;
@@ -370,23 +451,33 @@ sub destroySnapshots {
     }
 
     #combinedDestroy
+    #collect "dataset1@snap1,snap2 dataset2@snap1,snap2,snap3..."
+    #to destroy one dataset at a time (maybe many snaps per each)
     for my $task (@toDestroy){
         my ($remote, $dataSetPathAndSnap) = $splitHostDataSet->($task);
         my ($dataSet, $snapshot) = $splitDataSetSnapshot->($dataSetPathAndSnap);
-        #tag local snapshots as 'local' so we have a key to build the hash
-        $remote = $remote || 'local';
-        exists $toDestroy{$remote} or $toDestroy{$remote} = [];
-        push @{$toDestroy{$remote}}, scalar @{$toDestroy{$remote}} ? $snapshot : "$dataSet\@$snapshot" ;
+        if (defined ($dataSet)) {
+            #tag local snapshots as 'local' so we have a key to build the hash
+            $remote = $remote || 'local';
+            exists $toDestroy{$remote} or $toDestroy{$remote} = {};
+            exists $toDestroy{$remote}{$dataSet} or $toDestroy{$remote}{$dataSet} = [];
+            push @{$toDestroy{$remote}{$dataSet}}, scalar @{$toDestroy{$remote}{$dataSet}} ? $snapshot : "$dataSet\@$snapshot" ;
+        } else {
+            print STDERR "[D] task='$task' => remote='$remote' dataSetPathAndSnap='$dataSetPathAndSnap' => dataSet='$dataSet' snapshot='$snapshot'\n";
+            Mojo::Exception->throw("ERROR: combinedDestroy: failed to parse task='$task', got undefined dataSet and/or snapshot");
+        }
     }
 
     for $remote (keys %toDestroy){
-        #check if remote is flaged as 'local'.
-        my @ssh = $self->$buildRemote($remote ne 'local'
-            ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}})]);
+        for $dataSet (keys %{$toDestroy{$remote}}){
+            #check if remote is flagged as 'local'.
+            my @ssh = $self->$buildRemote($remote ne 'local'
+                ? $remote : undef, [@{$self->priv}, qw(zfs destroy), @recursive, join(',', @{$toDestroy{$remote}{$dataSet}})]);
 
-        print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
-        system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
-            if !($self->noaction || $self->nodestroy);
+            print STDERR '# ' . (($self->noaction || $self->nodestroy) ? "WOULD # " : "")  . join(' ', @ssh) . "\n" if $self->debug;
+            system(@ssh) && Mojo::Exception->throw("ERROR: cannot destroy snapshot(s) $toDestroy[0]")
+                if !($self->noaction || $self->nodestroy);
+        }
     }
 
     return 1;
@@ -512,8 +603,10 @@ sub sendRecvSnapshots {
     my $srcDataSet = shift;
     my $dstDataSet = shift;
     my $dstName = shift; # name of the znapzend policy => property prefix
-    my $mbuffer = shift;
-    my $mbufferSize = shift;
+    my $srcMbuffer = shift // 'off';
+    my $srcMbufferSize = shift // '1G'; # documented default for mbuffer_size
+    my $dstMbuffer = shift // 'off';
+    my $dstMbufferSize = shift // '1G';
     my $snapFilter = shift // qr/.*/;
 
     # Limit creation-ordered listing after registering this snapshot name,
@@ -540,7 +633,7 @@ sub sendRecvSnapshots {
     push @sendOpt, '-w' if $self->sendRaw;
     push @recvOpt, '-s' if $self->resume;
     my $remote;
-    my $mbufferPort;
+    my $dstMbufferPort;
 
     my $dstDataSetPath;
     ($remote, $dstDataSetPath) = $splitHostDataSet->($dstDataSet);
@@ -614,7 +707,7 @@ sub sendRecvSnapshots {
         }
     }
 
-    ($mbuffer, $mbufferPort) = split /:/, $mbuffer, 2;
+    ($dstMbuffer, $dstMbufferPort) = split /:/, $dstMbuffer, 2;
 
     my @cmd;
     if ($lastCommon){
@@ -624,12 +717,23 @@ sub sendRecvSnapshots {
         @cmd = ([@{$self->priv}, 'zfs', 'send', @sendOpt, $lastSnapshot]);
     }
 
-    #if mbuffer port is set, run in 'network mode'
-    if ($remote && $mbufferPort && $mbuffer ne 'off'){
+    # if mbuffer port is set for this destination (or inherited by it
+    # from the legacy "mbuffer" setting), we run in 'network mode'
+    if ($remote && $dstMbufferPort && $dstMbuffer ne 'off' && $srcMbuffer eq 'off'){
+        # Not a fatal situation - we have SSH anyway, to spawn that remote
+        # mbuffer. The "problem" is that we would encrypt the data by SSH,
+        # which may be a bit of useless overhead in a trusted LAN.
+        $self->zLog->warn('WARNING: remote destination ' . $dstName
+            . ' at ' . $remote . ' asked for port-to-port mbuffer connection,'
+            . ' but no local path to mbuffer program was set on source.'
+            . ' Will try to use the usual SSH tunnel for data instead.');
+    }
+
+    if ($remote && $dstMbufferPort && $dstMbuffer ne 'off' && $srcMbuffer ne 'off'){
         my $recvPid;
 
-        my @recvCmd = $self->$buildRemoteRefArray($remote, [$mbuffer, @{$self->mbufferParam},
-            $mbufferSize, '-4', '-I', $mbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
+        my @recvCmd = $self->$buildRemoteRefArray($remote, [$dstMbuffer, @{$self->mbufferParam},
+            $dstMbufferSize, '-4', '-I', $dstMbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -660,8 +764,8 @@ sub sendRecvSnapshots {
                 $remote =~ s/^[^@]+\@//; #remove username if given
                 $self->zLog->debug("receive process on $remote spawned ($pid)");
 
-                push @cmd, [$mbuffer, @{$self->mbufferParam}, $mbufferSize,
-                    '-O', "$remote:$mbufferPort"];
+                push @cmd, [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize,
+                    '-O', "$remote:$dstMbufferPort"];
 
                 $cmd = $shellQuote->(@cmd);
 
@@ -690,10 +794,14 @@ sub sendRecvSnapshots {
         $subprocess->ioloop->start if !$subprocess->ioloop->is_running;
     }
     else {
-        my @mbCmd = $mbuffer ne 'off' ? ([$mbuffer, @{$self->mbufferParam}, $mbufferSize]) : () ;
+        my $srcMbCmd = [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize];
+        my @dstMbCmd = $dstMbuffer ne 'off' ? ([$dstMbuffer, @{$self->mbufferParam}, $dstMbufferSize]) : () ;
         my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , @recvOpt, $dstDataSetPath];
 
-        push @cmd,  $self->$buildRemoteRefArray($remote, @mbCmd, $recvCmd);
+        if ($srcMbuffer ne 'off') {
+            push @cmd, $srcMbCmd;
+        }
+        push @cmd,  $self->$buildRemoteRefArray($remote, @dstMbCmd, $recvCmd);
 
         my $cmd = $shellQuote->(@cmd);
         print STDERR "# " . ($self->noaction ? "WOULD # " : "" ) . "$cmd\n" if $self->debug;
@@ -1431,10 +1539,32 @@ sub fileExistsAndExec {
     my $remote;
 
     ($remote, $filePath) = $splitHostDataSet->($filePath);
-    my @ssh = $self->$buildRemote($remote, [@{$self->priv}, qw(test -x), $filePath]);
+    my @ssh1 = $self->$buildRemote($remote, [@{$self->priv}, qw(test -x), $filePath]);
+    # Note: with restricted shell setup, users may be unable to run
+    # fully qualified command names (with a slash) but may run what
+    # they have in the PATH.
+    my @ssh2 = $self->$buildRemote($remote, [@{$self->priv}, qw(command -v), $filePath]);
 
-    print STDERR '# ' . join(' ', @ssh) . "\n" if $self->debug;
-    return !system(@ssh);
+    print STDERR '# ' . join(' ', @ssh1) . " || " . join(' ', @ssh2) . "\n" if $self->debug;
+    # Tricks to hide output of `command -v` from perl stdout:
+    if (!system(@ssh1)) {
+        return 1;
+    }
+
+    my $ssh2out = `@ssh2`;
+    if ($? == 0 && defined $ssh2out && $ssh2out ne "") {
+        if ($filePath =~ /\//) {
+            # Nudge the users to verify their config:
+            print STDERR "WARNING: Could not 'test' a qualified executable file path '" . $filePath . "' but confirmed it with 'command -v' - if you use a restricted shell, use basename and PATH\n";
+        } else {
+            # Only show at debug/troubleshooting, as this is sort of expected
+            print STDERR "WARNING: Only found executable file basename '" . $filePath . "' with 'command -v': " . $ssh2out . "\n" if $self->debug;
+        }
+        return 1;
+    }
+
+    # Neither attempt found the command:
+    return 0;
 }
 
 sub listPools {
