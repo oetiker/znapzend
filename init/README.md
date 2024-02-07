@@ -105,3 +105,21 @@ service znapzend start
 If you want to set parameters for the znapzend daemon separately from the
 init script, copy ```znapzend.default``` to ```/etc/default/znapzend```
 and edit it.
+
+## FreeBSD
+
+For systems based on FreeBSD, you can copy the generated ```znapzend.freebsd```
+file to ```/etc/rc.d/znapzend``` and make sure it is executable, and then add
+the following line(s) to your ```/etc/rc.conf``` file to enable or disable
+znapzend as a service:
+
+```sh
+# znapzend_enable (bool):	Set to "NO" by default.
+#				Set it to "YES" to enable znapzend.
+znapzend_enable="YES"
+```
+
+If you want to set parameters for the znapzend daemon separately from the
+rc-script, copy ```znapzend.default``` to ```/etc/defaults/znapzend```
+and edit it. Note that the rc-script in all cases provides a set of its
+own ```command_args``` to manage daemonization, logging and PID file use.
