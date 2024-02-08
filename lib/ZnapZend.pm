@@ -412,7 +412,10 @@ my $sendRecvCleanup = sub {
                 if ($self->autoCreation && !$self->sendRaw) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
-                    # check if we can access destination zpool, if so create parent dataset
+                    # check if we can access destination zpool, if so -
+                    # create parent dataset (e.g. this backupSet root;
+                    # note that if we recurse into children that may be
+                    # absent, they are treated separately below)
                     $self->zZfs->dataSetExists($zpool) && do {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
 
@@ -448,7 +451,21 @@ my $sendRecvCleanup = sub {
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ((grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled)) ? ": not enabled, should be skipped" : ""));
-            {
+
+            # Time to check if the target sub-dataset exists
+            # at all (unless we would auto-create one anyway).
+            if (!$self->autoCreation && !$self->sendRaw && !$self->zZfs->dataSetExists($dstDataSet)) {
+                my $errmsg = "sub-destination '" . $dstDataSet
+                    . "' does not exist or is offline; ignoring it for this round... Consider "
+                    . ( $self->autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
+                    . "disabling this dataset from znapzend handling.";
+                $self->zLog->warn($errmsg);
+                push (@sendFailed, $errmsg);
+                $thisSendFailed = 1;
+                next;
+            }
+
+            {   # scoping
                 local $@;
                 eval {
                     local $SIG{__DIE__};
