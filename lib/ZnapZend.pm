@@ -429,7 +429,7 @@ my $sendRecvCleanup = sub {
                 }
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
-                        . "' does not exist or is offline. ignoring it for this round...";
+                        . "' does not exist or is offline; ignoring it for this round...";
                     $self->zLog->warn($errmsg);
                     push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
