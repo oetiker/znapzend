@@ -4,6 +4,7 @@ znapzend (0.21.3) unstable; urgency=medium
   * Update self-tests with verification that [[user@]host:]dataset[:with-colons][@snap[:with-colons]] string decoding yields expected results
   * Fixed CI recipes and contents for spell-checker
   * Added rc-script and integration documentation for FreeBSD and similar platforms
+  * Extended `--autoCreation` effect (or lack thereof) to newly appearing sub-datasets; added a `--noautoCreation` option to help override configuration file settings (where used)
 
  -- Jim Klimov <jimklimov@gmail.com>  Tue, 9 Jan 2024 13:42:28 +0100
 
