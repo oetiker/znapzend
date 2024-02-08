@@ -49,7 +49,7 @@ has pidfile                 => sub { q{} };
 has forcedSnapshotSuffix    => sub { q{} };
 has defaultPidFile          => sub { q{/var/run/znapzend.pid} };
 has terminate               => sub { 0 };
-has autoCreation            => sub { 0 };
+has autoCreation            => sub { undef };
 has timeWarp                => sub { undef };
 has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
@@ -247,6 +247,15 @@ my $refreshBackupPlans = sub {
         #create backup hashes for all destinations
         for (keys %$backupSet){
             my ($key) = /^dst_([^_]+)_plan$/ or next;
+            my $autoCreation = $self->autoCreation;
+            if (!defined($autoCreation)) {
+                # Caller did not require any particular behavior, so
+                # check the ZFS property name (note lower-case "c"):
+                $autoCreation = (exists $backupSet->{"dst_$key" . '_autocreation'} ? $backupSet->{"dst_$key" . '_autocreation'} : undef);
+            }
+            if (!defined($autoCreation)) {
+                $autoCreation = 0;
+            }
 
             #check if destination exists (i.e. is valid) otherwise recheck as dst might be online, now
             if (!$backupSet->{"dst_$key" . '_valid'}){
@@ -254,7 +263,7 @@ my $refreshBackupPlans = sub {
                 $backupSet->{"dst_$key" . '_valid'} =
                     $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                    if ($self->autoCreation && !$self->sendRaw) {
+                    if ($autoCreation && !$self->sendRaw) {
                         my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
                         # check if we can access destination zpool, if so create parent dataset
@@ -272,7 +281,7 @@ my $refreshBackupPlans = sub {
                     $backupSet->{"dst_$key" . '_valid'} or
                         $self->zLog->warn("destination '" . $backupSet->{"dst_$key"}
                             . "' does not exist or is offline. will be rechecked every run..."
-                            . ( $self->autoCreation ? "" : " Consider running znapzend --autoCreation" ) );
+                            . ( $autoCreation ? "" : " Consider running znapzend --autoCreation" ) );
                 };
 
                 $self->zLog->debug('refreshBackupPlans(): detected dst_' . $key . '_valid status for ' . $backupSet->{"dst_$key"} . ': ' . $backupSet->{"dst_$key" . '_valid'}) if ($self->debug);
@@ -406,10 +415,23 @@ my $sendRecvCleanup = sub {
         #recheck non valid dst as it might be online, now
         if (!$backupSet->{"dst_$key" . '_valid'}) {
 
+            my $autoCreation = $self->autoCreation;
+            if (!defined($autoCreation)) {
+                # Caller did not require any particular behavior, so
+                # check the ZFS property name (note lower-case "c").
+                # Note we are looking at "root" datasets with a backup
+                # schedule here (enumerated earlier); children if any
+                # would be checked below:
+                $autoCreation = (exists $backupSet->{"dst_$key" . '_autocreation'} ? $backupSet->{"dst_$key" . '_autocreation'} : undef);
+            }
+            if (!defined($autoCreation)) {
+                $autoCreation = 0;
+            }
+
             $backupSet->{"dst_$key" . '_valid'} =
                 $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
-                if ($self->autoCreation && !$self->sendRaw) {
+                if ($autoCreation && !$self->sendRaw) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
                     # check if we can access destination zpool, if so -
@@ -427,7 +449,7 @@ my $sendRecvCleanup = sub {
                         }
                     };
                 }
-                ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
+                ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline; ignoring it for this round...";
                     $self->zLog->warn($errmsg);
@@ -450,14 +472,34 @@ my $sendRecvCleanup = sub {
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
+            my $autoCreation = $self->autoCreation;
+            if (!defined($autoCreation)) {
+                # Caller did not require any particular behavior, so
+                # check the ZFS property name (note lower-case "c").
+                # Look at properties of this dataset, allow inherited
+                # values. TOTHINK: Get properties once for all tree?
+                my $properties = $self->zZfs->getDataSetProperties($srcDataSet, 0, 1);
+                if ($properties->[0]) {
+                    for my $prop (keys %{$properties->[0]}) {
+                        if ($prop eq "dst_$key" . '_autocreation') {
+                            $autoCreation = (%{$properties->[0]}{$prop} eq "on" ? 1 : 0);
+                            last;
+                        }
+                    }
+                }
+            }
+            if (!defined($autoCreation)) {
+                $autoCreation = 0;
+            }
+
             $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ((grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled)) ? ": not enabled, should be skipped" : ""));
 
             # Time to check if the target sub-dataset exists
             # at all (unless we would auto-create one anyway).
-            if (!$self->autoCreation && !$self->sendRaw && !$self->zZfs->dataSetExists($dstDataSet)) {
+            if (!$autoCreation && !$self->sendRaw && !$self->zZfs->dataSetExists($dstDataSet)) {
                 my $errmsg = "sub-destination '" . $dstDataSet
                     . "' does not exist or is offline; ignoring it for this round... Consider "
-                    . ( $self->autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
+                    . ( $autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
                     . "disabling this dataset from znapzend handling.";
                 $self->zLog->warn($errmsg);
                 push (@sendFailed, $errmsg);
@@ -473,7 +515,7 @@ my $sendRecvCleanup = sub {
                         'since=="' . $self->since . '"'.
                         ', skipIntermediates=="' . $self->skipIntermediates . '"' .
                         ', forbidDestRollback=="' . $self->forbidDestRollback . '"' .
-                        ', autoCreation=="' . $self->autoCreation . '"' .
+                        ', autoCreation=="' . ( $autoCreation ? "true" : "false" ) . '"' .
                         ', sendRaw=="' . $self->sendRaw . '"' .
                         ', valid=="' . ( $backupSet->{"dst_$key" . '_valid'} ? "true" : "false" ) . '"' .
                         ', justCreated=="' . ( $backupSet->{"dst_$key" . '_justCreated'} ? "true" : "false" ) . '"'

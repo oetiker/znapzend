@@ -85,6 +85,9 @@ sub main {
         $opts->{forbidDestRollback} = 0;
     }
 
+    # Note: default is "undef" to use a ZFS property dst_N_autocreation
+    # (lower-case "c" in the name) if present; finally assumes 0 (false)
+    # if not set in any configuration source for a particular dataset.
     if (defined($opts->{noautoCreation})) {
         $opts->{autoCreation} = 0;
         delete $opts->{noautoCreation};

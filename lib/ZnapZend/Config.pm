@@ -86,6 +86,11 @@ my $checkBackupSets = sub {
     my $self = shift;
 
     for my $backupSet (@{$self->backupSets}){
+        # Note that we only normally call this either when we walk all
+        # known backup/retention schedules (datasets with at least one
+        # local "org.znapzend:..." property), or just once for a single
+        # "--runonce=..." backupSet (not recursing into children with
+        # their exceptional settings then, unless also "--recursive").
 
         # In case there is only one property on this dataset, which is the
         # "enabled" flag and is set to "off"; consider it a normal situation
@@ -94,8 +99,21 @@ my $checkBackupSets = sub {
         # Note: backupSets will have at least the key "src". Therefore, we
         # need to skip the dataset if there are two properties and one of
         # them is "enabled".
-        if (keys(%{$backupSet}) eq 2 && exists($backupSet->{"enabled"})){
-           next;
+        # Similarly, skip checking datasets (enabled or not) that have only
+        # an autoCreation setting for particular destination(s); note that
+        # ZFS property names must be lower-case (so "c" is small here).
+        my @backupSetKeysFiltered = grep (!/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
+        my $backupSetKeysFiltered = scalar(@backupSetKeysFiltered);
+        $self->zLog->debug("#checkBackupSets# backupSetKeysFiltered "
+            . "for '" . $backupSet->{src} . "' = ("
+            . $backupSetKeysFiltered . ")["
+            .  join(", ", @backupSetKeysFiltered) . "]"
+            ) if $self->debug;
+
+        if ( ($backupSetKeysFiltered eq 2 and exists($backupSet->{"enabled"}))
+            or $backupSetKeysFiltered eq 1
+        ) {
+            next;
         }
 
         if ( $backupSet->{src} =~ m/[\@]/ ) {
