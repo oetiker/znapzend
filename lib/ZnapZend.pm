@@ -274,6 +274,8 @@ my $refreshBackupPlans = sub {
                             . "' does not exist or is offline. will be rechecked every run..."
                             . ( $self->autoCreation ? "" : " Consider running znapzend --autoCreation" ) );
                 };
+
+                $self->zLog->debug('refreshBackupPlans(): detected dst_' . $key . '_valid status for ' . $backupSet->{"dst_$key"} . ': ' . $backupSet->{"dst_$key" . '_valid'}) if ($self->debug);
             }
             $backupSet->{"dst$key" . 'PlanHash'}
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
@@ -431,6 +433,8 @@ my $sendRecvCleanup = sub {
                     next;
                 };
             };
+
+            $self->zLog->debug('sendRecvCleanup(): detected dst_' . $key . '_valid status for ' . $backupSet->{"dst_$key"} . ': ' . $backupSet->{"dst_$key" . '_valid'}) if ($self->debug);
         }
 
         #sending loop through all subdatasets
@@ -452,8 +456,12 @@ my $sendRecvCleanup = sub {
                         'since=="' . $self->since . '"'.
                         ', skipIntermediates=="' . $self->skipIntermediates . '"' .
                         ', forbidDestRollback=="' . $self->forbidDestRollback . '"' .
+                        ', autoCreation=="' . $self->autoCreation . '"' .
+                        ', sendRaw=="' . $self->sendRaw . '"' .
+                        ', valid=="' . ( $backupSet->{"dst_$key" . '_valid'} ? "true" : "false" ) . '"' .
                         ', justCreated=="' . ( $backupSet->{"dst_$key" . '_justCreated'} ? "true" : "false" ) . '"'
                         ) if $self->debug;
+
                     if ($self->since) {
                         # Make sure that if we use the "--sinceForced=X" or
                         # "--since=X" option, this named snapshot exists (or
