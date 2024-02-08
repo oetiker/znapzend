@@ -16,7 +16,7 @@ sub main {
     my $opts = {};
     GetOptions($opts, qw(help|h man debug|d noaction|n nodestroy features=s),
         qw(sudo pfexec rootExec=s daemonize pidfile=s logto=s loglevel=s),
-        qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation version),
+        qw(runonce:s connectTimeout=s timeWarp=i nodelay autoCreation noautoCreation version),
         qw(forcedSnapshotSuffix=s forbidDestRollback),
         qw(skipIntermediates|i sendIntermediates|I),
             # Note: the intended usage is either via feature as done
@@ -83,6 +83,15 @@ sub main {
         $opts->{forbidDestRollback} = 1;
     } else {
         $opts->{forbidDestRollback} = 0;
+    }
+
+    if (defined($opts->{noautoCreation})) {
+        $opts->{autoCreation} = 0;
+        delete $opts->{noautoCreation};
+    } else {
+        if (defined($opts->{autoCreation})) {
+            $opts->{autoCreation} = 1;
+        }
     }
 
     if (defined($opts->{sinceForced}) && ($opts->{sinceForced} eq '')) {
@@ -202,6 +211,8 @@ B<znapzend> [I<options>...]
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
  --autoCreation         automatically create dataset on destination if it does
                         not exist
+ --noautoCreation       avoid automatically creating a dataset on destination
+                        if it does not exist (default)
  --timeWarp=x           shift znapzend's sense of NOW into the future
                         by x seconds
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
@@ -609,6 +620,12 @@ sets the ssh connection timeout (in seconds)
 =item B<--autoCreation>
 
 Automatically create a dataset on a destination host if it's not there yet.
+
+=item B<--noautoCreation>
+
+Avoid automatically creating a dataset on a destination host if it's not
+there yet. This is the default behavior; the option is available to help
+explicitly override a setting inherited from a configuration file, etc.
 
 =item B<--timeWarp>=x
 
