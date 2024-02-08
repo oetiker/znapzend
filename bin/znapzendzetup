@@ -402,6 +402,54 @@ sub main {
 
         last;
     };
+    /^enable-dst-autocreation$/ && do {
+        $opts->{dst} = pop @ARGV;
+        $opts->{src} = pop @ARGV;
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+        if (!defined $opts->{dst}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: destination argument for option $mainOpt was not provided\n");
+        }
+        $zConfig->enableBackupSetDstAutoCreation($opts->{src}, $opts->{dst})
+            or die "ERROR: cannot enable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
+
+        last;
+    };
+    /^disable-dst-autocreation$/ && do {
+        $opts->{dst} = pop @ARGV;
+        $opts->{src} = pop @ARGV;
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+        if (!defined $opts->{dst}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: destination argument for option $mainOpt was not provided\n");
+        }
+        $zConfig->disableBackupSetDstAutoCreation($opts->{src}, $opts->{dst})
+            or die "ERROR: cannot disable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
+
+        last;
+    };
+    /^inherit-dst-autocreation$/ && do {
+        $opts->{dst} = pop @ARGV;
+        $opts->{src} = pop @ARGV;
+        if (!defined $opts->{src}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: source argument for option $mainOpt was not provided\n");
+        }
+        if (!defined $opts->{dst}) {
+            pod2usage(-exitval => 'NOEXIT');
+            die ("ERROR: destination argument for option $mainOpt was not provided\n");
+        }
+        $zConfig->inheritBackupSetDstAutoCreation($opts->{src}, $opts->{dst})
+            or die "ERROR: cannot disable backup config for $opts->{src} destination $opts->{dst}. Did you create this config?\n";
+
+        last;
+    };
     /^list$/ && do {
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r inherited))) or exit 1;
 
@@ -590,6 +638,12 @@ and where 'command' and its unique options is one of the following:
     enable-dst  <src_dataset> <DST_key>
 
     disable-dst <src_dataset> <DST_key>
+
+    enable-dst-autocreation  <src_dataset> <DST_key>
+
+    disable-dst-autocreation <src_dataset> <DST_key>
+
+    inherit-dst-autocreation  <src_dataset> <DST_key>
 
     list    [--recursive] [--inherited] [src_dataset...]
 
