@@ -453,8 +453,12 @@ my $sendRecvCleanup = sub {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline; ignoring it for this round...";
                     $self->zLog->warn($errmsg);
-                    push (@sendFailed, $errmsg);
-                    $thisSendFailed = 1;
+                    if (!$autoCreation) {
+                        $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error");
+                    } else {
+                        push (@sendFailed, $errmsg);
+                        $thisSendFailed = 1;
+                    }
                     next;
                 };
             };
@@ -496,14 +500,18 @@ my $sendRecvCleanup = sub {
 
             # Time to check if the target sub-dataset exists
             # at all (unless we would auto-create one anyway).
-            if (!$autoCreation && !$self->sendRaw && !$self->zZfs->dataSetExists($dstDataSet)) {
+            if ((!$autoCreation || !$self->sendRaw) && !($self->zZfs->dataSetExists($dstDataSet))) {
                 my $errmsg = "sub-destination '" . $dstDataSet
                     . "' does not exist or is offline; ignoring it for this round... Consider "
                     . ( $autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
                     . "disabling this dataset from znapzend handling.";
                 $self->zLog->warn($errmsg);
-                push (@sendFailed, $errmsg);
-                $thisSendFailed = 1;
+                if (!$autoCreation) {
+                    $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error");
+                } else {
+                    push (@sendFailed, $errmsg);
+                    $thisSendFailed = 1;
+                }
                 next;
             }
 
