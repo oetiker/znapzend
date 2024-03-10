@@ -452,9 +452,11 @@ my $sendRecvCleanup = sub {
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline; ignoring it for this round...";
-                    $self->zLog->warn($errmsg);
+                    # Avoid spamming for every loop cycle, if we do not have
+                    # the dataset and know we do not intend to auto-create it
+                    $self->zLog->warn($errmsg) if ($autoCreation or $self->debug);
                     if (!$autoCreation) {
-                        $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error");
+                        $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error") if ($self->debug);
                     } else {
                         push (@sendFailed, $errmsg);
                         $thisSendFailed = 1;
@@ -505,9 +507,11 @@ my $sendRecvCleanup = sub {
                     . "' does not exist or is offline; ignoring it for this round... Consider "
                     . ( $autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
                     . "disabling this dataset from znapzend handling.";
-                $self->zLog->warn($errmsg);
+                # Avoid spamming for every loop cycle, if we do not have
+                # the dataset and know we do not intend to auto-create it
+                $self->zLog->warn($errmsg) if ($autoCreation or $self->debug);
                 if (!$autoCreation) {
-                    $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error");
+                    $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error") if ($self->debug);
                 } else {
                     push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
