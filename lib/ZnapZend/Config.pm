@@ -95,7 +95,15 @@ my $checkBackupSets = sub {
         # need to skip the dataset if there are two properties and one of
         # them is "enabled".
         if (keys(%{$backupSet}) eq 2 && exists($backupSet->{"enabled"})){
-           next;
+            next;
+        }
+
+        # Similarly for datasets which declare both the "enabled" flag and
+        # the "recursion" flag (e.g. to prune whole dataset sub-trees from
+        # backing up with znapzend) by configuring only the root of such
+        # sub-tree.
+        if (keys(%{$backupSet}) eq 3 && exists($backupSet->{"enabled"}) && exists($backupSet->{"recursive"})){
+            next;
         }
 
         if ( $backupSet->{src} =~ m/[\@]/ ) {
