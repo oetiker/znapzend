@@ -99,9 +99,11 @@ my $checkBackupSets = sub {
         # Note: backupSets will have at least the key "src". Therefore, we
         # need to skip the dataset if there are two properties and one of
         # them is "enabled".
-        # Similarly, skip checking datasets (enabled or not) that have only
+
+        # Likewise, skip checking datasets (enabled or not) that have only
         # an autoCreation setting for particular destination(s); note that
         # ZFS property names must be lower-case (so "c" is small here).
+        # So we prepare a filtered set of configuration keys:
         my @backupSetKeysFiltered = grep (!/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
         my $backupSetKeysFiltered = scalar(@backupSetKeysFiltered);
         $self->zLog->debug("#checkBackupSets# backupSetKeysFiltered "
@@ -110,9 +112,18 @@ my $checkBackupSets = sub {
             .  join(", ", @backupSetKeysFiltered) . "]"
             ) if $self->debug;
 
+        # "src" and "enabled", or "src" alone (after disregarding autocreation):
         if ( ($backupSetKeysFiltered eq 2 and exists($backupSet->{"enabled"}))
             or $backupSetKeysFiltered eq 1
         ) {
+            next;
+        }
+
+        # Similarly for datasets which declare both the "enabled" flag and
+        # the "recursion" flag (e.g. to prune whole dataset sub-trees from
+        # backing up with znapzend) by configuring only the root of such
+        # sub-tree.
+        if ($backupSetKeysFiltered eq 3 && exists($backupSet->{"enabled"}) && exists($backupSet->{"recursive"})){
             next;
         }
 

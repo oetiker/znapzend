@@ -239,6 +239,7 @@ gtar
 gz
 HAARG
 hadfl
+hashmaps
 Hassler
 Heitm
 heitmueller
@@ -257,6 +258,7 @@ Icreate
 Idataset
 Idestroy
 Idocuments
+idx
 Iexport
 Ifacility
 ifdef
@@ -332,6 +334,7 @@ loglevel
 logto
 lowmem
 lpr
+LRds
 lsb
 ltrim
 mailprog
@@ -465,6 +468,7 @@ respawn
 resync
 RETVAL
 RHEL
+rindex
 rmcmd
 rmdir
 rmprog
@@ -538,6 +542,7 @@ strptime
 subdataset
 SUBDIRS
 subr
+substr
 substvars
 subsys
 sudo
