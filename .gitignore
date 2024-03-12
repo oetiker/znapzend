@@ -25,6 +25,7 @@ thirdparty/*
 !thirdparty/Makefile.am
 !thirdparty/cpanfile*snapshot
 *.tar.gz
+init/znapzend.freebsd
 init/znapzend.service
 init/znapzend.sysv
 init/znapzend.upstart

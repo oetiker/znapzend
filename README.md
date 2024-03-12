@@ -80,6 +80,11 @@ you want to get a custom-made copy of znapzend, you will need a compiler and
 stuff to build some of the prerequisite perl modules into binary libraries
 for the target OS and architecture. For run-time you will need just perl.
 
+For a long time znapzend build required a GNU Make implementation. While this
+is no longer strictly the case, and at least Sun Make (as of OpenIndiana) and
+BSD Make (as of FreeBSD) are also known to work, the instructions below still
+suggest it as optional (if system-provided tools fail, fall back to `gmake`).
+
 The Git checkout includes a pregenerated `configure` script. For a rebuild
 of a checkout from scratch you may also want to `./bootstrap.sh` and then
 would need the autoconf/automake stack.
@@ -100,9 +105,11 @@ apt-get install autoconf carton
 
 * On Solaris 10 you may need the C compiler from Solaris Studio and gnu-make
 since the installed perl version is probably very old and you would likely
-have to build some dependency modules. The GNU make is needed instead of Sun
-make due to syntax differences. Notably you should reference it if you would
-boot-strap the code workspace from scratch:
+have to build some dependency modules. The GNU make may be needed instead
+of Sun make due to syntax standard differences over the years. Notably you
+could have to reference it if you would boot-strap the code workspace from
+scratch (and use later to `gmake install` as suggested by the `configure`
+script):
 ```sh
 MAKE=gmake ./bootstrap.sh
 ```
@@ -116,7 +123,7 @@ prior to running `configure`, e.g.:
 PERL=/opt/perl-32/bin/perl5.32.1 ./configure
 ```
 
-* On OmniOS/SmartOS you will need perl and gnu-make packages.
+* On OmniOS/SmartOS you will need perl and optionally gnu-make packages.
 
 * On macOS, if you have not already installed the Xcode command line tools,
 you can get them from the command line (Terminal app) with:
