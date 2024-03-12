@@ -8,7 +8,7 @@ SUFFIXES = .1 .man .pm
 SUBDIRS = lib thirdparty debian
 
 BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
-PM :=  $(shell find $(srcdir)/lib/ -name "*.pm")
+PM  = @PERL_MODULES@
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 
@@ -22,8 +22,8 @@ EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS cpanfile $(BIN)
 	t/zfs t/znapzendzetup.t t/zpool \
 	debian/znapzend.links.in
 
-YEAR := $(shell date +%Y)
-DATE := $(shell date +%Y-%m-%d)
+YEAR = @CONFIG_YEAR@
+DATE = @CONFIG_DATE@
 
 if ENABLE_SVCINSTALL
 
