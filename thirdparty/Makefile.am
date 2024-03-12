@@ -13,10 +13,9 @@ EXTRA_DIST = bin/cpanm $(wildcard cpanfile*snapshot)
 
 all-local: touch
 
-touch:  bin/cpanm $(CPANSNAPV)
+touch: bin/cpanm carton/bin/carton $(CPANSNAPV)
 	$(AM_V_at)echo "** Installing Dependencies using $(CPANSNAPV)"
 	cp $(CPANSNAPV) ../cpanfile.snapshot
-	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
 	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
 	$(AM_V_at)rm -f ../cpanfile.snapshot
@@ -27,10 +26,12 @@ bin/cpanm:
 	$(URL_CAT) https://cpanmin.us > bin/cpanm
 	$(AM_V_at)chmod 755 bin/cpanm
 
-$(CPANSNAPV): ../cpanfile
+carton/bin/carton: bin/cpanm
+	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
+
+$(CPANSNAPV): ../cpanfile carton/bin/carton
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
 	test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
-	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
 	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
 	mv ../cpanfile.snapshot $(CPANSNAPV)
