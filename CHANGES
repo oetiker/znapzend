@@ -5,8 +5,9 @@ znapzend (0.21.3) unstable; urgency=medium
   * Extended handling of "org.znapzend:enabled=off" setting for sub-trees: now if the same intermediate dataset declares "org.znapzend:recursive=on", the disablement of znapzend handling takes place for descendants as well (previously it had effect only exactly for datasets that set "org.znapzend:enabled=off" as a local ZFS property)
   * Fixed CI recipes and contents for spell-checker
   * Added rc-script and integration documentation for FreeBSD and similar platforms
+  * Converted configure.ac and numerous Makefile.am to avoid GNU Make syntax in favor of portability: tested with Solaris/illumos Sun make and with FreeBSD make
 
- -- Jim Klimov <jimklimov@gmail.com>  Tue, 9 Jan 2024 13:42:28 +0100
+ -- Jim Klimov <jimklimov@gmail.com>  Tue, 12 Mar 2024 13:42:28 +0100
 
 znapzend (0.21.2) unstable; urgency=medium
 

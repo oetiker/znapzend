@@ -2,14 +2,16 @@
 
 AUTOMAKE_OPTIONS =  foreign
 
-THIRDPARTY_DIR := $(shell pwd)
+THIRDPARTY_DIR = $(abs_builddir)
 
-# THIRDPARTY_DIST := $(shell test -d cache && find cache -type f )
-CPANSNAPV := cpanfile-$(shell $(PERL) -MConfig -e 'my $$v = $$Config{version}; $$v =~ s/\.\d+$$//; print $$v').snapshot
+#GNU# THIRDPARTY_DIST :+ $(shell test -d cache && find cache -type f )
+# THIRDPARTY_DIST = @PERL_THIRDPARTY_DIST@
+CPANSNAPV = cpanfile-@PERL_CONFIG_VERSION@.snapshot
 
 
 #EXTRA_DIST = $(THIRDPARTY_DIST) $(wildcard bin/cpanm)
-EXTRA_DIST = bin/cpanm $(wildcard cpanfile*snapshot)
+#EXTRA_DIST = bin/cpanm $(wildcard cpanfile*snapshot)
+EXTRA_DIST = bin/cpanm cpanfile*snapshot
 
 all-local: touch
 
