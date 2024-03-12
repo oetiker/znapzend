@@ -133,6 +133,7 @@ daemonized
 DAGOLDEN
 datadir
 DBD
+DBOOK
 de'u
 debhelper
 debian
