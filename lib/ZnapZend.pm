@@ -607,7 +607,12 @@ my $sendRecvCleanup = sub {
             my $dstDataSet = $srcDataSet;
             $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
 
-            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet . ((grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled)) ? ": not enabled, should be skipped" : ""));
+            my $srcDataSetDisabled = (grep (/^\Q$srcDataSet\E$/, @dataSetsExplicitlyDisabled));
+            $self->zLog->debug('sending snapshots from ' . $srcDataSet . ' to ' . $dstDataSet .
+                ($srcDataSetDisabled ? ": not enabled, skipped" : ""));
+            if ($srcDataSetDisabled) {
+                next;
+            }
 
             # Time to check if the target sub-dataset exists
             # at all (unless we would auto-create one anyway).
