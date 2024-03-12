@@ -26,6 +26,12 @@ AC_PATH_PROG(WGET, wget, no)
 AC_PATH_PROG(POD2MAN, pod2man, no)
 AC_PATH_PROG(RM, rm, no)
 
+AC_MSG_CHECKING([for CONFIG_YEAR and CONFIG_DATE])
+CONFIG_YEAR="`date +%Y`"
+CONFIG_DATE="`date +%Y-%m-%d`"
+AC_MSG_RESULT([got ${CONFIG_YEAR} and ${CONFIG_DATE} respectively])
+AC_SUBST(CONFIG_YEAR)
+AC_SUBST(CONFIG_DATE)
 
 AC_ARG_ENABLE([deb_build],
 AS_HELP_STRING([--enable-deb_build    Enable debian package build specifics]),
@@ -134,6 +140,7 @@ fi
 
 AC_PROG_GREP
 
+dnl We tried to make te Makefile.am syntax portable, but hiccups are possible
 AC_ARG_VAR(GMAKE,   [Path to local GNU Make binary])
 AC_PATH_PROGS(GMAKE, [gnumake gmake make])
 
@@ -141,7 +148,7 @@ AC_MSG_CHECKING([for gnu make availability])
 if  ( $GMAKE --version 2> /dev/null | $GREP GNU  > /dev/null 2>&1 );  then
     AC_MSG_RESULT([$GMAKE is GNU make])
 else
-    AC_MSG_ERROR([GNU make not found. Try setting the GMAKE environment variable.])
+    AC_MSG_WARN([GNU make not found, build recipes might fail. Try setting the GMAKE environment variable.])
 fi
 
 AC_ARG_ENABLE(pkgonly,
@@ -159,6 +166,21 @@ AC_MSG_RESULT(way to expensive!)
 
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
+
+AC_MSG_CHECKING([for PERL_MODULES])
+PERL_MODULES="`find "${srcdir}/lib/" -name "*.pm" | sed "s,^${srcdir}/,"'$(top_srcdir)/', | tr '\n' ' '`"
+AC_MSG_RESULT([${PERL_MODULES}])
+AC_SUBST(PERL_MODULES)
+
+AC_MSG_CHECKING([for PERL_CONFIG_VERSION])
+PERL_CONFIG_VERSION="`${PERL} -MConfig -e 'my $v = $Config{version}; $v =~ s/\.\d+$//; print $v;'`"
+AC_MSG_RESULT([${PERL_CONFIG_VERSION}])
+AC_SUBST(PERL_CONFIG_VERSION)
+
+AC_MSG_CHECKING([for PERL_THIRDPARTY_DIST cache])
+PERL_THIRDPARTY_DIST="`cd thirdparty && test -d cache && find cache -type f | tr '\n' ' '`"
+AS_IF([test x"${PERL_THIRDPARTY_DIST}" = x], [AC_MSG_RESULT([empty])], [AC_MSG_RESULT([populated])])
+AC_SUBST(PERL_THIRDPARTY_DIST)
 
 dnl Autotools default expansion of path settings results in further $variables
 dnl so for practical use in static configs this yarn has to be fully unrolled:
@@ -271,9 +293,10 @@ Settings:
   URL_CAT = $URL_CAT
   DEB_BUILD = $deb_build
 
-The Makefiles use GNU make functionality.
-Continue installation with
+The Makefiles should be portable to the best extent of our testing,
+but their recipes should most certainly succeed with GNU make.
+It is recommended that now you continue installation with
 
-  $GMAKE install
+  ${GMAKE:-make} install
 
 NOTES

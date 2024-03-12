@@ -1,7 +1,7 @@
 # Author: Tobi Oetiker <tobi@oetiker.ch>
 # License: Public Domain
 
-PM :=  $(shell find $(srcdir) -name "*.pm")
+PM = @PERL_MODULES@
 
 datadir = $(libdir)
 nobase_data_DATA = $(PM)
