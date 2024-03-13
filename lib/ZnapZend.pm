@@ -431,6 +431,8 @@ my $refreshBackupPlans = sub {
                             . "' does not exist or is offline. will be rechecked every run..."
                             . ( $self->autoCreation ? "" : " Consider running znapzend --autoCreation" ) );
                 };
+
+                $self->zLog->debug('refreshBackupPlans(): detected dst_' . $key . '_valid status for ' . $backupSet->{"dst_$key"} . ': ' . $backupSet->{"dst_$key" . '_valid'}) if ($self->debug);
             }
             $backupSet->{"dst$key" . 'PlanHash'}
                 = $self->zTime->backupPlanToHash($backupSet->{"dst_$key" . '_plan'});
@@ -567,7 +569,10 @@ my $sendRecvCleanup = sub {
                 if ($self->autoCreation && !$self->sendRaw) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
-                    # check if we can access destination zpool, if so create parent dataset
+                    # check if we can access destination zpool, if so -
+                    # create parent dataset (e.g. this backupSet root;
+                    # note that if we recurse into children that may be
+                    # absent, they are treated separately below)
                     $self->zZfs->dataSetExists($zpool) && do {
                         $self->zLog->info("creating destination dataset '" . $backupSet->{"dst_$key"} . "'...");
 
@@ -581,13 +586,15 @@ my $sendRecvCleanup = sub {
                 }
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $self->autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
-                        . "' does not exist or is offline. ignoring it for this round...";
+                        . "' does not exist or is offline; ignoring it for this round...";
                     $self->zLog->warn($errmsg);
                     push (@sendFailed, $errmsg);
                     $thisSendFailed = 1;
                     next;
                 };
             };
+
+            $self->zLog->debug('sendRecvCleanup(): detected dst_' . $key . '_valid status for ' . $backupSet->{"dst_$key"} . ': ' . $backupSet->{"dst_$key" . '_valid'}) if ($self->debug);
         }
 
         #sending loop through all subdatasets
@@ -607,6 +614,19 @@ my $sendRecvCleanup = sub {
                 next;
             }
 
+            # Time to check if the target sub-dataset exists
+            # at all (unless we would auto-create one anyway).
+            if (!$self->autoCreation && !$self->sendRaw && !$self->zZfs->dataSetExists($dstDataSet)) {
+                my $errmsg = "sub-destination '" . $dstDataSet
+                    . "' does not exist or is offline; ignoring it for this round... Consider "
+                    . ( $self->autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
+                    . "disabling this dataset from znapzend handling.";
+                $self->zLog->warn($errmsg);
+                push (@sendFailed, $errmsg);
+                $thisSendFailed = 1;
+                next;
+            }
+
             {   # scoping
                 local $@;
                 eval {
@@ -615,8 +635,12 @@ my $sendRecvCleanup = sub {
                         'since=="' . $self->since . '"'.
                         ', skipIntermediates=="' . $self->skipIntermediates . '"' .
                         ', forbidDestRollback=="' . $self->forbidDestRollback . '"' .
+                        ', autoCreation=="' . $self->autoCreation . '"' .
+                        ', sendRaw=="' . $self->sendRaw . '"' .
+                        ', valid=="' . ( $backupSet->{"dst_$key" . '_valid'} ? "true" : "false" ) . '"' .
                         ', justCreated=="' . ( $backupSet->{"dst_$key" . '_justCreated'} ? "true" : "false" ) . '"'
                         ) if $self->debug;
+
                     if ($self->since) {
                         # Make sure that if we use the "--sinceForced=X" or
                         # "--since=X" option, this named snapshot exists (or
