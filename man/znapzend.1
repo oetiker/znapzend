@@ -176,6 +176,8 @@ znapzend \- znapzend daemon
 \& \-\-connectTimeout=x     sets the ConnectTimeout for ssh commands
 \& \-\-autoCreation         automatically create dataset on destination if it does
 \&                        not exist
+\& \-\-noautoCreation       avoid automatically creating a dataset on destination
+\&                        if it does not exist (default)
 \& \-\-timeWarp=x           shift znapzend\*(Aqs sense of NOW into the future
 \&                        by x seconds
 \& \-\-skipOnPreSnapCmdFail skip snapshots if the pre\-snap\-command fails
@@ -569,6 +571,11 @@ sets the ssh connection timeout (in seconds)
 .IP "\fB\-\-autoCreation\fR" 4
 .IX Item "--autoCreation"
 Automatically create a dataset on a destination host if it's not there yet.
+.IP "\fB\-\-noautoCreation\fR" 4
+.IX Item "--noautoCreation"
+Avoid automatically creating a dataset on a destination host if it's not
+there yet. This is the default behavior; the option is available to help
+explicitly override a setting inherited from a configuration file, etc.
 .IP "\fB\-\-timeWarp\fR=x" 4
 .IX Item "--timeWarp=x"
 Shift ZnapZend's sense of time into the future by x seconds.
