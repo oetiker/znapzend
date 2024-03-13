@@ -71,6 +71,7 @@ Bznapzendzetup
 Bznapzendztatz
 canmount
 CBuilder
+cdn
 cfg
 cgi
 cgit
