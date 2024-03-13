@@ -20,10 +20,14 @@ FROM docker.io/library/alpine:${ALPINE_VERSION} as runtime
 ARG PERL_VERSION=5.38.2-r0
 
 RUN \
+  # mbuffer is not in main currently, and community keys expire over time,
+  # so gotta bump ALPINE_VERSION above regularly (and likely PERL_VERSION
+  # as dictated by the newer OS release). Request its package first to fail
+  # fast in such case. Note that while "--allow-untrusted" might be an option,
+  # shared libraries referenced by the binary make an older distro outdated.
+  apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ mbuffer && \
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
   apk add --no-cache zfs curl bash autoconf automake nano perl=${PERL_VERSION} openssh && \
-  # mbuffer is not in main currently
-  apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ mbuffer && \
   ln -s /dev/stdout /var/log/syslog && \
   ln -s /usr/bin/perl /usr/local/bin/perl
 
