@@ -71,6 +71,7 @@ Bznapzendzetup
 Bznapzendztatz
 canmount
 CBuilder
+cdn
 cfg
 cgi
 cgit
@@ -133,6 +134,7 @@ daemonized
 DAGOLDEN
 datadir
 DBD
+DBOOK
 de'u
 debhelper
 debian

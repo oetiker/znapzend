@@ -1,0 +1,216 @@
+# carton snapshot format: version 1.0
+DISTRIBUTIONS
+  Class-Method-Modifiers-2.15
+    pathname: E/ET/ETHER/Class-Method-Modifiers-2.15.tar.gz
+    provides:
+      Class::Method::Modifiers 2.15
+    requirements:
+      B 0
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      base 0
+      perl 5.006
+      strict 0
+      warnings 0
+  ExtUtils-Config-0.008
+    pathname: L/LE/LEONT/ExtUtils-Config-0.008.tar.gz
+    provides:
+      ExtUtils::Config 0.008
+    requirements:
+      Data::Dumper 0
+      ExtUtils::MakeMaker 6.30
+      strict 0
+      warnings 0
+  ExtUtils-Helpers-0.026
+    pathname: L/LE/LEONT/ExtUtils-Helpers-0.026.tar.gz
+    provides:
+      ExtUtils::Helpers 0.026
+      ExtUtils::Helpers::Unix 0.026
+      ExtUtils::Helpers::VMS 0.026
+      ExtUtils::Helpers::Windows 0.026
+    requirements:
+      Carp 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Copy 0
+      File::Spec::Functions 0
+      Text::ParseWords 3.24
+      perl 5.006
+      strict 0
+      warnings 0
+  ExtUtils-InstallPaths-0.012
+    pathname: L/LE/LEONT/ExtUtils-InstallPaths-0.012.tar.gz
+    provides:
+      ExtUtils::InstallPaths 0.012
+    requirements:
+      Carp 0
+      ExtUtils::Config 0.002
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Module-Build-Tiny-0.047
+    pathname: L/LE/LEONT/Module-Build-Tiny-0.047.tar.gz
+    provides:
+      Module::Build::Tiny 0.047
+    requirements:
+      CPAN::Meta 0
+      DynaLoader 0
+      Exporter 5.57
+      ExtUtils::CBuilder 0
+      ExtUtils::Config 0.003
+      ExtUtils::Helpers 0.020
+      ExtUtils::Install 0
+      ExtUtils::InstallPaths 0.002
+      ExtUtils::ParseXS 0
+      File::Basename 0
+      File::Find 0
+      File::Path 0
+      File::Spec::Functions 0
+      Getopt::Long 2.36
+      JSON::PP 2
+      Pod::Man 0
+      TAP::Harness::Env 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Mojo-Log-Clearable-1.001
+    pathname: D/DB/DBOOK/Mojo-Log-Clearable-1.001.tar.gz
+    provides:
+      Mojo::Log::Clearable 1.001
+      Mojo::Log::Role::Clearable 1.001
+    requirements:
+      Class::Method::Modifiers 2.11
+      Module::Build::Tiny 0.034
+      Mojolicious 7.42
+      Role::Tiny 2.000002
+      perl 5.010001
+  Mojolicious-9.36
+    pathname: S/SR/SRI/Mojolicious-9.36.tar.gz
+    provides:
+      Mojo undef
+      Mojo::Asset undef
+      Mojo::Asset::File undef
+      Mojo::Asset::Memory undef
+      Mojo::Base undef
+      Mojo::ByteStream undef
+      Mojo::Cache undef
+      Mojo::Collection undef
+      Mojo::Content undef
+      Mojo::Content::MultiPart undef
+      Mojo::Content::Single undef
+      Mojo::Cookie undef
+      Mojo::Cookie::Request undef
+      Mojo::Cookie::Response undef
+      Mojo::DOM undef
+      Mojo::DOM::CSS undef
+      Mojo::DOM::HTML undef
+      Mojo::Date undef
+      Mojo::DynamicMethods undef
+      Mojo::EventEmitter undef
+      Mojo::Exception undef
+      Mojo::File undef
+      Mojo::Headers undef
+      Mojo::HelloWorld undef
+      Mojo::Home undef
+      Mojo::IOLoop undef
+      Mojo::IOLoop::Client undef
+      Mojo::IOLoop::Server undef
+      Mojo::IOLoop::Stream undef
+      Mojo::IOLoop::Subprocess undef
+      Mojo::IOLoop::TLS undef
+      Mojo::JSON undef
+      Mojo::JSON::Pointer undef
+      Mojo::Loader undef
+      Mojo::Log undef
+      Mojo::Message undef
+      Mojo::Message::Request undef
+      Mojo::Message::Response undef
+      Mojo::Parameters undef
+      Mojo::Path undef
+      Mojo::Promise undef
+      Mojo::Reactor undef
+      Mojo::Reactor::EV undef
+      Mojo::Reactor::Poll undef
+      Mojo::Server undef
+      Mojo::Server::CGI undef
+      Mojo::Server::Daemon undef
+      Mojo::Server::Hypnotoad undef
+      Mojo::Server::Morbo undef
+      Mojo::Server::Morbo::Backend undef
+      Mojo::Server::Morbo::Backend::Poll undef
+      Mojo::Server::PSGI undef
+      Mojo::Server::Prefork undef
+      Mojo::Template undef
+      Mojo::Transaction undef
+      Mojo::Transaction::HTTP undef
+      Mojo::Transaction::WebSocket undef
+      Mojo::URL undef
+      Mojo::Upload undef
+      Mojo::UserAgent undef
+      Mojo::UserAgent::CookieJar undef
+      Mojo::UserAgent::Proxy undef
+      Mojo::UserAgent::Server undef
+      Mojo::UserAgent::Transactor undef
+      Mojo::Util undef
+      Mojo::WebSocket undef
+      Mojolicious 9.36
+      Mojolicious::Command undef
+      Mojolicious::Command::Author::cpanify undef
+      Mojolicious::Command::Author::generate undef
+      Mojolicious::Command::Author::generate::app undef
+      Mojolicious::Command::Author::generate::dockerfile undef
+      Mojolicious::Command::Author::generate::lite_app undef
+      Mojolicious::Command::Author::generate::makefile undef
+      Mojolicious::Command::Author::generate::plugin undef
+      Mojolicious::Command::Author::inflate undef
+      Mojolicious::Command::cgi undef
+      Mojolicious::Command::daemon undef
+      Mojolicious::Command::eval undef
+      Mojolicious::Command::get undef
+      Mojolicious::Command::prefork undef
+      Mojolicious::Command::psgi undef
+      Mojolicious::Command::routes undef
+      Mojolicious::Command::version undef
+      Mojolicious::Commands undef
+      Mojolicious::Controller undef
+      Mojolicious::Lite undef
+      Mojolicious::Plugin undef
+      Mojolicious::Plugin::Config undef
+      Mojolicious::Plugin::DefaultHelpers undef
+      Mojolicious::Plugin::EPLRenderer undef
+      Mojolicious::Plugin::EPRenderer undef
+      Mojolicious::Plugin::HeaderCondition undef
+      Mojolicious::Plugin::JSONConfig undef
+      Mojolicious::Plugin::Mount undef
+      Mojolicious::Plugin::NotYAMLConfig undef
+      Mojolicious::Plugin::TagHelpers undef
+      Mojolicious::Plugins undef
+      Mojolicious::Renderer undef
+      Mojolicious::Routes undef
+      Mojolicious::Routes::Match undef
+      Mojolicious::Routes::Pattern undef
+      Mojolicious::Routes::Route undef
+      Mojolicious::Sessions undef
+      Mojolicious::Static undef
+      Mojolicious::Types undef
+      Mojolicious::Validator undef
+      Mojolicious::Validator::Validation undef
+      Test::Mojo undef
+      ojo undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      IO::Socket::IP 0.37
+      Sub::Util 1.41
+      perl 5.016
+  Role-Tiny-2.002004
+    pathname: H/HA/HAARG/Role-Tiny-2.002004.tar.gz
+    provides:
+      Role::Tiny 2.002004
+      Role::Tiny::With 2.002004
+    requirements:
+      Exporter 5.57
+      perl 5.006

@@ -185,10 +185,15 @@ my $checkBackupSets = sub {
             }
         }
         if ($backupSet->{src_mbuffer}) {
-            if (!($self->zfs->fileExistsAndExec($backupSet->{src_mbuffer}))) {
+            if ($backupSet->{src_mbuffer} ne 'off' and !($self->zfs->fileExistsAndExec($backupSet->{src_mbuffer}))) {
                 warn "*** WARNING: executable '$backupSet->{src_mbuffer}' does not exist on source system, will ignore\n\n";
                 $backupSet->{src_mbuffer} = undef;
             }
+        }
+        if (!($backupSet->{src_mbuffer})) {
+            # Do not leave loose ends after all
+            $self->zLog->info("WARNING: property 'src_mbuffer' not set on backup for " . $backupSet->{src} . ", defaulting to 'off'");
+            $backupSet->{src_mbuffer} = 'off';
         }
         if (!exists($backupSet->{src_mbuffer_size}) or !($backupSet->{src_mbuffer_size})) {
             $backupSet->{src_mbuffer_size} = $backupSet->{mbuffer_size};
