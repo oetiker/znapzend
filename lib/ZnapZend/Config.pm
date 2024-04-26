@@ -204,6 +204,7 @@ my $checkBackupSets = sub {
         for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
             #store backup destination validity. will be checked where used
             $backupSet->{$dst . '_valid'} = $self->zfs->dataSetExists($backupSet->{$dst});
+            $self->zLog->debug('checkBackupSets(): detected ' . $dst . '_valid status for ' . $backupSet->{$dst} . ': ' . $backupSet->{$dst . '_valid'}) if ($self->debug);
 
             #if a backup destination is given, we also need a plan
             $backupSet->{$dst . '_plan'} or die "ERROR: no backup plan given for destination\n";
