@@ -16,6 +16,7 @@ B<znapzend> [I<options>...]
  --forbidDestRollback   forbids forcing destination dataset rollback and
                         removal of datasets/snapshots not present on source
  --logto=x              select where to log (syslog::<facility> or <filepath>)
+                        when logging to a file, send USR1 to re-open the filehandle
  --loglevel=x           define the log level
  --pidfile=x            write a pid file when running in daemon mode
  --daemonize            fork into the background
@@ -36,6 +37,8 @@ B<znapzend> [I<options>...]
  --connectTimeout=x     sets the ConnectTimeout for ssh commands
  --autoCreation         automatically create dataset on destination if it does
                         not exist
+ --noautoCreation       avoid automatically creating a dataset on destination
+                        if it does not exist (default)
  --timeWarp=x           shift znapzend's sense of NOW into the future
                         by x seconds
  --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
@@ -91,6 +94,8 @@ regularly scheduled operations.
 send logs out to either syslog or a logfile. Default is to send logs to
 B<syslog::daemon> when running daemonized. When running in debug mode, the
 logs will go to STDERR by default.
+
+When logging to a file, send USR1 to reopen the file handle after log rotation.
 
 Examples:
 
@@ -441,6 +446,12 @@ sets the ssh connection timeout (in seconds)
 =item B<--autoCreation>
 
 Automatically create a dataset on a destination host if it's not there yet.
+
+=item B<--noautoCreation>
+
+Avoid automatically creating a dataset on a destination host if it's not
+there yet. This is the default behavior; the option is available to help
+explicitly override a setting inherited from a configuration file, etc.
 
 =item B<--timeWarp>=x
 
