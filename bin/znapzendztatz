@@ -10,7 +10,7 @@ use Mojo::Base -strict;
 use Mojo::Log;
 use ZnapZend::Config;
 use ZnapZend::ZFS;
-my $VERSION = '0.dev'; #VERSION
+my $VERSION = q{0.22.0}; # VERSION
 my $zConfig;
 my $zZfs;
 my $zTime = ZnapZend::Time->new();

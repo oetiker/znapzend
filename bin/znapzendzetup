@@ -10,7 +10,7 @@ use Scalar::Util qw(blessed);
 use Mojo::Base -strict;
 use Mojo::Log;
 use ZnapZend::Config;
-my $VERSION = '0.dev'; #VERSION
+my $VERSION = q{0.22.0}; # VERSION
 
 my @ROOT_EXEC_OPTIONS = qw(pfexec sudo rootExec=s debug features=s);
 my %featureMap = map { $_ => 1 } qw(pfexec sudo lowmemRecurse zfsGetType);

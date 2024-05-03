@@ -21,9 +21,14 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC plan dataset \
+            SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST[:key] plan [[user@]host:]dataset
-                [pre-send-command] [post-send-command] ]
+                [pre-send-command] [post-send-command] \
+                [dst_mbuffer_path[:port]] [dst_mbuffer_size] ]
+
+            NOTE: If you specify [user@]host:dataset for remote replication
+            over SSH, make use of ~/.ssh/config for any advanced options
+            (custom ports, keys to use, etc.) See znapzend README for ideas.
 
     delete  [--dst=key] <src_dataset>
 
@@ -33,9 +38,10 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC [plan] dataset \
+            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST:key [plan] [dataset] \
-                [pre-send-command|off] [post-send-command|off] ]
+                [pre-send-command|off] [post-send-command|off] \
+                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] ]
 
     edit    <src_dataset>
 
@@ -46,6 +52,12 @@ and where 'command' and its unique options is one of the following:
     enable-dst  <src_dataset> <DST_key>
 
     disable-dst <src_dataset> <DST_key>
+
+    enable-dst-autocreation  <src_dataset> <DST_key>
+
+    disable-dst-autocreation <src_dataset> <DST_key>
+
+    inherit-dst-autocreation  <src_dataset> <DST_key>
 
     list    [--recursive] [--inherited] [src_dataset...]
 
@@ -179,14 +191,39 @@ separator.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer>
 
-Specify the path to your copy of the mbuffer utility.
+DEPRECATED: Specify the path to your copy of the mbuffer utility.
+
+NOTE: with this option, the same path would be used for all remote
+destinations - this can misfire if they run different operating systems.
+
+It is currently recommended to define individual B<dst_mbuffer_path>
+options for each separate destination in each dataset configuration.
+The B<--mbuffer> value would be used as a fallback default for those.
+
+Per legacy-default behavior, the mbuffer program was not used by the
+sender (unless using a dedicated port, see below). Nowadays it is
+possible to specify it instead of (or in addition to) a destination
+side mbuffer, using the B<src_mbuffer_path> in each source dataset
+configuration.
 
 =item B<--mbuffer>=I</usr/bin/mbuffer:31337>
 
-Specify the path to your copy of the mbuffer utility and the port used
-on the destination. Caution: znapzend will send the data directly
-from source mbuffer to destination mbuffer, thus data stream is B<not>
-encrypted.
+DEPRECATED: Specify the path to your copy of the mbuffer utility and
+the port used on the destination. Caution: znapzend will use SSH to
+set up the remote mbuffer receiver, but will send the snapshot data
+stream directly from source mbuffer to destination mbuffer. In other
+words, the data stream is B<not> encrypted. Use this only in a trusted
+LAN or over VPN, where you can safely avoid the overheads of an SSH
+tunnel.
+
+NOTE: with this option, the same path would be used for all remote
+destinations as well as the source system - this can misfire if they
+run different operating systems.
+
+It is currently recommended to define individual B<*_mbuffer_path>
+options for each source and each separate destination in each dataset
+configuration. The B<--mbuffer> value would be used as a fallback
+default for those (with only path component for the source).
 
 =item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
 
@@ -200,6 +237,10 @@ To specify a mbuffer size of 100MB:
  --mbuffersize=100M
 
 If not set, the buffer size defaults to 1GB.
+
+It is currently suggested to define individual B<mbuffer_size> options for
+each source and each separate destination in each dataset configuration.
+The B<--mbuffer-size> value would be used as a fallback default for those.
 
 =item B<--donotask>
 
@@ -298,11 +339,13 @@ create a complex backup task
        --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
        --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
        SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
+          "/usr/bin/mbuffer" "128M" \
        DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
        DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' \
           root@bserv:backup/home \
           "/root/znapzend.sh dst_b pool on" \
-          "/root/znapzend.sh dst_b pool off"
+          "/root/znapzend.sh dst_b pool off" \
+          "/opt/bin64/mbuffer" "4G"
 
 
 copy the setup from one fileset to another

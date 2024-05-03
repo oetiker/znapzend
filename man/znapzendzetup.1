@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "ZNAPZENDZETUP 1"
-.TH ZNAPZENDZETUP 1 "2022-10-21" "0.21.1" "znapzend"
+.TH ZNAPZENDZETUP 1 "2024-05-03" "0.22.1" "znapzend"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -156,15 +156,16 @@ following:
 .PP
 and where 'command' and its unique options is one of the following:
 .PP
-.Vb 8
+.Vb 9
 \&    create  [\-\-recursive] [\-\-mbuffer=<path>[:<port>]] [\-\-mbuffersize=<size>] \e
 \&            [\-\-pre\-snap\-command=<command>] \e
 \&            [\-\-post\-snap\-command=<command>] \e
 \&            [\-\-tsformat=<format>] \-\-donotask \e
 \&            [\-\-send\-delay=<time>] \e
-\&            SRC plan dataset \e
+\&            SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \e
 \&            [ DST[:key] plan [[user@]host:]dataset
-\&                [pre\-send\-command] [post\-send\-command] ]
+\&                [pre\-send\-command] [post\-send\-command] \e
+\&                [dst_mbuffer_path[:port]] [dst_mbuffer_size] ]
 \&
 \&            NOTE: If you specify [user@]host:dataset for remote replication
 \&            over SSH, make use of ~/.ssh/config for any advanced options
@@ -178,9 +179,10 @@ and where 'command' and its unique options is one of the following:
 \&            [\-\-post\-snap\-command=<command>|off] \e
 \&            [\-\-tsformat=<format>] \-\-donotask \e
 \&            [\-\-send\-delay=<time>] \e
-\&            SRC [plan] dataset \e
+\&            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \e
 \&            [ DST:key [plan] [dataset] \e
-\&                [pre\-send\-command|off] [post\-send\-command|off] ]
+\&                [pre\-send\-command|off] [post\-send\-command|off] \e
+\&                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] ]
 \&
 \&    edit    <src_dataset>
 \&
@@ -191,6 +193,12 @@ and where 'command' and its unique options is one of the following:
 \&    enable\-dst  <src_dataset> <DST_key>
 \&
 \&    disable\-dst <src_dataset> <DST_key>
+\&
+\&    enable\-dst\-autocreation  <src_dataset> <DST_key>
+\&
+\&    disable\-dst\-autocreation <src_dataset> <DST_key>
+\&
+\&    inherit\-dst\-autocreation  <src_dataset> <DST_key>
 \&
 \&    list    [\-\-recursive] [\-\-inherited] [src_dataset...]
 \&
@@ -323,13 +331,38 @@ intend to browse the snapshots with windoz, you may want to use a different
 separator.
 .IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer\fR" 4
 .IX Item "--mbuffer=/usr/bin/mbuffer"
-Specify the path to your copy of the mbuffer utility.
+\&\s-1DEPRECATED:\s0 Specify the path to your copy of the mbuffer utility.
+.Sp
+\&\s-1NOTE:\s0 with this option, the same path would be used for all remote
+destinations \- this can misfire if they run different operating systems.
+.Sp
+It is currently recommended to define individual \fBdst_mbuffer_path\fR
+options for each separate destination in each dataset configuration.
+The \fB\-\-mbuffer\fR value would be used as a fallback default for those.
+.Sp
+Per legacy-default behavior, the mbuffer program was not used by the
+sender (unless using a dedicated port, see below). Nowadays it is
+possible to specify it instead of (or in addition to) a destination
+side mbuffer, using the \fBsrc_mbuffer_path\fR in each source dataset
+configuration.
 .IP "\fB\-\-mbuffer\fR=\fI/usr/bin/mbuffer:31337\fR" 4
 .IX Item "--mbuffer=/usr/bin/mbuffer:31337"
-Specify the path to your copy of the mbuffer utility and the port used
-on the destination. Caution: znapzend will send the data directly
-from source mbuffer to destination mbuffer, thus data stream is \fBnot\fR
-encrypted.
+\&\s-1DEPRECATED:\s0 Specify the path to your copy of the mbuffer utility and
+the port used on the destination. Caution: znapzend will use \s-1SSH\s0 to
+set up the remote mbuffer receiver, but will send the snapshot data
+stream directly from source mbuffer to destination mbuffer. In other
+words, the data stream is \fBnot\fR encrypted. Use this only in a trusted
+\&\s-1LAN\s0 or over \s-1VPN,\s0 where you can safely avoid the overheads of an \s-1SSH\s0
+tunnel.
+.Sp
+\&\s-1NOTE:\s0 with this option, the same path would be used for all remote
+destinations as well as the source system \- this can misfire if they
+run different operating systems.
+.Sp
+It is currently recommended to define individual \fB*_mbuffer_path\fR
+options for each source and each separate destination in each dataset
+configuration. The \fB\-\-mbuffer\fR value would be used as a fallback
+default for those (with only path component for the source).
 .IP "\fB\-\-mbuffersize\fR=\fInumber\fR{\fBb\fR|\fBk\fR|\fBM\fR|\fBG\fR}" 4
 .IX Item "--mbuffersize=number{b|k|M|G}"
 The size of the mbuffer can be set with the \fB\-\-mbuffersize\fR option.  It
@@ -346,6 +379,10 @@ To specify a mbuffer size of 100MB:
 .Ve
 .Sp
 If not set, the buffer size defaults to 1GB.
+.Sp
+It is currently suggested to define individual \fBmbuffer_size\fR options for
+each source and each separate destination in each dataset configuration.
+The \fB\-\-mbuffer\-size\fR value would be used as a fallback default for those.
 .IP "\fB\-\-donotask\fR" 4
 .IX Item "--donotask"
 Apply changes immediately. Without being asked if the config is as you
@@ -426,17 +463,19 @@ may be called multiple times to override properties in the imported config.
 .IX Header "EXAMPLES"
 create a complex backup task
 .PP
-.Vb 10
+.Vb 12
 \&    znapzendzetup create \-\-recursive \-\-mbuffer=/opt/omni/bin/mbuffer \e
 \&       \-\-mbuffersize=1G \-\-tsformat=\*(Aq%Y\-%m\-%d\-%H%M%S\*(Aq \e
 \&       \-\-pre\-snap\-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \e
 \&       \-\-post\-snap\-command="/bin/sh /usr/local/bin/unlock_db.sh" \e
 \&       SRC \*(Aq7d=>1h,30d=>4h,90d=>1d\*(Aq tank/home \e
+\&          "/usr/bin/mbuffer" "128M" \e
 \&       DST:a \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq backup/home \e
 \&       DST:b \*(Aq7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month\*(Aq \e
 \&          root@bserv:backup/home \e
 \&          "/root/znapzend.sh dst_b pool on" \e
-\&          "/root/znapzend.sh dst_b pool off"
+\&          "/root/znapzend.sh dst_b pool off" \e
+\&          "/opt/bin64/mbuffer" "4G"
 .Ve
 .PP
 copy the setup from one fileset to another

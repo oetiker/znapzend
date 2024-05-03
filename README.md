@@ -134,7 +134,7 @@ xcode-select --install  ### ...or just install the full Xcode app from the Apple
 With that in place you can now utter:
 
 ```sh
-ZNAPVER=0.21.1
+ZNAPVER=0.22.1
 wget https://github.com/oetiker/znapzend/releases/download/v${ZNAPVER}/znapzend-${ZNAPVER}.tar.gz
 tar zxvf znapzend-${ZNAPVER}.tar.gz
 cd znapzend-${ZNAPVER}
@@ -159,7 +159,7 @@ Optionally (but recommended) put symbolic links to the installed binaries
 in the system PATH, e.g.:
 
 ```sh
-ZNAPVER=0.21.1
+ZNAPVER=0.22.1
 for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -fs ../../../$x /usr/local/bin/; done
 ```
 
@@ -612,4 +612,4 @@ And if you have a code or documentation contribution, please
 Enjoy!
 
 Dominik Hassler & Tobi Oetiker
-2022-01-20
+2024-05-03
