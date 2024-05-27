@@ -24,11 +24,13 @@ touch: bin/cpanm carton/bin/carton $(CPANSNAPV)
 	$(AM_V_at)touch touch
 
 bin/cpanm:
+	$(AM_V_at)echo "** Installing CPANM tool"
 	$(AM_V_at)mkdir -p bin
 	$(URL_CAT) https://cpanmin.us > bin/cpanm
 	$(AM_V_at)chmod 755 bin/cpanm
 
 carton/bin/carton: bin/cpanm
+	$(AM_V_at)echo "** Installing/Checking Carton tool"
 	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
 
 $(CPANSNAPV): ../cpanfile carton/bin/carton
