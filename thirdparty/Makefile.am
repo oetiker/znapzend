@@ -48,7 +48,7 @@ update: $(CPANSNAPV)
 	$(AM_V_at)mv ../cpanfile.snapshot $(CPANSNAPV)
 
 clean-local:
-	ls -1 | grep -v Makefile | grep -v cpanfile |grep -v bin | xargs rm -rf
+	ls -1 | grep -v Makefile | grep -v cpanfile | grep -v bin | xargs rm -rf
 
 distclean-local:
 	ls -1 | grep -v Makefile | grep -v cpanfile | xargs rm -rf
