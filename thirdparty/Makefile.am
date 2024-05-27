@@ -21,11 +21,15 @@ all-local: touch
 # It seems that neutering inheritance of parallel/nested "make" also helps;
 # alternately properly annotating such inheritance (`+` starting the line)
 # might also help. Trying both belts and suspenders here.
+# To add injury to insult, CPANM also uses `make` and is impacted by e.g.
+# the DESTDIR setting (if caller of znapzend `make` passes one) which may
+# also be made known via MAKEFLAGS (as of GNU Make).
 touch: bin/cpanm carton/bin/carton $(CPANSNAPV)
 	$(AM_V_at)echo "** Installing Dependencies using $(CPANSNAPV)"
 	cp $(CPANSNAPV) ../cpanfile.snapshot
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
-	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+	+$(AM_V_at)TRIES=5 ; unset DESTDIR || true ; unset MAKEFLAGS || true ; \
+	 while test "$${TRIES}" -gt 0 ; do \
 		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install \
 		&& exit ; \
 		TRIES="`expr $${TRIES} - 1`" ; \
@@ -43,7 +47,8 @@ bin/cpanm:
 
 carton/bin/carton: bin/cpanm
 	$(AM_V_at)echo "** Installing/Checking Carton tool"
-	+$(AM_V_at)TRIES=5 ; while ! test -x carton/bin/carton ; do \
+	+$(AM_V_at)TRIES=5 ; unset DESTDIR || true ; unset MAKEFLAGS || true ; \
+	 while ! test -x carton/bin/carton ; do \
 		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse \
 		&& exit ; \
 		TRIES="`expr $${TRIES} - 1`" ; \
@@ -57,7 +62,8 @@ $(CPANSNAPV): ../cpanfile carton/bin/carton
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
 	test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
-	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+	+$(AM_V_at)TRIES=5 ; unset DESTDIR || true ; unset MAKEFLAGS || true ; \
+	 while test "$${TRIES}" -gt 0 ; do \
 		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install \
 		&& exit ; \
 		TRIES="`expr $${TRIES} - 1`" ; \
@@ -70,7 +76,8 @@ $(CPANSNAPV): ../cpanfile carton/bin/carton
 update: $(CPANSNAPV)
 	$(AM_V_at)echo "** Updating Dependencies using Carton update"
 	$(AM_V_at)cp $(CPANSNAPV) ../cpanfile.snapshot
-	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+	+$(AM_V_at)TRIES=5 ; unset DESTDIR || true ; unset MAKEFLAGS || true ; \
+	 while test "$${TRIES}" -gt 0 ; do \
 		$(AM_V_at)PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton update \
 		&& exit ; \
 		TRIES="`expr $${TRIES} - 1`" ; \
