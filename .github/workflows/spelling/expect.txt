@@ -360,6 +360,7 @@ missingpool
 Mkbootstrap
 mkdir
 mkdirprog
+Mksymlists
 modled
 mojolicious
 Morbo
@@ -413,6 +414,7 @@ passphrase
 passwordless
 perl
 perldoc
+PEVANS
 pfexec
 php
 pid
@@ -436,7 +438,7 @@ posix
 prebuilt
 precmd
 prefork
-PREREQ
+prereq
 primarycache
 printf
 printsrc
@@ -470,6 +472,7 @@ resync
 RETVAL
 RHEL
 rindex
+RJBS
 rmcmd
 rmdir
 rmprog
@@ -516,6 +519,7 @@ sourcemissing
 sourcetype
 sourcing
 SPAMALOT
+spamming
 src
 srcame
 srcdir
