@@ -15,11 +15,23 @@ EXTRA_DIST = bin/cpanm cpanfile*snapshot
 
 all-local: touch
 
+# NOTE: CPANM pulls a number of dependencies which seem to get installed in
+# parallel - in a random chaotic order (pun intended), so a few iterations
+# may be required - up to the amount of dependencies in the worst case.
+# It seems that neutering inheritance of parallel/nested "make" also helps;
+# alternately properly annotating such inheritance (`+` starting the line)
+# might also help. Trying both belts and suspenders here.
 touch: bin/cpanm carton/bin/carton $(CPANSNAPV)
 	$(AM_V_at)echo "** Installing Dependencies using $(CPANSNAPV)"
 	cp $(CPANSNAPV) ../cpanfile.snapshot
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
-	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install \
+		&& exit ; \
+		TRIES="`expr $${TRIES} - 1`" ; \
+		echo "** RETRY Installing Dependencies using $(CPANSNAPV) (attempts left: $${TRIES})" ; \
+		MAKEFLAGS="" ; export MAKEFLAGS ; \
+	done
 	$(AM_V_at)rm -f ../cpanfile.snapshot
 	$(AM_V_at)touch touch
 
@@ -31,20 +43,40 @@ bin/cpanm:
 
 carton/bin/carton: bin/cpanm
 	$(AM_V_at)echo "** Installing/Checking Carton tool"
-	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
+	+$(AM_V_at)TRIES=5 ; while ! test -x carton/bin/carton ; do \
+		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse \
+		&& exit ; \
+		TRIES="`expr $${TRIES} - 1`" ; \
+		if test "$${TRIES}" -lt 1 ; then exit 1 ; fi ; \
+		echo "** RETRY Installing/Checking Carton tool (attempts left: $${TRIES})" ; \
+		MAKEFLAGS="" ; export MAKEFLAGS ; \
+	done
+	test -x carton/bin/carton
 
 $(CPANSNAPV): ../cpanfile carton/bin/carton
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
 	test -f $(CPANSNAPV) && cp $(CPANSNAPV) ../cpanfile.snapshot || true
 # if ever DBD::ODBC is compiled, make sure we get the utf8 version
-	PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) DBD_ODBC_UNICODE=1 PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install \
+		&& exit ; \
+		TRIES="`expr $${TRIES} - 1`" ; \
+		echo "** RETRY Installing Dependencies using $(CPANSNAPV) (attempts left: $${TRIES})" ; \
+		MAKEFLAGS="" ; export MAKEFLAGS ; \
+	done
 	mv ../cpanfile.snapshot $(CPANSNAPV)
 	$(AM_V_at)touch touch
 
 update: $(CPANSNAPV)
 	$(AM_V_at)echo "** Updating Dependencies using Carton update"
 	$(AM_V_at)cp $(CPANSNAPV) ../cpanfile.snapshot
-	$(AM_V_at)PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton update
+	+$(AM_V_at)TRIES=5 ; while test "$${TRIES}" -gt 0 ; do \
+		$(AM_V_at)PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton update \
+		&& exit ; \
+		TRIES="`expr $${TRIES} - 1`" ; \
+		echo "** RETRY Installing Dependencies using $(CPANSNAPV) (attempts left: $${TRIES})" ; \
+		MAKEFLAGS="" ; export MAKEFLAGS ; \
+	done
 	$(AM_V_at)mv ../cpanfile.snapshot $(CPANSNAPV)
 
 clean-local:
