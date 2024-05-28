@@ -1,4 +1,5 @@
-
+  * Fix `make install` of Perl modules with a custom `DESTDIR` and/or when
+    applying `configure --libdir=...` requirements -- @jimklimov
   * Applied same markup style to older CHANGES logged entries -- @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
