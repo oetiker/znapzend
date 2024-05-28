@@ -4,6 +4,9 @@
     resource file during build -- @jimklimov
   * Fix `make install` of Perl modules with a custom `DESTDIR` and/or when
     applying `configure --libdir=...` requirements -- @jimklimov
+  * Renamed `lib/inheritLevels.pm` to `lib/ZnapZend/InheritLevels.pm`, in
+    order to minimize confusion (especially when targeting OS-wide Perl
+    module installations) -- @jimklimov
   * Applied same markup style to older CHANGES logged entries -- @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
