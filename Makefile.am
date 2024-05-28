@@ -8,7 +8,7 @@ SUFFIXES = .1 .man .pm
 SUBDIRS = lib thirdparty debian
 
 BIN = bin/@PACKAGE@ bin/znapzendzetup bin/znapzendztatz
-PM  = @PERL_MODULES@
+PM  = @PERL_MODULES_EXTRA_DIST@
 MAN = man/znapzend.1 man/znapzendzetup.1 man/znapzendztatz.1
 POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 

@@ -2,6 +2,7 @@
     (previously was only done as part of GitHub checks); renamed the
     `cpanfile` to `cpanfile.common` to avoid changing the Git-tracked
     resource file during build -- @jimklimov
+  * Fix make install of Perl modules with a custom DESTDIR and/or libdir @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
 
