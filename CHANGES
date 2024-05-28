@@ -1,6 +1,7 @@
-0.22.1 2024-05-03 10:20:29 +0200 Tobias Oetiker <tobi@oetiker.ch>
-
- -
+  * Updated recipes for `make check` to install Perl modules it needs
+    (previously was only done as part of GitHub checks); renamed the
+    `cpanfile` to `cpanfile.common` to avoid changing the Git-tracked
+    resource file during build -- @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
 

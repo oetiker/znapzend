@@ -1,6 +1,7 @@
 #  Copyright (C) 2019 Tobias Oetiker
 
 AUTOMAKE_OPTIONS =  foreign
+CLEANFILES =
 
 THIRDPARTY_DIR = $(abs_builddir)
 
@@ -14,6 +15,9 @@ CPANSNAPV = cpanfile-@PERL_CONFIG_VERSION@.snapshot
 EXTRA_DIST = bin/cpanm cpanfile*snapshot
 
 all-local: touch
+
+../cpanfile:
+	+cd .. && $(MAKE) $(AM_MAKEFLAGS) cpanfile
 
 touch: bin/cpanm carton/bin/carton $(CPANSNAPV)
 	$(AM_V_at)echo "** Installing Dependencies using $(CPANSNAPV)"
@@ -30,6 +34,16 @@ bin/cpanm:
 
 carton/bin/carton: bin/cpanm
 	test -x carton/bin/carton || PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) $(PERL) bin/cpanm -q --notest --local-lib-contained $(THIRDPARTY_DIR)/carton Carton Date::Parse
+
+test-deps: ../cpanfile.common ../cpanfile.test carton/bin/carton
+	$(AM_V_at)echo "** Installing Test Dependencies using Carton install"
+	$(AM_V_at)cat ../cpanfile.common ../cpanfile.test > ../cpanfile
+	$(AM_V_at)rm -f ../cpanfile.snapshot
+	$(AM_V_at)PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install
+	$(AM_V_at)rm -f ../cpanfile ../cpanfile.snapshot
+	$(AM_V_at)touch "$@"
+
+CLEANFILES += test-deps
 
 $(CPANSNAPV): ../cpanfile carton/bin/carton
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
