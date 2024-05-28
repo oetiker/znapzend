@@ -167,8 +167,13 @@ AC_MSG_RESULT(way to expensive!)
 AC_ARG_VAR(PERL5LIB,   [Colon separated list of perl library directories])
 AC_SUBST(PERL5LIB)
 
+AC_MSG_CHECKING([for PERL_MODULES_EXTRA_DIST])
+PERL_MODULES_EXTRA_DIST="`find "${srcdir}/lib/" -name "*.pm" | sed "s,^${srcdir}/,"'$(top_srcdir)/', | tr '\n' ' '`"
+AC_MSG_RESULT([${PERL_MODULES_EXTRA_DIST}])
+AC_SUBST(PERL_MODULES_EXTRA_DIST)
+
 AC_MSG_CHECKING([for PERL_MODULES])
-PERL_MODULES="`find "${srcdir}/lib/" -name "*.pm" | sed "s,^${srcdir}/,"'$(top_srcdir)/', | tr '\n' ' '`"
+PERL_MODULES="`cd "${srcdir}/lib/" && ( find . -name "*.pm" | sed 's,^\./,,' | tr '\n' ' ' )`"
 AC_MSG_RESULT([${PERL_MODULES}])
 AC_SUBST(PERL_MODULES)
 
