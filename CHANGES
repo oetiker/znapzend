@@ -1,44 +1,60 @@
-0.22.1 2024-05-03 10:20:29 +0200 Tobias Oetiker <tobi@oetiker.ch>
-
- -
+  * Applied same markup style to older CHANGES logged entries -- @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
 
-  * Add debian 12 package @moetiker
-  * Maintenance release: refine splitting of [[user@]host:]dataset[:with-colons][@snap[:with-colons]] strings to work for the realistic majority of use-cases; fix back support of pool root dataset in such spec
-  * Update self-tests with verification that [[user@]host:]dataset[:with-colons][@snap[:with-colons]] string decoding yields expected results
-  * Extended handling of "org.znapzend:enabled=off" setting for sub-trees: now if the same intermediate dataset declares "org.znapzend:recursive=on", the disablement of znapzend handling takes place for descendants as well (previously it had effect only exactly for datasets that set "org.znapzend:enabled=off" as a local ZFS property)
-  * Fixed CI recipes and contents for spell-checker
-  * Added rc-script and integration documentation for FreeBSD and similar platforms
-  * Converted configure.ac and numerous Makefile.am to avoid GNU Make syntax in favor of portability: tested with Solaris/illumos Sun make and with FreeBSD make
-  * Extended `--autoCreation` effect (or lack thereof) to newly appearing sub-datasets; added a `--noautoCreation` option to help override configuration file settings (where used)
-  * Introduced `dst_N_autocreation` setting via ZFS properties (per-destination, inheritable)
+  * Add debian 12 package -- @moetiker
+  * Maintenance release: refine splitting of
+    `[[user@]host:]dataset[:with-colons][@snap[:with-colons]]` strings
+    to work for the realistic majority of use-cases; fix back support
+    of pool root dataset in such spec -- @jimklimov
+  * Update self-tests with verification that
+    `[[user@]host:]dataset[:with-colons][@snap[:with-colons]]` string
+    decoding yields expected results -- @jimklimov
+  * Extended handling of `org.znapzend:enabled=off` setting for sub-trees:
+    now if the same intermediate dataset declares `org.znapzend:recursive=on`,
+    the disablement of znapzend handling takes place for descendants as well
+    (previously it had effect only exactly for datasets that had set
+    `org.znapzend:enabled=off` as a local ZFS property) -- @jimklimov
+  * Fixed CI recipes and contents for spell-checker -- @jimklimov
+  * Added rc-script and integration documentation for FreeBSD and similar
+    platforms -- @jimklimov
+  * Converted `configure.ac` and numerous `Makefile.am` to avoid GNU Make
+    syntax in favor of portability: tested with Solaris/illumos Sun make
+    and with FreeBSD make -- @jimklimov
+  * Extended `--autoCreation` effect (or lack thereof) to newly appearing
+    sub-datasets; added a `--noautoCreation` option to help override
+    configuration file settings (where used) -- @jimklimov
+  * Introduced `dst_N_autocreation` setting via ZFS properties
+    (per-destination, inheritable) -- @jimklimov
 
  -- Jim Klimov <jimklimov@gmail.com>  Tue, 12 Mar 2024 13:42:28 +0100
 
 znapzend (0.21.2) unstable; urgency=medium
 
-  * Maintenance release: Automate .deb package builds
+  * Maintenance release: Automate `.deb` package builds
 
  -- Tobias Bossert <tbossert@oetiker.ch>  Tue, 12 Apr 2023 10:12:54 +0100
 
 znapzend (0.21.1) unstable; urgency=medium
 
-  * clear log handle on receiving a USR1 signal @oetiker
-  * removed dependency on ForkCall @fdd-rev
-  * Fix regex in splitHostDataSet to understand dataset names with colons @jimklimov
-  * Fix deletion of many snaps for many datasets, and handle several not-"enabled" sub-trees under one schedule @jimklimov
-  * Try harder when faced with a restricted shell at the remote end @jimklimov
+  * Clear log handle on receiving a `USR1` signal -- @oetiker
+  * Removed dependency on `ForkCall` -- @fdd-rev
+  * Fix regex in `splitHostDataSet` to understand dataset names with
+    colons -- @jimklimov
+  * Fix deletion of many snaps for many datasets, and handle several
+    not-"enabled" sub-trees under one schedule -- @jimklimov
+  * Try harder when faced with a restricted shell at the remote
+    end -- @jimklimov
 
  -- Tobias Oetiker <tobi@oetiker.ch>  Tue, 20 Jan 2022 16:13:24 +0100
 
 znapzend (0.21.0) unstable; urgency=medium
 
-  * fixed delay redefined warning
-  * check if retention plans are sensible (error out on retention shorter than
-  interval in retention=>interval expressions)
-  * fix mail program call sequence #540 -- @oetiker, @gchmurka123
-  * make aborted recv resumable using the `resume` fature -- @aarononeal
+  * Fixed delay redefined warning
+  * Check if retention plans are sensible (error out on retention shorter than
+    interval in retention=>interval expressions)
+  * Fix mail program call sequence #540 -- @oetiker, @gchmurka123
+  * Make aborted recv resumable using the `resume` feature -- @aarononeal
 
  -- Tobias Oetiker <tobi@oetiker.ch>  Mon, 28 Jun 202119:25:46 +0200
 
