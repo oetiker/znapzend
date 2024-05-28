@@ -1,5 +1,3 @@
-0.22.1 2024-05-03 10:20:29 +0200 Tobias Oetiker <tobi@oetiker.ch>
-
   * Fix make install of Perl modules with a custom DESTDIR and/or libdir @jimklimov
 
 znapzend (0.22.0) unstable; urgency=medium
