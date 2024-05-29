@@ -1,6 +1,7 @@
 #  Copyright (C) 2019 Tobias Oetiker
 
 AUTOMAKE_OPTIONS =  foreign
+CLEANFILES =
 
 THIRDPARTY_DIR = $(abs_builddir)
 
@@ -14,6 +15,9 @@ CPANSNAPV = cpanfile-@PERL_CONFIG_VERSION@.snapshot
 EXTRA_DIST = bin/cpanm cpanfile*snapshot
 
 all-local: touch
+
+../cpanfile:
+	+cd .. && $(MAKE) $(AM_MAKEFLAGS) cpanfile
 
 # NOTE: CPANM pulls a number of dependencies which seem to get installed in
 # parallel - in a random chaotic order (pun intended), so a few iterations
@@ -57,6 +61,23 @@ carton/bin/carton: bin/cpanm
 		MAKEFLAGS="" ; export MAKEFLAGS ; \
 	done
 	test -x carton/bin/carton
+
+test-deps: ../cpanfile.common ../cpanfile.test carton/bin/carton
+	$(AM_V_at)echo "** Installing Test Dependencies using Carton install"
+	$(AM_V_at)cat ../cpanfile.common ../cpanfile.test > ../cpanfile
+	$(AM_V_at)rm -f ../cpanfile.snapshot
+	+$(AM_V_at)TRIES=5 ; unset DESTDIR || true ; unset MAKEFLAGS || true ; \
+	 while test "$${TRIES}" -gt 0 ; do \
+		PERL_CPANM_OPT= PERL_CPANM_HOME=$(THIRDPARTY_DIR) PERL5LIB=$(THIRDPARTY_DIR)/carton/lib/perl5 PERL_CARTON_PATH=$(THIRDPARTY_DIR) $(PERL) $(THIRDPARTY_DIR)/carton/bin/carton install \
+		&& exit ; \
+		TRIES="`expr $${TRIES} - 1`" ; \
+		echo "** RETRY Installing Test Dependencies using Carton install (attempts left: $${TRIES})" ; \
+		MAKEFLAGS="" ; export MAKEFLAGS ; \
+	done
+	$(AM_V_at)rm -f ../cpanfile ../cpanfile.snapshot
+	$(AM_V_at)touch "$@"
+
+CLEANFILES += test-deps
 
 $(CPANSNAPV): ../cpanfile carton/bin/carton
 	$(AM_V_at)echo "** Installing Dependencies using Carton install"
