@@ -110,7 +110,7 @@ ZnapZend::InheritLevels - helper struct for various options of ZFS property inhe
 use ZnapZend::InheritLevels;
 use ZnapZend::ZFS;
 ...
-my $inherit = new ZnapZend::InheritLevels;
+my $inherit = ZnapZend::InheritLevels->new;
 $inherit->zfs_local(1);
 $inherit->zfs_inherit(1);
 my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, @dstSyncedProps);

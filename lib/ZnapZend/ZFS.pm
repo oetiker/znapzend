@@ -553,7 +553,7 @@ sub mostRecentCommonSnapshot {
         # We leave defined but invalid values of $inherit to
         # getSnapshotProperties() to figure out and complain,
         # but for this routine's purposes set a specific default.
-        $inherit = new ZnapZend::InheritLevels;
+        $inherit = ZnapZend::InheritLevels->new;
         $inherit->zfs_local(1);
         $inherit->zfs_inherit(1);
         $inherit->snapshot_recurse_parent(1);
@@ -1321,13 +1321,13 @@ sub getSnapshotProperties {
     }
 
     if (!defined($inherit)) {
-        $inherit = new ZnapZend::InheritLevels;
+        $inherit = ZnapZend::InheritLevels->new;
         $inherit->zfs_local(1);
     } else {
         # Data type check
         if ( ! ($inherit->isa('ZnapZend::InheritLevels') or $inherit->isa('InheritLevels')) ) {
             $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct ZnapZend::InheritLevels");
-            my $newInherit = new ZnapZend::InheritLevels;
+            my $newInherit = ZnapZend::InheritLevels->new;
             if (!$newInherit->reset($inherit)) {
                 # caller DID set something, so set a default... local_zfsinherit
                 $newInherit->zfs_local(1);
@@ -1459,7 +1459,7 @@ sub getSnapshotProperties {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
-                my $inherit_local_recurseparent = new ZnapZend::InheritLevels;
+                my $inherit_local_recurseparent = ZnapZend::InheritLevels->new;
                 $inherit_local_recurseparent->snapshot_recurse_parent(1);
                 $inherit_local_recurseparent->zfs_local(1);
                 my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inherit_local_recurseparent, $propnames);
