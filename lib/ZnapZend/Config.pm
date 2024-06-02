@@ -112,11 +112,16 @@ my $checkBackupSets = sub {
         # tags are user-provided and not too predictable), so only "src"
         # would remain there:
         my @backupSetKeysFiltered = grep (!/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
+        my @backupSetKeysFilteredAway = grep (/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
         my $backupSetKeysFiltered = scalar(@backupSetKeysFiltered);
+        my $backupSetKeysFilteredAway = scalar(@backupSetKeysFilteredAway);
         $self->zLog->debug("#checkBackupSets# backupSetKeysFiltered "
             . "for '" . $backupSet->{src} . "' = ("
             . $backupSetKeysFiltered . ")["
-            .  join(", ", @backupSetKeysFiltered) . "]"
+            .  join(", ", @backupSetKeysFiltered) . "] "
+            . "and backupSetKeysFilteredAway (not impacting some of the checks) = ("
+            . $backupSetKeysFilteredAway . ")["
+            .  join(", ", @backupSetKeysFilteredAway) . "]"
             ) if $self->debug;
 
         # "src" and "enabled", or "src" alone (after disregarding autocreation):
