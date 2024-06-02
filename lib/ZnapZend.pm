@@ -420,6 +420,9 @@ my $refreshBackupPlans = sub {
                 $backupSet->{"dst_$key" . '_valid'} =
                     $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
+                    # Do not automatically create destination when using
+                    # feature sendRaw, receiving a raw encrypted stream
+                    # is not supported on unencrypted datasets
                     if ($autoCreation && !$self->sendRaw) {
                         my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
@@ -588,6 +591,9 @@ my $sendRecvCleanup = sub {
             $backupSet->{"dst_$key" . '_valid'} =
                 $self->zZfs->dataSetExists($backupSet->{"dst_$key"}) or do {
 
+                # Do not automatically create destination when using
+                # feature sendRaw, receiving a raw encrypted stream
+                # is not supported on unencrypted datasets
                 if ($autoCreation && !$self->sendRaw) {
                     my ($zpool) = $backupSet->{"dst_$key"} =~ /(^[^\/]+)\//;
 
@@ -606,6 +612,8 @@ my $sendRecvCleanup = sub {
                         }
                     };
                 }
+                # TOTHINK: Is the sendRaw comparison correct here for the intent
+                # and purpose of PR https://github.com/oetiker/znapzend/pull/496 ?
                 ( $backupSet->{"dst_$key" . '_valid'} || ($self->sendRaw && $autoCreation) ) or do {
                     my $errmsg = "destination '" . $backupSet->{"dst_$key"}
                         . "' does not exist or is offline; ignoring it for this round...";
@@ -664,7 +672,10 @@ my $sendRecvCleanup = sub {
 
             # Time to check if the target sub-dataset exists
             # at all (unless we would auto-create one anyway).
-            if ((!$autoCreation || !$self->sendRaw) && !($self->zZfs->dataSetExists($dstDataSet))) {
+            # Do not automatically create destination when using
+            # feature sendRaw, receiving a raw encrypted stream
+            # is not supported on unencrypted datasets.
+            if ((!$autoCreation || $self->sendRaw) && !($self->zZfs->dataSetExists($dstDataSet))) {
                 my $errmsg = "sub-destination '" . $dstDataSet
                     . "' does not exist or is offline; ignoring it for this round... Consider "
                     . ( $autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
