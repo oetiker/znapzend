@@ -70,7 +70,7 @@ sub reset {
     if (@_) {
         my $arg = shift;
         # Assign from legacy values
-        if ($arg->isa('ZnapZend::InheritLevels') or $arg->isa('InheritLevels')) {
+        if ($arg->isa('ZnapZend::InheritLevels')) {
             $self->zfs_local($arg->zfs_local);
             $self->zfs_inherit($arg->zfs_inherit);
             $self->zfs_received($arg->zfs_received);

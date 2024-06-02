@@ -1325,7 +1325,7 @@ sub getSnapshotProperties {
         $inherit->zfs_local(1);
     } else {
         # Data type check
-        if ( ! ($inherit->isa('ZnapZend::InheritLevels') or $inherit->isa('InheritLevels')) ) {
+        if ( ! ($inherit->isa('ZnapZend::InheritLevels')) ) {
             $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct ZnapZend::InheritLevels");
             my $newInherit = ZnapZend::InheritLevels->new;
             if (!$newInherit->reset($inherit)) {
