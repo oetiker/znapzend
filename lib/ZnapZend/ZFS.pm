@@ -4,7 +4,7 @@ use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::Subprocess;
 use Data::Dumper;
-use inheritLevels;
+use ZnapZend::InheritLevels;
 
 ### attributes ###
 has debug           => sub { 0 };
@@ -547,13 +547,13 @@ sub mostRecentCommonSnapshot {
     # deletion of "protected" last-known-synced snapshots, we consider both
     # local and inherited values of the dst_X_synced flag, if present.
     # See definition of recognized $inherit values for this context in
-    # getSnapshotProperties() code and struct inheritLevels.
+    # getSnapshotProperties() code and struct ZnapZend::InheritLevels.
     my $inherit = shift; # May be not passed => undef
     if (!defined($inherit)) {
         # We leave defined but invalid values of $inherit to
         # getSnapshotProperties() to figure out and complain,
         # but for this routine's purposes set a specific default.
-        $inherit = new inheritLevels;
+        $inherit = ZnapZend::InheritLevels->new;
         $inherit->zfs_local(1);
         $inherit->zfs_inherit(1);
         $inherit->snapshot_recurse_parent(1);
@@ -1300,8 +1300,8 @@ sub getSnapshotProperties {
     #   1 = local + inherit as defined by zfs
     #   2 = local + recurse into parent that has same snapname
     #   3 = local + inherit as defined by zfs + recurse into parent
-    # See struct inheritLevels for reusable definitions.
-    my $inherit = shift; # May be not passed => undef => will make a new inheritLevels instance below
+    # See struct ZnapZend::InheritLevels for reusable definitions.
+    my $inherit = shift; # May be not passed => undef => will make a new InheritLevels instance below
 
     # Limit the request to `zfs get` to only pick out certain properties
     # and save time not-processing stuff the caller will ignore?..
@@ -1321,13 +1321,13 @@ sub getSnapshotProperties {
     }
 
     if (!defined($inherit)) {
-        $inherit = new inheritLevels;
+        $inherit = ZnapZend::InheritLevels->new;
         $inherit->zfs_local(1);
     } else {
         # Data type check
-        if ( ! $inherit->isa('inheritLevels') ) {
-            $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct inheritLevels");
-            my $newInherit = new inheritLevels;
+        if ( ! ($inherit->isa('ZnapZend::InheritLevels')) ) {
+            $self->zLog->warn("getSnapshotProperties(): inherit argument is not an instance of struct ZnapZend::InheritLevels");
+            my $newInherit = ZnapZend::InheritLevels->new;
             if (!$newInherit->reset($inherit)) {
                 # caller DID set something, so set a default... local_zfsinherit
                 $newInherit->zfs_local(1);
@@ -1459,7 +1459,7 @@ sub getSnapshotProperties {
                 # Go up to root of the pool, without recursing into other children
                 # of the parent datasets/snapshots, and without inheriting stuff
                 # that is not locally defined properties of a parent (or its parent).
-                my $inherit_local_recurseparent = new inheritLevels;
+                my $inherit_local_recurseparent = ZnapZend::InheritLevels->new;
                 $inherit_local_recurseparent->snapshot_recurse_parent(1);
                 $inherit_local_recurseparent->zfs_local(1);
                 my $parentProperties = $self->getSnapshotProperties($parentSnapshot, 0, $inherit_local_recurseparent, $propnames);
