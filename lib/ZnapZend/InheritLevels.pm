@@ -1,5 +1,6 @@
-package inheritLevels;
+package ZnapZend::InheritLevels;
 # Note: classes made by Class::Struct may not be sub-namespaced
+# (UPDATE: comment might be valid at least in older Perl versions?)
 
 use Class::Struct;
 
@@ -10,7 +11,7 @@ use Class::Struct;
 ### For "usual" datasets (filesystem,volume) `zfs` returns the
 ### properties inherited from higher level datasets; but for
 ### snapshots it only returns the same - not from higher snaps.
-struct ('inheritLevels' => {
+struct ('ZnapZend::InheritLevels' => {
     zfs_local => '$', # set to ask for properties defined locally in dataset
     zfs_inherit => '$', # set to ask for properties inherited from higher datasets
     zfs_received => '$', # set to ask for properties received during "zfs send|recv" (no-op for now, mentioned for completeness)
@@ -59,9 +60,9 @@ sub getInhMode {
 sub reset {
     # Without args, just resets all fields back to undef so they can be
     # re-assigned later. With an arg tries to import a legacy setting by
-    # number or string, or copy from another instance of inheritLevels.
+    # number or string, or copy from another instance of InheritLevels.
     my $self = shift;
-    
+
     $self->zfs_local(undef);
     $self->zfs_inherit(undef);
     $self->zfs_received(undef);
@@ -69,7 +70,7 @@ sub reset {
     if (@_) {
         my $arg = shift;
         # Assign from legacy values
-        if ($arg->isa('inheritLevels')) {
+        if ($arg->isa('ZnapZend::InheritLevels')) {
             $self->zfs_local($arg->zfs_local);
             $self->zfs_inherit($arg->zfs_inherit);
             $self->zfs_received($arg->zfs_received);
@@ -89,7 +90,7 @@ sub reset {
         } elsif (!defined($arg) or $arg == undef) {
             1; # No-op, keep fields undef
         } else {
-            warn "inheritLevels::reset() got unsupported argument '$arg'\n";
+            warn "ZnapZend::InheritLevels::reset() got unsupported argument '$arg'\n";
             return 0;
         }
     }
@@ -102,14 +103,14 @@ __END__
 
 =head1 NAME
 
-inheritLevels - helper struct for various options of ZFS property inheritance
+ZnapZend::InheritLevels - helper struct for various options of ZFS property inheritance
 
 =head1 SYNOPSIS
 
-use inheritLevels;
+use ZnapZend::InheritLevels;
 use ZnapZend::ZFS;
 ...
-my $inherit = new inheritLevels;
+my $inherit = ZnapZend::InheritLevels->new;
 $inherit->zfs_local(1);
 $inherit->zfs_inherit(1);
 my $properties = $self->getSnapshotProperties($snapshot, $recurse, $inherit, @dstSyncedProps);
