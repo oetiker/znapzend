@@ -13,6 +13,103 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Clone-0.46
+    pathname: G/GA/GARU/Clone-0.46.tar.gz
+    provides:
+      Clone 0.46
+    requirements:
+      ExtUtils::MakeMaker 0
+  Devel-Cover-1.42
+    pathname: P/PJ/PJCJ/Devel-Cover-1.42.tar.gz
+    provides:
+      Devel::Cover 1.42
+      Devel::Cover::Annotation::Git 1.42
+      Devel::Cover::Annotation::Random 1.42
+      Devel::Cover::Annotation::Svk 1.42
+      Devel::Cover::Branch 1.42
+      Devel::Cover::Collection 1.42
+      Devel::Cover::Collection::Template::Provider 1.42
+      Devel::Cover::Condition 1.42
+      Devel::Cover::Condition_and_2 1.42
+      Devel::Cover::Condition_and_3 1.42
+      Devel::Cover::Condition_or_2 1.42
+      Devel::Cover::Condition_or_3 1.42
+      Devel::Cover::Condition_xor_4 1.42
+      Devel::Cover::Criterion 1.42
+      Devel::Cover::DB 1.42
+      Devel::Cover::DB::Criterion 1.42
+      Devel::Cover::DB::Digests 1.42
+      Devel::Cover::DB::File 1.42
+      Devel::Cover::DB::IO 1.42
+      Devel::Cover::DB::IO::Base 1.42
+      Devel::Cover::DB::IO::JSON 1.42
+      Devel::Cover::DB::IO::Sereal 1.42
+      Devel::Cover::DB::IO::Storable 1.42
+      Devel::Cover::DB::Run 1.42
+      Devel::Cover::DB::Structure 1.42
+      Devel::Cover::Html_Common 1.42
+      Devel::Cover::Op 1.42
+      Devel::Cover::Pod 1.42
+      Devel::Cover::Report::Compilation 1.42
+      Devel::Cover::Report::Html 1.42
+      Devel::Cover::Report::Html_basic 1.42
+      Devel::Cover::Report::Html_basic::Template::Provider 1.42
+      Devel::Cover::Report::Html_minimal 1.42
+      Devel::Cover::Report::Html_subtle 1.42
+      Devel::Cover::Report::Html_subtle::Template::Provider 1.42
+      Devel::Cover::Report::Json 1.42
+      Devel::Cover::Report::Sort 1.42
+      Devel::Cover::Report::Text 1.42
+      Devel::Cover::Report::Text2 1.42
+      Devel::Cover::Report::Vim 1.42
+      Devel::Cover::Report::Vim::Template::Provider 1.42
+      Devel::Cover::Statement 1.42
+      Devel::Cover::Subroutine 1.42
+      Devel::Cover::Test 1.42
+      Devel::Cover::Time 1.42
+      Devel::Cover::Truth_Table 1.42
+      Devel::Cover::Truth_Table::Row 1.42
+      Devel::Cover::Util 1.42
+      Devel::Cover::Web 1.42
+    requirements:
+      Digest::MD5 0
+      ExtUtils::MakeMaker 0
+      HTML::Entities 3.69
+      Storable 0
+      Test::More 0
+  Devel-Cover-Report-Coveralls-0.32
+    pathname: M/MI/MIKIHOSHI/Devel-Cover-Report-Coveralls-0.32.tar.gz
+    provides:
+      Devel::Cover::Report::Coveralls 0.32
+    requirements:
+      Devel::Cover 1.02
+      HTTP::Tiny 0.043
+      IO::Socket::SSL 1.42
+      JSON::PP 0
+      Module::Build::Tiny 0.035
+      Mozilla::CA 0
+      Net::SSLeay 1.49
+      YAML 0
+      perl 5.008005
+  Devel-Symdump-2.18
+    pathname: A/AN/ANDK/Devel-Symdump-2.18.tar.gz
+    provides:
+      Devel::Symdump 2.18
+      Devel::Symdump::Export undef
+    requirements:
+      Compress::Zlib 0
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      perl 5.004
+  Encode-Locale-1.05
+    pathname: G/GA/GAAS/Encode-Locale-1.05.tar.gz
+    provides:
+      Encode::Locale 1.05
+    requirements:
+      Encode 2
+      Encode::Alias 0
+      ExtUtils::MakeMaker 0
+      perl 5.008
   ExtUtils-Config-0.008
     pathname: L/LE/LEONT/ExtUtils-Config-0.008.tar.gz
     provides:
@@ -52,6 +149,123 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  HTML-Parser-3.82
+    pathname: O/OA/OALDERS/HTML-Parser-3.82.tar.gz
+    provides:
+      HTML::Entities 3.82
+      HTML::Filter 3.82
+      HTML::HeadParser 3.82
+      HTML::LinkExtor 3.82
+      HTML::Parser 3.82
+      HTML::PullParser 3.82
+      HTML::TokeParser 3.82
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 6.52
+      HTML::Tagset 0
+      HTTP::Headers 0
+      IO::File 0
+      URI 0
+      URI::URL 0
+      XSLoader 0
+      strict 0
+  HTML-Tagset-3.24
+    pathname: P/PE/PETDANCE/HTML-Tagset-3.24.tar.gz
+    provides:
+      HTML::Tagset 3.24
+    requirements:
+      ExtUtils::MakeMaker 6.46
+      perl 5.010001
+  HTTP-Date-6.06
+    pathname: O/OA/OALDERS/HTTP-Date-6.06.tar.gz
+    provides:
+      HTTP::Date 6.06
+    requirements:
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      Time::Local 1.28
+      Time::Zone 0
+      perl 5.006002
+      strict 0
+  HTTP-Message-6.46
+    pathname: O/OA/OALDERS/HTTP-Message-6.46.tar.gz
+    provides:
+      HTTP::Config 6.46
+      HTTP::Headers 6.46
+      HTTP::Headers::Auth 6.46
+      HTTP::Headers::ETag 6.46
+      HTTP::Headers::Util 6.46
+      HTTP::Message 6.46
+      HTTP::Request 6.46
+      HTTP::Request::Common 6.46
+      HTTP::Response 6.46
+      HTTP::Status 6.46
+    requirements:
+      Carp 0
+      Clone 0.46
+      Compress::Raw::Bzip2 0
+      Compress::Raw::Zlib 2.062
+      Encode 3.01
+      Encode::Locale 1
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      File::Spec 0
+      HTTP::Date 6
+      IO::Compress::Bzip2 2.021
+      IO::Compress::Deflate 0
+      IO::Compress::Gzip 0
+      IO::HTML 0
+      IO::Uncompress::Inflate 0
+      IO::Uncompress::RawInflate 0
+      LWP::MediaTypes 6
+      MIME::Base64 2.1
+      MIME::QuotedPrint 0
+      URI 1.10
+      parent 0
+      perl 5.008001
+      strict 0
+      warnings 0
+  IO-HTML-1.004
+    pathname: C/CJ/CJM/IO-HTML-1.004.tar.gz
+    provides:
+      IO::HTML 1.004
+    requirements:
+      Carp 0
+      Encode 2.10
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      perl 5.008
+  IO-Socket-SSL-2.085
+    pathname: S/SU/SULLR/IO-Socket-SSL-2.085.tar.gz
+    provides:
+      IO::Socket::SSL 2.085
+      IO::Socket::SSL::Intercept 2.056
+      IO::Socket::SSL::OCSP_Cache 2.085
+      IO::Socket::SSL::OCSP_Resolver 2.085
+      IO::Socket::SSL::PublicSuffix undef
+      IO::Socket::SSL::SSL_Context 2.085
+      IO::Socket::SSL::SSL_HANDLE 2.085
+      IO::Socket::SSL::Session_Cache 2.085
+      IO::Socket::SSL::Trace 2.085
+      IO::Socket::SSL::Utils 2.015
+    requirements:
+      ExtUtils::MakeMaker 0
+      Mozilla::CA 0
+      Net::SSLeay 1.46
+      Scalar::Util 0
+  LWP-MediaTypes-6.04
+    pathname: O/OA/OALDERS/LWP-MediaTypes-6.04.tar.gz
+    provides:
+      LWP::MediaTypes 6.04
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      Scalar::Util 0
+      perl 5.006002
+      strict 0
   Module-Build-Tiny-0.047
     pathname: L/LE/LEONT/Module-Build-Tiny-0.047.tar.gz
     provides:
@@ -206,6 +420,61 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
+  Mozilla-CA-20240313
+    pathname: L/LW/LWP/Mozilla-CA-20240313.tar.gz
+    provides:
+      Mozilla::CA 20240313
+    requirements:
+      ExtUtils::MakeMaker 0
+  Net-SSLeay-1.94
+    pathname: C/CH/CHRISN/Net-SSLeay-1.94.tar.gz
+    provides:
+      Net::SSLeay 1.94
+      Net::SSLeay::Handle 1.94
+    requirements:
+      English 0
+      ExtUtils::MakeMaker 0
+      File::Spec::Functions 0
+      MIME::Base64 0
+      Text::Wrap 0
+      constant 0
+      perl 5.008001
+  Pod-Coverage-0.23
+    pathname: R/RC/RCLAMP/Pod-Coverage-0.23.tar.gz
+    provides:
+      Pod::Coverage 0.23
+      Pod::Coverage::CountParents undef
+      Pod::Coverage::ExportOnly undef
+      Pod::Coverage::Extractor 0.23
+      Pod::Coverage::Overloader undef
+    requirements:
+      Devel::Symdump 2.01
+      ExtUtils::MakeMaker 0
+      Pod::Find 0.21
+      Pod::Parser 1.13
+      Test::More 0
+  Pod-Parser-1.67
+    pathname: M/MA/MAREKR/Pod-Parser-1.67.tar.gz
+    provides:
+      Pod::Cache 1.67
+      Pod::Cache::Item 1.67
+      Pod::Find 1.67
+      Pod::Hyperlink 1.67
+      Pod::InputObjects 1.67
+      Pod::InputSource 1.67
+      Pod::InteriorSequence 1.67
+      Pod::List 1.67
+      Pod::Paragraph 1.67
+      Pod::ParseTree 1.67
+      Pod::ParseUtils 1.67
+      Pod::Parser 1.67
+      Pod::PlainText 2.07
+      Pod::Select 1.67
+    requirements:
+      Cwd 0
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      Test::More 0.6
   Role-Tiny-2.002004
     pathname: H/HA/HAARG/Role-Tiny-2.002004.tar.gz
     provides:
@@ -214,3 +483,185 @@ DISTRIBUTIONS
     requirements:
       Exporter 5.57
       perl 5.006
+  Sub-Uplevel-0.2800
+    pathname: D/DA/DAGOLDEN/Sub-Uplevel-0.2800.tar.gz
+    provides:
+      Sub::Uplevel 0.2800
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 6.17
+      constant 0
+      perl 5.006
+      strict 0
+      warnings 0
+  Test-Exception-0.43
+    pathname: E/EX/EXODIST/Test-Exception-0.43.tar.gz
+    provides:
+      Test::Exception 0.43
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      Sub::Uplevel 0.18
+      Test::Builder 0.7
+      Test::Builder::Tester 1.07
+      Test::Harness 2.03
+      base 0
+      perl 5.006001
+      strict 0
+      warnings 0
+  Test-SharedFork-0.35
+    pathname: E/EX/EXODIST/Test-SharedFork-0.35.tar.gz
+    provides:
+      Test::SharedFork 0.35
+      Test::SharedFork::Array undef
+      Test::SharedFork::Scalar undef
+      Test::SharedFork::Store undef
+    requirements:
+      ExtUtils::MakeMaker 6.64
+      File::Temp 0
+      Test::Builder 0.32
+      Test::Builder::Module 0
+      Test::More 0.88
+      perl 5.008_001
+  TimeDate-2.33
+    pathname: A/AT/ATOOMIC/TimeDate-2.33.tar.gz
+    provides:
+      Date::Format 2.24
+      Date::Format::Generic 2.24
+      Date::Language 1.10
+      Date::Language::Afar 0.99
+      Date::Language::Amharic 1.00
+      Date::Language::Austrian 1.01
+      Date::Language::Brazilian 1.01
+      Date::Language::Bulgarian 1.01
+      Date::Language::Chinese 1.00
+      Date::Language::Chinese_GB 1.01
+      Date::Language::Czech 1.01
+      Date::Language::Danish 1.01
+      Date::Language::Dutch 1.02
+      Date::Language::English 1.01
+      Date::Language::Finnish 1.01
+      Date::Language::French 1.04
+      Date::Language::Gedeo 0.99
+      Date::Language::German 1.02
+      Date::Language::Greek 1.00
+      Date::Language::Hungarian 1.01
+      Date::Language::Icelandic 1.01
+      Date::Language::Italian 1.01
+      Date::Language::Norwegian 1.01
+      Date::Language::Occitan 1.04
+      Date::Language::Oromo 0.99
+      Date::Language::Romanian 1.01
+      Date::Language::Russian 1.01
+      Date::Language::Russian_cp1251 1.01
+      Date::Language::Russian_koi8r 1.01
+      Date::Language::Sidama 0.99
+      Date::Language::Somali 0.99
+      Date::Language::Spanish 1.00
+      Date::Language::Swedish 1.01
+      Date::Language::Tigrinya 1.00
+      Date::Language::TigrinyaEritrean 1.00
+      Date::Language::TigrinyaEthiopian 1.00
+      Date::Language::Turkish 1.0
+      Date::Parse 2.33
+      Time::Zone 2.24
+      TimeDate 1.21
+    requirements:
+      ExtUtils::MakeMaker 0
+  URI-5.28
+    pathname: O/OA/OALDERS/URI-5.28.tar.gz
+    provides:
+      URI 5.28
+      URI::Escape 5.28
+      URI::Heuristic 5.28
+      URI::IRI 5.28
+      URI::QueryParam 5.28
+      URI::Split 5.28
+      URI::URL 5.28
+      URI::WithBase 5.28
+      URI::data 5.28
+      URI::file 5.28
+      URI::file::Base 5.28
+      URI::file::FAT 5.28
+      URI::file::Mac 5.28
+      URI::file::OS2 5.28
+      URI::file::QNX 5.28
+      URI::file::Unix 5.28
+      URI::file::Win32 5.28
+      URI::ftp 5.28
+      URI::geo 5.28
+      URI::gopher 5.28
+      URI::http 5.28
+      URI::https 5.28
+      URI::icap 5.28
+      URI::icaps 5.28
+      URI::ldap 5.28
+      URI::ldapi 5.28
+      URI::ldaps 5.28
+      URI::mailto 5.28
+      URI::mms 5.28
+      URI::news 5.28
+      URI::nntp 5.28
+      URI::nntps 5.28
+      URI::pop 5.28
+      URI::rlogin 5.28
+      URI::rsync 5.28
+      URI::rtsp 5.28
+      URI::rtspu 5.28
+      URI::sftp 5.28
+      URI::sip 5.28
+      URI::sips 5.28
+      URI::snews 5.28
+      URI::ssh 5.28
+      URI::telnet 5.28
+      URI::tn3270 5.28
+      URI::urn 5.28
+      URI::urn::isbn 5.28
+      URI::urn::oid 5.28
+    requirements:
+      Carp 0
+      Cwd 0
+      Data::Dumper 0
+      Encode 0
+      Exporter 5.57
+      ExtUtils::MakeMaker 0
+      MIME::Base64 2
+      Net::Domain 0
+      Scalar::Util 0
+      constant 0
+      integer 0
+      overload 0
+      parent 0
+      perl 5.008001
+      strict 0
+      utf8 0
+      warnings 0
+  YAML-1.31
+    pathname: I/IN/INGY/YAML-1.31.tar.gz
+    provides:
+      YAML 1.31
+      YAML::Any 1.31
+      YAML::Dumper undef
+      YAML::Dumper::Base undef
+      YAML::Error undef
+      YAML::Loader undef
+      YAML::Loader::Base undef
+      YAML::Marshall undef
+      YAML::Mo undef
+      YAML::Node undef
+      YAML::Tag undef
+      YAML::Type::blessed undef
+      YAML::Type::code undef
+      YAML::Type::glob undef
+      YAML::Type::ref undef
+      YAML::Type::regexp undef
+      YAML::Type::undef undef
+      YAML::Types undef
+      YAML::Warning undef
+      yaml_mapping undef
+      yaml_scalar undef
+      yaml_sequence undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.008001
