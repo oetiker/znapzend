@@ -13,6 +13,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+        extra_dictionaries:
+          cspell:software-terms/dict/softwareTerms.txt
+          cspell:filetypes/filetypes.txt
+          # Languages below are not used in this project, but common terms are
+          cspell:php/dict/php.txt
+          cspell:node/dict/node.txt
+          cspell:python/src/python/python-lib.txt
     - uses: check-spelling/check-spelling@v0.0.22
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
