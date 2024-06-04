@@ -112,11 +112,16 @@ my $checkBackupSets = sub {
         # tags are user-provided and not too predictable), so only "src"
         # would remain there:
         my @backupSetKeysFiltered = grep (!/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
+        my @backupSetKeysFilteredAway = grep (/^dst_[^_]+_autocreation$/, keys(%{$backupSet}));
         my $backupSetKeysFiltered = scalar(@backupSetKeysFiltered);
+        my $backupSetKeysFilteredAway = scalar(@backupSetKeysFilteredAway);
         $self->zLog->debug("#checkBackupSets# backupSetKeysFiltered "
             . "for '" . $backupSet->{src} . "' = ("
             . $backupSetKeysFiltered . ")["
-            .  join(", ", @backupSetKeysFiltered) . "]"
+            .  join(", ", @backupSetKeysFiltered) . "] "
+            . "and backupSetKeysFilteredAway (not impacting some of the checks) = ("
+            . $backupSetKeysFilteredAway . ")["
+            .  join(", ", @backupSetKeysFilteredAway) . "]"
             ) if $self->debug;
 
         # "src" and "enabled", or "src" alone (after disregarding autocreation):
@@ -270,7 +275,7 @@ my $checkBackupSets = sub {
                 };
             }
         }
-        #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan
+        #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan)
         for my $dst (grep { /^dst_[^_]+_plan$/ } keys %$backupSet){
             $dst =~ s/_plan//; #remove trailing '_plan' so we get destination
 
@@ -572,9 +577,8 @@ sub enableBackupSetDstAutoCreation {
         }
 
         if ($cfg{$dest}) {
-            if ($cfg{$dest . '_autocreation'}) {
-                $cfg{$dest . '_autocreation'} = 'on';
-            }
+            $self->zLog->debug("#enableBackupSetDstAutoCreation# applying to dest=$dest of $dataSet backup plan") if $self->debug;
+            $cfg{$dest . '_autocreation'} = 'on';
         } else {
             die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
         }
@@ -583,6 +587,7 @@ sub enableBackupSetDstAutoCreation {
         return 1;
     }
 
+    $self->zLog->debug("#enableBackupSetDstAutoCreation# found no backupSets for $dataSet backup plan") if $self->debug;
     return 0;
 }
 
@@ -618,6 +623,7 @@ sub disableBackupSetDstAutoCreation {
         }
 
         if ($cfg{$dest}) {
+            $self->zLog->debug("#disableBackupSetDstAutoCreation# applying to dest=$dest of $dataSet backup plan") if $self->debug;
             $cfg{$dest . '_autocreation'} = 'off';
         } else {
             die "ERROR: dataset $dataSet backup plan does not have destination $dest\n";
@@ -627,6 +633,7 @@ sub disableBackupSetDstAutoCreation {
         return 1;
     }
 
+    $self->zLog->debug("#disableBackupSetDstAutoCreation# found no backupSets for $dataSet backup plan") if $self->debug;
     return 0;
 }
 

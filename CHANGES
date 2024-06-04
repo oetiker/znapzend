@@ -1,3 +1,4 @@
+  * Fixed `autoCreation` behavior broken in 0.22.0 release -- @jimklimov
   * Updated recipes for `make check` to install Perl modules it needs
     (previously was only done as part of GitHub checks); renamed the
     `cpanfile` to `cpanfile.common` to avoid changing the Git-tracked
