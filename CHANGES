@@ -1,3 +1,9 @@
+znapzend (0.23.1) UNRELEASED; urgency=medium
+
+  * added missing cpanfile.test #662
+
+ -- Tobi Oetiker <tobi@oetiker.ch>  Tue, 18 Jun 2024 08:40:33 +0200
+
 znapzend (0.23.0) unstable; urgency=medium
 
   * Fixed `autoCreation` behavior broken in 0.22.0 release -- @jimklimov
