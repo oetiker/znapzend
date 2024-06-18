@@ -1,3 +1,5 @@
+znapzend (0.23.0) unstable; urgency=medium
+
   * Fixed `autoCreation` behavior broken in 0.22.0 release -- @jimklimov
   * Updated recipes for `make check` to install Perl modules it needs
     (previously was only done as part of GitHub checks); renamed the
@@ -9,6 +11,8 @@
     order to minimize confusion (especially when targeting OS-wide Perl
     module installations) -- @jimklimov
   * Applied same markup style to older CHANGES logged entries -- @jimklimov
+
+ -- Tobi Oetiker <tobi@oetiker.ch>  Fri, 14 Jun 2024 14:42:00 +0200
 
 znapzend (0.22.0) unstable; urgency=medium
 
