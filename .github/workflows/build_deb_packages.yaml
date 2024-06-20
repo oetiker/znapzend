@@ -23,7 +23,8 @@ jobs:
             version: 20.04
           - distribution: ubuntu
             version: 22.04
-
+          - distribution: ubuntu
+            version: 24.04
 
     runs-on: ubuntu-latest
     name: Build package for ${{ matrix.distribution }} ${{ matrix.version }}
