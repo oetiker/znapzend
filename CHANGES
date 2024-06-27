@@ -1,8 +1,9 @@
-znapzend (0.23.1) UNRELEASED; urgency=medium
+znapzend (0.23.2) UNRELEASED; urgency=medium
 
   * added missing cpanfile.test #662
+  * build deb for ubuntu 24.4
 
- -- Tobi Oetiker <tobi@oetiker.ch>  Tue, 18 Jun 2024 08:40:33 +0200
+ -- Tobi Oetiker <tobi@oetiker.ch>  Thu, 27 Jun 2024 12:10:28 +0200
 
 znapzend (0.23.0) unstable; urgency=medium
 
