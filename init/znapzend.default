@@ -1,2 +1,2 @@
 # Command line options for znapzend
-ZNAPZENDOPTIONS=""
+ZNAPZENDOPTIONS="--autoCreation"
