@@ -25,7 +25,7 @@ jobs:
           # Some languages above (php, node, python)
           # are not used in this project, but common
           # terms listed in those dictionaries are
-    - uses: check-spelling/check-spelling@v0.0.22
+    - uses: check-spelling/check-spelling@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         bucket: .github/workflows/
