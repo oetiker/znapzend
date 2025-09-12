@@ -31,7 +31,7 @@ jobs:
       with:
         perl-version: ${{ matrix.perl }}
     - run: ./bootstrap.sh
-    - run: ./configure --prefix=$HOME/znapzend
+    - run: ./configure --prefix="$HOME/znapzend"
     - run: make test-deps
     - run: ./test.sh
     - run: make install
