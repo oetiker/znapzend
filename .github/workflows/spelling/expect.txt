@@ -142,6 +142,7 @@ datadir
 DBD
 DBOOK
 de'u
+debchange
 debhelper
 debian
 dedup
@@ -399,6 +400,7 @@ NAL
 namespace
 namespaced
 nano
+nas
 NDTIPS
 newcfgdata
 newestbe
@@ -491,6 +493,7 @@ RCAPUTO
 RCLAMP
 rcvar
 README
+realpath
 recurseparent
 recv
 recvu
