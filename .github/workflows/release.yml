@@ -9,6 +9,8 @@ on:
 
 jobs:
   docker:
+    if: secrets.DOCKER_HUB_USERNAME != ''
+    name: Build and publish Docker container
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
