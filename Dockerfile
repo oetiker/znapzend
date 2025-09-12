@@ -2,7 +2,7 @@
 ##### Builder image
 ARG PERL_BUILD_VERSION=5.38-buster
 ARG ALPINE_VERSION=3.19
-FROM docker.io/library/perl:${PERL_BUILD_VERSION} as builder
+FROM docker.io/library/perl:${PERL_BUILD_VERSION} AS builder
 
 WORKDIR /usr/local/src
 
@@ -15,7 +15,7 @@ RUN \
   make install
 
 ##### Runtime image
-FROM docker.io/library/alpine:${ALPINE_VERSION} as runtime
+FROM docker.io/library/alpine:${ALPINE_VERSION} AS runtime
 
 ARG PERL_VERSION=5.38.2-r0
 
@@ -42,7 +42,7 @@ ENTRYPOINT [ "/bin/bash", "-c" ]
 CMD [ "znapzend --logto=/dev/stdout" ]
 
 ##### Tests
-FROM builder as test
+FROM builder AS test
 
 RUN \
   cpan Devel::Cover && \
