@@ -15,10 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Login to image registry
-      run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+      run: docker login -u '${{ secrets.DOCKER_HUB_USERNAME }}' -p '${{ secrets.DOCKER_HUB_PASSWORD }}'
     - name: Build runtime image
-      run: docker build --target runtime -t ${{ github.repository }}:${GITHUB_REF##*/} .
+      run: docker build --target runtime -t '${{ github.repository }}:${GITHUB_REF##*/}' .
     - name: Run test within image
       run: docker build --target test .
     - name: Push runtime image
-      run: docker push ${{ github.repository }}:${GITHUB_REF##*/}
+      run: docker push '${{ github.repository }}:${GITHUB_REF##*/}'
