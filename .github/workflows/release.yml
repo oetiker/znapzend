@@ -11,16 +11,20 @@ on:
 
 jobs:
   docker:
-    if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
     name: Build and publish Docker container
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
     - name: Login to image registry
+      if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
       run: docker login -u '${{ secrets.DOCKER_HUB_USERNAME }}' -p '${{ secrets.DOCKER_HUB_PASSWORD }}'
     - name: Build runtime image
+      if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
       run: docker build --target runtime -t '${{ github.repository }}:${GITHUB_REF##*/}' .
     - name: Run test within image
+      if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
       run: docker build --target test .
     - name: Push runtime image
+      if: "${{ secrets.DOCKER_HUB_USERNAME }}" != ""
       run: docker push '${{ github.repository }}:${GITHUB_REF##*/}'
