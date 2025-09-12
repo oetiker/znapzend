@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    # Allow manually running the action, e.g. if disabled after some quietness in the source
 
 jobs:
   build_deb_packages:

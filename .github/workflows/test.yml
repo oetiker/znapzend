@@ -7,7 +7,9 @@ on:
     tags-ignore:
     - "*"
   pull_request:
-    
+  workflow_dispatch:
+    # Allow manually running the action, e.g. if disabled after some quietness in the source
+
 jobs:
   unit:
     runs-on: ubuntu-latest

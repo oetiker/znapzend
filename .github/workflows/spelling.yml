@@ -4,6 +4,8 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: '15 * * * *'
+  workflow_dispatch:
+    # Allow manually running the action, e.g. if disabled after some quietness in the source
 
 jobs:
   build:

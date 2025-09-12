@@ -6,6 +6,8 @@ on:
     - master
     tags:
     - "*"
+  workflow_dispatch:
+    # Allow manually running the action, e.g. if disabled after some quietness in the source
 
 jobs:
   docker:
