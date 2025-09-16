@@ -6,17 +6,34 @@ on:
     - master
     tags:
     - "*"
+  workflow_dispatch:
+    # Allow manually running the action, e.g. if disabled after some quietness in the source
 
 jobs:
-  docker:
+  check-secret:
+    # Inspired by https://stackoverflow.com/a/70249388
     runs-on: ubuntu-latest
+    outputs:
+      my-key: ${{ steps.my-key.outputs.defined }}
+    steps:
+      - id: my-key
+        env:
+          MY_KEY: ${{ secrets.DOCKER_HUB_USERNAME }}
+        if: "${{ env.MY_KEY != '' }}"
+        run: echo "::set-output name=defined::true"
+
+  docker:
+    name: Build and publish Docker container
+    runs-on: ubuntu-latest
+    needs: [check-secret]
+    if: needs.check-secret.outputs.my-key == 'true'
     steps:
     - uses: actions/checkout@v2
     - name: Login to image registry
-      run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+      run: docker login -u '${{ secrets.DOCKER_HUB_USERNAME }}' -p '${{ secrets.DOCKER_HUB_PASSWORD }}'
     - name: Build runtime image
-      run: docker build --target runtime -t ${{ github.repository }}:${GITHUB_REF##*/} .
+      run: docker build --target runtime -t '${{ github.repository }}:${GITHUB_REF##*/}' .
     - name: Run test within image
       run: docker build --target test .
     - name: Push runtime image
-      run: docker push ${{ github.repository }}:${GITHUB_REF##*/}
+      run: docker push '${{ github.repository }}:${GITHUB_REF##*/}'
