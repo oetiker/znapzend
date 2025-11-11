@@ -72,7 +72,7 @@ discardable bulk data like build roots or caches in the worker account's home.
 > on source) to receive regular backups from ZnapZend on remote destinations,
 > etc.
 
-Compilation and Installation from source Inztructionz
+Compilation and Installation from Source Instructions
 -----------------------------------------------------
 
 If your distribution does not provide a packaged version of znapzend, or if
@@ -163,7 +163,7 @@ ZNAPVER=0.23.2
 for x in /opt/znapzend-${ZNAPVER}/bin/*; do ln -fs ../../../$x /usr/local/bin/; done
 ```
 
-Verification Inztructionz
+Verification Instructions
 -------------------------
 
 To make sure your resulting set of znapzend code and dependencies plays well
@@ -186,8 +186,10 @@ or
 Packages
 --------
 
-Debian control files, guide on using them and experimental debian packages
-can be found at https://github.com/Gregy/znapzend-debian
+Debian control files may be found in the 
+[repository](https://github.com/oetiker/znapzend/tree/master/debian) 
+and Debian packages may be found in the 
+[releases](https://github.com/oetiker/znapzend/releases).
 
 An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
 
