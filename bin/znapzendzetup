@@ -258,7 +258,9 @@ sub main {
         if ($#ARGV == grep { /^--(?:$ignoreOpts)$/ } @ARGV){
             $opts->{src} = pop @ARGV;
 
-            my $backupSet = $zConfig->getBackupSet(0, 0, $opts->{src})->[0]
+            my $backupSets = $zConfig->getBackupSet(0, 0, $opts->{src})
+                or die "ERROR: cannot get backup config\n";
+            my $backupSet = $backupSets->[0]
                 or die "ERROR: cannot get backup config\n";
 
             my $props = dumpPropertiesRaw($backupSet);
