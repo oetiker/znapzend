@@ -7,7 +7,7 @@ use ZnapZend::Config;
 use ZnapZend::ZFS;
 use ZnapZend::Time;
 use POSIX qw(setsid SIGTERM SIGKILL WNOHANG);
-use Scalar::Util qw(blessed);
+use Scalar::Util qw(blessed refaddr);
 use Sys::Syslog;
 use File::Basename;
 use Data::Dumper;
@@ -537,7 +537,25 @@ my $sendRecvCleanup = sub {
     }
 
     #loop through all destinations
-    for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+    my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
+    my $dstConcurrency = scalar(@destinations);
+    if (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
+        $dstConcurrency = $backupSet->{dst_concurrency};
+    }
+    if ($dstConcurrency > scalar(@destinations)) {
+        $self->zLog->warn("Configured dst_concurrency=$dstConcurrency exceeds destination count="
+            . scalar(@destinations) . " on backupSet " . $backupSet->{src}
+            . ". Will use destination count instead.");
+        $dstConcurrency = scalar(@destinations);
+    }
+    if ($dstConcurrency > 8) {
+        $self->zLog->warn("High destination concurrency ($dstConcurrency) requested on backupSet "
+            . $backupSet->{src} . ". This may saturate source disk, CPU, or network.");
+    }
+
+    my $processDestination = sub {
+        my $dst = shift;
+        my @dstSendFailed;
         my ($key) = $dst =~ /dst_([^_]+)$/;
         my $thisSendFailed = 0; # Track if we don't want THIS destination cleaned up
 
@@ -549,7 +567,7 @@ my $sendRecvCleanup = sub {
         if ($backupSet->{"dst_$key" . '_enabled'} && $backupSet->{"dst_$key" . '_enabled'} eq 'off'){
             $self->zLog->info("Skipping disabled destination " . $backupSet->{"dst_$key"}
                 . ". Note that you would likely need to recreate the backup data tree there");
-            next;
+            return \@dstSendFailed;
         }
 
         #check destination for pre-send-command
@@ -565,9 +583,9 @@ my $sendRecvCleanup = sub {
                 if ($self->skipOnPreSendCmdFail) {
                     my $errmsg = "skipping " . $backupSet->{"dst_$key"} . " due to pre-send-command failure";
                     $self->zLog->warn($errmsg);
-                    push (@sendFailed, $errmsg);
+                    push (@dstSendFailed, $errmsg);
                     $thisSendFailed = 1;
-                    next;
+                    return \@dstSendFailed;
                 }
             }
         }
@@ -623,10 +641,10 @@ my $sendRecvCleanup = sub {
                     if (!$autoCreation) {
                         $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error") if ($self->debug);
                     } else {
-                        push (@sendFailed, $errmsg);
+                        push (@dstSendFailed, $errmsg);
                         $thisSendFailed = 1;
                     }
-                    next;
+                    return \@dstSendFailed;
                 };
             };
 
@@ -686,7 +704,7 @@ my $sendRecvCleanup = sub {
                 if (!$autoCreation) {
                     $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error") if ($self->debug);
                 } else {
-                    push (@sendFailed, $errmsg);
+                    push (@dstSendFailed, $errmsg);
                     $thisSendFailed = 1;
                 }
                 next;
@@ -953,18 +971,18 @@ my $sendRecvCleanup = sub {
                     $thisSendFailed = 1;
                     if (blessed $err && $err->isa('Mojo::Exception')){
                         $self->zLog->warn($err->message);
-                        push (@sendFailed, $err->message);
+                        push (@dstSendFailed, $err->message);
                     }
                     else{
                         $self->zLog->warn($err);
-                        push (@sendFailed, $err);
+                        push (@dstSendFailed, $err);
                     }
                 }
             }
         }
 
         # do not destroy data sets on the destination, or run post-send-command, unless all operations have been successful
-        next if ($thisSendFailed);
+        return \@dstSendFailed if ($thisSendFailed);
 
         # Remember which snapnames we already decided about in first phase
         # (recursive cleanup from top backupSet-dst) if we did run it indeed.
@@ -1075,6 +1093,68 @@ my $sendRecvCleanup = sub {
                 && $self->zLog->warn("command \'" . $backupSet->{"dst_$key" . '_pstcmd'} . "\' failed");
             delete $ENV{WORKER};
         }
+
+
+        return \@dstSendFailed;
+    };
+
+    if ($dstConcurrency <= 1 || scalar(@destinations) <= 1) {
+        for my $dst (@destinations) {
+            push @sendFailed, @{$processDestination->($dst)};
+        }
+    }
+    elsif (Mojo::IOLoop->is_running) {
+        # Avoid blocking a running event loop in this synchronous routine.
+        # Fall back to serial execution when called from an active loop.
+        $self->zLog->warn("Destination parallelism requested while event loop is already running "
+            . "for backupSet " . $backupSet->{src}
+            . "; falling back to serial destination processing in this cycle.");
+        for my $dst (@destinations) {
+            push @sendFailed, @{$processDestination->($dst)};
+        }
+    }
+    else {
+        my @pending = @destinations;
+        my %active;
+        my $ownedLoop = 1;
+        my $startWorker;
+        $startWorker = sub {
+            while (@pending && scalar(keys %active) < $dstConcurrency) {
+                my $dst = shift @pending;
+                my $subprocess = Mojo::IOLoop::Subprocess->new;
+                my $sid = refaddr($subprocess);
+                $active{$sid} = 1;
+                $subprocess->run(
+                    sub {
+                        return $processDestination->($dst);
+                    },
+                    sub {
+                        my ($subprocess, $err, $result) = @_;
+                        my $id = refaddr($subprocess);
+                        delete $active{$id};
+
+                        if ($err) {
+                            my $errmsg = "destination worker '$dst' failed: $err";
+                            $self->zLog->warn($errmsg);
+                            push @sendFailed, $errmsg;
+                        }
+                        elsif (ref($result) eq 'ARRAY') {
+                            push @sendFailed, @{$result};
+                        }
+
+                        if (@pending) {
+                            $startWorker->();
+                        }
+                        elsif (!scalar(keys %active) && $ownedLoop && Mojo::IOLoop->is_running) {
+                            Mojo::IOLoop->stop;
+                        }
+                    }
+                );
+            }
+        };
+
+        $startWorker->();
+        Mojo::IOLoop->start if $ownedLoop;
     }
 
     #cleanup source

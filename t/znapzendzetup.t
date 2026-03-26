@@ -102,9 +102,17 @@ is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency');
+is (runCommand(qw(create --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency invalid');
 
 is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
+is (runCommand(qw(edit --donotask --dst-concurrency=3 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency');
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency invalid');
 
 is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');
 
