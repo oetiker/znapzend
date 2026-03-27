@@ -191,8 +191,9 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
+        my $dstConcurrencyFlagSeen = scalar(grep { /^--dst-concurrency(?:=.*)?$/ } @ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r donotask mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency=i))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency:s))) or exit 1;
 
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
@@ -202,7 +203,13 @@ sub main {
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
         $cfg{zend_delay}    = $opts->{'send-delay'}        || 0;
-        $cfg{dst_concurrency} = $opts->{'dst-concurrency'} if defined($opts->{'dst-concurrency'});
+        $cfg{dst_concurrency_enabled} = 'off';
+        if ($dstConcurrencyFlagSeen) {
+            $cfg{dst_concurrency_enabled} = 'on';
+            if (defined($opts->{'dst-concurrency'}) && $opts->{'dst-concurrency'} ne '') {
+                $cfg{dst_concurrency} = $opts->{'dst-concurrency'};
+            }
+        }
 
         my $backupSet = parseArguments(\@ARGV);
         #merge arguments to our cfg
@@ -301,8 +308,9 @@ sub main {
             last;
         }
 
+        my $dstConcurrencyFlagSeen = scalar(grep { /^--dst-concurrency(?:=.*)?$/ } @ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(donotask recursive=s mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency=i))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency:s))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
 
@@ -314,7 +322,14 @@ sub main {
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
-        $backupSet->{dst_concurrency} = $opts->{'dst-concurrency'} if defined($opts->{'dst-concurrency'});
+        if ($dstConcurrencyFlagSeen) {
+            $backupSet->{dst_concurrency_enabled} = 'on';
+            if (defined($opts->{'dst-concurrency'}) && $opts->{'dst-concurrency'} ne '') {
+                $backupSet->{dst_concurrency} = $opts->{'dst-concurrency'};
+            } else {
+                delete $backupSet->{dst_concurrency};
+            }
+        }
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet(0, 0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
@@ -609,7 +624,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            [--dst-concurrency=<count>] \
+            [--dst-concurrency[=<count>]] \
             SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
@@ -627,7 +642,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            [--dst-concurrency=<count>] \
+            [--dst-concurrency[=<count>]] \
             SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
@@ -863,9 +878,15 @@ May be useful if you want to control sending time.
 
 =item B<--dst-concurrency>
 
-Specify the maximum number of destination streams to run in parallel for one
-backup set. The value must be an integer >= 1. If not set, all configured
-destinations are processed in parallel by default.
+Enable destination sends in parallel for one backup set. When the option is
+specified without a value, all configured destinations are processed in
+parallel. If a value is provided, it must be an integer >= 1 and limits the
+maximum number of destination streams.
+
+For backward compatibility, existing backup sets that do not define
+I<dst_concurrency_enabled> keep the legacy behavior (all destinations in
+parallel). New backup sets created without B<--dst-concurrency> default to
+serial destination processing.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 

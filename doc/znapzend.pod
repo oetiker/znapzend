@@ -1,404 +1,97 @@
 =head1 NAME
 
-znapzend - znapzend daemon
+znapzendzetup - znapzend setup utility
 
 =head1 SYNOPSIS
 
-B<znapzend> [I<options>...]
+B<znapzendzetup> I<command> [I<common-options...>] [I<command-options...>]
 
- --man                  show man-page and exit
- --version              print version and exit
- -h,--help              display this help and exit
- -d,--debug             print debug messages to STDERR
- -n,--noaction          run in simulation mode: does no changes to filesystems
- --nodelay              if a backup plan has a zend_delay defined, ignore it
- --nodestroy            does all changes to the filesystem except destroy
- --forbidDestRollback   forbids forcing destination dataset rollback and
-                        removal of datasets/snapshots not present on source
- --logto=x              select where to log (syslog::<facility> or <filepath>)
-                        when logging to a file, send USR1 to re-open the filehandle
- --loglevel=x           define the log level
- --pidfile=x            write a pid file when running in daemon mode
- --daemonize            fork into the background
- --runonce=[x]          run one round on the optionally provided dataset
- -r,--recursive         recurse from the given "run-once" dataset
- --inherited            allow "run-once" on dataset which only inherits a plan
- --since=x              allow to consider a non-automatic common snapshot "x" as a starting point
- --sinceForced=x        same as --since=x but also make sure "x" exists on
-                        destination (can cause removal of newer snapshots)
- --forcedSnapshotSuffix=x  use non-generated snapshot suffix for this "run-once"
- --features=x           comma separated list of features to be enabled
-                        (detailed in man page):
-    oracleMode recvu compressed sendRaw lowmemRecurse zfsGetType
-    skipIntermediates sendIntermediates forbidDestRollback
- -i/-I                  a "zfs send" compatible on/off for skipIntermediates
- --rootExec=x           exec zfs with this command to obtain root privileges
-                        (sudo or pfexec)
- --connectTimeout=x     sets the ConnectTimeout for ssh commands
- --autoCreation         automatically create dataset on destination if it does
-                        not exist
- --noautoCreation       avoid automatically creating a dataset on destination
-                        if it does not exist (default)
- --timeWarp=x           shift znapzend's sense of NOW into the future
-                        by x seconds
- --skipOnPreSnapCmdFail skip snapshots if the pre-snap-command fails
- --skipOnPreSendCmdFail skip replication if the pre-send-command fails
- --cleanOffline         clean up source snapshots even if a destination was offline
- --mailErrorSummaryTo=rcpt  if "send task(s) failed", mail a summary to rcpt
+where 'common-options' (must precede command-options) is a mix of the
+following:
+
+            [--rootExec={pfexec|sudo}] \
+            [--features={x,y,...}] \
+                {lowmemRecurse zfsGetType} \
+            [--debug]
+
+and where 'command' and its unique options is one of the following:
+
+    create  [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
+            [--pre-snap-command=<command>] \
+            [--post-snap-command=<command>] \
+            [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
+            [--dst-concurrency[=<count>]] \
+            SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
+            [ DST[:key] plan [[user@]host:]dataset
+                [pre-send-command] [post-send-command] \
+                [dst_mbuffer_path[:port]] [dst_mbuffer_size] ]
+
+            NOTE: If you specify [user@]host:dataset for remote replication
+            over SSH, make use of ~/.ssh/config for any advanced options
+            (custom ports, keys to use, etc.) See znapzend README for ideas.
+
+    delete  [--dst=key] <src_dataset>
+
+    edit    [--recursive=on|off] \
+            [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
+            [--pre-snap-command=<command>|off] \
+            [--post-snap-command=<command>|off] \
+            [--tsformat=<format>] --donotask \
+            [--send-delay=<time>] \
+            [--dst-concurrency[=<count>]] \
+            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
+            [ DST:key [plan] [dataset] \
+                [pre-send-command|off] [post-send-command|off] \
+                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] ]
+
+    edit    <src_dataset>
+
+    enable  <src_dataset>
+
+    disable <src_dataset>
+
+    enable-dst  <src_dataset> <DST_key>
+
+    disable-dst <src_dataset> <DST_key>
+
+    enable-dst-autocreation  <src_dataset> <DST_key>
+
+    disable-dst-autocreation <src_dataset> <DST_key>
+
+    inherit-dst-autocreation  <src_dataset> <DST_key>
+
+    list    [--recursive] [--inherited] [src_dataset...]
+
+    export  <src_dataset>
+
+    import  [--write] [--prop <property>=<value>, [--prop ...] ...]
+            <src_dataset> [<prop_dump_file>]
+
+    help
+
+    man
 
 =head1 DESCRIPTION
 
-ZnapZend is a snapshot based zfs backup daemon creating snapshots on a
-scheduled basis on the source filesystem and on destination filesystems.
+Use znapzendsetup to configure your backup tasks. The cli is modled after
+the zfs commandline.
 
-ZnapZend reads its configuration from custom properties in the dataset.
-Use L<znapzendzetup> to set and list these properties.
+After modifying the configuration, send a HUP signal to your znapzend daemon
+for it to re-read the configuration.
+
+Common options include:
 
 =over
 
-=item B<-d>, B<--debug>
-
-talk a lot while running. Sends debug messages to stderr.
-
-=item B<-n>, B<--noaction>
-
-don't do any actions which have lasting effect. Ideal to try out new
-configurations together with B<--debug>
-
-=item B<--nodelay>
-
-if a backup plan has a zend_delay defined, ignore it (should help when
-debugging the backup plan configurations, without waiting for hours to
-run them during experiments)
-
-=item B<--nodestroy>
-
-do all changes to the filesystem except destroying old snapshots after
-a successful run to snapshot and replicate to backup destinations
-
-=item B<--forbidDestRollback>
-
-by default znapzend uses B<zfs recv -F> which rolls back destination to
-the most recent snapshot, and in case of incremental replication streams
-can also destroy snapshots and other child datasets not present in the
-source.
-
-The B<--forbidDestRollback> option allows to not enforce this mode, so
-znapzend would instead report errors if destination is not ready to
-receive data without applying such operations. This can be useful for
-maintenance of backup destinations, but can be counter-productive for
-regularly scheduled operations.
-
-=item B<--logto>={B<syslog::>I<facility>|I<filepath>}
-
-send logs out to either syslog or a logfile. Default is to send logs to
-B<syslog::daemon> when running daemonized. When running in debug mode, the
-logs will go to STDERR by default.
-
-When logging to a file, send USR1 to reopen the file handle after log rotation.
-
-Examples:
-
- --logto=/var/log/znapzend.log
- --logto=syslog::daemon
-
-=item B<--loglevel>={B<debug>|B<info>|B<warning>|B<err>|B<alert>}
-
-Define the log level when logging to file. Default is debug.
-
-=item B<--pidfile>=I<path>
-
-write a pid file when running in daemon mode
-B<pidfile> defaults to I</var/run/znapzend.pid> if no pidfile is given
-
-=item B<--daemonize>
-
-Fork into the background.
-
-=item B<--runonce>=[I<dataset>]
-
-run one round on source I<dataset> or on all datasets if empty.
-This is very useful for testing. Use it in connection with B<--noaction> and
-B<--debug> while testing your new configuration, or with B<--recursive> for
-quick back up of whatever has backup plans in a single pool or dataset tree.
-
-=item B<--forcedSnapshotSuffix>=I<snapsuffix>
-
-for this round of B<--runonce> create the specified snapshot suffix, rather
-than one generated by a pattern managed by 'znapzend'. Note it would not get
-automatically cleaned per retention policy, either. This is primarily intended
-for manual operations where a sysadmin wants for mark the certain data state
-of local significance while making an unscheduled backup.
-
-This option is not valid if the run-once mode is not requested.
-
-While basic sanity checks are done, it is up to the caller to specify a
-correct string value according to the rules of their ZFS version, and to
-take care that it is unique (no snapshots with such suffix already exist).
-
-See also B<--since>=I<snapsuffix>
-
-=item B<--since>=I<snapsuffix>, B<--sinceForced>=I<snapsuffix>
-
-Enables to see a snapshot named I<snapsuffix> in the history of the dataset
-under source and target pools, which should be a common snapshot present on
-both (or only on the source pool), and may be their newest common snapshot
-(that would otherwise be blocking the sync as something that needs to be
-removed for a full auto-creation replication and/or a usual replication).
-
-If the target dataset does not have this named snapshot, but the otherwise
-discovered history of automatic snapshots allows to include it into the usual
-replication, it will be sent (and a newer automatically-named snapshot would
-be made and sent). In other cases, it is up to the systems administrator to
-make the original systems data consistent with that on their remote ZFS pool.
-
-One could then use B<--sinceForced>=I<snapsuffix> variant that can remove
-from destination any snapshots that are newer than I<snapsuffix> to make way
-if needed, and ensure that this snapshot appears in destination's history;
-by default with B<--since>=I<snapsuffix> such removals should not happen.
-
-Unlike the B<--forcedSnapshotSuffix>=I<snapsuffix>, this option does not
-define how the new snapshot made during this run would be called (it would
-be named by common timestamp-based pattern to not get in the way of subsequent
-regular replications).
-
-The dataset name provided in this argument will never be removed during this
-run-once (even if it matches the configured znapzend timestamp-based snapshot
-naming pattern and is old enough to rotate away in other circumstances).
-
-Example:
-
-  znapzend --runonce=rpool/ROOT --since=20200101-01-finallyStableSetup
-
-=item B<-r>, B<--recursive>
-
-when backing up a particular dataset with B<--runonce>=[I<dataset>], do not
-just look at this dataset's backup plan, but iterate into its children that
-might have any. Useful for quick backups of a pool whose root dataset has no
-I<znapzendzetup> configurations defined, but some trees under it do.
-
-See below for interaction with B<--inherited> option and examples.
-
-=item B<--inherited>
-
-when backing up a particular dataset with B<--runonce>=[I<dataset>], do not
-require that the provided dataset directly has a locally defined backup plan
-configuration (sanity check that it is not "received" via ZFS replication).
-With this option in place, allow also to quickly snapshot and/or replicate
-datasets of subtrees which inherit a backup plan from a dataset which has it
-in its attributes whose source is "local".
-
-=item B<--inherited> and B<--recursive> together
-
-At this time, the B<--inherited> is "sort of exclusive" vs. B<--recursive>
-mode, and if both are specified the behavior depends on whether the requested
-dataset has some (local or inherited-from-local) backup plan. If a dataset
-without a backup plan is passed, the script should effectively ignore the
-B<--inherited> option and just recurse until it finds some dataset(s) with
-proper locally defined backup plan(s) (note that finding inherited plans
-first is highly unlikely due to ZFS attribute inheritance from parents to
-children).
-
-Examples below assume the following dataset layout:
-
-+ I<tank> (no znapzend config)
-| + I<export> (local znapzend config)
-| | + I<home> (inherited znapzend config from local tank/export)
-| |   + I<user> (inherited znapzend config from local tank/export)
-| |     + I<sources> (inherited znapzend config from local tank/export)
-| |     + I<documents> (inherited znapzend config from local tank/export)
-| |       + I<pictures> (inherited znapzend config from local tank/export)
-| + I<var> (local znapzend config)
-+ I<usbbackup> (no znapzend config)
-  + I<snapshots> (no znapzend config)
-    + I<export> (received znapzend config)
-    | + I<home> (inherited from received usbbackup/snapshots/export)
-    |   + I<user> (inherited from received usbbackup/snapshots/export)
-    |     + I<sources> (inherited from received usbbackup/snapshots/export)
-    |     + I<documents> (inherited from received usbbackup/snapshots/export)
-    |       + I<documents> (inherited from received usbbackup/snapshots/export)
-    + I<var> (received znapzend config)
-
-Examples:
-
-  znapzend --recursive --runonce=tank
-
-This should walk all filesystem or volume datasets defined anywhere under
-I<tank> (root dataset of same-named pool) and snapshot/replicate the found
-datasets that have a backup plan configured "locally", such as I<tank/export>
-and I<tank/var>, according to configuration (e.g. with children and beyond
-if the corresponding backup plan's I<recursive=on> option is specified).
-It should not waste time looking for datasets under the I<usbbackup> pool.
-
-  znapzend --runonce=tank/export/home/user/documents
-
-Given that only I<tank/export> "locally" defines a znapzend backup plan, the
-default B<znapzend> behavior with a descendant dataset would be to find no
-configuration (sourced as "local" right in it) and so would "run-once" nothing.
-
-  znapzend --recursive --runonce=tank/export/home
-
-Same (no config found) for recursion starting from a dataset with inherited
-backup plan configuration (assuming none of its descendants have a "local"
-config of their own).
-
-  znapzend --inherited --runonce=tank/export/home/user/documents
-
-With the B<--inherited> option however it would recognize this descendant
-dataset as having a backup plan configuration inherited from I<tank/export>,
-would then look at I<tank/export> and confirm that it has this configuration
-from a "local" source, and should B<znapzend runonce> just this dataset and
-its descendants (so including I<tank/export/home/user/documents/pictures>,
-but not including siblings like I<tank/export/home/user/sources>).
-
-  znapzend --inherited --recursive --runonce=tank
-
-Since I<tank> has no backup plan, B<znapzend> should recurse and find the
-nearest datasets with configured plans, I<tank/export> and I<tank/var>, and
-process them according to configuration.
-
-  znapzend --inherited --recursive --runonce=tank/export
-
-Since I<tank/export> has a locally defined backup plan, B<znapzend> should
-process it according to configuration.
-
-  znapzend --inherited --recursive --runonce=tank/export/home
-
-Since I<tank/export/home> has a backup plan inherited from a locally defined
-one in I<tank/export>, B<znapzend> should process it according to configuration.
-
-  znapzend --recursive --runonce=usbbackup
-  znapzend --inherited --runonce=usbbackup/snapshots
-  znapzend --inherited --recursive --runonce=usbbackup/snapshots/export/home
-
-Neither of these runs should do anything, because all datasets involved
-(including those found by a recursive walk) under I<usbbackup> have neither
-a local definition of a backup plan, nor one inherited from a local definition.
-
-
 =item B<--features>=I<feature1>,I<feature2>,...
 
-enables enhanced zfs features not supported by all zfs implementations.
-Do not enable features unless you are sure your zfs supports (or requires) it
+enables a few enhanced zfs module features to be on par with those used by
+the znapzend command (but far fewer are relevant for the znapzendzetup)
 
 Available features:
 
 =over
-
-=item oracleMode
-
-working around the following zfs issues we have seen on oracle:
-
-=over
-
-=item *
-
-The multi snapshot destroy syntax is not available. So stick to destroying
-them individually.
-
-=item *
-
-Sometimes a snapshot can not be destroyed because of some oracle zfs bug.
-Only a reboot seems to be able to fix this. So we just destroy the ones we
-can destroy. Logging an error about the problem
-
-=back
-
-=item recvu
-
-use the -u option on the receive end, to keep the destination zfs
-filesystems unmounted.
-
-=item resume
-
-use the -s option on the receive end, to support resumable transfer
-with receive_resume_token.
-
-If you have aborted a resumable-send, you should either do a resume-send using -t <token>
-to continue it or clear the half-received snapshot using zfs receive -A <filesystem>
-
-Example:
-
- zfs get receive_resume_token tank/test
- zfs send -t <token> | zfs receive -s tank/test
-
-=item compressed
-
-use 'compressed' to add options -Lce to the zfs send command
-
-Even if a source and destination datasets are both using compression,
-zfs send will, by default, decompress the data before sending, and
-zfs recv will then compress it again before writing it to disk.
-Using -c will skip the unnecessary decompress-compress stages.
-This decreases CPU load on both source and destination as well
-as reduces network bandwidth usage.
-
-The -L option is for large block support and -e is for embedded data
-support. These may require certain (Open)ZFS features to be enabled.
-
-=item sendRaw
-
-use 'sendRaw' to add option -w to zfs send commands
-
-For encrypted source datasets this instructs zfs not to decrypt
-before sending which results in a remote backup that can't be read
-without the encryption key/passphrase, useful when the remote isn't
-fully trusted or not physically secure. This option must be used
-consistently, raw incrementals cannot be based on non-raw snapshots
-and vice versa.
-
-=item sendIntermediates
-
-The opposite of I<skipIntermediates>, detailed in the next section.
-This is the default mode of operation, and only included here to
-allow for completeness and explicitness of your configurations.
-
-=item skipIntermediates
-
-Enable the 'skipIntermediates' feature to send a single increment
-between latest common snapshot and the newly made one. It may skip
-several source snaps if the destination was offline for some time,
-and it should skip snapshots not managed by znapzend. Normally for
-online destinations, the new snapshot is sent as soon as it is
-created on the source, so there are no automatic increments to skip.
-
-By default 'znapzend' uses the 'zfs send -I' option on the sending
-end (so to include all intermediate snapshots), rather than '-i'
-(which would send a single big increment), to keep the destination
-zfs dataset history similar to the source's one. This implies the
--I<sendIntermediates> mode of operation.
-
-Note: it was the default from beginning of 'znapzend' to make sure
-that in case a send operation takes too long, we still get all the
-intermediate snapshots sent to the destination.
-Beware or benefit that this can deliver not only automatic, but also
-manually named snapshots to your destination which would have to be
-cleaned manually when no longer wanted there, but that they can be
-used as common snapshots to repair broken syncs e.g. with I<--since=X>
-options.
-
-With the 'skipIntermediates' feature disabled, all snapshots between
-the latest common one and the newly created one on the source would
-be sent to each destination, and then the "extra" ones of those managed
-by znapzend may get discarded according to destination's retention
-policy. Note that snapshots which are NOT managed by znapzend, e.g.
-ones you created manually, would appear on the destination and stay
-there until removed manually. Also note that this may consume more
-disk space and transfer time than otherwise needed for the data
-increment.
-
-This original mode is now primarily recommended for irregular backups
-(on removable media or over unstable links) and cases where the
-sysadmin marks certain data states via snapshots as special (e.g.
-"before_upgrade", etc.)
-
-The feature is recommended to be part of your 'znapzend' service
-setup for regular runs in stable storage/networking conditions.
-
-=item forbidDestRollback
-
-Avoid use of destructive 'zfs recv -F' in favor of failing to receive;
-more details in description of B<--forbidDestRollback> CLI option above.
 
 =item lowmemRecurse
 
@@ -417,7 +110,7 @@ the one in Solaris 10u8 already does), so that there is too much
 data to process while searching for backup plans.
 
 If these two conditions apply to your system, the time needed for
-a '--recursive' search for backup plans can literally differ by
+a '--recursive' listing of backup plans can literally differ by
 hundreds of times (depending on the amount of snapshots in that
 dataset tree... and a decent backup plan will ensure you have a
 lot of those), so you would benefit from requesting this feature.
@@ -427,88 +120,269 @@ listings however.
 
 =back
 
-=item B<--rootExec>={sudo|pfexec}
+=back
 
-Execute zfs with this command, 'sudo' or 'pfexec', to
-obtain root privileges. This is often necessary when running znapzend as a
-non-privileged user with a zfs install that doesn't support finer permission
-controls. This also applies to the zfs commands ran on remote servers over ssh.
 
-For sudo, the /etc/sudoers file will need to be modified to allow for
-passwordless access to zfs commands if znapzend is to be ran as a daemon or
-the system will be used as a remote. Many ZFS installations include an
-/etc/sudoers.d/zfs file as an example.
+Below a few notes on main commands.
 
-=item B<--connectTimeout>=I<timeout>
+=head2 B<create>
 
-sets the ssh connection timeout (in seconds)
+The heart of the znapzend backup is the plan. The plan specifies how often
+to backup and for how long to keep the backups. A plan is required both for
+the source and the destination datasets.
 
-=item B<--autoCreation>
+The plan consists of a series of retention periods to interval
+associations:
 
-Automatically create a dataset on a destination host if it's not there yet.
+  retA=>intA,retB=>intB,...
 
-=item B<--noautoCreation>
+Both intervals and retention periods are expressed in standard units of time
+or multiples of them. You can use both the full name or a shortcut according
+to the following table:
 
-Avoid automatically creating a dataset on a destination host if it's not
-there yet. This is the default behavior; the option is available to help
-explicitly override a setting inherited from a configuration file, etc.
+ second|sec|s
+ minute|min
+ hour|h
+ day|d
+ week|w
+ month|mon|m
+ year|y
 
-=item B<--timeWarp>=x
+To keep one copy every 30 minutes for one week, specify:
 
-Shift ZnapZend's sense of time into the future by x seconds.
+ 1week=>30min
 
-The practical application if this function is to determine what will happen
-at some future point in time. This can be useful for testing but also when
-running in B<noaction> and B<debug> mode to determine which snapshots would
-be created and removed at some future point in time.
+To keep one copy every two days for 10 years:
 
-=item B<--skipOnPreSnapCmdFail>
+ 10year=>2day
 
-Prevent snapshots of a dataset from being taken when it has a B<pre-snap-command>
-defined and the command returns a non-zero exit code or is killed by a signal.
+In a minimal setup, you just specify a plan for the B<SRC> fileset. This
+will cause snapshots to be taken and destroyed according to the plan. You
+can then add one or several destinations (B<DST>) both local (preferably on
+a different pool) or remote.
 
-=item B<--skipOnPreSendCmdFail>
+When adding multiple B<DST> entries, each will get labeled for later
+identification, optionally you can specify your own label.
 
-Prevent snapshots of a dataset from being replicated to a destination when
-it has a B<pre-snap-command> defined and the command returns a non-zero exit
-code or is killed by a signal.
+=over
 
-=item B<--cleanOffline>
+=item B<--tsformat>=I<limited-strftime-format>
 
-Clean snapshots of a source dataset even if one or more destination datasets
-failed during replication for whatever reason (destination offline, destination
-full, destination pool became read-only due to storage issues, source too full
-to make a snapshot, etc.).
+The B<--tsformat> option specifies how the names of the snapshots are
+constructed.
 
-The most recent common snapshot for each destination (as tracked on source for
-resilience) will not be deleted from source, but this is still a potentially
-dangerous option: if the preserved snapshot somehow gets deleted from the
-destination, it may require a full re-replication the next time it is online.
+The syntax is L<strftime>-like. The string must consist of the mandatory
 
-=item B<--mailErrorSummaryTo=rcpt(@domain),...>
+ %Y %m %d %H %M %S %z
 
-If this argument is passed, a copy of error summary would be sent there by
-your system's command line mailer program. It is then up to this program and
-system setup to validate the recipient names (local or domain-suffixed) and
-deliver the message to some mailbox.
+Optionally,
 
-This feature relies on a program which supports standard sendmail-like CLI.
+- _ . :
+
+characters as well as any alphanumeric character are allowed.
+
+If not specified, B<--tsformat> defaults to C<%Y-%m-%d-%H%M%S>.
+
+If B<--tsformat> string is suffixed by a 'Z', times will be in UTC. E.g.:
+
+ --tsformat='%Y-%m-%dT%H:%M:%SZ'
+
+NOTE: that windoz will probably not like the C<:> characters. So if you
+intend to browse the snapshots with windoz, you may want to use a different
+separator.
+
+=item B<--mbuffer>=I</usr/bin/mbuffer>
+
+DEPRECATED: Specify the path to your copy of the mbuffer utility.
+
+NOTE: with this option, the same path would be used for all remote
+destinations - this can misfire if they run different operating systems.
+
+It is currently recommended to define individual B<dst_mbuffer_path>
+options for each separate destination in each dataset configuration.
+The B<--mbuffer> value would be used as a fallback default for those.
+
+Per legacy-default behavior, the mbuffer program was not used by the
+sender (unless using a dedicated port, see below). Nowadays it is
+possible to specify it instead of (or in addition to) a destination
+side mbuffer, using the B<src_mbuffer_path> in each source dataset
+configuration.
+
+=item B<--mbuffer>=I</usr/bin/mbuffer:31337>
+
+DEPRECATED: Specify the path to your copy of the mbuffer utility and
+the port used on the destination. Caution: znapzend will use SSH to
+set up the remote mbuffer receiver, but will send the snapshot data
+stream directly from source mbuffer to destination mbuffer. In other
+words, the data stream is B<not> encrypted. Use this only in a trusted
+LAN or over VPN, where you can safely avoid the overheads of an SSH
+tunnel.
+
+NOTE: with this option, the same path would be used for all remote
+destinations as well as the source system - this can misfire if they
+run different operating systems.
+
+It is currently recommended to define individual B<*_mbuffer_path>
+options for each source and each separate destination in each dataset
+configuration. The B<--mbuffer> value would be used as a fallback
+default for those (with only path component for the source).
+
+=item B<--mbuffersize>=I<number>{B<b>|B<k>|B<M>|B<G>}
+
+The size of the mbuffer can be set with the B<--mbuffersize> option.  It
+supports the following units:
+
+ b, k, M, G
+
+To specify a mbuffer size of 100MB:
+
+ --mbuffersize=100M
+
+If not set, the buffer size defaults to 1GB.
+
+It is currently suggested to define individual B<mbuffer_size> options for
+each source and each separate destination in each dataset configuration.
+The B<--mbuffer-size> value would be used as a fallback default for those.
+
+=item B<--donotask>
+
+Apply changes immediately. Without being asked if the config is as you
+intended it to be.
+
+=item B<--pre-snap-command>=I</path/bin args>, B<--post-snap-command>=I</path/bin args>
+
+Run commands/scripts before and after snapshots are taken on source.
+e.g. for database locking/flushing (pre) and unlocking (post).
+
+If you deal with a mariadb/mysql database, you can use
+
+  pre-snap-command  = /opt/oep/mariadb/bin/mysql -e "set autocommit=0;flush tables with read lock;\\! /bin/sleep 600" &  /usr/bin/echo $! > /tmp/mariadblock.pid ; sleep 10
+  post-snap-command = /usr/bin/pkill -P `/usr/bin/cat /tmp/mariadblock.pid`;/usr/bin/rm /tmp/mariadblock.pid
+
+to make sure that the on-disk data is consistent when snapshotting. The
+lock stays in place only for the duration of the lingering connection
+to mysql we need to employ, or until the snapshotting attempt times out.
+For this to work, add the root password of your mariadb/mysql database
+setup into ~root/.my.cnf and make sure the file permissions are tight ...
+
+The pre and post snapshot commands can find the name and time of the
+snapshot in the environment variables I<ZNAP_NAME> and I<ZNAP_TIME>.
+
+=item B<--send-delay>
+
+Specify delay (in seconds) before sending snaps to the destination.
+May be useful if you want to control sending time.
+
+=item B<--dst-concurrency>
+
+Enable destination sends in parallel for one backup set. When the option is
+specified without a value, all configured destinations are processed in
+parallel.
+
+If a value is provided, it must be an integer >= 1 and limits the maximum
+number of destination streams.
+
+For backward compatibility, existing backup sets that do not define
+I<dst_concurrency_enabled> keep the legacy behavior (all destinations in
+parallel). New backup sets created without B<--dst-concurrency> default to
+serial destination processing.
+
+=item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
+
+Run command/script before and after sending the snapshot to the destination.
+Intended to run a remote script via ssh on the destination, e.g. to bring
+up a backup disk or server. Or to put a zpool online/offline:
+
+  "ssh root@bserv zpool import -Nf tank"
+  "ssh root@bserv zpool export tank"
 
 =back
 
-=head1 EXAMPLE
+=head2 B<delete>
 
-To test a new config:
+to remove configuration from a dataset just give its name
 
- znapzend --debug --noaction --runonce=tank/test
+ znapzendzetup delete I<dataset>
 
-To see what is going to happen in one hour:
+the B<delete> function understands the following options:
 
- znapzend --debug --noaction --timeWarp=3600 --runonce=tank/test
+=over
 
-To run as a daemon:
+=item B<--dst>=I<key>
 
- znapzend --daemonize --pidfile=/var/run/znapzend.pid --logto=syslog::daemon
+to only remove a destination, specify the key of the destination. Use the
+B<list> function to see the keys.
+
+=back
+
+=head2 B<edit>
+
+modify the configuration of a dataset. See the descriptions in the B<create>
+function for details.
+
+If B<edit> is used with a source dataset as single argument, properties
+can be edited in an editor.
+
+=head2 B<export>
+
+dumps the backup configuration of a dataset
+
+ znapzendzetup export I<dataset>
+
+=head2 B<import>
+
+reads configuration data from a file or STDIN and prints it content
+
+=over
+
+=item B<--write>
+
+actually store the new configuration into the dataset given on the
+command line.
+
+=item B<--prop> I<key>="I<value>" [ B<--prop> ... ]
+
+may be called multiple times to override properties in the imported config.
+
+=back
+
+=head1 EXAMPLES
+
+create a complex backup task
+
+    znapzendzetup create --recursive --mbuffer=/opt/omni/bin/mbuffer \
+       --mbuffersize=1G --tsformat='%Y-%m-%d-%H%M%S' \
+       --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
+       --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
+       SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
+          "/usr/bin/mbuffer" "128M" \
+       DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' backup/home \
+       DST:b '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' \
+          root@bserv:backup/home \
+          "/root/znapzend.sh dst_b pool on" \
+          "/root/znapzend.sh dst_b pool off" \
+          "/opt/bin64/mbuffer" "4G"
+
+create a multi-destination backup with bounded parallel sends
+
+    znapzendzetup create --recursive --dst-concurrency=2 \
+       SRC '1d=>12h,3d=>1d' tank/apps \
+       DST:a '31d=>1d' backup-a:tank/apps \
+       DST:b '31d=>1d' backup-b:tank/apps \
+       DST:c '14d=>1d,3m=>1w' backup-c:tank/apps
+
+
+copy the setup from one fileset to another
+
+    znapzendzetup export tank/home | znapzendzetup import --write tank/new_home
+
+=head1 RUNNING AS AN UNPRIVILEGED USER
+
+In order to allow a non-privileged user to use it, the following
+permissions are required on the ZFS filesystems:
+
+Sending end: I<destroy,hold,mount,send,snapshot,userprop>
+Receiving end: I<create,mount,receive,userprop>
 
 =head1 COPYRIGHT
 
@@ -531,12 +405,15 @@ this program. If not, see L<http://www.gnu.org/licenses/>.
 
 =head1 AUTHOR
 
-S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>,
+S<Tobias Oetiker E<lt>tobi@oetiker.chE<gt>>
 S<Dominik Hassler E<lt>hadfl@cpan.orgE<gt>>
 
 =head1 HISTORY
 
- 2014-06-01 had Multi destination backup
- 2014-05-30 had Initial Version
+2016-09-23 ron Destination pre and post send/receive commands
+2014-07-22 had Pre and post snapshot commands
+2014-06-29 had Flexible snapshot time format
+2014-06-01 had Multi destination backup
+2014-05-30 had Initial Version
 
 =cut

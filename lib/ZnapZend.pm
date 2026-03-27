@@ -539,7 +539,20 @@ my $sendRecvCleanup = sub {
     #loop through all destinations
     my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
     my $dstConcurrency = scalar(@destinations);
-    if (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
+    if (defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} eq 'off') {
+        $dstConcurrency = 1;
+    }
+    elsif (defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} eq 'on') {
+        if (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
+            $dstConcurrency = $backupSet->{dst_concurrency};
+        }
+        else {
+            # Explicitly enabled with no numeric limit means "all destinations".
+            $dstConcurrency = scalar(@destinations);
+        }
+    }
+    elsif (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
+        # Backward compatibility: old configs with dst_concurrency but no marker.
         $dstConcurrency = $backupSet->{dst_concurrency};
     }
     if ($dstConcurrency > scalar(@destinations)) {
