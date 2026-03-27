@@ -186,6 +186,14 @@ my $checkBackupSets = sub {
                     or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
             }
         }
+        if (exists($backupSet->{dst_concurrency}) && defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} ne '') {
+            ($backupSet->{dst_concurrency} =~ /^\d+$/ && int($backupSet->{dst_concurrency}) > 0)
+                or die "ERROR: dst_concurrency '$backupSet->{dst_concurrency}' invalid (must be an integer >= 1)\n";
+        }
+        if (exists($backupSet->{dst_concurrency_enabled}) && defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} ne '') {
+            ($backupSet->{dst_concurrency_enabled} eq 'on' || $backupSet->{dst_concurrency_enabled} eq 'off')
+                or die "ERROR: dst_concurrency_enabled '$backupSet->{dst_concurrency_enabled}' invalid (must be on|off)\n";
+        }
 
         # mbuffer properties not set for source? legacy behavior was to not use
         # any on the sender, except when in port-to-port mode
