@@ -130,6 +130,33 @@ sub parseArguments {
     return \%backupSet;
 }
 
+sub extractDstConcurrencyOption {
+    my $args = shift;
+    my $seen = 0;
+    my $value;
+    my @filtered;
+
+    for (my $i = 0; $i < @$args; $i++) {
+        my $arg = $args->[$i];
+        if ($arg =~ /^--dst-concurrency(?:=(.*))?$/) {
+            $seen = 1;
+            $value = undef; # last occurrence wins
+            if (defined($1) && $1 ne '') {
+                $value = $1;
+            }
+            elsif (!defined($1) && defined($args->[$i + 1]) && $args->[$i + 1] =~ /^\d+$/) {
+                $value = $args->[$i + 1];
+                $i++;
+            }
+            next;
+        }
+        push @filtered, $arg;
+    }
+
+    @$args = @filtered;
+    return ($seen, $value);
+}
+
 sub main {
     my $mainOpt = shift;
     my $opts = {};
@@ -191,9 +218,9 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
-        my $dstConcurrencyFlagSeen = scalar(grep { /^--dst-concurrency(?:=.*)?$/ } @ARGV);
+        my ($dstConcurrencyFlagSeen, $dstConcurrencyOptValue) = extractDstConcurrencyOption(\@ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r donotask mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency:s))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
@@ -206,8 +233,8 @@ sub main {
         $cfg{dst_concurrency_enabled} = 'off';
         if ($dstConcurrencyFlagSeen) {
             $cfg{dst_concurrency_enabled} = 'on';
-            if (defined($opts->{'dst-concurrency'}) && $opts->{'dst-concurrency'} ne '') {
-                $cfg{dst_concurrency} = $opts->{'dst-concurrency'};
+            if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
+                $cfg{dst_concurrency} = $dstConcurrencyOptValue;
             }
         }
 
@@ -308,9 +335,9 @@ sub main {
             last;
         }
 
-        my $dstConcurrencyFlagSeen = scalar(grep { /^--dst-concurrency(?:=.*)?$/ } @ARGV);
+        my ($dstConcurrencyFlagSeen, $dstConcurrencyOptValue) = extractDstConcurrencyOption(\@ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(donotask recursive=s mbuffer=s mbuffersize=s),
-            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i dst-concurrency:s))) or exit 1;
+            qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
 
@@ -324,8 +351,8 @@ sub main {
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
         if ($dstConcurrencyFlagSeen) {
             $backupSet->{dst_concurrency_enabled} = 'on';
-            if (defined($opts->{'dst-concurrency'}) && $opts->{'dst-concurrency'} ne '') {
-                $backupSet->{dst_concurrency} = $opts->{'dst-concurrency'};
+            if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
+                $backupSet->{dst_concurrency} = $dstConcurrencyOptValue;
             } else {
                 delete $backupSet->{dst_concurrency};
             }

@@ -1,6 +1,9 @@
 znapzend (0.23.3) UNRELEASED; urgency=medium
 
   * revised CI recipes to pass on contributor forks #680 -- @jimklimov
+  * added `--dst-concurrency[=<count>]` for explicit opt-in parallel
+    destination sends; new backup sets default to serial processing while
+    existing configs continue with compatibility behavior -- @jimklimov
 
  -- Jim Klimov <jimklimov@gmail.com>  Fri, 12 Sep 2025 19:53:28 +0200
 

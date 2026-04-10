@@ -1187,7 +1187,7 @@ sub getDataSetProperties {
                     }
                     if (defined($cachedInheritance{$tail_inheritKey}) && 1 == $cachedInheritance{$tail_inheritKey}) {
                         # This property comes from a local source
-                        if ( $key =~ /^dst_[^_]+$/ ) {
+                        if ( $key =~ /^dst_(?!concurrency$)[^_]+$/ ) {
                             # Rewrite destination dataset name shifted same as
                             # this inherited source ($srcds) compared to its
                             # ancestor which the config is inherited from ($tail
