@@ -239,7 +239,7 @@ my $checkBackupSets = sub {
         }
 
         #check destination plans and datasets
-        for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
+        for my $dst (grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
             #store backup destination validity. will be checked where used
             $backupSet->{$dst . '_valid'} = $self->zfs->dataSetExists($backupSet->{$dst});
             $self->zLog->debug('checkBackupSets(): detected ' . $dst . '_valid status for ' . $backupSet->{$dst} . ': ' . $backupSet->{$dst . '_valid'}) if ($self->debug);
@@ -474,7 +474,7 @@ sub enableBackupSetDst {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -523,7 +523,7 @@ sub disableBackupSetDst {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -567,7 +567,7 @@ sub enableBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -613,7 +613,7 @@ sub disableBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -659,7 +659,7 @@ sub inheritBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part

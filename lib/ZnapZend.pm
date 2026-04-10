@@ -537,7 +537,7 @@ my $sendRecvCleanup = sub {
     }
 
     #loop through all destinations
-    my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
+    my @destinations = sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet;
     my $dstConcurrency = scalar(@destinations);
     if (defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} eq 'off') {
         $dstConcurrency = 1;
@@ -1254,7 +1254,7 @@ my $sendRecvCleanup = sub {
 
             if (scalar($toDestroy) > 0) {
                 # Check if any death-rowed snapshots need protection
-                for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+                for my $dst (sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
                     my $dstDataSet = $backupSet->{src};
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                     my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on'), undef );
@@ -1340,7 +1340,7 @@ my $sendRecvCleanup = sub {
             # preserve most recent common snapshots for each destination
             # (including offline destinations for which last-known sync
             # snapshot name is saved in properties of the source policy)
-            for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
+            for my $dst (sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
                 my $dstDataSet = $srcDataSet;
                 $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                 my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, undef, undef);
