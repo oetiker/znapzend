@@ -196,6 +196,15 @@ place (and corresponding daemons may remain running), so before re-running
 the tests you may want to follow up with `make clean-pidfiles` to kill any
 processes mentioned in those files (if present) and remove them.
 
+Combining the suggestions above, a relatively quick developer testing command
+(taking about 5 minutes for the full suite), optionally with a log file to
+later trawl for errors (if any), could look like this:
+
+```sh
+:; ZNAPZENDTEST_ZFS_list_max_snapshots=3 make clean-pidfiles check \
+    2>&1 | tee "test-make-check-`date +%s`.log"
+```
+
 Packages
 --------
 
