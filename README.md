@@ -183,6 +183,22 @@ or
 > might behave differently. While that can happen in practice, that would be
 > a bug to report and pursue fixing.
 
+The tests use mocked tools under the `t` directory. Notably, the mock operation
+to `zfs list` generates a large listing of dataset snapshots (once a minute for
+an hour, by default), leading to significant test times like an hour or two!
+
+To speed up development iterations, when you just want to make sure no simple
+regressions were added, you can `export ZNAPZENDTEST_ZFS_list_max_snapshots=3`
+or so to significantly speed up the test suite.
+
+Also note that interrupted tests tend to leave the `znapzend*.pid` files in
+place (and corresponding daemons may remain running), so before re-running
+the tests you may want to follow up with:
+
+```sh
+:; pkill perl ; rm -f znapzend*.pid
+```
+
 Packages
 --------
 

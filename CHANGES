@@ -1,8 +1,12 @@
 znapzend (0.23.3) UNRELEASED; urgency=medium
 
-  * revised CI recipes to pass on contributor forks #680 -- @jimklimov
+  * Revised CI recipes to pass on contributor forks #680 -- @jimklimov
+  * Introduced `ZNAPZENDTEST_ZFS_list_max_snapshots` in mock `t/zfs`
+    (default `58` for `dst`, as it was hard-coded since at least 2014,
+    adding `+2` more to `src` datasets), to speed up developer testing
+    iterations #691 -- @jimklimov
 
- -- Jim Klimov <jimklimov@gmail.com>  Fri, 12 Sep 2025 19:53:28 +0200
+ -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
 
 znapzend (0.23.2) UNRELEASED; urgency=medium
 
