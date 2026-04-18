@@ -103,7 +103,7 @@ cnf
 codepath
 cois
 commandline
-compat
+Compat
 compgen
 COMPREPLY
 condrestart
@@ -518,8 +518,8 @@ rmprog
 rmtmp
 ron
 rootds
-rootfs
 rootfs'es
+rootfs
 rpool
 rr
 rsa
@@ -581,7 +581,7 @@ standalone
 startd
 startstop
 stderr
-stdin
+STDIN
 stdout
 stefan
 stip
@@ -661,8 +661,8 @@ uncomment
 Uncompress
 unconfigured
 UNCONSIDER
-undef
 undef'ed
+undef
 unicode
 uniq
 unsubscribe
