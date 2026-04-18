@@ -33,8 +33,12 @@ thirdparty/*
 !thirdparty/Makefile.am
 !thirdparty/cpanfile*snapshot
 
-# Build products and generated templates
-*.tar.gz
+# Build products: dist tarball and unpacked "make distcheck" workspace
+/znapzend-*.tar.gz
+/znapzend-*/
+
+# Copy of README.md, needed to conform to autotools standards
+/README
 
 # Test leftovers
 .DS_Store

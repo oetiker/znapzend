@@ -30,7 +30,7 @@ automounting
 autoreconf
 autoscrub
 autotarget
-Autotools
+autotools
 Backend
 backticks
 backupplan
@@ -98,6 +98,7 @@ dedup
 dest
 destfail
 desttemp
+distcheck
 DISTRIBUTIONNAME
 distro
 dmp
@@ -482,6 +483,7 @@ SZ
 TABCHAR
 tabledata
 Tagset
+tarball
 tattr
 telnet
 tempfile
