@@ -1,41 +1,44 @@
+# Autotools generated files
+/autom4te.cache/
+/aclocal.m4
+/config.log
+/config.status
+/conftools
+/configure
+Makefile
+Makefile.old
+Makefile.in
+
+# PERL builds products (e.g. installed+compiled modules)
 blib/
 .build/
 _build/
 cover_db/
 inc/
-autom4te.cache/
 Build
 !Build/
 Build.bat
 .last_cover_stats
-Makefile
-Makefile.old
-Makefile.in
-configure
 MANIFEST.bak
 META.yml
 MYMETA.yml
 nytprof.out
 pm_to_blib
 .#*
-autom4te.cache/
-config.log
-config.status
+
+# PERL dependency discovery results (note: some we DO want committed)
 /cpanfile
 /cpanfile.snapshot
 thirdparty/*
 !thirdparty/Makefile.am
 !thirdparty/cpanfile*snapshot
+
+# Build products and generated templates
 *.tar.gz
-init/znapzend.freebsd
-init/znapzend.service
-init/znapzend.sysv
-init/znapzend.upstart
-init/znapzend.xml
-init/org.znapzend.plist
+
+# Test leftovers
 .DS_Store
 znapzend*.pid
 dump.dmp
 *.selftest-rewritten
 *~
-conftools
