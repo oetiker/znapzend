@@ -193,11 +193,8 @@ or so to significantly speed up the test suite.
 
 Also note that interrupted tests tend to leave the `znapzend*.pid` files in
 place (and corresponding daemons may remain running), so before re-running
-the tests you may want to follow up with:
-
-```sh
-:; pkill perl ; rm -f znapzend*.pid
-```
+the tests you may want to follow up with `make clean-pidfiles` to kill any
+processes mentioned in those files (if present) and remove them.
 
 Packages
 --------
