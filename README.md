@@ -216,6 +216,16 @@ by just preferring them in your `PATH`, e.g.:
     DST:0 "1h=>10min" backup/destination
 ```
 
+As usual with Perl programming, you can run the interpreter with one of the
+development/debugging modules enabled (may need to install some from CPAN
+or your OS packaging), e.g. `Devel::ebug` or `Devel::Trace`:
+
+```sh
+:; perl -d:Trace ./bin/znapzendzetup \
+    edit --donotask --recursive=on \
+    SRC tank/source
+```
+
 Packages
 --------
 
