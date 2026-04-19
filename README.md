@@ -205,6 +205,17 @@ later trawl for errors (if any), could look like this:
     2>&1 | tee "test-make-check-`date +%s`.log"
 ```
 
+To speed up development of tests (or to troubleshoot/debug any failures),
+you can also craft and execute individual test cases using the mock tools,
+by just preferring them in your `PATH`, e.g.:
+
+```sh
+:; PATH="`pwd`/t:$PATH" ./bin/znapzendzetup \
+    edit --donotask --tsformat=%Y%m%d-%H%M%S \
+    SRC "1h=>10min" tank/source \
+    DST:0 "1h=>10min" backup/destination
+```
+
 Packages
 --------
 

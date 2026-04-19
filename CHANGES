@@ -4,7 +4,7 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
   * Introduced `ZNAPZENDTEST_ZFS_list_max_snapshots` in mock `t/zfs`
     (default `58` for `dst`, as it was hard-coded since at least 2014,
     adding `+2` more to `src` datasets), to speed up developer testing
-    iterations #691 -- @jimklimov
+    iterations; updated the README.md with suggestions #691 -- @jimklimov
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
 
