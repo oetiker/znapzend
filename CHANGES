@@ -5,6 +5,10 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
     (default `58` for `dst`, as it was hard-coded since at least 2014,
     adding `+2` more to `src` datasets), to speed up developer testing
     iterations; updated the README.md with suggestions #691 -- @jimklimov
+  * Revised `.gitignore` files, `Makefile.am` and Git tracked content
+    to drop files (re-)generated during build from Git and so simplify
+    life for developers; those generated files are directly added to
+    the distribution tarball now #689 -- @jimklimov
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
 
