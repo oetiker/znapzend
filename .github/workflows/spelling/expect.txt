@@ -159,6 +159,7 @@ freebsd
 FRONTEND
 fsf
 ftp
+ftpes
 GARU
 Gedeo
 gerczei
@@ -206,6 +207,10 @@ installinfo
 Inztructionz
 ioloop
 Ip
+Ipath
+Ipictures
+irc
+Irecursive
 IRI
 isa
 isbn
@@ -299,6 +304,7 @@ nosets
 nostdinc
 NSTIPS
 nsub
+Nvim
 nvpool
 nytprof
 OALDERS
@@ -313,6 +319,7 @@ opencsw
 openindiana
 openlog
 openssh
+otpauth
 Overloader
 padlen
 pak
@@ -373,6 +380,7 @@ refreservation
 regex
 regexing
 regexp
+REHSACK
 remotehost
 RESFINAL
 respawn
@@ -397,6 +405,7 @@ runonce
 rw
 sbin
 sbindir
+scp
 screation
 SCRIPTFILE
 secondarycache
@@ -416,7 +425,9 @@ SIGINT
 SIGKILL
 SIGTERM
 smartmatch
+smb
 smf
+smtp
 snapname
 snapsuffix
 snaptime
@@ -543,6 +554,7 @@ WORKDIR
 workflow
 Wperl
 WSCHAR
+wss
 wu
 www
 wx
