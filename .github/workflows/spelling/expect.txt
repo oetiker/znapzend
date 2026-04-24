@@ -119,6 +119,7 @@ dstname
 DTIPS
 DTRT
 dummydataset
+ebug
 ebuild
 ecdsa
 eckels
@@ -207,10 +208,7 @@ installinfo
 Inztructionz
 ioloop
 Ip
-Ipath
-Ipictures
 irc
-Irecursive
 IRI
 isa
 isbn
@@ -361,6 +359,7 @@ propval
 Proxmox
 psgi
 pstcmd
+pwd
 QNX
 qq
 qw
