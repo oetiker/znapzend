@@ -1,6 +1,10 @@
 znapzend (0.23.3) UNRELEASED; urgency=medium
 
   * Revised CI recipes to pass on contributor forks #680 -- @jimklimov
+  * Introduced `ZNAPZENDTEST_ZFS_list_max_snapshots` in mock `t/zfs`
+    (default `58` for `dst`, as it was hard-coded since at least 2014,
+    adding `+2` more to `src` datasets), to speed up developer testing
+    iterations; updated the README.md with suggestions #691 -- @jimklimov
   * Revised `.gitignore` files, `Makefile.am` and Git tracked content
     to drop files (re-)generated during build from Git and so simplify
     life for developers; those generated files are directly added to
