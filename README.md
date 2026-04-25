@@ -38,7 +38,7 @@ that its descendants should be handled per `org.znapzend:recursive=off`),
 and then exactly these "not-enabled" datasets with `enabled=off` setting
 would not be tracked with a long-term history locally or remotely.
 
-> **_NOTE:_**  Implementation-wise, snapshots of the dataset with a full
+> ***NOTE:***  Implementation-wise, snapshots of the dataset with a full
 > backup retention schedule configuration are made recursively so as to be
 > a reliable atomic operation. Subsequently snapshots for "not-enabled"
 > datasets are pruned. Different ZnapZend versions varied about sending
@@ -64,7 +64,7 @@ This behavior can be useful, for example, on CI build hosts, where you would
 generally enable backups of `rpool/home` but would exclude the location for
 discardable bulk data like build roots or caches in the worker account's home.
 
-> **_NOTE:_**  Technically, the code allows to further set `enabled=on` in
+> ***NOTE:***  Technically, the code allows to further set `enabled=on` in
 > certain sub-datasets of the not-enabled tree to re-enable snapshot tracking
 > for that dataset (maybe recursively to its descendants), but this feature
 > has not yet seen much use and feedback in real-life situations. It may be
@@ -90,15 +90,19 @@ of a checkout from scratch you may also want to `./bootstrap.sh` and then
 would need the autoconf/automake stack.
 
 * On RedHat you get the necessaries with:
+
 ```sh
 yum install perl-core
 ```
 
 * On Ubuntu / Debian with:
+
 ```sh
 apt-get install perl unzip
 ```
+
 To also bootstrap on Ubuntu / Debian you may need:
+
 ```sh
 apt-get install autoconf carton
 ```
@@ -110,15 +114,18 @@ of Sun make due to syntax standard differences over the years. Notably you
 could have to reference it if you would boot-strap the code workspace from
 scratch (and use later to `gmake install` as suggested by the `configure`
 script):
+
 ```sh
 MAKE=gmake ./bootstrap.sh
 ```
+
 Note also that the perl version 5.8.4 provided with Solaris 10 is too old for
 the syntax and dependencies of znapzend. As one alternative, take a look at
 [CSW packaging of perl-5.10.1 or newer](https://www.opencsw.org/packages/CSWperl/)
 and its modules, and other dependencies. To use a non-default perl, set the
 `PERL` environment variable to the path of your favorite perl interpreter
 prior to running `configure`, e.g.:
+
 ```sh
 PERL=/opt/perl-32/bin/perl5.32.1 ./configure
 ```
@@ -127,6 +134,7 @@ PERL=/opt/perl-32/bin/perl5.32.1 ./configure
 
 * On macOS, if you have not already installed the Xcode command line tools,
 you can get them from the command line (Terminal app) with:
+
 ```sh
 xcode-select --install  ### ...or just install the full Xcode app from the Apple app store
 ```
@@ -143,7 +151,7 @@ cd znapzend-${ZNAPVER}
 ```
 
 > NOTE: to get the current state of `master` branch without using git tools,
-> you should fetch https://github.com/oetiker/znapzend/archive/master.zip
+> you should fetch <https://github.com/oetiker/znapzend/archive/master.zip>
 
 If the `configure` script finds anything noteworthy, it will tell you about it.
 
@@ -230,16 +238,16 @@ Packages
 --------
 
 Debian control files, guide on using them and experimental debian packages
-can be found at https://github.com/Gregy/znapzend-debian
+can be found at <https://github.com/Gregy/znapzend-debian>
 
-An RPM spec file can be found at https://github.com/asciiphil/znapzend-spec
+An RPM spec file can be found at <https://github.com/asciiphil/znapzend-spec>
 
 For recent versions of Fedora and RHEL 7-9 there's also a
 [copr repository](https://copr.fedorainfracloud.org/coprs/spike/znapzend/)
 by [spike](https://copr.fedorainfracloud.org/coprs/spike/) (sources at
-https://gitlab.com/copr_spike/znapzend):
+<https://gitlab.com/copr_spike/znapzend>):
 
-```
+```sh
 dnf copr enable spike/znapzend
 dnf install znapzend
 ```
@@ -248,9 +256,9 @@ For Gentoo there's an ebuild in the
 [gerczei overlay](https://git.gerczei.eu/tgerczei/gentoo-overlay).
 
 For OpenIndiana there is an IPS package at
-http://pkg.openindiana.org/hipster/en/search.shtml?token=znapzend&action=Search
+<http://pkg.openindiana.org/hipster/en/search.shtml?token=znapzend&action=Search>
 made with the recipe at
-https://github.com/OpenIndiana/oi-userland/tree/oi/hipster/components/sysutils/znapzend
+<https://github.com/OpenIndiana/oi-userland/tree/oi/hipster/components/sysutils/znapzend>
 
 ```sh
 pkg install backup/znapzend
@@ -268,11 +276,51 @@ datasets under the one you configured explicitly.
 
 Example:
 
-    znapzendzetup create --recursive\
-       --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
-       --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
-       SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
-       DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+```sh
+znapzendzetup create --recursive\
+   --pre-snap-command="/bin/sh /usr/local/bin/lock_flush_db.sh" \
+   --post-snap-command="/bin/sh /usr/local/bin/unlock_db.sh" \
+   SRC '7d=>1h,30d=>4h,90d=>1d' tank/home \
+   DST:a '7d=>1h,30d=>4h,90d=>1d,1y=>1w,10y=>1month' root@bserv:backup/home
+```
+
+To send to multiple destinations in parallel, set destination concurrency:
+
+```sh
+znapzendzetup create --recursive --dst-concurrency \
+   SRC '1d=>12h,3d=>1d' tank/apps \
+   DST:a '31d=>1d' backup-a:tank/apps \
+   DST:b '31d=>1d' backup-b:tank/apps \
+   DST:c '14d=>1d,3m=>1w' backup-c:tank/apps
+```
+
+Limit parallelism with an explicit worker count:
+
+```sh
+znapzendzetup create --recursive --dst-concurrency=3 \
+  SRC '1d=>12h,3d=>1d' tank/apps \
+  DST:a '31d=>1d' backup-a:tank/apps \
+  DST:b '31d=>1d' backup-b:tank/apps \
+  DST:c '14d=>1d,3m=>1w' backup-c:tank/apps
+```
+
+Adjust it later with `edit`:
+
+```sh
+znapzendzetup edit --donotask --dst-concurrency=2 \
+   SRC tank/apps \
+   DST:a backup-a:tank/apps \
+   DST:b backup-b:tank/apps \
+   DST:c backup-c:tank/apps
+```
+
+Notes:
+
+* `--dst-concurrency=<count>` must use an integer >= `1`.
+* `--dst-concurrency` with no value enables parallel sends to all configured destinations.
+* New backup sets created without `--dst-concurrency` send destinations serially.
+* Existing backup sets without `dst_concurrency_enabled` keep legacy behavior (all destinations in parallel).
+* Start conservatively (for example `2`) if source disk or network bandwidth is limited.
 
 See the [znapzendzetup manual](doc/znapzendzetup.pod) for the full description
 of the configuration options.
@@ -293,7 +341,7 @@ and the I/O speeds of the storage and networking involved. As a rule of thumb,
 let it absorb at least a minute of I/O, so while one side of the ZFS dialog
 is deeply thinking, another can do its work.
 
-> **_NOTE:_**  Due to backwards-compatibility considerations, the legacy
+> ***NOTE:***  Due to backwards-compatibility considerations, the legacy
 > `--mbuffer=...` setting applies by default to all destination datasets
 > (and to sender, in case of `--mbuffer=/path/to/mbuffer:port` variant).
 > This might work if needed programs are all found in `PATH` by the same
@@ -408,7 +456,8 @@ On original server, run `ssh-keygen` to generate an SSH key for the sending
 account (`root` or otherwise), possibly into an uniquely named file to use
 just for this connection. You can specify custom key file name, non-standard
 port, acceptable encryption algorithms and other options with SSH config:
-```
+
+```sshconfig
 # ~/.ssh/config
 Host znapdest
         # "HostName" to access may even be "localhost" if the backup storage
@@ -428,6 +477,7 @@ Host znapdest
 On receiving server (example for Proxmox/Debian with ZFS on Linux):
 
 * Create receiving user with `rbash` as the shell, and a home directory:
+
 ```sh
 useradd -m -s `which rbash` znapzend-server1
 ```
@@ -475,6 +525,7 @@ useradd -m -s `which rbash` znapzend-server1
   * Maybe go as far as to make the homedir not writeable to the user?
 
 * Prepare SSH login:
+
 ```sh
 mkdir -p ~znapzend-server1/.ssh
 vi ~znapzend-server1/.ssh/authorized_keys
@@ -482,6 +533,7 @@ vi ~znapzend-server1/.ssh/authorized_keys
 ```
 
 * Restrict access to SSH files (they are ignored otherwise):
+
 ```sh
 chown -R znapzend-server1: ~znapzend-server1/.ssh
 chmod 700 ~znapzend-server1/.ssh
@@ -490,6 +542,7 @@ chmod 600 ~znapzend-server1/.ssh/authorized_keys
 
 * Unlock the user for ability to login (will use SSH key in practice,
   but unlocking in general may require a password to be set):
+
 ```sh
 #usermod znapzend-server1 -p "`cat /dev/random | base64 | cut -b 0-20 | head -1`"
 usermod -U znapzend-server1
@@ -501,6 +554,7 @@ usermod -U znapzend-server1
   that keys and encryption algorithms are trusted, names are known,
   ports are open... If you defined a `Host znapdest` like above,
   just run:
+
 ```sh
 # Interactive login?
 :; ssh znapdest
@@ -511,6 +565,7 @@ usermod -U znapzend-server1
 
 * Dedicate a dataset (or several) you would use as destination for the znapzend
   daemon, and set ZFS permissions (see suggestions above), e.g.:
+
 ```sh
 zfs create backup/server1
 zfs allow -du znapzend-server1 create,destroy,mount,receive,userprop backup/server1
@@ -519,6 +574,7 @@ zfs allow -du znapzend-server1 create,destroy,mount,receive,userprop backup/serv
 NOTE: When defining a "backup plan" you would have to specify a basename
 for `mbuffer`, since the restricted shell would forbid running a fully
 specified pathname, e.g.:
+
 ```sh
 znapzendzetup edit --mbuffer=mbuffer \
    SRC '6hours=>30minutes,1week=>6hours' rpool/export \
@@ -538,6 +594,7 @@ docker run -d --name znapzend --device /dev/zfs --privileged \
 ```
 
 To configure znapzend, run in interactive mode:
+
 ```sh
 docker exec -it znapzend /bin/sh
 $ znapzendzetup create ...
@@ -641,6 +698,7 @@ If you want to know how much space your backups are using, try the
 
 Support and Contributions
 -------------------------
+
 If you find a problem with znapzend, please
 [open an Issue on GitHub](https://github.com/oetiker/znapzend/issues/)
 but please first review if somebody posted similar symptoms or suggestions

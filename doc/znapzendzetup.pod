@@ -21,6 +21,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>]] \
             SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
@@ -38,6 +39,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>]] \
             SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
@@ -271,6 +273,20 @@ snapshot in the environment variables I<ZNAP_NAME> and I<ZNAP_TIME>.
 Specify delay (in seconds) before sending snaps to the destination.
 May be useful if you want to control sending time.
 
+=item B<--dst-concurrency>
+
+Enable destination sends in parallel for one backup set. When the option is
+specified without a value, all configured destinations are processed in
+parallel.
+
+If a value is provided, it must be an integer >= 1 and limits the maximum
+number of destination streams.
+
+For backward compatibility, existing backup sets that do not define
+I<dst_concurrency_enabled> keep the legacy behavior (all destinations in
+parallel). New backup sets created without B<--dst-concurrency> default to
+serial destination processing.
+
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 
 Run command/script before and after sending the snapshot to the destination.
@@ -346,6 +362,14 @@ create a complex backup task
           "/root/znapzend.sh dst_b pool on" \
           "/root/znapzend.sh dst_b pool off" \
           "/opt/bin64/mbuffer" "4G"
+
+create a multi-destination backup with bounded parallel sends
+
+    znapzendzetup create --recursive --dst-concurrency=2 \
+       SRC '1d=>12h,3d=>1d' tank/apps \
+       DST:a '31d=>1d' backup-a:tank/apps \
+       DST:b '31d=>1d' backup-b:tank/apps \
+       DST:c '14d=>1d,3m=>1w' backup-c:tank/apps
 
 
 copy the setup from one fileset to another

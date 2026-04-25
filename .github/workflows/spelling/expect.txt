@@ -12,6 +12,7 @@ anewconfig
 anotherchild
 anothersource
 apk
+apps
 args
 ARGSTR
 ARGV
@@ -44,6 +45,7 @@ bergulian
 bindir
 blib
 bossert
+bpatsubst
 bserv
 buildpackage
 Bzip
@@ -80,6 +82,8 @@ COUNTOK
 cpan
 cpanfile
 cpanify
+cpio
+cpprog
 crlf
 CVS
 Cwd
@@ -98,6 +102,9 @@ dedup
 dest
 destfail
 desttemp
+dirname
+dirs
+distclean
 distcheck
 DISTRIBUTIONNAME
 distro
@@ -116,6 +123,7 @@ dst
 dstds
 dstdsname
 dstname
+dsttmp
 DTIPS
 DTRT
 dummydataset
@@ -197,6 +205,10 @@ icap
 ico
 idx
 ifdef
+IFELSE
+ifndef
+ifset
+ifval
 illumos
 img
 incrementals
@@ -212,6 +224,7 @@ irc
 IRI
 isa
 isbn
+isrc
 ithreads
 JB
 JBERGER
@@ -300,6 +313,7 @@ NOEXIT
 NONINFRINGEMENT
 nosets
 nostdinc
+NOTMAKE
 NSTIPS
 nsub
 Nvim
@@ -374,6 +388,7 @@ recurseparent
 recv
 recvu
 redhat
+refaddr
 refquota
 refreservation
 regex
@@ -418,6 +433,7 @@ sftp
 shellwords
 shlibs
 shtml
+sid
 Sidama
 SIGHUP
 SIGINT
@@ -450,6 +466,7 @@ srcenabledsuffix
 srcname
 srcsuffix
 ssh
+sshconfig
 SSL
 standalone
 startd
@@ -542,6 +559,7 @@ Validator
 varname
 ve
 VOS
+VPATH
 vue
 waitpid
 wget

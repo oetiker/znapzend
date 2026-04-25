@@ -186,6 +186,14 @@ my $checkBackupSets = sub {
                     or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
             }
         }
+        if (exists($backupSet->{dst_concurrency}) && defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} ne '') {
+            ($backupSet->{dst_concurrency} =~ /^\d+$/ && int($backupSet->{dst_concurrency}) > 0)
+                or die "ERROR: dst_concurrency '$backupSet->{dst_concurrency}' invalid (must be an integer >= 1)\n";
+        }
+        if (exists($backupSet->{dst_concurrency_enabled}) && defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} ne '') {
+            ($backupSet->{dst_concurrency_enabled} eq 'on' || $backupSet->{dst_concurrency_enabled} eq 'off')
+                or die "ERROR: dst_concurrency_enabled '$backupSet->{dst_concurrency_enabled}' invalid (must be on|off)\n";
+        }
 
         # mbuffer properties not set for source? legacy behavior was to not use
         # any on the sender, except when in port-to-port mode
@@ -231,7 +239,7 @@ my $checkBackupSets = sub {
         }
 
         #check destination plans and datasets
-        for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
+        for my $dst (grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
             #store backup destination validity. will be checked where used
             $backupSet->{$dst . '_valid'} = $self->zfs->dataSetExists($backupSet->{$dst});
             $self->zLog->debug('checkBackupSets(): detected ' . $dst . '_valid status for ' . $backupSet->{$dst} . ': ' . $backupSet->{$dst . '_valid'}) if ($self->debug);
@@ -466,7 +474,7 @@ sub enableBackupSetDst {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -515,7 +523,7 @@ sub disableBackupSetDst {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -559,7 +567,7 @@ sub enableBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -605,7 +613,7 @@ sub disableBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
@@ -651,7 +659,7 @@ sub inheritBackupSetDstAutoCreation {
     if (@{$self->backupSets}){
         my %cfg = %{$self->backupSets->[0]};
 
-        if ( !($dest =~ /^dst_[^_]+$/) ) {
+        if ( !($dest =~ /^dst_(?!concurrency$)[^_]+$/) ) {
             if ($cfg{'dst_' . $dest}) {
                 # User passed valid key of the destination config,
                 # convert to zfs attribute/perl struct name part
