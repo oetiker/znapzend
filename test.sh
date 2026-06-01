@@ -15,3 +15,5 @@ perl -I./thirdparty/lib/perl5 \
   -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t
 perl -I./thirdparty/lib/perl5 \
   -MDevel::Cover=+ignore,thirdparty ./t/znapzend-lib-splitter.t
+perl -I./thirdparty/lib/perl5 \
+  -MDevel::Cover=+ignore,thirdparty ./t/znapzend-lib-most-recent-common.t
