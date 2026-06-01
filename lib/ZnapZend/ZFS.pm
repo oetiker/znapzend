@@ -692,7 +692,7 @@ sub sendRecvSnapshots {
             # and dst, to have a starting point for such resync
             ($lastSnapshot, $lastCommon, $dstSnapCount)
                 = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, qr/.*/, $lastSnapshotToSee);
-            my $dstSnapCountAll = scalar($self->listSnapshots($dstDataSet, qr/.*/, undef));
+            my $dstSnapCountAll = scalar(@{$self->listSnapshots($dstDataSet, qr/.*/, undef)});
             # We do not throw/error here because snapshots may help sync
             $self->zLog->warn('ERROR: some snapshot(s) not covered '
                     . 'by znapzend filter still exist on destination: '
