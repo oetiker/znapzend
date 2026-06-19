@@ -670,25 +670,24 @@ my $sendRecvCleanup = sub {
                 next;
             }
 
-            # Time to check if the target sub-dataset exists
-            # at all (unless we would auto-create one anyway).
-            # Do not automatically create destination when using
-            # feature sendRaw, receiving a raw encrypted stream
-            # is not supported on unencrypted datasets.
-            if ((!$autoCreation || $self->sendRaw) && !($self->zZfs->dataSetExists($dstDataSet))) {
+            # Time to check if the target sub-dataset exists at all.
+            # We only skip it when autoCreation is disabled: with
+            # autoCreation enabled a missing destination is created
+            # either here (createDataSet, for plain sends) or by the
+            # receiving side. In particular a raw encrypted stream
+            # (feature sendRaw) MUST be received into a dataset that
+            # 'zfs recv -w' creates itself, so that it becomes the
+            # encryption root; pre-creating it would break the receive.
+            # Hence for sendRaw we do not create it here, but we also
+            # must not skip it - the send/recv below creates it.
+            if (!$autoCreation && !($self->zZfs->dataSetExists($dstDataSet))) {
                 my $errmsg = "sub-destination '" . $dstDataSet
                     . "' does not exist or is offline; ignoring it for this round... Consider "
-                    . ( $autoCreation || $self->sendRaw ? "" : "running znapzend --autoCreation or " )
+                    . "running znapzend --autoCreation or "
                     . "disabling this dataset from znapzend handling.";
-                # Avoid spamming for every loop cycle, if we do not have
-                # the dataset and know we do not intend to auto-create it
-                $self->zLog->warn($errmsg) if ($autoCreation or $self->debug);
-                if (!$autoCreation) {
-                    $self->zLog->warn("Autocreation is disabled for this dataset or whole run, so skipping without error") if ($self->debug);
-                } else {
-                    push (@sendFailed, $errmsg);
-                    $thisSendFailed = 1;
-                }
+                # Autocreation is disabled for this dataset or whole run,
+                # so skip without error. Avoid log spam unless debugging.
+                $self->zLog->warn($errmsg) if $self->debug;
                 next;
             }
 
