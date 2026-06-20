@@ -103,6 +103,12 @@ is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
 
+is (runCommand(qw(create --donotask), '--mbufferparam=-R 10M', qw(SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create with a valid --mbufferparam');
+
+is (runCommand(qw(create --donotask), "--mbufferparam='-R 10M", qw(SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create with unbalanced --mbufferparam quoting fails');
+
 is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
 

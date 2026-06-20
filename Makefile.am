@@ -18,7 +18,7 @@ GENERATED_EXTRADIST = $(MAN) aclocal.m4 configure conftools/install-sh conftools
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS cpanfile.common cpanfile.test $(BIN) $(PM) \
 	$(GENERATED_EXTRADIST) init/README.md init/org.znapzend.plist.in  init/znapzend.default  \
 	init/znapzend.service.in  init/znapzend.sysv.in  init/znapzend.upstart.in  init/znapzend.xml.in \
-	t/autoscrub.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
+	t/autoscrub.t t/mbufferparam.t t/ssh t/znapzend.t t/znapzendztatz.t t/mbuffer \
 	t/zfs t/znapzendzetup.t t/zpool \
 	debian/znapzend.links.in
 

@@ -916,7 +916,8 @@ my $sendRecvCleanup = sub {
                                                 $backupSet->{src_mbuffer}, $backupSet->{src_mbuffer_size},
                                                 $backupSet->{"dst_$key" . '_mbuffer'}, $backupSet->{"dst_$key" . '_mbuffer_size'},
                                                 $backupSet->{snapSendFilter}, $lastSnapshotToSee,
-                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : ($doPromote > 1 ? $doPromote : undef ) )
+                                                ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : ($doPromote > 1 ? $doPromote : undef ) ),
+                                                $backupSet->{src_mbuffer_param}, $backupSet->{"dst_$key" . '_mbuffer_param'}
                                             );
                                     } else {
                                         $self->zLog->debug("sendRecvCleanup() [--since mode]: We considered --since='" . $self->since . "' and did not find reasons to use sendRecvSnapshots() explicitly to make it appear in $dstDataSet");
@@ -946,7 +947,8 @@ my $sendRecvCleanup = sub {
                         $backupSet->{src_mbuffer}, $backupSet->{src_mbuffer_size},
                         $backupSet->{"dst_$key" . '_mbuffer'}, $backupSet->{"dst_$key" . '_mbuffer_size'},
                         $backupSet->{snapSendFilter}, undef,
-                        ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef )
+                        ( $backupSet->{"dst_$key" . '_justCreated'} ? 1 : undef ),
+                        $backupSet->{src_mbuffer_param}, $backupSet->{"dst_$key" . '_mbuffer_param'}
                         );
                 };
                 if (my $err = $@){
