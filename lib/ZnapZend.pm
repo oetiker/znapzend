@@ -55,6 +55,9 @@ has nodelay                 => sub { 0 };
 has skipOnPreSnapCmdFail    => sub { 0 };
 has skipOnPreSendCmdFail    => sub { 0 };
 has cleanOffline            => sub { 0 };
+has maxConcurrentSends      => sub { 0 };
+has _activeSends            => sub { 0 };
+has _sendQueue              => sub { [] };
 has 'mailErrorSummaryTo';
 has backupSets              => sub { [] };
 
@@ -1391,7 +1394,48 @@ my $createSnapshot = sub {
     return 1;
 };
 
-my $sendWorker = sub {
+# Concurrency gate for send/receive workers (see --maxConcurrentSends /
+# --serialize). Kept as named methods so the queueing logic can be unit-tested
+# directly, independent of the fork machinery in sendWorker.
+
+# Try to claim a send slot for this backup set. Returns 1 if the caller may
+# start the send now, or 0 if the configured limit is reached, in which case
+# the [backupSet, timeStamp] pair is queued for later dispatch.
+#
+# The backup set is flagged 'send_queued' while it waits in the queue. A queued
+# send never spawns, so its 'send_pid' stays 0; without this flag, snapWorker's
+# "previous send still running" guard (which only checks send_pid) would let the
+# next interval enqueue the same set again. The flag is cleared once the set
+# actually claims a slot (here, including when dispatched from the queue).
+sub _claimSendSlot {
+    my ($self, $backupSet, $timeStamp) = @_;
+    if ($self->maxConcurrentSends > 0
+        && $self->_activeSends >= $self->maxConcurrentSends) {
+        $backupSet->{send_queued} = 1;
+        push @{$self->_sendQueue}, [$backupSet, $timeStamp];
+        return 0;
+    }
+    $backupSet->{send_queued} = 0;
+    $self->_activeSends($self->_activeSends + 1);
+    return 1;
+}
+
+# Release the send slot held by a finished send and return the next queued
+# [backupSet, timeStamp] to dispatch (the caller passes it back to sendWorker,
+# which re-claims the slot), or undef if nothing is waiting / still at the limit.
+sub _releaseSendSlot {
+    my ($self) = @_;
+    $self->_activeSends($self->_activeSends - 1) if $self->_activeSends > 0;
+    if (@{$self->_sendQueue}
+        && ($self->maxConcurrentSends <= 0
+            || $self->_activeSends < $self->maxConcurrentSends)) {
+        return shift @{$self->_sendQueue};
+    }
+    return undef;
+}
+
+my $sendWorker;
+$sendWorker = sub {
     my $self = shift;
     my $backupSet = shift;
     my $timeStamp = shift;
@@ -1400,47 +1444,91 @@ my $sendWorker = sub {
 ### RM_COMM_4_TEST ###  $self->$sendRecvCleanup($backupSet, $timeStamp);
 ### RM_COMM_4_TEST ###  return;
 
+    # Limit/serialize concurrent send-receive processes if requested via
+    # --maxConcurrentSends (0 == unlimited, the default and legacy behavior;
+    # --serialize is shorthand for 1). Several backup sets coming due at the
+    # same instant would otherwise each fork their own send pipeline at once.
+    # _claimSendSlot() accounts for in-flight sends synchronously (send_pid is
+    # only set asynchronously on the 'spawn' event, so it cannot be counted
+    # reliably here) and queues this send if we are already at the limit; a
+    # finishing send dispatches the next queued one from its callback below.
+    if (!$self->_claimSendSlot($backupSet, $timeStamp)) {
+        $self->zLog->info('send/receive for ' . $backupSet->{src}
+            . ' queued: all ' . $self->maxConcurrentSends
+            . ' send slot(s) busy');
+        return;
+    }
+
+    # Free this send slot and start the next queued send (if any). Guarded so
+    # it runs at most once per send even if both the completion callback and
+    # the error event fire.
+    my $slotReleased = 0;
+    my $releaseSlot = sub {
+        return if $slotReleased;
+        $slotReleased = 1;
+        if (my $next = $self->_releaseSendSlot) {
+            $self->$sendWorker(@$next);
+        }
+    };
+
     #send/receive fork
-    my $subprocess = Mojo::IOLoop::Subprocess->new;
-    $subprocess->run(
-        #send/receive worker
-        sub {
-            return $sendRecvCleanup->($self, $backupSet, $timeStamp);
-        },
-        #send/receive worker callback
-        sub {
-            my ($subprocess, $err) = @_;
+    # Wrapped in eval so that if the subprocess cannot even be set up/started
+    # (a synchronous failure, before either callback can fire), we still free
+    # the slot we just claimed and dispatch any queued send - otherwise sends
+    # queued behind this one would stall. The $slotReleased guard keeps this
+    # safe if the asynchronous 'error' event also fires for the same failure.
+    eval {
+        my $subprocess = Mojo::IOLoop::Subprocess->new;
+        $subprocess->run(
+            #send/receive worker
+            sub {
+                return $sendRecvCleanup->($self, $backupSet, $timeStamp);
+            },
+            #send/receive worker callback
+            sub {
+                my ($subprocess, $err) = @_;
 
-            $self->zLog->warn('send/receive for ' . $backupSet->{src}
-                . ' failed: ' . $err) if $err;
+                $self->zLog->warn('send/receive for ' . $backupSet->{src}
+                    . ' failed: ' . $err) if $err;
 
-            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-                . " done ($backupSet->{send_pid})");
-            #send/receive process finished, clear pid from backup set
-            $backupSet->{send_pid} = 0;
-        }
-    );
+                $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+                    . " done ($backupSet->{send_pid})");
+                #send/receive process finished, clear pid from backup set
+                $backupSet->{send_pid} = 0;
 
-    #spawn event
-    $subprocess->on(
-        spawn => sub {
-            my ($subprocess) = @_;
-            my $pid = $subprocess->pid;
+                $releaseSlot->();
+            }
+        );
 
-            $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
-                . " spawned ($pid)");
-            $backupSet->{send_pid} = $pid;
-        }
-    );
+        #spawn event
+        $subprocess->on(
+            spawn => sub {
+                my ($subprocess) = @_;
+                my $pid = $subprocess->pid;
 
-    #error event
-    $subprocess->on(
-        error => sub {
-            my ($subprocess, $err) = @_;
+                $self->zLog->debug('send/receive worker for ' . $backupSet->{src}
+                    . " spawned ($pid)");
+                $backupSet->{send_pid} = $pid;
+            }
+        );
 
-            $self->zLog->warn($err) if !$self->terminate;
-        }
-    );
+        #error event
+        $subprocess->on(
+            error => sub {
+                my ($subprocess, $err) = @_;
+
+                $self->zLog->warn($err) if !$self->terminate;
+                $releaseSlot->();
+            }
+        );
+
+        1;
+    } or do {
+        my $err = $@;
+        $self->zLog->warn('send/receive for ' . $backupSet->{src}
+            . ' could not be started: ' . $err) if !$self->terminate;
+        $releaseSlot->();
+    };
 };
 
 my $snapWorker = sub {
@@ -1475,6 +1563,10 @@ my $snapWorker = sub {
             if ($backupSet->{send_pid}){
                 $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
                     . ' still running! skipping this round...');
+            }
+            elsif ($backupSet->{send_queued}){
+                $self->zLog->info('previous send/receive process on ' . $backupSet->{src}
+                    . ' still queued (waiting for a send slot)! skipping this round...');
             }
             else{
                 $self->$sendWorker($backupSet, $timeStamp);
