@@ -90,6 +90,14 @@ sub parseArguments {
         };
         $state eq 'srcMbufSize' && do {
             $backupSet{src_mbuffer_size} = $_;
+            $state = 'srcMbufParam';
+            next;
+        };
+        #optional trailing src_mbuffer_param (e.g. '-R 75M'); quote multi-word
+        #values as a single argument. Empty acts as a placeholder (not stored,
+        #mirroring create's handling of the general mbuffer_param).
+        $state eq 'srcMbufParam' && do {
+            $backupSet{src_mbuffer_param} = $_ if $_ ne '';
             $state = '';
             next;
         };
@@ -118,6 +126,14 @@ sub parseArguments {
         };
         $state eq 'dstMbufSize' && do {
             $backupSet{'dst_' . $key . '_mbuffer_size'} = $_;
+            $state = 'dstMbufParam';
+            next;
+        };
+        #optional trailing dst_<key>_mbuffer_param, scoped to this destination
+        #(e.g. '-R 5M'); quote multi-word values as a single argument. Empty acts
+        #as a placeholder (not stored).
+        $state eq 'dstMbufParam' && do {
+            $backupSet{'dst_' . $key . '_mbuffer_param'} = $_ if $_ ne '';
             $state = '';
             next;
         };
@@ -614,10 +630,15 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
+            SRC plan dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
-                [dst_mbuffer_path[:port]] [dst_mbuffer_size] ]
+                [dst_mbuffer_path[:port]] [dst_mbuffer_size] [dst_mbuffer_param] ]
+
+            NOTE: src_mbuffer_param / dst_mbuffer_param are extra mbuffer
+            arguments for that direction (e.g. '-R 75M' to rate-limit); quote a
+            multi-word value as a single argument. They override the general
+            --mbufferparam for that side. See B<--mbufferparam> below.
 
             NOTE: If you specify [user@]host:dataset for remote replication
             over SSH, make use of ~/.ssh/config for any advanced options
@@ -632,10 +653,10 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
+            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
-                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] ]
+                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] [dst_mbuffer_param] ]
 
     edit    <src_dataset>
 
@@ -854,9 +875,11 @@ This option sets the general B<mbuffer_param> property, which acts as the
 fallback default for the per-direction B<src_mbuffer_param> and
 B<dst_E<lt>keyE<gt>_mbuffer_param> properties (analogous to how B<mbuffer_size>
 relates to B<src_mbuffer_size> / B<dst_E<lt>keyE<gt>_mbuffer_size>). To rate-limit
-a single source or destination differently, set its per-direction property
-directly, e.g. C<zfs set org.znapzend:dst_0_mbuffer_param='-R 5M' E<lt>datasetE<gt>>;
-an unset per-direction value inherits the general one.
+a single source or destination differently, give its per-direction value as the
+trailing positional argument in the SRC / DST group above (quoting a multi-word
+value as one argument), or set the property directly, e.g.
+C<zfs set org.znapzend:dst_0_mbuffer_param='-R 5M' E<lt>datasetE<gt>>; an unset
+per-direction value inherits the general one.
 
 =item B<--donotask>
 

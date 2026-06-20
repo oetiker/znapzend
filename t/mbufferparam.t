@@ -38,7 +38,7 @@ sub renderCmd {
         eval {
             $zfs->sendRecvSnapshots(
                 'tank/source',           # src dataset
-                'backup/destination',    # dst dataset (local)
+                $a{dstDataSet} // 'backup/destination',  # dst dataset (local, or [user@]host:ds for SSH)
                 'dst_0',                 # policy name
                 $a{srcMbuffer} // 'off', # src mbuffer
                 '1G',                    # src mbuffer size
@@ -103,6 +103,24 @@ my $mb = "$FindBin::Bin/mbuffer";
     my @stages = mbufferStages(renderCmd(dstMbuffer => $mb, dstParam => '-R 10M -W 1200'));
     like($stages[0], qr/-R\b.*\b10M\b/s, 'multiple params: -R 10M present');
     like($stages[0], qr/-W\b.*\b1200\b/s, 'multiple params: -W 1200 override present');
+}
+
+# Source-side mbuffer over SSH transport (remote destination, no mbuffer port):
+# the rate-limit must be applied LOCALLY on the sender, ahead of the SSH hop.
+# This is exactly the case the NixOS module previously could not express - it
+# never set src_mbuffer, so it stayed 'off' and the param had no local stage to
+# land on. With src_mbuffer a path, the local source stage must appear with -R.
+{
+    my $cmd = renderCmd(
+        dstDataSet => 'root@backup.example.com:backup/destination',
+        srcMbuffer => $mb, srcParam => '-R 75M',
+        dstMbuffer => 'off',
+    );
+    my @stages = mbufferStages($cmd);
+    is(scalar @stages, 1, 'ssh transport: a single (local source) mbuffer stage');
+    like($stages[0], qr/-R\b.*\b75M\b/s, 'source rate-limit (-R 75M) applied locally over SSH');
+    like($cmd, qr/\bssh\b.*\broot\@backup\.example\.com\b/s,
+        'destination really transits SSH (no mbuffer port), so the cap is local');
 }
 
 done_testing;
