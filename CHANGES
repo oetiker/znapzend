@@ -13,7 +13,7 @@
 # (.github/workflows/release-prepare.yml) takes care of that when a
 # release is cut.
 #
-znapzend (0.23.3) UNRELEASED; urgency=medium
+znapzend (0.23.4) unstable; urgency=medium
 
   * Revised CI recipes to pass on contributor forks #680 -- @jimklimov
   * Introduced `ZNAPZENDTEST_ZFS_list_max_snapshots` in mock `t/zfs`
@@ -25,7 +25,7 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
 
- -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
+ -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 04 Jul 2026 14:48:13 +0000
 
 znapzend (0.23.2) unstable; urgency=medium
 
