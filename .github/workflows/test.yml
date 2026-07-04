@@ -37,3 +37,19 @@ jobs:
     - run: make install
     - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
     - run: perl -I./thirdparty/lib/perl5 thirdparty/bin/cover -report coveralls
+
+  changes-file:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    name: CHANGES updated
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Ensure CHANGES was updated
+      run: |
+        git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+        if git diff --quiet "origin/${{ github.event.pull_request.base.ref }}" -- CHANGES; then
+          echo "::error::This PR does not update CHANGES. Add a bullet point describing your change under the topmost UNRELEASED entry (see the instructions at the top of the CHANGES file)."
+          exit 1
+        fi
