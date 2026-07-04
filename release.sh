@@ -1,16 +1,12 @@
 #!/bin/sh
 set -e
-V=$(cat VERSION)
-P=znapzend
-rm -f config.status
-./bootstrap.sh
-./configure
-VERSION=$(cat VERSION)
-debchange -m -v $V
-make
-make dist
-git checkout -b v${V} || true
-git commit -a
-git push --set-upstream origin v${V}
-#gh release create v${V} --title "ZnapZend $V" --notes-file release-notes-$V.md ${P}-${V}.tar.gz'#Source Archive' 
-gh release create v${V} --title "ZnapZend $V" ${P}-${V}.tar.gz
+echo "release.sh has been retired."
+echo
+echo "To cut a release, run the 'Release' GitHub Actions workflow, e.g.:"
+echo "  gh workflow run Release -f release_type=bugfix"
+echo "(release_type is one of: bugfix, feature, major)"
+echo
+echo "It bumps VERSION, finalizes CHANGES, tags, builds and publishes the"
+echo "release, and reopens CHANGES for development -- all in one run,"
+echo "pushed directly to master."
+exit 1
