@@ -13,6 +13,11 @@
 # (.github/workflows/release-prepare.yml) takes care of that when a
 # release is cut.
 #
+znapzend (0.23.5) UNRELEASED; urgency=medium
+
+
+ -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Sat, 04 Jul 2026 14:48:39 +0000
+
 znapzend (0.23.4) unstable; urgency=medium
 
   * Revised CI recipes to pass on contributor forks #680 -- @jimklimov
