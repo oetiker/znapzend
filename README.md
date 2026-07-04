@@ -183,6 +183,49 @@ or
 > might behave differently. While that can happen in practice, that would be
 > a bug to report and pursue fixing.
 
+The tests use mocked tools under the `t` directory. Notably, the mock operation
+to `zfs list` generates a large listing of dataset snapshots (once a minute for
+an hour, by default), leading to significant test times like an hour or two!
+
+To speed up development iterations, when you just want to make sure no simple
+regressions were added, you can `export ZNAPZENDTEST_ZFS_list_max_snapshots=3`
+or so to significantly speed up the test suite.
+
+Also note that interrupted tests tend to leave the `znapzend*.pid` files in
+place (and corresponding daemons may remain running), so before re-running
+the tests you may want to follow up with `make clean-pidfiles` to kill any
+processes mentioned in those files (if present) and remove them.
+
+Combining the suggestions above, a relatively quick developer testing command
+(taking about 5 minutes for the full suite), optionally with a log file to
+later trawl for errors (if any), could look like this:
+
+```sh
+:; ZNAPZENDTEST_ZFS_list_max_snapshots=3 make clean-pidfiles check \
+    2>&1 | tee "test-make-check-`date +%s`.log"
+```
+
+To speed up development of tests (or to troubleshoot/debug any failures),
+you can also craft and execute individual test cases using the mock tools,
+by just preferring them in your `PATH`, e.g.:
+
+```sh
+:; PATH="`pwd`/t:$PATH" ./bin/znapzendzetup \
+    edit --donotask --tsformat=%Y%m%d-%H%M%S \
+    SRC "1h=>10min" tank/source \
+    DST:0 "1h=>10min" backup/destination
+```
+
+As usual with Perl programming, you can run the interpreter with one of the
+development/debugging modules enabled (may need to install some from CPAN
+or your OS packaging), e.g. `Devel::ebug` or `Devel::Trace`:
+
+```sh
+:; perl -d:Trace ./bin/znapzendzetup \
+    edit --donotask --recursive=on \
+    SRC tank/source
+```
+
 Packages
 --------
 

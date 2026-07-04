@@ -14,7 +14,7 @@ POD = doc/znapzend.pod doc/znapzendzetup.pod doc/znapzendztatz.pod
 
 RM_F = $(RM) -f
 
-GENERATED_EXTRADIST = $(MAN)
+GENERATED_EXTRADIST = $(MAN) aclocal.m4 configure conftools/install-sh conftools/missing
 EXTRA_DIST = VERSION COPYRIGHT README.md LICENSE CHANGES AUTHORS cpanfile.common cpanfile.test $(BIN) $(PM) \
 	$(GENERATED_EXTRADIST) init/README.md init/org.znapzend.plist.in  init/znapzend.default  \
 	init/znapzend.service.in  init/znapzend.sysv.in  init/znapzend.upstart.in  init/znapzend.xml.in \
@@ -38,7 +38,7 @@ README.md COPYRIGHT: VERSION
 	$(AM_V_GEN)$(PERL) -i -p -e 's/\d{4}-\d{2}-\d{2}/$(DATE)/g;s/[0-4]\.\d+\.\d+/$(PACKAGE_VERSION)/g'  $@
 
 README: README.md
-	cp README.md README
+	cp $(srcdir)/README.md README
 
 imandir = $(mandir)/man1
 iman_DATA = $(MAN)

@@ -289,16 +289,22 @@ for ($command){
             print STDERR "failed to list mock dataset(s)\n";
             exit 1;
         }
-        if ($ARGV[4] && $ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot'){
+        if ($ARGV[4] && $ARGV[3] eq '-t' && $ARGV[4] eq 'snapshot') {
             if ($ARGV[-1] =~ /^[^\@]+\@[^\@]+$/){
                 print $ARGV[-1] . "\n";
                 exit;
             }
             exit 1 if !exists $dataSets{$ARGV[-1]};
-            my $snapCount = ($dataSets{$ARGV[-1]} eq 'src') ? 60 : 58;
-            #get timestamp rounded to minutes
+            my $snapCount = envval('ZNAPZENDTEST_ZFS_list_max_snapshots');
+            if (!defined($snapCount) || $snapCount !~ /^\d+$/) {
+                $snapCount = 58; # +2 for src
+            }
+            if ($dataSets{$ARGV[-1]} eq 'src') {
+                $snapCount += 2;
+            }
+            # Get timestamp rounded to minutes
             my $time = localtime(int(time / 60) * 60 - 3600);
-            for (my $i = 0; $i < $snapCount; $i++){
+            for (my $i = 0; $i < $snapCount; $i++) {
                 print $ARGV[-1] . '@' . $time->strftime('%Y-%m-%d-%H%M%S') . "\n";
                 $time += 60;
             }

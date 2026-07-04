@@ -1,0 +1,7 @@
+# Build products (generated from templates)
+/znapzend.freebsd
+/znapzend.service
+/znapzend.sysv
+/znapzend.upstart
+/znapzend.xml
+/org.znapzend.plist
