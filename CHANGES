@@ -13,7 +13,7 @@
 # (.github/workflows/release.yml) takes care of that when a
 # release is cut.
 #
-znapzend (0.23.5) UNRELEASED; urgency=medium
+znapzend (0.23.6) unstable; urgency=medium
 
   * Fixed the runtime Docker container build, which broke when Alpine
     patch-bumped its perl package and the pinned perl version could no
@@ -21,7 +21,7 @@ znapzend (0.23.5) UNRELEASED; urgency=medium
   * Docker images are now published to the GitHub Container Registry
     (ghcr.io/oetiker/znapzend) instead of Docker Hub.
 
- -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Sat, 04 Jul 2026 14:48:39 +0000
+ -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:13 +0000
 
 znapzend (0.23.4) unstable; urgency=medium
 
