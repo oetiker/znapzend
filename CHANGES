@@ -13,6 +13,11 @@
 # (.github/workflows/release.yml) takes care of that when a
 # release is cut.
 #
+znapzend (0.23.7) UNRELEASED; urgency=medium
+
+
+ -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
+
 znapzend (0.23.6) unstable; urgency=medium
 
   * Fixed the runtime Docker container build, which broke when Alpine
