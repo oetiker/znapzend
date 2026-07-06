@@ -658,7 +658,7 @@ and where 'command' and its unique options is one of the following:
 
 =head1 DESCRIPTION
 
-Use znapzendsetup to configure your backup tasks. The cli is modled after
+Use znapzendsetup to configure your backup tasks. The cli is modeled after
 the zfs commandline.
 
 After modifying the configuration, send a HUP signal to your znapzend daemon
@@ -747,6 +747,16 @@ a different pool) or remote.
 
 When adding multiple B<DST> entries, each will get labeled for later
 identification, optionally you can specify your own label.
+
+By default, you can enable the backup schedule for a particular dataset,
+however it is often more useful to enable B<--recursive> mode to cover
+any child datasets (including those that appear later). To exclude some
+sub-trees from backup, you can set B<enabled=off> on those descendant
+datasets (technically, a recursive snapshot will be made for the parent,
+and then those for excluded datasets removed before sending increments
+to the destination). For example, this can be useful to recursively
+backup all home directories starting from B<rpool/export/home> and then
+avoid backing up locations like a certain user's B<.ccache> directory.
 
 =over
 

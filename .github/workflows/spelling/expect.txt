@@ -49,6 +49,7 @@ buildpackage
 Bzip
 canmount
 CBuilder
+ccache
 cdn
 cfg
 cgi
