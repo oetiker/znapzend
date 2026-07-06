@@ -15,6 +15,10 @@
 #
 znapzend (0.23.7) UNRELEASED; urgency=medium
 
+  * Dropped .deb package builds for the EOL Debian 10 (buster) and
+    Ubuntu 18.04 (bionic) releases, which can no longer be built in CI
+    (buster's apt repos are archived; bionic's glibc is too old for the
+    GitHub Actions runtime).
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
 
