@@ -1,0 +1,4 @@
+# Pool image files created by the manual real-ZFS integration tests
+# (autocreate-test.sh / autocreate-encrypted-test.sh). These are scratch
+# vdev-backing files, left on disk for inspection; never commit them.
+*.img
