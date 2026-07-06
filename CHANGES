@@ -9,11 +9,21 @@
 #   debchange "Fixed the frobnicator to handle empty datasets"
 #
 # Do not renumber the version or change UNRELEASED to a real distribution
-# yourself -- the "Prepare Release" GitHub Actions workflow
-# (.github/workflows/release-prepare.yml) takes care of that when a
+# yourself -- the "Release" GitHub Actions workflow
+# (.github/workflows/release.yml) takes care of that when a
 # release is cut.
 #
-znapzend (0.23.3) UNRELEASED; urgency=medium
+znapzend (0.23.5) UNRELEASED; urgency=medium
+
+  * Fixed the runtime Docker container build, which broke when Alpine
+    patch-bumped its perl package and the pinned perl version could no
+    longer be selected; perl is no longer version-pinned in the Dockerfile.
+  * Docker images are now published to the GitHub Container Registry
+    (ghcr.io/oetiker/znapzend) instead of Docker Hub.
+
+ -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Sat, 04 Jul 2026 14:48:39 +0000
+
+znapzend (0.23.4) unstable; urgency=medium
 
   * Revised CI recipes to pass on contributor forks #680 -- @jimklimov
   * Introduced `ZNAPZENDTEST_ZFS_list_max_snapshots` in mock `t/zfs`
@@ -25,7 +35,7 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
 
- -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
+ -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 04 Jul 2026 14:48:13 +0000
 
 znapzend (0.23.2) unstable; urgency=medium
 
