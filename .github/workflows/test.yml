@@ -10,11 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # Perl versions shipped by the distros we build .deb packages for
+        # (see the release workflow's deb matrix):
+        #   5.26 Ubuntu 18.04   5.28 Debian 10     5.30 Ubuntu 20.04
+        #   5.32 Debian 11      5.34 Ubuntu 22.04  5.36 Debian 12
+        #   5.38 Ubuntu 24.04   5.40 Debian 13 / Ubuntu 26.04
         perl:
+        - "5.40"
+        - "5.38"
+        - "5.36"
+        - "5.34"
         - "5.32"
         - "5.30"
+        - "5.28"
         - "5.26"
-        - "5.36"
     name: Perl ${{ matrix.perl }}
     steps:
     - uses: actions/checkout@v4
