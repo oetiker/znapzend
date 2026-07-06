@@ -144,17 +144,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Debian 10 (buster) and Ubuntu 18.04 (bionic) are intentionally
+        # omitted: both are EOL. Buster's apt repos moved to archive.debian.org
+        # (404 on the normal mirror) and bionic's glibc 2.27 is too old to run
+        # the node-based GitHub actions (actions/checkout needs glibc >= 2.28).
         include:
-          - distribution: debian
-            version: 10
           - distribution: debian
             version: 11
           - distribution: debian
             version: 12
           - distribution: debian
             version: 13
-          - distribution: ubuntu
-            version: 18.04
           - distribution: ubuntu
             version: 20.04
           - distribution: ubuntu
@@ -178,7 +178,12 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.tag }}
       - name: Install OS requirements
-        run: apt-get update && apt-get -yq install perl unzip autoconf carton debhelper pkg-config
+        # Retry apt so a transient mirror hiccup (connection reset mid-fetch)
+        # doesn't fail the whole release; --fix-missing re-fetches stragglers.
+        run: |
+          apt-get -o Acquire::Retries=3 update
+          apt-get -o Acquire::Retries=3 -yq --fix-missing install \
+            perl unzip autoconf carton debhelper pkg-config
       - name: CPAN cache
         id: cpan_cache
         uses: actions/cache@v4
