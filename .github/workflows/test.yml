@@ -1,11 +1,6 @@
-name: Run Tests
+name: Test
 
 on:
-  push:
-    branches:
-    - master
-    tags-ignore:
-    - "*"
   pull_request:
   workflow_dispatch:
     # Allow manually running the action, e.g. if disabled after some quietness in the source
@@ -15,17 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # Four perl versions spanning the distro families we care about
+        # (Debian/Ubuntu .deb builds plus source installs on RHEL):
+        #   5.26  RHEL 8,  Ubuntu 18.04           (oldest we still cover)
+        #   5.32  RHEL 9,  Debian 11
+        #   5.36           Debian 12
+        #   5.40  RHEL 10, Debian 13, Ubuntu 26.04 (newest)
         perl:
-        - "5.32"
-        - "5.30"
-        - "5.26"
+        - "5.40"
         - "5.36"
-#        - "5.22"
-#        - "5.18"
-#        - "5.10"
+        - "5.32"
+        - "5.26"
     name: Perl ${{ matrix.perl }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup perl
       uses: shogo82148/actions-setup-perl@v1
       with:
@@ -38,12 +36,25 @@ jobs:
     - run: "echo \"repo_token: ${{ secrets.GITHUB_TOKEN }}\" > .coveralls.yml"
     - run: perl -I./thirdparty/lib/perl5 thirdparty/bin/cover -report coveralls
 
+  docker:
+    runs-on: ubuntu-latest
+    name: Docker image builds
+    steps:
+    - uses: actions/checkout@v4
+    # Build the runtime stage too, not just the test stage: the runtime image
+    # pulls its own Alpine packages, so this is what catches breakage there
+    # (e.g. an Alpine perl version bump) before it reaches a release.
+    - name: Build runtime image
+      run: docker build --target runtime .
+    - name: Run tests within image
+      run: docker build --target test .
+
   changes-file:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     name: CHANGES updated
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Ensure CHANGES was updated

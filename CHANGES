@@ -9,12 +9,17 @@
 #   debchange "Fixed the frobnicator to handle empty datasets"
 #
 # Do not renumber the version or change UNRELEASED to a real distribution
-# yourself -- the "Prepare Release" GitHub Actions workflow
-# (.github/workflows/release-prepare.yml) takes care of that when a
+# yourself -- the "Release" GitHub Actions workflow
+# (.github/workflows/release.yml) takes care of that when a
 # release is cut.
 #
 znapzend (0.23.5) UNRELEASED; urgency=medium
 
+  * Fixed the runtime Docker container build, which broke when Alpine
+    patch-bumped its perl package and the pinned perl version could no
+    longer be selected; perl is no longer version-pinned in the Dockerfile.
+  * Docker images are now published to the GitHub Container Registry
+    (ghcr.io/oetiker/znapzend) instead of Docker Hub.
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Sat, 04 Jul 2026 14:48:39 +0000
 
