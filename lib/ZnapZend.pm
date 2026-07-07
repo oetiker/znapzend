@@ -541,34 +541,9 @@ my $sendRecvCleanup = sub {
 
     #loop through all destinations
     my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
-    # Destinations are processed serially by default -- the long-standing
-    # znapzend behavior. Parallelism is strictly opt-in and only takes effect
-    # when the backup set explicitly carries destination_concurrency_enabled=on.
-    # Backup sets without the marker (every pre-upgrade config) keep serial
-    # processing, so upgrading never silently changes replication behavior.
-    my $dstConcurrency = 1;
-    if (defined($backupSet->{destination_concurrency_enabled})
-        && $backupSet->{destination_concurrency_enabled} eq 'on') {
-        if (defined($backupSet->{destination_concurrency})
-            && $backupSet->{destination_concurrency} =~ /^\d+$/
-            && $backupSet->{destination_concurrency} > 0) {
-            $dstConcurrency = $backupSet->{destination_concurrency};
-        }
-        else {
-            # Explicitly enabled with no numeric limit means "all destinations".
-            $dstConcurrency = scalar(@destinations);
-        }
-    }
-    if (scalar(@destinations) > 0 && $dstConcurrency > scalar(@destinations)) {
-        $self->zLog->warn("Configured destination_concurrency=$dstConcurrency exceeds destination count="
-            . scalar(@destinations) . " on backupSet " . $backupSet->{src}
-            . ". Will use destination count instead.");
-        $dstConcurrency = scalar(@destinations);
-    }
-    if ($dstConcurrency > 8) {
-        $self->zLog->warn("High destination concurrency ($dstConcurrency) requested on backupSet "
-            . $backupSet->{src} . ". This may saturate source disk, CPU, or network.");
-    }
+    # Serial by default; parallelism is strictly opt-in per backup set. See
+    # _resolveDstConcurrency (a named method so the resolution is unit-testable).
+    my $dstConcurrency = $self->_resolveDstConcurrency($backupSet, scalar(@destinations));
 
     my $processDestination = sub {
         my $dst = shift;
@@ -1116,10 +1091,14 @@ my $sendRecvCleanup = sub {
         return \@dstSendFailed;
     };
 
-    if ($dstConcurrency <= 1 || scalar(@destinations) <= 1) {
+    my $runSerial = sub {
         for my $dst (@destinations) {
             push @sendFailed, @{$processDestination->($dst)};
         }
+    };
+
+    if ($dstConcurrency <= 1 || scalar(@destinations) <= 1) {
+        $runSerial->();
     }
     elsif (Mojo::IOLoop->is_running) {
         # Avoid blocking a running event loop in this synchronous routine.
@@ -1127,14 +1106,11 @@ my $sendRecvCleanup = sub {
         $self->zLog->warn("Destination parallelism requested while event loop is already running "
             . "for backupSet " . $backupSet->{src}
             . "; falling back to serial destination processing in this cycle.");
-        for my $dst (@destinations) {
-            push @sendFailed, @{$processDestination->($dst)};
-        }
+        $runSerial->();
     }
     else {
         my @pending = @destinations;
         my %active;
-        my $ownedLoop = 1;
         my $startWorker;
         $startWorker = sub {
             while (@pending && scalar(keys %active) < $dstConcurrency) {
@@ -1147,37 +1123,69 @@ my $sendRecvCleanup = sub {
                 my $subprocess = Mojo::IOLoop::Subprocess->new;
                 my $sid = refaddr($subprocess);
                 $active{$sid} = 1;
-                $subprocess->run(
-                    sub {
-                        return $processDestination->($thisDst);
-                    },
-                    sub {
-                        my ($subprocess, $err, $result) = @_;
-                        my $id = refaddr($subprocess);
-                        delete $active{$id};
 
-                        if ($err) {
-                            my $errmsg = "destination worker '$thisDst' failed: $err";
-                            $self->zLog->warn($errmsg);
-                            push @sendFailed, $errmsg;
-                        }
-                        elsif (ref($result) eq 'ARRAY') {
-                            push @sendFailed, @{$result};
-                        }
+                # Complete this worker exactly once, no matter how it ends:
+                # normal completion, an async 'error' event, or a synchronous
+                # spawn failure. Freeing the %active slot here is what lets the
+                # pool drain @pending and eventually stop the loop; a failed
+                # spawn that skipped this would leave a stale slot and hang the
+                # blocking Mojo::IOLoop->start below. Mirrors the defensive
+                # fork handling in $sendWorker.
+                my $finished = 0;
+                my $finishWorker = sub {
+                    my ($err, $result) = @_;
+                    return if $finished;
+                    $finished = 1;
+                    delete $active{$sid};
 
-                        if (@pending) {
-                            $startWorker->();
-                        }
-                        elsif (!scalar(keys %active) && $ownedLoop && Mojo::IOLoop->is_running) {
-                            Mojo::IOLoop->stop;
-                        }
+                    if ($err) {
+                        my $errmsg = "destination worker '$thisDst' failed: $err";
+                        $self->zLog->warn($errmsg);
+                        push @sendFailed, $errmsg;
                     }
-                );
+                    elsif (ref($result) eq 'ARRAY') {
+                        push @sendFailed, @{$result};
+                    }
+
+                    if (@pending) {
+                        $startWorker->();
+                    }
+                    elsif (!scalar(keys %active) && Mojo::IOLoop->is_running) {
+                        Mojo::IOLoop->stop;
+                    }
+                };
+
+                # A fork/spawn failure can surface only via the 'error' event,
+                # before the completion callback would ever run.
+                $subprocess->on(error => sub {
+                    my (undef, $err) = @_;
+                    $finishWorker->($err);
+                });
+
+                # Guard run() setup too: if spawning dies synchronously we still
+                # finish the worker so the pool cannot deadlock.
+                eval {
+                    $subprocess->run(
+                        sub {
+                            return $processDestination->($thisDst);
+                        },
+                        sub {
+                            my (undef, $err, $result) = @_;
+                            $finishWorker->($err, $result);
+                        }
+                    );
+                    1;
+                } or do {
+                    $finishWorker->($@ || 'destination worker could not be started');
+                };
             }
         };
 
         $startWorker->();
-        Mojo::IOLoop->start if $ownedLoop;
+        # Only block on the loop if workers are actually in flight. If every
+        # spawn failed synchronously, %active is already empty and there is no
+        # completion callback left to stop the loop -- starting it would hang.
+        Mojo::IOLoop->start if scalar(keys %active);
     }
 
     #cleanup source
@@ -1493,6 +1501,58 @@ my $createSnapshot = sub {
 
     return 1;
 };
+
+# Resolve how many of a backup set's destinations may send in parallel.
+#
+# Serial (1) is the default and the long-standing znapzend behavior. Parallelism
+# is strictly opt-in: it is only enabled when the backup set explicitly carries
+# destination_concurrency_enabled=on, so backup sets without the marker (every
+# pre-upgrade config) keep serial processing and upgrading never silently changes
+# replication behavior. With the marker on, an integer destination_concurrency
+# limits the workers; no limit means "all destinations". The result is clamped to
+# the destination count. Kept as a named method so the resolution logic can be
+# unit-tested without forking (see t/dst-concurrency.t). Note this is distinct
+# from the daemon-wide --maxConcurrentSends / --serialize gate below, which
+# throttles how many backup sets send at once rather than destinations within a
+# single set.
+sub _resolveDstConcurrency {
+    my ($self, $backupSet, $destCount) = @_;
+
+    my $concurrency = 1;
+    if (defined($backupSet->{destination_concurrency_enabled})
+        && $backupSet->{destination_concurrency_enabled} eq 'on') {
+        my $limit = $backupSet->{destination_concurrency};
+        if (defined($limit) && $limit =~ /^\d+$/ && $limit > 0) {
+            $concurrency = $limit;
+        }
+        elsif (defined($limit) && $limit ne '') {
+            # Enabled with a present-but-invalid limit. znapzendzetup validates
+            # the value, so this is only reachable if it was set outside the
+            # tool (manual `zfs set`). Fall back to serial rather than silently
+            # maxing out fan-out.
+            $self->zLog->warn("Ignoring invalid destination_concurrency '$limit' on backupSet "
+                . $backupSet->{src} . "; using serial destination processing.");
+            $concurrency = 1;
+        }
+        else {
+            # Explicitly enabled with no numeric limit means "all destinations".
+            $concurrency = $destCount;
+        }
+    }
+
+    if ($destCount > 0 && $concurrency > $destCount) {
+        $self->zLog->warn("Configured destination_concurrency=$concurrency exceeds destination count="
+            . $destCount . " on backupSet " . $backupSet->{src}
+            . ". Will use destination count instead.");
+        $concurrency = $destCount;
+    }
+    if ($concurrency > 8) {
+        $self->zLog->warn("High destination concurrency ($concurrency) requested on backupSet "
+            . $backupSet->{src} . ". This may saturate source disk, CPU, or network.");
+    }
+
+    return $concurrency;
+}
 
 # Concurrency gate for send/receive workers (see --maxConcurrentSends /
 # --serialize). Kept as named methods so the queueing logic can be unit-tested

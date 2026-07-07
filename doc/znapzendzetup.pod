@@ -291,7 +291,11 @@ B<--dst-concurrency> also default to serial destination processing.
 
 This per-backup-set control is distinct from the daemon-wide
 B<--maxConcurrentSends> / B<--serialize> options of B<znapzend>, which limit how
-many backup sets send at the same time.
+many backup sets send at the same time. The two limits are not combined: with
+per-destination concurrency enabled, a single backup set may run several
+destination streams in parallel even under B<--serialize>, so the effective
+number of concurrent I<zfs send> streams can exceed B<--maxConcurrentSends>
+alone. Size both together.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 

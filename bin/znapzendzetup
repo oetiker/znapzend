@@ -375,9 +375,11 @@ sub main {
             $backupSet->{destination_concurrency_enabled} = 'on';
             if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
                 $backupSet->{destination_concurrency} = $dstConcurrencyOptValue;
-            } else {
-                delete $backupSet->{destination_concurrency};
             }
+            # A bare --dst-concurrency (no value) means "all destinations"; any
+            # previously stored numeric limit is cleared from the merged %cfg
+            # below -- it lives in the loaded config, not in this parsed set, so
+            # deleting it from $backupSet here would be a no-op.
         }
 
         #get active backup config
@@ -388,6 +390,14 @@ sub main {
         #merge new config
         for (keys %$backupSet){
             $cfg{$_} = $backupSet->{$_};
+        }
+        # A bare --dst-concurrency (no value) switches an existing set to "all
+        # destinations": drop any previously stored numeric limit so it is not
+        # re-persisted. setBackupSet deletes then rewrites all properties, so an
+        # absent key here removes it from ZFS.
+        if ($dstConcurrencyFlagSeen
+            && !(defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '')) {
+            delete $cfg{destination_concurrency};
         }
         #check new backup set
         $zConfig->checkBackupSet(\%cfg);
@@ -969,6 +979,14 @@ created before this feature existed -- keep the long-standing behavior of
 processing destinations serially, one at a time, so upgrading never changes
 replication behavior on its own. New backup sets created without
 B<--dst-concurrency> also default to serial destination processing.
+
+This per-backup-set control is independent of the B<znapzend> daemon options
+B<--maxConcurrentSends> / B<--serialize>, which cap how many backup sets send at
+once. The two limits are not combined: with per-destination concurrency enabled,
+a single backup set may run several destination streams in parallel even under
+B<--serialize>, so the effective number of concurrent I<zfs send> streams can be
+larger than B<--maxConcurrentSends> alone would suggest. Size both with that in
+mind.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 

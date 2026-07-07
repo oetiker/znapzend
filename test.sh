@@ -10,6 +10,8 @@ perl -I./thirdparty/lib/perl5 \
 perl -I./thirdparty/lib/perl5 \
   -MDevel::Cover=+ignore,thirdparty ./t/znapzendzetup.t
 perl -I./thirdparty/lib/perl5 \
+  -MDevel::Cover=+ignore,thirdparty ./t/dst-concurrency.t
+perl -I./thirdparty/lib/perl5 \
   -MDevel::Cover=+ignore,thirdparty ./t/znapzendztatz.t
 perl -I./thirdparty/lib/perl5 \
   -MDevel::Cover=+ignore,thirdparty ./t/autoscrub.t
