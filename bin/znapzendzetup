@@ -90,6 +90,14 @@ sub parseArguments {
         };
         $state eq 'srcMbufSize' && do {
             $backupSet{src_mbuffer_size} = $_;
+            $state = 'srcMbufParam';
+            next;
+        };
+        #optional trailing src_mbuffer_param (e.g. '-R 75M'); quote multi-word
+        #values as a single argument. Empty acts as a placeholder (not stored,
+        #mirroring create's handling of the general mbuffer_param).
+        $state eq 'srcMbufParam' && do {
+            $backupSet{src_mbuffer_param} = $_ if $_ ne '';
             $state = '';
             next;
         };
@@ -118,6 +126,14 @@ sub parseArguments {
         };
         $state eq 'dstMbufSize' && do {
             $backupSet{'dst_' . $key . '_mbuffer_size'} = $_;
+            $state = 'dstMbufParam';
+            next;
+        };
+        #optional trailing dst_<key>_mbuffer_param, scoped to this destination
+        #(e.g. '-R 5M'); quote multi-word values as a single argument. Empty acts
+        #as a placeholder (not stored).
+        $state eq 'dstMbufParam' && do {
+            $backupSet{'dst_' . $key . '_mbuffer_param'} = $_ if $_ ne '';
             $state = '';
             next;
         };
@@ -191,13 +207,18 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
-        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r donotask mbuffer=s mbuffersize=s),
+        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r donotask mbuffer=s mbuffersize=s mbufferparam=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         $cfg{enabled}       = 'on';
         $cfg{recursive}     = $opts->{recursive}            ? 'on' : 'off';
         $cfg{mbuffer}       = $opts->{mbuffer}             || 'off';
         $cfg{mbuffer_size}  = $opts->{mbuffersize}         || '1G';
+        # Only store mbuffer_param when actually given - an empty value is the
+        # default and is supplied by Config when the property is absent, so we
+        # avoid writing an empty 'org.znapzend:mbuffer_param=' on every dataset.
+        $cfg{mbuffer_param} = $opts->{mbufferparam}
+            if defined $opts->{mbufferparam} && $opts->{mbufferparam} ne '';
         $cfg{tsformat}      = $opts->{tsformat}            || '%Y-%m-%d-%H%M%S';
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
@@ -300,7 +321,7 @@ sub main {
             last;
         }
 
-        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(donotask recursive=s mbuffer=s mbuffersize=s),
+        GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(donotask recursive=s mbuffer=s mbuffersize=s mbufferparam=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
         my $backupSet = parseArguments(\@ARGV);
@@ -309,6 +330,7 @@ sub main {
             if $opts->{recursive} && $opts->{recursive} =~ /^(?:on|off)$/;
         $backupSet->{mbuffer}       = $opts->{mbuffer}             if $opts->{mbuffer};
         $backupSet->{mbuffer_size}  = $opts->{mbuffersize}         if $opts->{mbuffersize};
+        $backupSet->{mbuffer_param} = $opts->{mbufferparam}        if defined $opts->{mbufferparam};
         $backupSet->{tsformat}      = $opts->{tsformat}            if $opts->{tsformat};
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
@@ -603,14 +625,20 @@ following:
 and where 'command' and its unique options is one of the following:
 
     create  [--recursive] [--mbuffer=<path>[:<port>]] [--mbuffersize=<size>] \
+            [--mbufferparam=<args>] \
             [--pre-snap-command=<command>] \
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
+            SRC plan dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
-                [dst_mbuffer_path[:port]] [dst_mbuffer_size] ]
+                [dst_mbuffer_path[:port]] [dst_mbuffer_size] [dst_mbuffer_param] ]
+
+            NOTE: src_mbuffer_param / dst_mbuffer_param are extra mbuffer
+            arguments for that direction (e.g. '-R 75M' to rate-limit); quote a
+            multi-word value as a single argument. They override the general
+            --mbufferparam for that side. See B<--mbufferparam> below.
 
             NOTE: If you specify [user@]host:dataset for remote replication
             over SSH, make use of ~/.ssh/config for any advanced options
@@ -620,14 +648,15 @@ and where 'command' and its unique options is one of the following:
 
     edit    [--recursive=on|off] \
             [--mbuffer=<path>[:<port>]|off] [--mbuffersize=<size>] \
+            [--mbufferparam=<args>] \
             [--pre-snap-command=<command>|off] \
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
-            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
+            SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
-                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] ]
+                [dst_mbuffer_path[:port]|off] [dst_mbuffer_size] [dst_mbuffer_param] ]
 
     edit    <src_dataset>
 
@@ -827,6 +856,30 @@ If not set, the buffer size defaults to 1GB.
 It is currently suggested to define individual B<mbuffer_size> options for
 each source and each separate destination in each dataset configuration.
 The B<--mbuffer-size> value would be used as a fallback default for those.
+
+=item B<--mbufferparam>=I<arguments>
+
+Extra arguments passed to the mbuffer invocations, in addition to znapzend's
+built-in ones and the buffer size.
+
+For example, to rate-limit replication by capping throughput at 10 MiB/s:
+
+ --mbufferparam='-R 10M'
+
+The string is split into arguments like a shell would (so quoting is honored).
+For options that mbuffer accepts only once (such as B<-R>, B<-s> or B<-W>) the
+value given here overrides the corresponding built-in default. If not set, no
+extra arguments are added.
+
+This option sets the general B<mbuffer_param> property, which acts as the
+fallback default for the per-direction B<src_mbuffer_param> and
+B<dst_E<lt>keyE<gt>_mbuffer_param> properties (analogous to how B<mbuffer_size>
+relates to B<src_mbuffer_size> / B<dst_E<lt>keyE<gt>_mbuffer_size>). To rate-limit
+a single source or destination differently, give its per-direction value as the
+trailing positional argument in the SRC / DST group above (quoting a multi-word
+value as one argument), or set the property directly, e.g.
+C<zfs set org.znapzend:dst_0_mbuffer_param='-R 5M' E<lt>datasetE<gt>>; an unset
+per-direction value inherits the general one.
 
 =item B<--donotask>
 

@@ -103,6 +103,49 @@ is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
 
+is (runCommand(qw(create --donotask), '--mbufferparam=-R 10M', qw(SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create with a valid --mbufferparam');
+
+is (runCommand(qw(create --donotask), "--mbufferparam='-R 10M", qw(SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create with unbalanced --mbufferparam quoting fails');
+
+# --- per-direction mbuffer params via the positional SRC/DST grammar ---------
+
+# Direct unit test of the positional slots added to parseArguments().
+{
+    my $bs = parseArguments(['SRC', '1h=>10min', 'tank/source',
+        '/usr/bin/mbuffer', '1G', '-R 75M',
+        'DST:nas', '1h=>10min', 'backup/destination', 'off', 'off',
+        '/usr/bin/mbuffer', '1G', '-R 5M']);
+    is($bs->{src_mbuffer},          '/usr/bin/mbuffer', 'positional src_mbuffer path parsed');
+    is($bs->{src_mbuffer_size},     '1G',               'positional src_mbuffer_size parsed');
+    is($bs->{src_mbuffer_param},    '-R 75M',           'positional src_mbuffer_param parsed');
+    is($bs->{dst_nas_mbuffer},      '/usr/bin/mbuffer', 'positional dst_<key>_mbuffer path parsed');
+    is($bs->{dst_nas_mbuffer_size}, '1G',               'positional dst_<key>_mbuffer_size parsed');
+    is($bs->{dst_nas_mbuffer_param},'-R 5M',            'positional dst_<key>_mbuffer_param parsed');
+}
+
+# An empty trailing param slot is a placeholder and is not stored.
+{
+    my $bs = parseArguments(['SRC', '1h=>10min', 'tank/source', '/usr/bin/mbuffer', '1G', '']);
+    ok(!exists $bs->{src_mbuffer_param}, 'empty positional src_mbuffer_param is not stored');
+    is($bs->{src_mbuffer_size}, '1G', 'preceding positional (size) still parsed');
+}
+
+my $mbpath = "$FindBin::Bin/mbuffer";
+
+is (runCommand('create', '--donotask', 'SRC', '1h=>10min', 'tank/source', $mbpath, '1G', '-R 75M',
+    'DST', '1h=>10min', 'backup/destination', 'off', 'off', $mbpath, '1G', '-R 5M'), 1,
+    'znapzendzetup create with positional per-direction mbuffer params');
+
+is (runCommand('edit', '--donotask', 'SRC', '1h=>10min', 'tank/source', $mbpath, '1G', '-R 75M',
+    'DST:0', '1h=>10min', 'backup/destination'), 1,
+    'znapzendzetup edit with positional src_mbuffer_param');
+
+is (runCommand('create', '--donotask', 'SRC', '1h=>10min', 'tank/source', $mbpath, '1G', "'-R 75M",
+    'DST', '1h=>10min', 'backup/destination'), 0,
+    'znapzendzetup create with unbalanced positional src_mbuffer_param quoting fails');
+
 is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
 
