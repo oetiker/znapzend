@@ -195,6 +195,15 @@ my $checkBackupSets = sub {
                 or die "ERROR: dst_concurrency_enabled '$backupSet->{dst_concurrency_enabled}' invalid (must be on|off)\n";
         }
 
+        # Extra mbuffer arguments (e.g. '-R 10M' to rate-limit). Mirrors the
+        # mbuffer_size scheme: a general 'mbuffer_param' acts as the fallback
+        # default for the per-direction 'src_mbuffer_param' and
+        # 'dst_<key>_mbuffer_param' (handled below). Defaults to empty (no extra
+        # arguments) when not configured.
+        if (!exists($backupSet->{mbuffer_param}) or !defined($backupSet->{mbuffer_param})) {
+            $backupSet->{mbuffer_param} = '';
+        }
+
         # mbuffer properties not set for source? legacy behavior was to not use
         # any on the sender, except when in port-to-port mode
         if (!exists($backupSet->{src_mbuffer}) or !($backupSet->{src_mbuffer})) {
@@ -237,6 +246,16 @@ my $checkBackupSets = sub {
             $backupSet->{src_mbuffer_size} = $backupSet->{mbuffer_size};
             $self->zLog->info("WARNING: property 'src_mbuffer_size' not set on backup for " . $backupSet->{src} . ", inheriting from legacy 'mbuffer_size': " . $backupSet->{src_mbuffer_size}) if $backupSet->{src_mbuffer_size};
         }
+        if (!exists($backupSet->{src_mbuffer_param}) or !($backupSet->{src_mbuffer_param})) {
+            $backupSet->{src_mbuffer_param} = $backupSet->{mbuffer_param};
+            $self->zLog->info("WARNING: property 'src_mbuffer_param' not set on backup for " . $backupSet->{src} . ", inheriting from general 'mbuffer_param': " . $backupSet->{src_mbuffer_param}) if $backupSet->{src_mbuffer_param};
+        }
+        #a non-empty mbuffer_param must parse as shell words; unbalanced quoting
+        #would otherwise silently drop all the extra arguments at send time
+        if ($backupSet->{src_mbuffer_param} =~ /\S/) {
+            my @w = shellwords($backupSet->{src_mbuffer_param});
+            @w or die "ERROR: src_mbuffer_param '" . $backupSet->{src_mbuffer_param} . "' could not be parsed (check quoting)\n";
+        }
 
         #check destination plans and datasets
         for my $dst (grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
@@ -263,6 +282,14 @@ my $checkBackupSets = sub {
                 $backupSet->{$dst . '_mbuffer_size'} = $backupSet->{mbuffer_size};
                 $self->zLog->info("WARNING: property '" . $dst . "_mbuffer_size' not set on backup for " . $backupSet->{src} . ", inheriting from legacy 'mbuffer_size': " . $backupSet->{$dst . '_mbuffer_size'}) if $backupSet->{$dst . '_mbuffer_size'};
             }
+            if (!exists($backupSet->{$dst . '_mbuffer_param'}) or !($backupSet->{$dst . '_mbuffer_param'})) {
+                $backupSet->{$dst . '_mbuffer_param'} = $backupSet->{mbuffer_param};
+                $self->zLog->info("WARNING: property '" . $dst . "_mbuffer_param' not set on backup for " . $backupSet->{src} . ", inheriting from general 'mbuffer_param': " . $backupSet->{$dst . '_mbuffer_param'}) if $backupSet->{$dst . '_mbuffer_param'};
+            }
+            if ($backupSet->{$dst . '_mbuffer_param'} =~ /\S/) {
+                my @w = shellwords($backupSet->{$dst . '_mbuffer_param'});
+                @w or die "ERROR: " . $dst . "_mbuffer_param '" . $backupSet->{$dst . '_mbuffer_param'} . "' could not be parsed (check quoting)\n";
+            }
 
             # mbuffer property set? check if executable is available on remote host
             if ($backupSet->{$dst . '_mbuffer'} ne 'off') {
@@ -283,6 +310,19 @@ my $checkBackupSets = sub {
                 };
             }
         }
+        #warn if extra mbuffer arguments were requested but no mbuffer stage is
+        #enabled at all (all src/dst mbuffer are 'off'): they cannot take effect
+        {
+            my $anyMbuffer = (defined($backupSet->{src_mbuffer}) && $backupSet->{src_mbuffer} ne 'off');
+            my $anyParam   = ($backupSet->{src_mbuffer_param} =~ /\S/);
+            for my $dst (grep { /^dst_[^_]+$/ } keys %$backupSet){
+                $anyMbuffer ||= (defined($backupSet->{$dst . '_mbuffer'}) && $backupSet->{$dst . '_mbuffer'} ne 'off');
+                $anyParam   ||= ($backupSet->{$dst . '_mbuffer_param'} =~ /\S/);
+            }
+            $self->zLog->warn("WARNING: mbuffer_param is set on backup for " . $backupSet->{src} . " but no mbuffer is enabled (all src/dst mbuffer are 'off'); the extra arguments will have no effect")
+                if ($anyParam && !$anyMbuffer);
+        }
+
         #drop destination plans where destination is not given (e.g. calling create w/o a destination but a plan)
         for my $dst (grep { /^dst_[^_]+_plan$/ } keys %$backupSet){
             $dst =~ s/_plan//; #remove trailing '_plan' so we get destination

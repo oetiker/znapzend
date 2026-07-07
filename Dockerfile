@@ -17,17 +17,18 @@ RUN \
 ##### Runtime image
 FROM docker.io/library/alpine:${ALPINE_VERSION} AS runtime
 
-ARG PERL_VERSION=5.38.2-r0
-
 RUN \
   # mbuffer is not in main currently, and community keys expire over time,
-  # so gotta bump ALPINE_VERSION above regularly (and likely PERL_VERSION
-  # as dictated by the newer OS release). Request its package first to fail
-  # fast in such case. Note that while "--allow-untrusted" might be an option,
-  # shared libraries referenced by the binary make an older distro outdated.
+  # so gotta bump ALPINE_VERSION above regularly. Request its package first to
+  # fail fast in such case. Note that while "--allow-untrusted" might be an
+  # option, shared libraries referenced by the binary make an older distro
+  # outdated.
   apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ mbuffer && \
+  # perl is intentionally left unpinned: Alpine patch-bumps it within a stable
+  # branch (e.g. 5.38.2-r0 -> 5.38.5-r0), so pinning an exact -rN release breaks
+  # the build over time. The chosen ALPINE_VERSION already fixes the 5.x series.
   # nano is for the interactive "edit" command in znapzendzetup if preferred over vi
-  apk add --no-cache zfs curl bash autoconf automake nano perl=${PERL_VERSION} openssh && \
+  apk add --no-cache zfs curl bash autoconf automake nano perl openssh && \
   ln -s /dev/stdout /var/log/syslog && \
   ln -s /usr/bin/perl /usr/local/bin/perl
 
