@@ -139,7 +139,7 @@ sub main {
                 }
                 else{
                     my $dstDataSet = $dataset;
-                    $dstDataSet =~ s/^$backupSet->{src}/$backupSet->{$key}/;
+                    $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$key}/;
                     dumpStats(collectData($backupSet->{src}, $key, $dstDataSet, $snapFilter), $opts->{H}, $opts->{setup});
                 }
             }
