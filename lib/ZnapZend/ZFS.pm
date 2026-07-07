@@ -4,6 +4,7 @@ use Mojo::Base -base;
 use Mojo::Exception;
 use Mojo::IOLoop::Subprocess;
 use Data::Dumper;
+use Text::ParseWords qw(shellwords);
 use ZnapZend::InheritLevels;
 
 ### attributes ###
@@ -626,6 +627,18 @@ sub sendRecvSnapshots {
     my $allowDestRollback = shift // undef;
     if (!defined($allowDestRollback)) { $allowDestRollback = (!$self->sendRaw && !$self->forbidDestRollback) ; }
 
+    # Extra mbuffer arguments (e.g. '-R 10M' to rate-limit), configured per
+    # backup set via the 'src_mbuffer_param' / 'dst_<key>_mbuffer_param'
+    # properties (each inheriting from the general 'mbuffer_param'). They are
+    # appended after the built-in mbuffer parameters and the buffer size, on the
+    # sending and receiving side respectively. For options mbuffer accepts once
+    # (e.g. -R, -W, -s) the last occurrence wins, so a user value overrides the
+    # corresponding default.
+    my $srcMbufferParam = shift // '';
+    my $dstMbufferParam = shift // '';
+    my @srcMbufferParamExtra = $srcMbufferParam ne '' ? shellwords($srcMbufferParam) : ();
+    my @dstMbufferParamExtra = $dstMbufferParam ne '' ? shellwords($dstMbufferParam) : ();
+
     my @recvOpt = $self->recvu ? qw(-u) : ();
     push @recvOpt, '-F' if $allowDestRollback;
     my $incrOpt = $self->skipIntermediates ? '-i' : '-I';
@@ -733,7 +746,7 @@ sub sendRecvSnapshots {
         my $recvPid;
 
         my @recvCmd = $self->$buildRemoteRefArray($remote, [$dstMbuffer, @{$self->mbufferParam},
-            $dstMbufferSize, '-4', '-I', $dstMbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
+            $dstMbufferSize, @dstMbufferParamExtra, '-4', '-I', $dstMbufferPort], [@{$self->priv}, 'zfs', 'recv', @recvOpt, $dstDataSetPath]);
 
         my $cmd = $shellQuote->(@recvCmd);
 
@@ -765,7 +778,7 @@ sub sendRecvSnapshots {
                 $self->zLog->debug("receive process on $remote spawned ($pid)");
 
                 push @cmd, [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize,
-                    '-O', "$remote:$dstMbufferPort"];
+                    @srcMbufferParamExtra, '-O', "$remote:$dstMbufferPort"];
 
                 $cmd = $shellQuote->(@cmd);
 
@@ -794,8 +807,8 @@ sub sendRecvSnapshots {
         $subprocess->ioloop->start if !$subprocess->ioloop->is_running;
     }
     else {
-        my $srcMbCmd = [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize];
-        my @dstMbCmd = $dstMbuffer ne 'off' ? ([$dstMbuffer, @{$self->mbufferParam}, $dstMbufferSize]) : () ;
+        my $srcMbCmd = [$srcMbuffer, @{$self->mbufferParam}, $srcMbufferSize, @srcMbufferParamExtra];
+        my @dstMbCmd = $dstMbuffer ne 'off' ? ([$dstMbuffer, @{$self->mbufferParam}, $dstMbufferSize, @dstMbufferParamExtra]) : () ;
         my $recvCmd = [@{$self->priv}, 'zfs', 'recv' , @recvOpt, $dstDataSetPath];
 
         if ($srcMbuffer ne 'off') {
