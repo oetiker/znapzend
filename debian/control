@@ -6,5 +6,5 @@ Build-Depends: build-essential, debhelper (>= 9), perl
 
 Package: znapzend
 Architecture: any
-Depends: ${shlibs:Depends}, perl, zfsutils-linux
+Depends: ${shlibs:Depends}, perl, zfsutils-linux | openzfsutils
 Description: ZnapZend is a ZFS centric backup tool to create snapshots and send them to backup locations
