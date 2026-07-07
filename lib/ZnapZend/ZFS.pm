@@ -567,7 +567,7 @@ sub mostRecentCommonSnapshot {
         local $@;
         eval {
             local $SIG{__DIE__};
-            ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount) = ($self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter))[1];
+            ($lastSnapshot, $lastCommonSnapshot, $dstSnapCount) = $self->lastAndCommonSnapshots($srcDataSet, $dstDataSet, $snapshotFilter);
         };
         if ($@){
             if (blessed $@ && $@->isa('Mojo::Exception')){
