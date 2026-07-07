@@ -284,7 +284,8 @@ my $checkBackupSets = sub {
             }
 
             # mbuffer property set? check if executable is available on remote host
-            if ($backupSet->{$dst . '_mbuffer'} ne 'off') {
+            # (an undef value means no mbuffer was configured at all => treat as 'off')
+            if (($backupSet->{$dst . '_mbuffer'} // 'off') ne 'off') {
                 my ($mbuffer, $mbufferPort) = split /:/, $backupSet->{$dst . '_mbuffer'}, 2;
                 my ($remote, $dataset) = $splitHostDataSet->($backupSet->{$dst});
                 my $file = ($remote ? "$remote:" : '') . $mbuffer;
