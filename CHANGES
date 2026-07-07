@@ -9,6 +9,9 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
     to drop files (re-)generated during build from Git and so simplify
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
+  * Added `--maxConcurrentSends=<count>` to bound how many `zfs send`
+    operations run concurrently (`0` == unlimited), plus `--serialize` as
+    shorthand for `--maxConcurrentSends=1` -- @stuckj
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
 
