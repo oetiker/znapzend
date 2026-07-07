@@ -24,7 +24,7 @@ sub main {
             # for "zfs send", so the longer variants --skipIntermediates
             # vs. --sendIntermediates are not documented in the manpage.
         qw(skipOnPreSnapCmdFail skipOnPreSendCmdFail recursive|r inherited since=s sinceForced=s),
-        qw(cleanOffline mailErrorSummaryTo=s)
+        qw(cleanOffline mailErrorSummaryTo=s serialize maxConcurrentSends=i)
         ) or exit 1;
 
     $opts->{version} && do {
@@ -44,6 +44,19 @@ sub main {
             }
         }
         delete $opts->{features};
+    }
+
+    # --serialize is shorthand for --maxConcurrentSends=1 (run sends one at a
+    # time). The default of 0 means unlimited, i.e. the legacy behavior.
+    if (defined($opts->{serialize})) {
+        if (defined($opts->{maxConcurrentSends}) && $opts->{maxConcurrentSends} != 1) {
+            warn "Options --serialize and --maxConcurrentSends=$opts->{maxConcurrentSends} conflict; --serialize wins (using 1)\n";
+        }
+        $opts->{maxConcurrentSends} = 1;
+        delete $opts->{serialize};
+    }
+    if (defined($opts->{maxConcurrentSends}) && $opts->{maxConcurrentSends} < 0) {
+        die "ERROR: --maxConcurrentSends must be a non-negative integer (0 == unlimited)\n";
     }
 
     if (defined($opts->{sendIntermediates})) {
@@ -624,6 +637,18 @@ sets the ssh connection timeout (in seconds)
 
 Automatically create a dataset on a destination host if it's not there yet.
 
+This works together with the I<sendRaw> feature: for a raw (encrypted)
+stream the destination dataset is not pre-created (a raw encrypted stream
+must be received into a dataset that C<zfs recv -w> creates itself, so that
+it becomes the encryption root); the initial send/receive creates it instead.
+
+Note that with I<sendRaw> only the destination leaf dataset is created (by the
+receive); znapzend does not pre-create missing intermediate parent datasets in
+that mode. The destination's parent must already exist - this is the common
+case where the parent is the destination pool, or (for recursive sends) a
+parent dataset created by an earlier send in the same run. For plain
+(non-raw) sends znapzend creates the destination path with C<zfs create -p>.
+
 =item B<--noautoCreation>
 
 Avoid automatically creating a dataset on a destination host if it's not
@@ -670,6 +695,24 @@ system setup to validate the recipient names (local or domain-suffixed) and
 deliver the message to some mailbox.
 
 This feature relies on a program which supports standard sendmail-like CLI.
+
+=item B<--maxConcurrentSends>=I<count>
+
+Limit the number of send/receive processes running at the same time across all
+backup sets to I<count>. The default is C<0>, meaning unlimited (the legacy
+behavior): when several backup sets come due at once, each starts its own
+C<zfs send | mbuffer | ... | zfs recv> pipeline in parallel.
+
+Setting a limit makes the additional sends wait in a queue and start as running
+ones finish. This dedicates more bandwidth to each individual stream (instead of
+splitting it across many parallel ones), avoids a single network hiccup failing
+all transfers at once, and reduces concurrent write churn on the destination
+pool. Snapshot creation is local and cheap and is not affected by this limit.
+
+=item B<--serialize>
+
+Shorthand for B<--maxConcurrentSends>=1: run send/receive operations strictly
+one at a time.
 
 =back
 
