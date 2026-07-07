@@ -540,26 +540,27 @@ my $sendRecvCleanup = sub {
     }
 
     #loop through all destinations
-    my @destinations = sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet;
-    my $dstConcurrency = scalar(@destinations);
-    if (defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} eq 'off') {
-        $dstConcurrency = 1;
-    }
-    elsif (defined($backupSet->{dst_concurrency_enabled}) && $backupSet->{dst_concurrency_enabled} eq 'on') {
-        if (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
-            $dstConcurrency = $backupSet->{dst_concurrency};
+    my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
+    # Destinations are processed serially by default -- the long-standing
+    # znapzend behavior. Parallelism is strictly opt-in and only takes effect
+    # when the backup set explicitly carries destination_concurrency_enabled=on.
+    # Backup sets without the marker (every pre-upgrade config) keep serial
+    # processing, so upgrading never silently changes replication behavior.
+    my $dstConcurrency = 1;
+    if (defined($backupSet->{destination_concurrency_enabled})
+        && $backupSet->{destination_concurrency_enabled} eq 'on') {
+        if (defined($backupSet->{destination_concurrency})
+            && $backupSet->{destination_concurrency} =~ /^\d+$/
+            && $backupSet->{destination_concurrency} > 0) {
+            $dstConcurrency = $backupSet->{destination_concurrency};
         }
         else {
             # Explicitly enabled with no numeric limit means "all destinations".
             $dstConcurrency = scalar(@destinations);
         }
     }
-    elsif (defined($backupSet->{dst_concurrency}) && $backupSet->{dst_concurrency} =~ /^\d+$/ && $backupSet->{dst_concurrency} > 0) {
-        # Backward compatibility: old configs with dst_concurrency but no marker.
-        $dstConcurrency = $backupSet->{dst_concurrency};
-    }
-    if ($dstConcurrency > scalar(@destinations)) {
-        $self->zLog->warn("Configured dst_concurrency=$dstConcurrency exceeds destination count="
+    if (scalar(@destinations) > 0 && $dstConcurrency > scalar(@destinations)) {
+        $self->zLog->warn("Configured destination_concurrency=$dstConcurrency exceeds destination count="
             . scalar(@destinations) . " on backupSet " . $backupSet->{src}
             . ". Will use destination count instead.");
         $dstConcurrency = scalar(@destinations);
@@ -1137,13 +1138,18 @@ my $sendRecvCleanup = sub {
         my $startWorker;
         $startWorker = sub {
             while (@pending && scalar(keys %active) < $dstConcurrency) {
-                my $dst = shift @pending;
+                # Bind a fresh per-iteration lexical for this destination so
+                # every worker's run- and completion-callbacks close over their
+                # own value. Without a per-iteration copy the closures would
+                # share one variable and every worker would see the last
+                # destination, sending to / reporting the wrong one.
+                my $thisDst = shift @pending;
                 my $subprocess = Mojo::IOLoop::Subprocess->new;
                 my $sid = refaddr($subprocess);
                 $active{$sid} = 1;
                 $subprocess->run(
                     sub {
-                        return $processDestination->($dst);
+                        return $processDestination->($thisDst);
                     },
                     sub {
                         my ($subprocess, $err, $result) = @_;
@@ -1151,7 +1157,7 @@ my $sendRecvCleanup = sub {
                         delete $active{$id};
 
                         if ($err) {
-                            my $errmsg = "destination worker '$dst' failed: $err";
+                            my $errmsg = "destination worker '$thisDst' failed: $err";
                             $self->zLog->warn($errmsg);
                             push @sendFailed, $errmsg;
                         }
@@ -1258,7 +1264,7 @@ my $sendRecvCleanup = sub {
 
             if (scalar($toDestroy) > 0) {
                 # Check if any death-rowed snapshots need protection
-                for my $dst (sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
+                for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
                     my $dstDataSet = $backupSet->{src};
                     $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                     my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($backupSet->{src}, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, ($backupSet->{recursive} eq 'on'), undef );
@@ -1344,7 +1350,7 @@ my $sendRecvCleanup = sub {
             # preserve most recent common snapshots for each destination
             # (including offline destinations for which last-known sync
             # snapshot name is saved in properties of the source policy)
-            for my $dst (sort grep { /^dst_(?!concurrency$)[^_]+$/ } keys %$backupSet){
+            for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet){
                 my $dstDataSet = $srcDataSet;
                 $dstDataSet =~ s/^\Q$backupSet->{src}\E/$backupSet->{$dst}/;
                 my $recentCommon = $self->zZfs->mostRecentCommonSnapshot($srcDataSet, $dstDataSet, $dst, $backupSet->{snapCleanFilter}, undef, undef);

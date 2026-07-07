@@ -30,6 +30,13 @@ znapzend (0.23.7) UNRELEASED; urgency=medium
     arguments to mbuffer (e.g. `-R` to rate-limit), backed by the general
     `mbuffer_param` property and per-direction `src_mbuffer_param` /
     `dst_<key>_mbuffer_param` properties -- @stuckj
+  * Added opt-in per-backup-set destination concurrency to `znapzendzetup`
+    via `--dst-concurrency[=<count>]`, backed by the new
+    `destination_concurrency_enabled` / `destination_concurrency` properties.
+    Destinations are still sent serially by default; parallelism only applies
+    to backup sets that explicitly enable it, so existing configurations are
+    unchanged on upgrade. This per-set control is distinct from the
+    daemon-wide `--maxConcurrentSends` / `--serialize` options -- @nickilby
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
 

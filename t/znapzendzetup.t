@@ -109,6 +109,23 @@ is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/sourc
 is (runCommand(qw(create --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency invalid');
 
+# Regression: a destination literally named "concurrency" (DST:concurrency) is
+# stored as the key dst_concurrency. Before the concurrency properties were
+# renamed out of the dst_<key> namespace this collided with the numeric
+# dst_concurrency validation and hard-failed. It must now be treated as an
+# ordinary destination and validate cleanly. (Copilot C3/C4)
+is (runCommand(qw(create --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup create with a destination named "concurrency" (no property-name collision)');
+is (runCommand(qw(edit --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup edit with a destination named "concurrency" (no property-name collision)');
+# Opt-in parallelism and a destination named "concurrency" coexist.
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination),
+    qw(DST:other 1h=>10min backup/other)), 1,
+    'znapzendzetup create --dst-concurrency=2 alongside a destination named "concurrency"');
+
 is (runCommand(qw(create --donotask), '--mbufferparam=-R 10M', qw(SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create with a valid --mbufferparam');
 

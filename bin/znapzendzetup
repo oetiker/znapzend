@@ -251,11 +251,11 @@ sub main {
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
         $cfg{zend_delay}    = $opts->{'send-delay'}        || 0;
-        $cfg{dst_concurrency_enabled} = 'off';
+        $cfg{destination_concurrency_enabled} = 'off';
         if ($dstConcurrencyFlagSeen) {
-            $cfg{dst_concurrency_enabled} = 'on';
+            $cfg{destination_concurrency_enabled} = 'on';
             if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
-                $cfg{dst_concurrency} = $dstConcurrencyOptValue;
+                $cfg{destination_concurrency} = $dstConcurrencyOptValue;
             }
         }
 
@@ -372,11 +372,11 @@ sub main {
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
         if ($dstConcurrencyFlagSeen) {
-            $backupSet->{dst_concurrency_enabled} = 'on';
+            $backupSet->{destination_concurrency_enabled} = 'on';
             if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
-                $backupSet->{dst_concurrency} = $dstConcurrencyOptValue;
+                $backupSet->{destination_concurrency} = $dstConcurrencyOptValue;
             } else {
-                delete $backupSet->{dst_concurrency};
+                delete $backupSet->{destination_concurrency};
             }
         }
 
@@ -963,10 +963,12 @@ specified without a value, all configured destinations are processed in
 parallel. If a value is provided, it must be an integer >= 1 and limits the
 maximum number of destination streams.
 
-For backward compatibility, existing backup sets that do not define
-I<dst_concurrency_enabled> keep the legacy behavior (all destinations in
-parallel). New backup sets created without B<--dst-concurrency> default to
-serial destination processing.
+Destination parallelism is strictly opt-in. Existing backup sets that do not
+define I<destination_concurrency_enabled> -- which includes every configuration
+created before this feature existed -- keep the long-standing behavior of
+processing destinations serially, one at a time, so upgrading never changes
+replication behavior on its own. New backup sets created without
+B<--dst-concurrency> also default to serial destination processing.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 

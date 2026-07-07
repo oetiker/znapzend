@@ -282,10 +282,16 @@ parallel.
 If a value is provided, it must be an integer >= 1 and limits the maximum
 number of destination streams.
 
-For backward compatibility, existing backup sets that do not define
-I<dst_concurrency_enabled> keep the legacy behavior (all destinations in
-parallel). New backup sets created without B<--dst-concurrency> default to
-serial destination processing.
+Destination parallelism is strictly opt-in. Existing backup sets that do not
+define I<destination_concurrency_enabled> -- which includes every configuration
+created before this feature existed -- keep the long-standing behavior of
+processing destinations serially, one at a time. Upgrading therefore never
+changes replication behavior on its own. New backup sets created without
+B<--dst-concurrency> also default to serial destination processing.
+
+This per-backup-set control is distinct from the daemon-wide
+B<--maxConcurrentSends> / B<--serialize> options of B<znapzend>, which limit how
+many backup sets send at the same time.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 
