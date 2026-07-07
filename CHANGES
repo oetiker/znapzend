@@ -26,7 +26,10 @@ znapzend (0.23.7) UNRELEASED; urgency=medium
     encrypted destination is now created by `zfs recv -w` as its own
     encryption root instead of being skipped, so encrypted backups
     auto-create correctly; added regression tests #706 -- @stuckj
-
+  * Added a `--mbufferparam` option to `znapzendzetup` to pass extra
+    arguments to mbuffer (e.g. `-R` to rate-limit), backed by the general
+    `mbuffer_param` property and per-direction `src_mbuffer_param` /
+    `dst_<key>_mbuffer_param` properties -- @stuckj
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
 
@@ -51,10 +54,6 @@ znapzend (0.23.4) unstable; urgency=medium
     to drop files (re-)generated during build from Git and so simplify
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
-  * Added a `--mbufferparam` option to `znapzendzetup` to pass extra
-    arguments to mbuffer (e.g. `-R` to rate-limit), backed by the general
-    `mbuffer_param` property and per-direction `src_mbuffer_param` /
-    `dst_<key>_mbuffer_param` properties -- @stuckj
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 04 Jul 2026 14:48:13 +0000
 
