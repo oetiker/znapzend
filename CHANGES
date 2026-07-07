@@ -9,6 +9,10 @@ znapzend (0.23.3) UNRELEASED; urgency=medium
     to drop files (re-)generated during build from Git and so simplify
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
+  * Fixed `--autoCreation` for raw encrypted sends (feature `sendRaw`): the
+    encrypted destination is now created by `zfs recv -w` as its own
+    encryption root instead of being skipped, so encrypted backups
+    auto-create correctly; added regression tests #706 -- @stuckj
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 18 Apr 2026 19:53:28 +0200
 
