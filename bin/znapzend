@@ -637,6 +637,18 @@ sets the ssh connection timeout (in seconds)
 
 Automatically create a dataset on a destination host if it's not there yet.
 
+This works together with the I<sendRaw> feature: for a raw (encrypted)
+stream the destination dataset is not pre-created (a raw encrypted stream
+must be received into a dataset that C<zfs recv -w> creates itself, so that
+it becomes the encryption root); the initial send/receive creates it instead.
+
+Note that with I<sendRaw> only the destination leaf dataset is created (by the
+receive); znapzend does not pre-create missing intermediate parent datasets in
+that mode. The destination's parent must already exist - this is the common
+case where the parent is the destination pool, or (for recursive sends) a
+parent dataset created by an earlier send in the same run. For plain
+(non-raw) sends znapzend creates the destination path with C<zfs create -p>.
+
 =item B<--noautoCreation>
 
 Avoid automatically creating a dataset on a destination host if it's not
