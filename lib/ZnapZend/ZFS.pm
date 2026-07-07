@@ -792,7 +792,7 @@ sub sendRecvSnapshots {
                     system($cmd) || last;
                 }
 
-                $retryCounter <= 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
+                $retryCounter < 0 && Mojo::Exception->throw("ERROR: cannot send snapshots to $dstDataSet"
                     . ($remote ? " on $remote" : ''));
             }
         );
