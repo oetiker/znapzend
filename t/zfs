@@ -263,6 +263,18 @@ my $command = shift @ARGV or exit 1;
 # combos are provided. Note the leading space for simpler matchers.
 my $ARGSTR = join(" ", '', @ARGV);
 
+# Optionally record every invoked subcommand (and its arguments) to a file
+# so tests can assert exactly what was run - e.g. that a raw (encrypted)
+# autoCreation does NOT 'zfs create' the destination leaf but DOES
+# 'zfs recv' into it, while a plain autoCreation 'zfs create's it.
+# Appends are line-buffered so this is safe for the synchronous test path.
+if (defined($ENV{ZNAPZENDTEST_ZFS_RECORD}) && $ENV{ZNAPZENDTEST_ZFS_RECORD} ne '') {
+    if (open(my $rec, '>>', $ENV{ZNAPZENDTEST_ZFS_RECORD})) {
+        print $rec join(' ', $command, @ARGV) . "\n";
+        close $rec;
+    }
+}
+
 for ($command){
     /^(?:set|inherit|send|recv|create)$/ && do {
         if ( envval("ZNAPZENDTEST_ZFS_FAIL_$command") ) {
