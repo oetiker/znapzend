@@ -19,6 +19,14 @@ znapzend (0.23.7) UNRELEASED; urgency=medium
     Ubuntu 18.04 (bionic) releases, which can no longer be built in CI
     (buster's apt repos are archived; bionic's glibc is too old for the
     GitHub Actions runtime).
+  * Added `--maxConcurrentSends=<count>` to bound how many `zfs send`
+    operations run concurrently (`0` == unlimited), plus `--serialize` as
+    shorthand for `--maxConcurrentSends=1` -- @stuckj
+  * Fixed `--autoCreation` for raw encrypted sends (feature `sendRaw`): the
+    encrypted destination is now created by `zfs recv -w` as its own
+    encryption root instead of being skipped, so encrypted backups
+    auto-create correctly; added regression tests #706 -- @stuckj
+
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
 
@@ -43,10 +51,6 @@ znapzend (0.23.4) unstable; urgency=medium
     to drop files (re-)generated during build from Git and so simplify
     life for developers; those generated files are directly added to
     the distribution tarball now #689 -- @jimklimov
-  * Fixed `--autoCreation` for raw encrypted sends (feature `sendRaw`): the
-    encrypted destination is now created by `zfs recv -w` as its own
-    encryption root instead of being skipped, so encrypted backups
-    auto-create correctly; added regression tests #706 -- @stuckj
 
  -- Jim Klimov <jimklimov+znapzend@gmail.com>  Sat, 04 Jul 2026 14:48:13 +0000
 
