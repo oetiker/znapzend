@@ -1,39 +1,235 @@
 name: Release
 
 on:
-  push:
-    branches:
-    - master
-    tags:
-    - "*"
   workflow_dispatch:
-    # Allow manually running the action, e.g. if disabled after some quietness in the source
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - bugfix
+          - feature
+          - major
 
 jobs:
-  check-secret:
-    # Inspired by https://stackoverflow.com/a/70249388
+  prepare:
+    name: Bump, tag and publish release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
-      my-key: ${{ steps.my-key.outputs.defined }}
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - id: my-key
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Verify master branch
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/master" ]; then
+            echo "::error::Releases must be run from the master branch"
+            exit 1
+          fi
+
+      - name: Calculate new version
+        id: version
+        run: |
+          CURRENT=$(cat VERSION)
+          IFS=. read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ inputs.release_type }}" in
+            major)
+              NEW_VERSION="$((MAJOR+1)).0.0"
+              ;;
+            feature)
+              NEW_VERSION="${MAJOR}.$((MINOR+1)).0"
+              ;;
+            bugfix)
+              NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
+              ;;
+          esac
+
+          echo "current=${CURRENT}" >> "$GITHUB_OUTPUT"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Bumping ${CURRENT} -> ${NEW_VERSION} (${{ inputs.release_type }})"
+
+      - name: Check for an UNRELEASED entry in CHANGES
+        run: |
+          if ! grep -q '^znapzend (.*) UNRELEASED; urgency=' CHANGES; then
+            echo "::error::CHANGES has no UNRELEASED entry at the top -- nothing to release"
+            exit 1
+          fi
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update VERSION and finalize CHANGES
         env:
-          MY_KEY: ${{ secrets.DOCKER_HUB_USERNAME }}
-        if: "${{ env.MY_KEY != '' }}"
-        run: echo "::set-output name=defined::true"
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          echo "${NEW_VERSION}" > VERSION
+
+          export NEW_DATE=$(date -R)
+          perl -0777 -i -pe '
+            s/^(znapzend \()[^)]+(\) )UNRELEASED(; urgency=\S+)$/$1.$ENV{NEW_VERSION}.$2."unstable".$3/me;
+            s/^( -- [^<]+<[^>]+>  ).*$/$1.$ENV{NEW_DATE}/me;
+          ' CHANGES
+
+          awk '
+            /^znapzend \(/ && !found { found=1; next }
+            found && /^ -- / { exit }
+            found { print }
+          ' CHANGES > release-notes.md
+          echo "Release notes:"
+          cat release-notes.md
+
+          git add VERSION CHANGES
+          git commit -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin master
+
+      - name: Build source distribution
+        run: |
+          ./bootstrap.sh
+          ./configure
+          make dist
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "ZnapZend ${{ steps.version.outputs.version }}" \
+            --notes-file release-notes.md \
+            "znapzend-${{ steps.version.outputs.version }}.tar.gz"
+
+      - name: Reopen CHANGES for development
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          IFS=. read -r MAJOR MINOR PATCH <<< "$NEW_VERSION"
+          NEXT_DEV_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
+          NEXT_DATE=$(date -R)
+          WHO="github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
+          awk -v ver="$NEXT_DEV_VERSION" -v who="$WHO" -v dt="$NEXT_DATE" '
+            !inserted && /^znapzend \(/ {
+              print "znapzend (" ver ") UNRELEASED; urgency=medium"
+              print ""
+              print ""
+              print " -- " who "  " dt
+              print ""
+              inserted=1
+            }
+            { print }
+          ' CHANGES > CHANGES.new && mv CHANGES.new CHANGES
+
+          echo "${NEXT_DEV_VERSION}" > VERSION
+
+          git add VERSION CHANGES
+          git commit -m "Reopen CHANGES for development"
+          git push origin master
+
+  debs:
+    name: Build package for ${{ matrix.distribution }} ${{ matrix.version }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # Debian 10 (buster) and Ubuntu 18.04 (bionic) are intentionally
+        # omitted: both are EOL. Buster's apt repos moved to archive.debian.org
+        # (404 on the normal mirror) and bionic's glibc 2.27 is too old to run
+        # the node-based GitHub actions (actions/checkout needs glibc >= 2.28).
+        include:
+          - distribution: debian
+            version: 11
+          - distribution: debian
+            version: 12
+          - distribution: debian
+            version: 13
+          - distribution: ubuntu
+            version: 20.04
+          - distribution: ubuntu
+            version: 22.04
+          - distribution: ubuntu
+            version: 24.04
+          - distribution: ubuntu
+            version: 26.04
+    container:
+      image: ${{ matrix.distribution }}:${{ matrix.version }}
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      # small hack to make caches work because the cache action lives outside the container
+      options: --mount type=volume,dst=/__w/znapzend/znapzend/,volume-driver=local,volume-opt=type=none,volume-opt=o=bind,volume-opt=device=${{ github.workspace }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Build from the freshly-created release tag, not the (already reopened) master tip.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Install OS requirements
+        # Retry apt so a transient mirror hiccup (connection reset mid-fetch)
+        # doesn't fail the whole release; --fix-missing re-fetches stragglers.
+        run: |
+          apt-get -o Acquire::Retries=3 update
+          apt-get -o Acquire::Retries=3 -yq --fix-missing install \
+            perl unzip autoconf carton debhelper pkg-config
+      - name: CPAN cache
+        id: cpan_cache
+        uses: actions/cache@v4
+        with:
+          path: thirdparty
+          key: ${{ matrix.distribution }}-cpan-${{ matrix.version }}-${{ hashFiles('cpanfile.common', '*/cpanfile', 'Makefile.am', '*/Makefile.am') }}
+      - name: Build package
+        id: build_package
+        run: bash build_deb.sh ${{ matrix.distribution }} ${{ matrix.version }}
+      - name: Upload deb to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          files: ${{ github.workspace }}/${{ steps.build_package.outputs.package_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
-    name: Build and publish Docker container
+    name: Build and publish Docker image
+    needs: prepare
     runs-on: ubuntu-latest
-    needs: [check-secret]
-    if: needs.check-secret.outputs.my-key == 'true'
+    permissions:
+      contents: read
+      packages: write
     steps:
-    - uses: actions/checkout@v2
-    - name: Login to image registry
-      run: docker login -u '${{ secrets.DOCKER_HUB_USERNAME }}' -p '${{ secrets.DOCKER_HUB_PASSWORD }}'
-    - name: Build runtime image
-      run: docker build --target runtime -t '${{ github.repository }}:${GITHUB_REF##*/}' .
-    - name: Run test within image
-      run: docker build --target test .
-    - name: Push runtime image
-      run: docker push '${{ github.repository }}:${GITHUB_REF##*/}'
+      # Build from the freshly-created release tag, not the (already reopened) master tip.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests within image
+        run: docker build --target test .
+
+      - name: Build and push runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ needs.prepare.outputs.version }}
+            ghcr.io/${{ github.repository }}:latest
