@@ -26,7 +26,10 @@ znapzend (0.23.7) UNRELEASED; urgency=medium
     encrypted destination is now created by `zfs recv -w` as its own
     encryption root instead of being skipped, so encrypted backups
     auto-create correctly; added regression tests #706 -- @stuckj
-
+  * Added a `--mbufferparam` option to `znapzendzetup` to pass extra
+    arguments to mbuffer (e.g. `-R` to rate-limit), backed by the general
+    `mbuffer_param` property and per-direction `src_mbuffer_param` /
+    `dst_<key>_mbuffer_param` properties -- @stuckj
 
  -- github-actions[bot] <github-actions[bot]@users.noreply.github.com>  Mon, 06 Jul 2026 19:52:39 +0000
 
