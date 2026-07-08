@@ -232,6 +232,15 @@ is (runCommand(qw(--cleanOffline --runonce=tank/source)),
     1, 'znapzend --runonce with destination_concurrency=2 runs the parallel pool and completes');
 $ENV{'ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY'} = undef;
 
+# Read path must TOLERATE an out-of-band-invalid concurrency value (e.g. set by
+# a manual `zfs set`): the config check warns and the runtime falls back to
+# serial, rather than dying uncaught and taking down every backup set. Before
+# the read-path fix this run died at config read. (review finding #1)
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY'} = 'bogus';
+is (runCommand(qw(--cleanOffline --runonce=tank/source)),
+    1, 'znapzend --runonce tolerates an invalid destination_concurrency (serial fallback, no crash)');
+$ENV{'ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY'} = undef;
+
 # Note: test for daemonized mode are offloaded to another file
 
 done_testing;

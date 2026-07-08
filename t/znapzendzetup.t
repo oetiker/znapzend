@@ -109,6 +109,38 @@ is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/sourc
 is (runCommand(qw(create --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency invalid');
 
+# Opt-out: --dst-concurrency=off disables parallelism (create and edit).
+is (runCommand(qw(create --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency=off (explicit opt-out)');
+is (runCommand(qw(edit --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency=off (opt-out)');
+# An explicit but empty value is an error, not a silent enable-all.
+is (runCommand(qw(create --donotask --dst-concurrency= SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency= (empty value) fails');
+
+# extractDstConcurrencyOption parses only the documented forms and never
+# consumes a following positional argument as the value (regression: a bare
+# flag used to swallow an immediately-following plain-digit token).
+{
+    my @a = ('--dst-concurrency', '512', 'SRC');
+    my ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($seen, 1, 'extract: bare --dst-concurrency is seen');
+    is ($val, undef, 'extract: bare --dst-concurrency has no value');
+    is_deeply (\@a, ['512', 'SRC'], 'extract: a following numeric positional is NOT stolen');
+
+    @a = ('--dst-concurrency=3');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 3, 'extract: =<count> returns the count');
+
+    @a = ('--dst-concurrency=off');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 'off', 'extract: =off returns off');
+
+    @a = ('--dst-concurrency=');
+    my $survived = eval { extractDstConcurrencyOption(\@a); 1 };
+    ok (!$survived, 'extract: an empty =value dies rather than silently enabling');
+}
+
 # Regression: a destination literally named "concurrency" (DST:concurrency) is
 # stored as the key dst_concurrency. Before the concurrency properties were
 # renamed out of the dst_<key> namespace this collided with the numeric

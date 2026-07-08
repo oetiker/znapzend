@@ -540,7 +540,21 @@ my $sendRecvCleanup = sub {
     }
 
     #loop through all destinations
-    my @destinations = sort grep { /^dst_[^_]+$/ } keys %$backupSet;
+    # Exclude destinations disabled via dst_<key>_enabled=off from concurrency
+    # sizing and the worker pool: counting them inflated the "all destinations"
+    # width, the clamp, and the high-concurrency warning, and (in parallel mode)
+    # forked a worker per disabled destination just to have it return
+    # immediately. The per-destination disabled check inside $processDestination
+    # remains as a backstop; log the skip once here so operators still see it.
+    my @destinations;
+    for my $dst (sort grep { /^dst_[^_]+$/ } keys %$backupSet) {
+        if (($backupSet->{$dst . '_enabled'} // 'on') eq 'off') {
+            $self->zLog->info("Skipping disabled destination " . $backupSet->{$dst}
+                . ". Note that you would likely need to recreate the backup data tree there");
+            next;
+        }
+        push @destinations, $dst;
+    }
     # Serial by default; parallelism is strictly opt-in per backup set. See
     # _resolveDstConcurrency (a named method so the resolution is unit-testable).
     my $dstConcurrency = $self->_resolveDstConcurrency($backupSet, scalar(@destinations));
@@ -1132,20 +1146,38 @@ my $sendRecvCleanup = sub {
                 # blocking Mojo::IOLoop->start below. Mirrors the defensive
                 # fork handling in $sendWorker.
                 my $finished = 0;
-                my $finishWorker = sub {
+                # Split declaration (not `my $finishWorker = sub`) so the
+                # t/znapzend.t module loader -- which rewrites `my X = sub` to
+                # `our X = sub` to expose privates -- leaves this a per-iteration
+                # lexical instead of collapsing every worker onto one shared
+                # global (which silently scrambled the end-to-end pool test).
+                my $finishWorker;
+                $finishWorker = sub {
                     my ($err, $result) = @_;
                     return if $finished;
                     $finished = 1;
                     delete $active{$sid};
 
+                    # Record the outcome BEFORE logging or dispatching the next
+                    # worker: a die in zLog->warn (e.g. a broken/full log fd)
+                    # must not skip recording the failure and leave the run
+                    # treating a failed destination as a success.
+                    my $warnMsg;
                     if ($err) {
-                        my $errmsg = "destination worker '$thisDst' failed: $err";
-                        $self->zLog->warn($errmsg);
-                        push @sendFailed, $errmsg;
+                        $warnMsg = "destination worker '$thisDst' failed: $err";
+                        push @sendFailed, $warnMsg;
                     }
                     elsif (ref($result) eq 'ARRAY') {
                         push @sendFailed, @{$result};
                     }
+                    else {
+                        # Fail closed: an unrecognized result must never be
+                        # silently treated as success -- that would let source
+                        # cleanup proceed as if this destination had synced.
+                        $warnMsg = "destination worker '$thisDst' returned an unexpected result";
+                        push @sendFailed, $warnMsg;
+                    }
+                    $self->zLog->warn($warnMsg) if defined $warnMsg;
 
                     if (@pending) {
                         $startWorker->();
@@ -1186,6 +1218,10 @@ my $sendRecvCleanup = sub {
         # spawn failed synchronously, %active is already empty and there is no
         # completion callback left to stop the loop -- starting it would hang.
         Mojo::IOLoop->start if scalar(keys %active);
+        # $startWorker closes over itself (finishWorker -> $startWorker), a
+        # reference cycle Perl's refcount GC cannot collect. Break it explicitly
+        # so the whole captured scope is freed when this routine returns.
+        undef $startWorker;
     }
 
     #cleanup source

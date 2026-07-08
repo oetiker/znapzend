@@ -1,3 +1,7 @@
-requires 'Mojolicious';
+# >= 9.0: the destination-concurrency worker pool relies on
+# Mojo::IOLoop::Subprocess resetting the reactor in the forked child (so
+# Mojo::IOLoop->is_running is false there and the pool actually engages);
+# older releases could report a stale-true running flag in the child.
+requires 'Mojolicious', '>= 9.0';
 requires 'Scalar::Util', '>= 1.45';
 requires 'Mojo::Log::Role::Clearable';

@@ -318,7 +318,8 @@ Notes:
 
 * `--dst-concurrency=<count>` must use an integer >= `1`.
 * `--dst-concurrency` with no value enables parallel sends to all configured destinations.
-* New backup sets created without `--dst-concurrency` send destinations serially.
+* `--dst-concurrency=off` turns parallelism back off for a set that previously enabled it.
+* New backup sets created without `--dst-concurrency` send destinations serially and store no concurrency property at all.
 * Destination parallelism is strictly opt-in. Existing backup sets without `destination_concurrency_enabled` (including every configuration created before this feature) keep the long-standing serial behavior, so upgrading never changes replication behavior on its own.
 * Start conservatively (for example `2`) if source disk or network bandwidth is limited.
 * This per-backup-set control is separate from znapzend's daemon-wide `--maxConcurrentSends` / `--serialize`, which cap how many backup sets send at once. The two are not combined: with per-destination concurrency enabled a single backup set can run several destination streams in parallel even under `--serialize`, so total concurrent `zfs send` streams can exceed `--maxConcurrentSends` alone. Size both together.
