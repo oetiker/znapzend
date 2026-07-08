@@ -199,6 +199,20 @@ sub print_zfs_get {
         $dst0pstcmd = "/bin/false";
     }
 
+    # Optionally advertise opt-in per-destination concurrency so tests can
+    # exercise the real parallel worker pool. The env var holds the numeric
+    # limit (e.g. '2'); any non-empty value enables it. Uses envval() -- like
+    # every other toggle in this file -- so the set-then-undef idiom in
+    # znapzend.t resolves to "off" and existing tests keep serial behavior.
+    my $dstConcurrencyProps = '';
+    if ( envval('ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY') ) {
+        my $dstConcurrencyLimit = $ENV{'ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY'};
+        $dstConcurrencyLimit =~ s/\s+//g; # guard against stray whitespace/newlines
+        $dstConcurrencyProps =
+            "${prefix}org.znapzend:destination_concurrency_enabled on${srcsuffix}\n"
+          . "${prefix}org.znapzend:destination_concurrency ${dstConcurrencyLimit}${srcsuffix}\n";
+    }
+
     # For snapshots, truncate the "@snapname" to get the datasets
     my $srcdsname = $srcname;
     my $dstdsname = $dstname;
@@ -210,7 +224,7 @@ sub print_zfs_get {
 #    . "\n";
 
     print <<"ZFS_GET_END";
-${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
+${dstConcurrencyProps}${prefix}org.znapzend:dst_0_plan     1hours=>10minutes,30minutes=>5minutes,10minutes=>60seconds${srcsuffix}
 ${prefix}org.znapzend:dst_0_precmd   ${dst0precmd}${srcsuffix}
 ${prefix}org.znapzend:dst_0_pstcmd   ${dst0pstcmd}${srcsuffix}
 ${prefix}org.znapzend:dst_a_plan     1hours=>10minutes,40minutes=>5minutes,20minutes=>60seconds${srcsuffix}

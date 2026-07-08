@@ -146,6 +146,50 @@ sub parseArguments {
     return \%backupSet;
 }
 
+sub extractDstConcurrencyOption {
+    my $args = shift;
+    my $seen = 0;
+    my $value;
+    my @filtered;
+
+    # Accept only the documented forms:
+    #   --dst-concurrency          -> enable, all destinations   (value undef)
+    #   --dst-concurrency=<count>  -> enable, limit <count>      (value = count)
+    #   --dst-concurrency=off      -> disable                    (value = 'off')
+    # A bare `--dst-concurrency=` (empty value) is an error rather than a silent
+    # enable-all, and we never consume a following positional argument as the
+    # value (that used to steal e.g. a plain-digit mbuffer size).
+    for my $arg (@$args) {
+        if ($arg =~ /^--dst-concurrency(?:=(.*))?$/) {
+            $seen = 1;
+            $value = undef; # last occurrence wins; bare flag => all destinations
+            if (defined($1)) {
+                if ($1 eq '') {
+                    die "ERROR: --dst-concurrency= requires a value; use "
+                        . "--dst-concurrency (all destinations), "
+                        . "--dst-concurrency=<count>, or --dst-concurrency=off\n";
+                }
+                $value = $1;
+                # Validate the shape here, at the single CLI front door, so
+                # create and edit reject bad input identically. Without this,
+                # the edit path would merge a malformed value and then silently
+                # drop it (the post-merge clear treats any non-integer as "no
+                # limit"), leaving the set enabled with unbounded fan-out.
+                unless ($value eq 'off' || ($value =~ /^\d+$/ && $value > 0)) {
+                    die "ERROR: --dst-concurrency=$value is invalid; use a "
+                        . "positive integer, 'off', or the bare flag for all "
+                        . "destinations\n";
+                }
+            }
+            next;
+        }
+        push @filtered, $arg;
+    }
+
+    @$args = @filtered;
+    return ($seen, $value);
+}
+
 sub main {
     my $mainOpt = shift;
     my $opts = {};
@@ -207,6 +251,7 @@ sub main {
     for ($mainOpt){
 
     /^create$/ && do {
+        my ($dstConcurrencyFlagSeen, $dstConcurrencyOptValue) = extractDstConcurrencyOption(\@ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(recursive|r donotask mbuffer=s mbuffersize=s mbufferparam=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
@@ -223,6 +268,22 @@ sub main {
         $cfg{pre_znap_cmd}  = $opts->{'pre-snap-command'}  || 'off';
         $cfg{post_znap_cmd} = $opts->{'post-snap-command'} || 'off';
         $cfg{zend_delay}    = $opts->{'send-delay'}        || 0;
+        # Only store the concurrency marker when --dst-concurrency was actually
+        # given; an absent marker already means serial at runtime, so writing
+        # 'off' on every new set is pointless property noise (mirrors the
+        # mbuffer_param handling above). --dst-concurrency=off is the explicit
+        # opt-out.
+        if ($dstConcurrencyFlagSeen) {
+            if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue eq 'off') {
+                $cfg{destination_concurrency_enabled} = 'off';
+            }
+            else {
+                $cfg{destination_concurrency_enabled} = 'on';
+                if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
+                    $cfg{destination_concurrency} = $dstConcurrencyOptValue;
+                }
+            }
+        }
 
         my $backupSet = parseArguments(\@ARGV);
         #merge arguments to our cfg
@@ -321,6 +382,7 @@ sub main {
             last;
         }
 
+        my ($dstConcurrencyFlagSeen, $dstConcurrencyOptValue) = extractDstConcurrencyOption(\@ARGV);
         GetOptions($opts, (@ROOT_EXEC_OPTIONS, qw(donotask recursive=s mbuffer=s mbuffersize=s mbufferparam=s),
             qw(tsformat=s pre-snap-command=s post-snap-command=s send-delay=i))) or exit 1;
 
@@ -335,6 +397,22 @@ sub main {
         $backupSet->{pre_znap_cmd}  = $opts->{'pre-snap-command'}  if $opts->{'pre-snap-command'};
         $backupSet->{post_znap_cmd} = $opts->{'post-snap-command'} if $opts->{'post-snap-command'};
         $backupSet->{zend_delay}    = $opts->{'send-delay'}        if $opts->{'send-delay'};
+        if ($dstConcurrencyFlagSeen) {
+            if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue eq 'off') {
+                # Explicit opt-out: disable parallelism for this set.
+                $backupSet->{destination_concurrency_enabled} = 'off';
+            }
+            else {
+                $backupSet->{destination_concurrency_enabled} = 'on';
+                if (defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue ne '') {
+                    $backupSet->{destination_concurrency} = $dstConcurrencyOptValue;
+                }
+            }
+            # A bare --dst-concurrency (all destinations) or --dst-concurrency=off
+            # must drop any previously stored numeric limit; it lives in the
+            # loaded config, not in this parsed set, so it is cleared from the
+            # merged %cfg below (deleting from $backupSet here would be a no-op).
+        }
 
         #get active backup config
         my $backupSets = $zConfig->getBackupSet(0, 0, $backupSet->{src}) or die "ERROR: cannot get backup config\n";
@@ -344,6 +422,14 @@ sub main {
         #merge new config
         for (keys %$backupSet){
             $cfg{$_} = $backupSet->{$_};
+        }
+        # --dst-concurrency (all destinations) and --dst-concurrency=off both
+        # drop any previously stored numeric limit so it is not re-persisted;
+        # only an explicit numeric value keeps/sets a limit. setBackupSet deletes
+        # then rewrites all properties, so an absent key here removes it from ZFS.
+        if ($dstConcurrencyFlagSeen
+            && !(defined($dstConcurrencyOptValue) && $dstConcurrencyOptValue =~ /^\d+$/)) {
+            delete $cfg{destination_concurrency};
         }
         #check new backup set
         $zConfig->checkBackupSet(\%cfg);
@@ -630,6 +716,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>|off]] \
             SRC plan dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
@@ -653,6 +740,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>|off]] \
             SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size [src_mbuffer_param]]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
@@ -909,6 +997,31 @@ snapshot in the environment variables I<ZNAP_NAME> and I<ZNAP_TIME>.
 
 Specify delay (in seconds) before sending snaps to the destination.
 May be useful if you want to control sending time.
+
+=item B<--dst-concurrency>
+
+Enable destination sends in parallel for one backup set. When the option is
+specified without a value, all configured destinations are processed in
+parallel. If a value is provided, it must be an integer >= 1 and limits the
+maximum number of destination streams. Pass B<--dst-concurrency=off> to turn
+parallelism back off (restoring serial destination processing) for a set that
+previously enabled it.
+
+Destination parallelism is strictly opt-in. Existing backup sets that do not
+define I<destination_concurrency_enabled> -- which includes every configuration
+created before this feature existed -- keep the long-standing behavior of
+processing destinations serially, one at a time, so upgrading never changes
+replication behavior on its own. New backup sets created without
+B<--dst-concurrency> also default to serial destination processing and store no
+concurrency property at all.
+
+This per-backup-set control is independent of the B<znapzend> daemon options
+B<--maxConcurrentSends> / B<--serialize>, which cap how many backup sets send at
+once. The two limits are not combined: with per-destination concurrency enabled,
+a single backup set may run several destination streams in parallel even under
+B<--serialize>, so the effective number of concurrent I<zfs send> streams can be
+larger than B<--maxConcurrentSends> alone would suggest. Size both with that in
+mind.
 
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 

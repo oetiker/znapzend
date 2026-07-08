@@ -84,6 +84,15 @@ my $checkBackupPlan = sub {
 
 my $checkBackupSets = sub {
     my $self = shift;
+    # When called on the READ path (getBackupSet/getBackupSetEnabled) we must
+    # tolerate whatever values happen to be stored on datasets: a single bad
+    # value set out-of-band (e.g. a manual `zfs set`) must not crash the daemon
+    # or `znapzendzetup list` for every backup set. Write callers (create/edit
+    # via checkBackupSet) pass a false/absent flag so bad CLI input is still
+    # rejected loudly. Only the opt-in destination-concurrency checks honor this
+    # -- the runtime (_resolveDstConcurrency) already degrades an invalid value
+    # to serial, so warning here and continuing is the safe read-path behavior.
+    my $lenient = shift;
 
     for my $backupSet (@{$self->backupSets}){
         # Note that we only normally call this either when we walk all
@@ -184,6 +193,22 @@ my $checkBackupSets = sub {
                 my $value = $backupSet->{$prop};
                 grep { /^$value$/ } @values
                     or die "ERROR: property $prop is not valid on dataset " . $backupSet->{src} . "\n";
+            }
+        }
+        if (exists($backupSet->{destination_concurrency}) && defined($backupSet->{destination_concurrency}) && $backupSet->{destination_concurrency} ne '') {
+            unless ($backupSet->{destination_concurrency} =~ /^\d+$/ && int($backupSet->{destination_concurrency}) > 0) {
+                my $msg = "destination_concurrency '$backupSet->{destination_concurrency}' invalid (must be an integer >= 1)";
+                die "ERROR: $msg\n" unless $lenient;
+                $self->zLog->warn("WARNING: $msg on dataset " . $backupSet->{src}
+                    . "; ignoring it and processing destinations serially");
+            }
+        }
+        if (exists($backupSet->{destination_concurrency_enabled}) && defined($backupSet->{destination_concurrency_enabled}) && $backupSet->{destination_concurrency_enabled} ne '') {
+            unless ($backupSet->{destination_concurrency_enabled} eq 'on' || $backupSet->{destination_concurrency_enabled} eq 'off') {
+                my $msg = "destination_concurrency_enabled '$backupSet->{destination_concurrency_enabled}' invalid (must be on|off)";
+                die "ERROR: $msg\n" unless $lenient;
+                $self->zLog->warn("WARNING: $msg on dataset " . $backupSet->{src}
+                    . "; ignoring it and processing destinations serially");
             }
         }
 
@@ -355,7 +380,9 @@ my $getBackupSet = sub {
         # Not that recursion makes much sense for "undef" (=> list everything)
         $self->backupSets($self->zfs->getDataSetProperties(undef, $recurse, $inherit));
     }
-    $self->$checkBackupSets();
+    # Read path: tolerate out-of-band-invalid concurrency values (warn, don't die)
+    # so one bad dataset can't crash the daemon or list for every backup set.
+    $self->$checkBackupSets(1);
 
     printf STDERR "=== getBackupSet() : got "
         . scalar(@{$self->backupSets}) . " dataset(s) with a local "

@@ -102,6 +102,69 @@ is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
+is (runCommand(qw(create --donotask --dst-concurrency SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency (all destinations)');
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency');
+is (runCommand(qw(create --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency invalid');
+
+# Opt-out: --dst-concurrency=off disables parallelism (create and edit).
+is (runCommand(qw(create --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency=off (explicit opt-out)');
+is (runCommand(qw(edit --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency=off (opt-out)');
+# An explicit but empty value is an error, not a silent enable-all.
+is (runCommand(qw(create --donotask --dst-concurrency= SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency= (empty value) fails');
+# A malformed value is rejected identically on create AND edit (regression: the
+# edit path used to silently accept it as "all destinations").
+is (runCommand(qw(create --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=0 fails');
+
+# extractDstConcurrencyOption parses only the documented forms and never
+# consumes a following positional argument as the value (regression: a bare
+# flag used to swallow an immediately-following plain-digit token).
+{
+    my @a = ('--dst-concurrency', '512', 'SRC');
+    my ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($seen, 1, 'extract: bare --dst-concurrency is seen');
+    is ($val, undef, 'extract: bare --dst-concurrency has no value');
+    is_deeply (\@a, ['512', 'SRC'], 'extract: a following numeric positional is NOT stolen');
+
+    @a = ('--dst-concurrency=3');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 3, 'extract: =<count> returns the count');
+
+    @a = ('--dst-concurrency=off');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 'off', 'extract: =off returns off');
+
+    @a = ('--dst-concurrency=');
+    my $survived = eval { extractDstConcurrencyOption(\@a); 1 };
+    ok (!$survived, 'extract: an empty =value dies rather than silently enabling');
+}
+
+# Regression: a destination literally named "concurrency" (DST:concurrency) is
+# stored as the key dst_concurrency. Before the concurrency properties were
+# renamed out of the dst_<key> namespace this collided with the numeric
+# dst_concurrency validation and hard-failed. It must now be treated as an
+# ordinary destination and validate cleanly. (Copilot C3/C4)
+is (runCommand(qw(create --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup create with a destination named "concurrency" (no property-name collision)');
+is (runCommand(qw(edit --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup edit with a destination named "concurrency" (no property-name collision)');
+# Opt-in parallelism and a destination named "concurrency" coexist.
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination),
+    qw(DST:other 1h=>10min backup/other)), 1,
+    'znapzendzetup create --dst-concurrency=2 alongside a destination named "concurrency"');
 
 is (runCommand(qw(create --donotask), '--mbufferparam=-R 10M', qw(SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create with a valid --mbufferparam');
@@ -148,6 +211,12 @@ is (runCommand('create', '--donotask', 'SRC', '1h=>10min', 'tank/source', $mbpat
 
 is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
+is (runCommand(qw(edit --donotask --dst-concurrency SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency (all destinations)');
+is (runCommand(qw(edit --donotask --dst-concurrency=3 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency');
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency invalid');
 
 is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');
 

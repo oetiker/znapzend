@@ -21,6 +21,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>|off]] \
             SRC plan dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST[:key] plan [[user@]host:]dataset
                 [pre-send-command] [post-send-command] \
@@ -38,6 +39,7 @@ and where 'command' and its unique options is one of the following:
             [--post-snap-command=<command>|off] \
             [--tsformat=<format>] --donotask \
             [--send-delay=<time>] \
+            [--dst-concurrency[=<count>|off]] \
             SRC [plan] dataset [src_mbuffer_path [src_mbuffer_size]] \
             [ DST:key [plan] [dataset] \
                 [pre-send-command|off] [post-send-command|off] \
@@ -271,6 +273,32 @@ snapshot in the environment variables I<ZNAP_NAME> and I<ZNAP_TIME>.
 Specify delay (in seconds) before sending snaps to the destination.
 May be useful if you want to control sending time.
 
+=item B<--dst-concurrency>
+
+Enable destination sends in parallel for one backup set. When the option is
+specified without a value, all configured destinations are processed in
+parallel.
+
+If a value is provided, it must be an integer >= 1 and limits the maximum
+number of destination streams. Pass B<--dst-concurrency=off> to turn parallelism
+back off (restoring serial processing) for a set that previously enabled it.
+
+Destination parallelism is strictly opt-in. Existing backup sets that do not
+define I<destination_concurrency_enabled> -- which includes every configuration
+created before this feature existed -- keep the long-standing behavior of
+processing destinations serially, one at a time. Upgrading therefore never
+changes replication behavior on its own. New backup sets created without
+B<--dst-concurrency> also default to serial destination processing and store no
+concurrency property at all.
+
+This per-backup-set control is distinct from the daemon-wide
+B<--maxConcurrentSends> / B<--serialize> options of B<znapzend>, which limit how
+many backup sets send at the same time. The two limits are not combined: with
+per-destination concurrency enabled, a single backup set may run several
+destination streams in parallel even under B<--serialize>, so the effective
+number of concurrent I<zfs send> streams can exceed B<--maxConcurrentSends>
+alone. Size both together.
+
 =item B<pre-send-command>=I</path/bin args>, B<post-send-command>=I</path/bin args>
 
 Run command/script before and after sending the snapshot to the destination.
@@ -346,6 +374,14 @@ create a complex backup task
           "/root/znapzend.sh dst_b pool on" \
           "/root/znapzend.sh dst_b pool off" \
           "/opt/bin64/mbuffer" "4G"
+
+create a multi-destination backup with bounded parallel sends
+
+    znapzendzetup create --recursive --dst-concurrency=2 \
+       SRC '1d=>12h,3d=>1d' tank/apps \
+       DST:a '31d=>1d' backup-a:tank/apps \
+       DST:b '31d=>1d' backup-b:tank/apps \
+       DST:c '14d=>1d,3m=>1w' backup-c:tank/apps
 
 
 copy the setup from one fileset to another
