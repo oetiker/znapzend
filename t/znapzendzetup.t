@@ -117,6 +117,14 @@ is (runCommand(qw(edit --donotask --dst-concurrency=off SRC 1h=>10min tank/sourc
 # An explicit but empty value is an error, not a silent enable-all.
 is (runCommand(qw(create --donotask --dst-concurrency= SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency= (empty value) fails');
+# A malformed value is rejected identically on create AND edit (regression: the
+# edit path used to silently accept it as "all destinations").
+is (runCommand(qw(create --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=0 fails');
 
 # extractDstConcurrencyOption parses only the documented forms and never
 # consumes a following positional argument as the value (regression: a bare

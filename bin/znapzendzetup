@@ -170,6 +170,16 @@ sub extractDstConcurrencyOption {
                         . "--dst-concurrency=<count>, or --dst-concurrency=off\n";
                 }
                 $value = $1;
+                # Validate the shape here, at the single CLI front door, so
+                # create and edit reject bad input identically. Without this,
+                # the edit path would merge a malformed value and then silently
+                # drop it (the post-merge clear treats any non-integer as "no
+                # limit"), leaving the set enabled with unbounded fan-out.
+                unless ($value eq 'off' || ($value =~ /^\d+$/ && $value > 0)) {
+                    die "ERROR: --dst-concurrency=$value is invalid; use a "
+                        . "positive integer, 'off', or the bare flag for all "
+                        . "destinations\n";
+                }
             }
             next;
         }
