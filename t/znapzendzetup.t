@@ -75,6 +75,7 @@ sub runCommand {
 }
 
 use Test::More;
+use File::Temp qw(tempfile);
 
 use_ok 'ZnapZend';
 
@@ -102,6 +103,69 @@ is (runCommand(qw(edit tank/source)), 1, 'znapzendzetup edit src_dataset');
 
 is (runCommand(qw(create --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --donotask');
+is (runCommand(qw(create --donotask --dst-concurrency SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency (all destinations)');
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency');
+is (runCommand(qw(create --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency invalid');
+
+# Opt-out: --dst-concurrency=off disables parallelism (create and edit).
+is (runCommand(qw(create --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create --dst-concurrency=off (explicit opt-out)');
+is (runCommand(qw(edit --donotask --dst-concurrency=off SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --dst-concurrency=off (opt-out)');
+# An explicit but empty value is an error, not a silent enable-all.
+is (runCommand(qw(create --donotask --dst-concurrency= SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency= (empty value) fails');
+# A malformed value is rejected identically on create AND edit (regression: the
+# edit path used to silently accept it as "all destinations").
+is (runCommand(qw(create --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST 1h=>10min backup/destination)), 0, 'znapzendzetup create --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=abc SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=abc (non-numeric) fails');
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency=0 fails');
+
+# extractDstConcurrencyOption parses only the documented forms and never
+# consumes a following positional argument as the value (regression: a bare
+# flag used to swallow an immediately-following plain-digit token).
+{
+    my @a = ('--dst-concurrency', '512', 'SRC');
+    my ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($seen, 1, 'extract: bare --dst-concurrency is seen');
+    is ($val, undef, 'extract: bare --dst-concurrency has no value');
+    is_deeply (\@a, ['512', 'SRC'], 'extract: a following numeric positional is NOT stolen');
+
+    @a = ('--dst-concurrency=3');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 3, 'extract: =<count> returns the count');
+
+    @a = ('--dst-concurrency=off');
+    ($seen, $val) = extractDstConcurrencyOption(\@a);
+    is ($val, 'off', 'extract: =off returns off');
+
+    @a = ('--dst-concurrency=');
+    my $survived = eval { extractDstConcurrencyOption(\@a); 1 };
+    ok (!$survived, 'extract: an empty =value dies rather than silently enabling');
+}
+
+# Regression: a destination literally named "concurrency" (DST:concurrency) is
+# stored as the key dst_concurrency. Before the concurrency properties were
+# renamed out of the dst_<key> namespace this collided with the numeric
+# dst_concurrency validation and hard-failed. It must now be treated as an
+# ordinary destination and validate cleanly. (Copilot C3/C4)
+is (runCommand(qw(create --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup create with a destination named "concurrency" (no property-name collision)');
+is (runCommand(qw(edit --donotask SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination)), 1,
+    'znapzendzetup edit with a destination named "concurrency" (no property-name collision)');
+# Opt-in parallelism and a destination named "concurrency" coexist.
+is (runCommand(qw(create --donotask --dst-concurrency=2 SRC 1h=>10min tank/source),
+    qw(DST:concurrency 1h=>10min backup/destination),
+    qw(DST:other 1h=>10min backup/other)), 1,
+    'znapzendzetup create --dst-concurrency=2 alongside a destination named "concurrency"');
 
 is (runCommand(qw(create --donotask), '--mbufferparam=-R 10M', qw(SRC 1h=>10min tank/source),
     qw(DST 1h=>10min backup/destination)), 1, 'znapzendzetup create with a valid --mbufferparam');
@@ -148,6 +212,97 @@ is (runCommand('create', '--donotask', 'SRC', '1h=>10min', 'tank/source', $mbpat
 
 is (runCommand(qw(edit --donotask --tsformat=%Y%m%d-%H%M%S SRC 1h=>10min tank/source),
     qw(DST:0 1h=>10min backup/destination)), 1, 'znapzendzetup edit --donotask');
+
+# Persisted concurrency properties. The zfs mock keeps no state, but with
+# ZNAPZENDTEST_ZFS_RECORD it logs every call, so we can assert what actually got
+# written. znapzendzetup stores a set by 'zfs inherit'ing every property and then
+# 'zfs set'ing the ones in the new config, so a property is REMOVED when it is
+# inherited but not set again.
+{
+    # Run a command with the zfs mock recording; returns (ok, \%set, \%inherited)
+    # for the org.znapzend:* properties it wrote and cleared.
+    my $runRecorded = sub {
+        my (%args) = @_;
+        my (undef, $recFile) = tempfile('znapzend-zetup-record-XXXXXX', TMPDIR => 1, OPEN => 0);
+        local $ENV{ZNAPZENDTEST_ZFS_RECORD} = $recFile;
+        # Pretend the set already has these concurrency properties stored.
+        local $ENV{ZNAPZENDTEST_ZFS_GET_DST_CONCURRENCY} = $args{existing};
+        my $ok = runCommand(@{$args{cmd}});
+        my (%set, %inherited);
+        if (open(my $fh, '<', $recFile)) {
+            while (my $line = <$fh>) {
+                chomp $line;
+                $set{$1} = $2 if $line =~ /^set org\.znapzend:(\S+?)=(.*) tank\/source$/;
+                $inherited{$1} = 1 if $line =~ /^inherit org\.znapzend:(\S+) tank\/source$/;
+            }
+            close $fh;
+        }
+        unlink $recFile;
+        return ($ok, \%set, \%inherited);
+    };
+
+    my @createCmd = qw(create --donotask);
+    my @editCmd   = qw(edit --donotask);
+    my @src = qw(SRC 1h=>10min tank/source);
+    my @createDst = qw(DST 1h=>10min backup/destination);
+    my @editDst   = qw(DST:0 1h=>10min backup/destination);
+
+    # --- create: nothing stored unless the flag is given ---
+    my ($ok, $set) = $runRecorded->(cmd => [@createCmd, @src, @createDst]);
+    is ($ok, 1, 'create without --dst-concurrency succeeds');
+    ok (!exists $set->{destination_concurrency_enabled} && !exists $set->{destination_concurrency},
+        'create without --dst-concurrency stores no concurrency property');
+
+    ($ok, $set) = $runRecorded->(cmd => [@createCmd, '--dst-concurrency', @src, @createDst]);
+    is ($set->{destination_concurrency_enabled}, 'on', 'create --dst-concurrency stores enabled=on');
+    ok (!exists $set->{destination_concurrency}, 'create --dst-concurrency (all destinations) stores no numeric limit');
+
+    ($ok, $set) = $runRecorded->(cmd => [@createCmd, '--dst-concurrency=2', @src, @createDst]);
+    is ($set->{destination_concurrency_enabled}, 'on', 'create --dst-concurrency=2 stores enabled=on');
+    is ($set->{destination_concurrency}, '2', 'create --dst-concurrency=2 stores limit 2');
+
+    ($ok, $set) = $runRecorded->(cmd => [@createCmd, '--dst-concurrency=off', @src, @createDst]);
+    is ($set->{destination_concurrency_enabled}, 'off', 'create --dst-concurrency=off stores enabled=off');
+    ok (!exists $set->{destination_concurrency}, 'create --dst-concurrency=off stores no numeric limit');
+
+    # --- edit a set that has no concurrency settings yet ---
+    ($ok, $set) = $runRecorded->(cmd => [@editCmd, '--dst-concurrency=3', @src, @editDst]);
+    is ($ok, 1, 'edit --dst-concurrency=3 succeeds');
+    is ($set->{destination_concurrency_enabled}, 'on', 'edit --dst-concurrency=3 stores enabled=on');
+    is ($set->{destination_concurrency}, '3', 'edit --dst-concurrency=3 stores limit 3');
+
+    ($ok, $set) = $runRecorded->(cmd => [@editCmd, @src, @editDst]);
+    ok (!exists $set->{destination_concurrency_enabled} && !exists $set->{destination_concurrency},
+        'edit without the flag does not introduce concurrency properties');
+
+    # --- edit a set that already has enabled=on, limit=3 stored ---
+    my %existing = (existing => '3');
+
+    ($ok, $set) = $runRecorded->(%existing, cmd => [@editCmd, @src, @editDst]);
+    is ($set->{destination_concurrency_enabled}, 'on', 'edit without the flag keeps enabled=on');
+    is ($set->{destination_concurrency}, '3', 'edit without the flag keeps the stored limit');
+
+    ($ok, $set) = $runRecorded->(%existing, cmd => [@editCmd, '--dst-concurrency=5', @src, @editDst]);
+    is ($set->{destination_concurrency_enabled}, 'on', 'edit --dst-concurrency=5 keeps enabled=on');
+    is ($set->{destination_concurrency}, '5', 'edit --dst-concurrency=5 replaces the stored limit');
+
+    my $inherited;
+    ($ok, $set, $inherited) = $runRecorded->(%existing, cmd => [@editCmd, '--dst-concurrency', @src, @editDst]);
+    is ($set->{destination_concurrency_enabled}, 'on', 'edit bare --dst-concurrency keeps enabled=on');
+    ok (!exists $set->{destination_concurrency},
+        'edit bare --dst-concurrency does not re-write the old numeric limit');
+    ok ($inherited->{destination_concurrency},
+        'edit bare --dst-concurrency clears the old numeric limit from the dataset (all destinations)');
+
+    ($ok, $set, $inherited) = $runRecorded->(%existing, cmd => [@editCmd, '--dst-concurrency=off', @src, @editDst]);
+    is ($set->{destination_concurrency_enabled}, 'off', 'edit --dst-concurrency=off stores enabled=off');
+    ok (!exists $set->{destination_concurrency},
+        'edit --dst-concurrency=off does not re-write the old numeric limit');
+    ok ($inherited->{destination_concurrency},
+        'edit --dst-concurrency=off clears the old numeric limit from the dataset');
+}
+is (runCommand(qw(edit --donotask --dst-concurrency=0 SRC 1h=>10min tank/source),
+    qw(DST:0 1h=>10min backup/destination)), 0, 'znapzendzetup edit --dst-concurrency invalid');
 
 is (runCommand(qw(enable tank/source)), 1, 'znapzendzetup enable');
 
